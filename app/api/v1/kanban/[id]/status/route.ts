@@ -70,18 +70,32 @@ export const PATCH = withAuth(async (req, ctx, auth) => {
   }
 
   // --------------------------------------------------------------------------
-  // 2. Busca a tarefa atual
+  // 2. Busca a tarefa e verifica ownership
   // --------------------------------------------------------------------------
   try {
     const tarefa = await prisma.tarefaKanban.findUnique({
-      where: { id },
-      select: { id: true, currentState: true },
+      where:  { id },
+      select: { id: true, currentState: true, clientId: true },
     });
 
     if (!tarefa) {
       return NextResponse.json(
         { message: 'Tarefa não encontrada.' },
         { status: 404 },
+      );
+    }
+
+    // Verifica que o cliente da tarefa pertence ao contador logado
+    const contadorId = auth.role === 'EMPLOYEE' ? auth.superiorId! : auth.sub;
+    const vinculo = await prisma.contadorCliente.findUnique({
+      where: {
+        contadorId_clienteId: { contadorId, clienteId: tarefa.clientId },
+      },
+    });
+    if (!vinculo) {
+      return NextResponse.json(
+        { message: 'Tarefa não encontrada ou não pertence à sua carteira.' },
+        { status: 403 },
       );
     }
 

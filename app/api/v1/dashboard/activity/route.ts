@@ -41,13 +41,33 @@ const ACTION_LABELS: Record<string, string> = {
 //   { atividades: AtividadeDTO[] }
 // =============================================================================
 
-export const GET = withAuth(async (req, _ctx, _auth) => {
+export const GET = withAuth(async (req, _ctx, auth) => {
   try {
     const { searchParams } = req.nextUrl;
     const limitRaw = parseInt(searchParams.get('limit') ?? '15', 10);
     const limit = Math.min(Math.max(limitRaw, 1), 50);
 
+    const contadorId = auth.role === 'EMPLOYEE' ? auth.superiorId! : auth.sub;
+
+    // Escopo: apenas usuários do escritório (contador + seus clientes + seus funcionários)
+    const [vinculos, funcionariosEscopo] = await Promise.all([
+      prisma.contadorCliente.findMany({
+        where:  { contadorId },
+        select: { clienteId: true },
+      }),
+      prisma.funcionario.findMany({
+        where:  { contadorId, deletedAt: null },
+        select: { id: true },
+      }),
+    ]);
+    const userIdsEscopo = [
+      contadorId,
+      ...vinculos.map((v) => v.clienteId),
+      ...funcionariosEscopo.map((f) => f.id),
+    ];
+
     const logs = await prisma.auditLog.findMany({
+      where:   { userId: { in: userIdsEscopo } },
       orderBy: { timestamp: 'desc' },
       take: limit,
       select: {
@@ -60,20 +80,20 @@ export const GET = withAuth(async (req, _ctx, _auth) => {
       },
     });
 
-    // Buscar nomes dos usuários (clientes + contadores)
+    // Buscar nomes dos usuários (clientes + contadores + funcionários)
     const userIds = [...new Set(logs.map((l) => l.userId))];
 
     const [clientes, contadores, funcionarios] = await Promise.all([
       prisma.usuarioCliente.findMany({
-        where: { id: { in: userIds } },
+        where:  { id: { in: userIds } },
         select: { id: true, name: true },
       }),
       prisma.usuarioContador.findMany({
-        where: { id: { in: userIds } },
+        where:  { id: { in: userIds } },
         select: { id: true, name: true },
       }),
       prisma.funcionario.findMany({
-        where: { id: { in: userIds } },
+        where:  { id: { in: userIds } },
         select: { id: true, name: true },
       }),
     ]);

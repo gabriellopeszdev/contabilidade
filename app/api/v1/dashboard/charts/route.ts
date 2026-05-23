@@ -21,41 +21,55 @@ export const dynamic = 'force-dynamic';
 
 export const GET = withAuth(async (_req, _ctx, auth) => {
   try {
+    const contadorId = auth.role === 'EMPLOYEE' ? auth.superiorId! : auth.sub;
+
+    // Clientes do contador — escopo para todas as queries
+    const vinculos = await prisma.contadorCliente.findMany({
+      where:  { contadorId },
+      select: { clienteId: true },
+    });
+    const meusClienteIds = vinculos.map((v) => v.clienteId);
+
     const [statusAgg, setorAgg, volumeMensal, eficienciaMensal] = await Promise.all([
-      // 1. Tarefas agrupadas por status
+      // 1. Tarefas agrupadas por status — apenas clientes deste contador
       prisma.tarefaKanban.groupBy({
-        by: ['currentState'],
+        by:    ['currentState'],
         _count: { id: true },
+        where: { clientId: { in: meusClienteIds } },
       }),
 
-      // 2. Tarefas agrupadas por setor
+      // 2. Tarefas agrupadas por setor — apenas clientes deste contador
       prisma.tarefaKanban.groupBy({
-        by: ['sector'],
+        by:    ['sector'],
         _count: { id: true },
-        where: { sector: { not: null } },
+        where: { sector: { not: null }, clientId: { in: meusClienteIds } },
       }),
 
-      // 3. Volume de documentos dos últimos 6 meses
+      // 3. Volume de documentos dos últimos 6 meses — apenas clientes deste contador
       prisma.$queryRaw<Array<{ mes: string; total: bigint }>>`
         SELECT
-          TO_CHAR(created_at, 'YYYY-MM') AS mes,
+          TO_CHAR(df.created_at, 'YYYY-MM') AS mes,
           COUNT(*)::bigint AS total
-        FROM documento_fiscal
-        WHERE deleted_at IS NULL
-          AND created_at >= NOW() - INTERVAL '6 months'
-        GROUP BY TO_CHAR(created_at, 'YYYY-MM')
+        FROM documento_fiscal df
+        INNER JOIN contador_cliente cc ON cc.cliente_id = df.client_id
+        WHERE df.deleted_at IS NULL
+          AND df.created_at >= NOW() - INTERVAL '6 months'
+          AND cc.contador_id = ${contadorId}::uuid
+        GROUP BY TO_CHAR(df.created_at, 'YYYY-MM')
         ORDER BY mes ASC
       `,
 
-      // 4. Eficiência: tarefas concluídas vs criadas por mês (últimos 6 meses)
+      // 4. Eficiência: tarefas concluídas vs criadas por mês — apenas clientes deste contador
       prisma.$queryRaw<Array<{ mes: string; criadas: bigint; concluidas: bigint }>>`
         SELECT
-          TO_CHAR(created_at, 'YYYY-MM') AS mes,
+          TO_CHAR(tk.created_at, 'YYYY-MM') AS mes,
           COUNT(*)::bigint AS criadas,
-          COUNT(*) FILTER (WHERE current_state = 'DONE')::bigint AS concluidas
-        FROM tarefa_kanban
-        WHERE created_at >= NOW() - INTERVAL '6 months'
-        GROUP BY TO_CHAR(created_at, 'YYYY-MM')
+          COUNT(*) FILTER (WHERE tk.current_state = 'DONE')::bigint AS concluidas
+        FROM tarefa_kanban tk
+        INNER JOIN contador_cliente cc ON cc.cliente_id = tk.client_id
+        WHERE tk.created_at >= NOW() - INTERVAL '6 months'
+          AND cc.contador_id = ${contadorId}::uuid
+        GROUP BY TO_CHAR(tk.created_at, 'YYYY-MM')
         ORDER BY mes ASC
       `,
     ]);

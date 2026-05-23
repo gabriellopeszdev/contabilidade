@@ -4,64 +4,63 @@ import { withAuth } from '../../../../src/infrastructure/http/middlewares/withAu
 import { prisma }   from '../../../../src/infrastructure/di/Container';
 import { logger }   from '../../../../src/utils/logger';
 
-// =============================================================================
-// Configuração do runtime
-// =============================================================================
-
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 // =============================================================================
 // GET /api/v1/kanban
 //
-// Retorna todas as tarefas do Kanban com o nome do cliente (JOIN).
-// Suporte a filtro por clienteId via query param.
-//
+// Retorna tarefas do Kanban APENAS dos clientes do contador logado (IDOR guard).
 // Query params:
-//   clienteId → UUID do cliente (opcional — filtra tarefas desse cliente)
-//
-// Response 200:
-//   { tarefas: TarefaDTO[] }
-//
-// O front-end (useKanban) agrupa por currentState no cliente.
+//   clienteId → UUID do cliente (opcional — deve pertencer ao contador)
 // =============================================================================
 
-export const GET = withAuth(async (req, _ctx, _auth) => {
+export const GET = withAuth(async (req, _ctx, auth) => {
   try {
     const { searchParams } = req.nextUrl;
     const clienteId = searchParams.get('clienteId') ?? undefined;
 
-    // Validação simples de UUID se fornecido
     if (clienteId && !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(clienteId)) {
+      return NextResponse.json({ message: 'clienteId inválido.' }, { status: 400 });
+    }
+
+    const contadorId = auth.role === 'EMPLOYEE' ? auth.superiorId! : auth.sub;
+
+    // Busca todos os clientes do contador — escopo obrigatório
+    const vinculos = await prisma.contadorCliente.findMany({
+      where:  { contadorId },
+      select: { clienteId: true },
+    });
+    const meusClienteIds = vinculos.map((v) => v.clienteId);
+
+    // Se clienteId foi informado, valida que pertence a este contador
+    if (clienteId && !meusClienteIds.includes(clienteId)) {
       return NextResponse.json(
-        { message: 'clienteId inválido. Deve ser um UUID v4.' },
-        { status: 400 },
+        { message: 'Cliente não encontrado ou não pertence à sua carteira.' },
+        { status: 403 },
       );
     }
 
     const tarefas = await prisma.tarefaKanban.findMany({
       where: {
-        ...(clienteId ? { clientId: clienteId } : {}),
+        clientId: clienteId ? clienteId : { in: meusClienteIds },
       },
       orderBy: [
         { currentState: 'asc' },
-        { position: 'asc' },
+        { position:     'asc' },
       ],
     });
 
-    // Buscar nomes dos clientes únicos para o JOIN manual
     const clientIds = [...new Set(tarefas.map((t) => t.clientId))];
-
-    const clientes = clientIds.length > 0
+    const clientes  = clientIds.length > 0
       ? await prisma.usuarioCliente.findMany({
-          where: { id: { in: clientIds } },
+          where:  { id: { in: clientIds } },
           select: { id: true, name: true },
         })
       : [];
 
     const clienteNomeMap = new Map(clientes.map((c) => [c.id, c.name]));
 
-    // Serialização → TarefaDTO (contrato do front-end useKanban.ts)
     const tarefasDTO = tarefas.map((t) => ({
       id:           t.id,
       clientId:     t.clientId,
@@ -83,9 +82,6 @@ export const GET = withAuth(async (req, _ctx, _auth) => {
     return NextResponse.json({ tarefas: tarefasDTO });
   } catch (err) {
     logger.error('[GET /kanban] Erro', err instanceof Error ? err : undefined);
-    return NextResponse.json(
-      { message: 'Erro interno do servidor.' },
-      { status: 500 },
-    );
+    return NextResponse.json({ message: 'Erro interno do servidor.' }, { status: 500 });
   }
 }, ['ACCOUNTANT', 'ADMIN', 'EMPLOYEE']);

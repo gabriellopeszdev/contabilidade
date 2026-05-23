@@ -31,28 +31,37 @@ export const GET = withAuth(async (_req, _ctx, auth) => {
     const ontem = new Date(Date.now() - 24 * 60 * 60 * 1000);
     const contadorId = auth.role === 'EMPLOYEE' ? auth.superiorId! : auth.sub;
 
+    // Clientes do contador — escopo para todas as queries
+    const vinculos = await prisma.contadorCliente.findMany({
+      where:  { contadorId },
+      select: { clienteId: true },
+    });
+    const meusClienteIds = vinculos.map((v) => v.clienteId);
+
     // Execução paralela das 4 contagens — máxima performance
     const [tarefasPendentes, documentosNaoLidos, clientesAtivos, novosDocumentosRecebidos] =
       await Promise.all([
-        // 1. Tarefas pendentes (qualquer estado exceto DONE)
+        // 1. Tarefas pendentes dos clientes deste contador
         prisma.tarefaKanban.count({
           where: {
             currentState: { not: 'DONE' },
+            clientId:     { in: meusClienteIds },
           },
         }),
 
-        // 2. Documentos não lidos pelos clientes
+        // 2. Documentos não lidos dos clientes deste contador
         prisma.documentoFiscal.count({
           where: {
             readStatus: false,
             deletedAt:  null,
+            clientId:   { in: meusClienteIds },
           },
         }),
 
         // 3. Clientes ativos vinculados ao contador logado
         prisma.contadorCliente.count({
           where: {
-            contadorId: contadorId,
+            contadorId,
             cliente: {
               isActive:  true,
               deletedAt: null,
@@ -60,11 +69,12 @@ export const GET = withAuth(async (_req, _ctx, auth) => {
           },
         }),
 
-        // 4. Documentos recebidos de clientes nas últimas 24h
+        // 4. Documentos recebidos dos clientes deste contador nas últimas 24h
         prisma.documentoFiscal.count({
           where: {
             createdAt: { gte: ontem },
             deletedAt: null,
+            clientId:  { in: meusClienteIds },
           },
         }),
       ]);
