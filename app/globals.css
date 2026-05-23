@@ -1,0 +1,106 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * globals.css — Base visual do dashboard SaaS de Gestão Contábil
+ *
+ * Convenções:
+ *   - CSS custom properties para os tokens de cor do tema
+ *   - @layer base → resets e defaults do body
+ *   - @layer components → utilitários compostos reutilizáveis
+ */
+
+/* --------------------------------------------------------------------------
+ * Tokens de cor (compatíveis com modo claro — dark mode pode ser adicionado)
+ * -------------------------------------------------------------------------- */
+:root {
+  --color-bg:          #f8fafc;  /* slate-50: fundo do dashboard */
+  --color-bg-card:     #ffffff;  /* branco: cards e painéis */
+  --color-text:        #0f172a;  /* slate-900: texto principal */
+  --color-text-muted:  #64748b;  /* slate-500: texto secundário */
+  --color-border:      #e2e8f0;  /* slate-200: bordas suaves */
+  --color-brand:       #2563eb;  /* blue-600: legado — manter por compat */
+
+  /* White Label — injetadas em runtime pelo useTheme */
+  --color-primary:       #2563eb;
+  --color-primary-dark:  #1e3a8a;
+  --color-primary-light: #dbeafe;
+  --color-primary-50:    #eff6ff;
+}
+
+/* --------------------------------------------------------------------------
+ * Base
+ * -------------------------------------------------------------------------- */
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    /* Melhora a renderização de fontes em todos os sistemas */
+    -webkit-font-smoothing:  antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering:          optimizeLegibility;
+  }
+
+  body {
+    background-color: var(--color-bg);
+    color:            var(--color-text);
+    font-family:      ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+                      "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    /* Evita scroll horizontal em mobile */
+    overflow-x: hidden;
+  }
+
+  /* Remove outline padrão e substitui por ring do Tailwind via focus-visible */
+  :focus {
+    outline: none;
+  }
+
+  /* Scrollbar sutil — compatível com WebKit (Chrome, Edge, Safari) */
+  ::-webkit-scrollbar {
+    width:  6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background:    var(--color-border);
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #cbd5e1; /* slate-300 */
+  }
+}
+
+/* --------------------------------------------------------------------------
+ * Componentes utilitários
+ * -------------------------------------------------------------------------- */
+@layer components {
+  /* Card padrão do dashboard */
+  .card {
+    @apply bg-white rounded-2xl border border-slate-200 shadow-sm;
+  }
+
+  /* Input com estilo consistente */
+  .input {
+    @apply w-full px-3 py-2.5 border border-slate-300 rounded-xl text-sm
+           text-slate-900 placeholder:text-slate-400 bg-white
+           focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent
+           transition-shadow;
+  }
+
+  /* Botão primário */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5
+           bg-primary hover:brightness-90 text-white text-sm font-semibold
+           rounded-xl transition-all
+           focus-visible:outline-none focus-visible:ring-2
+           focus-visible:ring-primary focus-visible:ring-offset-2
+           disabled:opacity-60 disabled:cursor-not-allowed;
+  }
+}
