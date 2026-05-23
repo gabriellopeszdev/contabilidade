@@ -1,6 +1,9 @@
 import { Queue, Worker, type Job } from 'bullmq';
 import type { RedisOptions } from 'ioredis';
 import type { ILogger } from '../../domain/ports/ILogger';
+import type { PrismaClient } from '@prisma/client';
+import type { IEmailService } from '../../domain/ports/IEmailService';
+import { emailWrapper, emailButton, emailHeading, emailSubheading, emailCallout, emailWarningCallout, emailInfoBox } from '../email/emailTemplate';
 
 // =============================================================================
 // BullMQAdapter — Processamento Assíncrono em Background
@@ -60,6 +63,10 @@ export type ProcessamentoJobData =
         assunto:       string;
         template:      string;
       };
+    }
+  | {
+      tipo: 'LEMBRETE_BOLETO_VENCIMENTO';
+      payload: Record<string, never>; // disparo automático sem payload
     };
 
 // ---------------------------------------------------------------------------
@@ -79,6 +86,8 @@ export class BullMQAdapter {
   constructor(
     private readonly redisConnection: Pick<RedisOptions, 'host' | 'port' | 'password'>,
     private readonly logger: ILogger,
+    private readonly prisma?: PrismaClient,
+    private readonly emailService?: IEmailService,
   ) {
     // Queue: lado produtor — apenas adiciona jobs
     this.queue = new Queue<ProcessamentoJobData>(NOME_FILA, {
@@ -130,6 +139,25 @@ export class BullMQAdapter {
     });
 
     return job.id ?? '';
+  }
+
+  /**
+   * Agenda lembrete diário de boletos vencendo em 3 dias.
+   * Cron: todo dia às 08:00 (horário do servidor).
+   * Idempotente — chamadas repetidas não duplicam a schedule.
+   */
+  async agendarLembreteBoleto(): Promise<void> {
+    await this.queue.add(
+      'LEMBRETE_BOLETO_VENCIMENTO',
+      { tipo: 'LEMBRETE_BOLETO_VENCIMENTO', payload: {} },
+      {
+        jobId: 'lembrete-boleto-diario', // ID fixo garante idempotência
+        repeat: { pattern: '0 8 * * *' },
+        removeOnComplete: { count: 7 },
+        removeOnFail:     { count: 30 },
+      },
+    );
+    this.logger.info('[BullMQAdapter] Lembrete de boleto agendado (08:00 diário).');
   }
 
   // ---------------------------------------------------------------------------
@@ -233,10 +261,96 @@ export class BullMQAdapter {
         break;
       }
 
+      case 'LEMBRETE_BOLETO_VENCIMENTO': {
+        await this.processarLembreteBoleto();
+        break;
+      }
+
       default: {
         // Lança erro para que o BullMQ registre como falha e possa fazer retry/diagnóstico
         const tipo = (job.data as { tipo: string }).tipo;
         throw new Error(`[BullMQAdapter] Tipo de job desconhecido: "${tipo}".`);
+      }
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Handler: lembretes de boleto vencendo em 3 dias
+  // ---------------------------------------------------------------------------
+
+  private async processarLembreteBoleto(): Promise<void> {
+    if (!this.prisma || !this.emailService) {
+      this.logger.warn('[BullMQAdapter] prisma/emailService não injetados — lembrete ignorado.');
+      return;
+    }
+
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    const em3Dias = new Date(hoje);
+    em3Dias.setDate(em3Dias.getDate() + 3);
+    em3Dias.setHours(23, 59, 59, 999);
+
+    const boletos = await this.prisma.boletoHonorario.findMany({
+      where: {
+        status:     'PENDENTE',
+        vencimento: { gte: hoje, lte: em3Dias },
+      },
+      select: {
+        id:           true,
+        valor:        true,
+        vencimento:   true,
+        mesReferencia: true,
+        cliente:       { select: { email: true, name: true } },
+        escritorio:    { select: { name: true } },
+      },
+    });
+
+    this.logger.info('[BullMQAdapter] Lembretes de boleto a enviar.', { total: boletos.length });
+
+    for (const boleto of boletos) {
+      const vencimentoFmt = new Date(boleto.vencimento).toLocaleDateString('pt-BR', {
+        day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC',
+      });
+      const valorFmt = Number(boleto.valor).toLocaleString('pt-BR', {
+        style: 'currency', currency: 'BRL',
+      });
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
+
+      const html = emailWrapper(`
+        ${emailSubheading('Lembrete de Vencimento')}
+        ${emailHeading('Seu boleto vence em breve')}
+        <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 24px 0">
+          Olá, <strong>${boleto.cliente.name}</strong>! Este é um lembrete de que você tem um boleto de honorários contábeis com vencimento em <strong>${vencimentoFmt}</strong>.
+        </p>
+        ${emailWarningCallout(`Este boleto vence em <strong>${vencimentoFmt}</strong>. Efetue o pagamento para evitar encargos por atraso.`)}
+        ${emailInfoBox([
+          { label: 'Escritório', value: boleto.escritorio.name },
+          { label: 'Referência', value: boleto.mesReferencia },
+          { label: 'Valor',      value: valorFmt },
+          { label: 'Vencimento', value: vencimentoFmt },
+        ])}
+        ${emailCallout('Acesse o portal para visualizar e baixar o boleto.', 'ℹ️')}
+        <div style="text-align:center;margin:32px 0">
+          ${emailButton('Acessar Portal', `${appUrl}/cliente/financeiro`)}
+        </div>
+      `);
+
+      try {
+        await this.emailService.enviar({
+          destinatario: boleto.cliente.email,
+          assunto:      `[Lembrete] Boleto de ${valorFmt} vence em ${vencimentoFmt}`,
+          corpoHtml:    html,
+          corpoTexto:   `Olá ${boleto.cliente.name}, seu boleto de ${valorFmt} vence em ${vencimentoFmt}. Acesse: ${appUrl}/cliente/financeiro`,
+        });
+        this.logger.info('[BullMQAdapter] Lembrete enviado.', {
+          clienteEmail: boleto.cliente.email,
+          boletoId: boleto.id,
+        });
+      } catch (err) {
+        this.logger.error('[BullMQAdapter] Falha ao enviar lembrete.', {
+          boletoId: boleto.id,
+          message:  err instanceof Error ? err.message : String(err),
+        });
       }
     }
   }

@@ -85,7 +85,8 @@ app.prepare().then(async () => {
   // Redis, Prisma e MinIO recebem as credenciais corretas do process.env.
   // ---------------------------------------------------------------------------
 
-  const { logger, prisma } = await import('./src/infrastructure/di/Container');
+  const { logger, prisma, emailService } = await import('./src/infrastructure/di/Container');
+  const { BullMQAdapter } = await import('./src/infrastructure/queue/BullMQAdapter');
 
   // ---------------------------------------------------------------------------
   // Servidor HTTP — todas as requisições são passadas ao handler do Next.js
@@ -104,11 +105,18 @@ app.prepare().then(async () => {
   // usar o docker-compose.yml sem nenhuma alteração no código.
   // ---------------------------------------------------------------------------
 
-  const socketServer = new SocketServer(httpServer, {
+  const redisConn = {
     host:     process.env.REDIS_HOST     ?? 'localhost',
     port:     parseInt(process.env.REDIS_PORT ?? '6379', 10),
     password: process.env.REDIS_PASSWORD ?? undefined,
-  }, logger, prisma);
+  };
+
+  const socketServer = new SocketServer(httpServer, redisConn, logger, prisma);
+
+  // BullMQ — filas de processamento em background + jobs agendados
+  const bullMQ = new BullMQAdapter(redisConn, logger, prisma, emailService);
+  bullMQ.iniciarWorker(2);
+  await bullMQ.agendarLembreteBoleto();
 
   // ---------------------------------------------------------------------------
   // Listen
@@ -142,6 +150,12 @@ app.prepare().then(async () => {
       await socketServer.fechar();
     } catch (err) {
       logger.error('[server] Erro ao fechar SocketServer', err instanceof Error ? err : { err });
+    }
+
+    try {
+      await bullMQ.fechar();
+    } catch (err) {
+      logger.error('[server] Erro ao fechar BullMQ', err instanceof Error ? err : { err });
     }
 
     httpServer.close((err) => {
