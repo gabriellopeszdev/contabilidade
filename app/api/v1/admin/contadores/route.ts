@@ -37,7 +37,7 @@ export const GET = withAuth(async (_req: NextRequest, _ctx: RouteContext) => {
           select: { clientesRel: true },
         },
         configuracao: {
-          select: { nomeEscritorio: true, cnpjEscritorio: true, asaasApiKey: true },
+          select: { nomeEscritorio: true, cnpjEscritorio: true, asaasApiKey: true, coraClientId: true },
         },
       },
     });
@@ -52,6 +52,7 @@ export const GET = withAuth(async (_req: NextRequest, _ctx: RouteContext) => {
       nomeEscritorio:    c.configuracao?.nomeEscritorio ?? null,
       cnpjEscritorio:    c.configuracao?.cnpjEscritorio ?? null,
       asaasConfigurado:  Boolean(c.configuracao?.asaasApiKey),
+      coraConfigurado:   Boolean(c.configuracao?.coraClientId),
       createdAt:         c.createdAt.toISOString(),
     }));
 

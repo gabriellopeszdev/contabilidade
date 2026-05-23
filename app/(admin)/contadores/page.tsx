@@ -32,6 +32,7 @@ interface ContadorDTO {
   nomeEscritorio:   string | null;
   cnpjEscritorio:   string | null;
   asaasConfigurado: boolean;
+  coraConfigurado:  boolean;
   createdAt:        string;
 }
 
@@ -138,6 +139,7 @@ function ModalCriarContador({ onClose, onCriado, token }: ModalCriarContadorProp
         nomeEscritorio:   form.nomeEscritorio.trim(),
         cnpjEscritorio:   form.cnpjEscritorio.trim() || null,
         asaasConfigurado: false,
+        coraConfigurado:  false,
         createdAt:        new Date().toISOString(),
       });
     } catch {
@@ -555,6 +557,187 @@ function ModalAsaas({ contador, onClose, onSalvo, token }: ModalAsaasProps) {
 }
 
 // =============================================================================
+// Modal Cora — configura credenciais mTLS por contador
+// =============================================================================
+
+interface ModalCoraProps {
+  contador: ContadorDTO;
+  onClose:  () => void;
+  onSalvo:  (configurado: boolean) => void;
+  token:    string;
+}
+
+function ModalCora({ contador, onClose, onSalvo, token }: ModalCoraProps) {
+  const [clientId,       setClientId]       = useState('');
+  const [certificatePem, setCertificatePem] = useState('');
+  const [privateKeyPem,  setPrivateKeyPem]  = useState('');
+  const [salvando,       setSalvando]       = useState(false);
+  const [erro,           setErro]           = useState('');
+  const [sucesso,        setSucesso]        = useState('');
+
+  const limparMsgs = () => { setErro(''); setSucesso(''); };
+
+  const handleSalvar = async () => {
+    limparMsgs();
+    if (!clientId.trim()) { setErro('Client ID é obrigatório.'); return; }
+    if (!certificatePem.trim()) { setErro('Certificado PEM é obrigatório.'); return; }
+    if (!privateKeyPem.trim())  { setErro('Chave privada PEM é obrigatória.'); return; }
+
+    setSalvando(true);
+    try {
+      const res = await fetch(`/api/v1/admin/contadores/${contador.id}/cora`, {
+        method:  'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body:    JSON.stringify({
+          clientId:       clientId.trim(),
+          certificatePem: certificatePem.trim(),
+          privateKeyPem:  privateKeyPem.trim(),
+        }),
+      });
+      const data = await res.json() as { ok?: boolean; message?: string; configurado?: boolean };
+      if (!res.ok) { setErro(data.message ?? `Erro HTTP ${res.status}`); return; }
+      setSucesso('Credenciais Cora salvas e validadas!');
+      onSalvo(true);
+      setTimeout(onClose, 1200);
+    } catch {
+      setErro('Erro de rede. Tente novamente.');
+    } finally {
+      setSalvando(false);
+    }
+  };
+
+  const handleRemover = async () => {
+    limparMsgs();
+    setSalvando(true);
+    try {
+      const res = await fetch(`/api/v1/admin/contadores/${contador.id}/cora`, {
+        method:  'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) { const d = await res.json(); setErro(d.message ?? 'Erro.'); return; }
+      setSucesso('Credenciais Cora removidas.');
+      onSalvo(false);
+      setTimeout(onClose, 1200);
+    } catch {
+      setErro('Erro de rede.');
+    } finally {
+      setSalvando(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
+      <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-lg shadow-2xl">
+
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
+          <div>
+            <h2 className="text-sm font-bold text-white">Integração Cora</h2>
+            <p className="text-xs text-slate-400 mt-0.5">{contador.name}</p>
+          </div>
+          <button onClick={onClose} className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800">
+            <X size={16} />
+          </button>
+        </div>
+
+        <div className="px-6 py-5 space-y-4">
+          {/* Status atual */}
+          <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs ${contador.coraConfigurado ? 'bg-blue-900/30 text-blue-300 border border-blue-700/40' : 'bg-slate-800 text-slate-400 border border-slate-700'}`}>
+            <span className={`w-2 h-2 rounded-full ${contador.coraConfigurado ? 'bg-blue-400' : 'bg-slate-500'}`} />
+            {contador.coraConfigurado ? 'Cora configurado — boletos reais ativos' : 'Sem credenciais — usando PDF local (fallback)'}
+          </div>
+
+          <div className="bg-amber-900/20 border border-amber-700/30 rounded-lg px-3 py-2 text-[11px] text-amber-300">
+            A Cora exige autenticação mTLS: você precisa do <strong>Client ID</strong>, do <strong>certificado TLS</strong> (arquivo .pem) e da <strong>chave privada</strong> (.key) gerados no portal Cora.
+          </div>
+
+          {erro && (
+            <div className="flex items-start gap-2 bg-red-900/30 border border-red-700/50 rounded-lg px-3 py-2.5">
+              <AlertCircle size={13} className="text-red-400 shrink-0 mt-0.5" />
+              <p className="text-xs text-red-300">{erro}</p>
+            </div>
+          )}
+          {sucesso && (
+            <div className="flex items-start gap-2 bg-emerald-900/30 border border-emerald-700/50 rounded-lg px-3 py-2.5">
+              <CheckCircle2 size={13} className="text-emerald-400 shrink-0 mt-0.5" />
+              <p className="text-xs text-emerald-300">{sucesso}</p>
+            </div>
+          )}
+
+          {/* Client ID */}
+          <div>
+            <label className="block text-[11px] font-medium text-slate-400 mb-1">Client ID *</label>
+            <input
+              type="text"
+              value={clientId}
+              onChange={(e) => { setClientId(e.target.value); limparMsgs(); }}
+              placeholder="seu-client-id-cora"
+              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 font-mono"
+            />
+          </div>
+
+          {/* Certificado PEM */}
+          <div>
+            <label className="block text-[11px] font-medium text-slate-400 mb-1">
+              Certificado TLS (PEM) *
+            </label>
+            <textarea
+              value={certificatePem}
+              onChange={(e) => { setCertificatePem(e.target.value); limparMsgs(); }}
+              placeholder={'-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----'}
+              rows={4}
+              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-blue-500 font-mono resize-none"
+            />
+          </div>
+
+          {/* Chave privada PEM */}
+          <div>
+            <label className="block text-[11px] font-medium text-slate-400 mb-1">
+              Chave Privada (PEM) *
+            </label>
+            <textarea
+              value={privateKeyPem}
+              onChange={(e) => { setPrivateKeyPem(e.target.value); limparMsgs(); }}
+              placeholder={'-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----'}
+              rows={4}
+              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-blue-500 font-mono resize-none"
+            />
+          </div>
+        </div>
+
+        <div className="flex gap-3 px-6 pb-5">
+          {contador.coraConfigurado && (
+            <button
+              type="button"
+              onClick={handleRemover}
+              disabled={salvando}
+              className="px-4 py-2 text-xs font-medium text-red-400 bg-red-900/20 hover:bg-red-900/40 border border-red-800/40 rounded-lg transition-colors disabled:opacity-50"
+            >
+              Remover
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 px-4 py-2 text-sm font-medium text-slate-300 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors"
+          >
+            Fechar
+          </button>
+          <button
+            type="button"
+            onClick={handleSalvar}
+            disabled={salvando || !clientId.trim() || !certificatePem.trim() || !privateKeyPem.trim()}
+            className="flex-1 flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-500 disabled:opacity-50 rounded-lg transition-colors"
+          >
+            {salvando ? <Loader2 size={14} className="animate-spin" /> : <KeyRound size={14} />}
+            {salvando ? 'Validando…' : 'Salvar credenciais'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// =============================================================================
 // Página principal
 // =============================================================================
 
@@ -568,6 +751,7 @@ export default function ContadoresPage() {
   const [busca,         setBusca]         = useState('');
   const [toggling,      setToggling]      = useState<string | null>(null); // id do row em transição
   const [modalAsaas,    setModalAsaas]    = useState<ContadorDTO | null>(null);
+  const [modalCora,     setModalCora]     = useState<ContadorDTO | null>(null);
   const [modalEditar,   setModalEditar]   = useState<ContadorDTO | null>(null);
 
   // Carrega lista
@@ -682,6 +866,20 @@ export default function ContadoresPage() {
         />
       )}
 
+      {/* Modal: Cora */}
+      {modalCora && (
+        <ModalCora
+          contador={modalCora}
+          token={token ?? ''}
+          onClose={() => setModalCora(null)}
+          onSalvo={(configurado) => {
+            setContadores((prev) =>
+              prev.map((c) => c.id === modalCora.id ? { ...c, coraConfigurado: configurado } : c),
+            );
+          }}
+        />
+      )}
+
       {/* Conteúdo */}
       <div className="max-w-7xl mx-auto space-y-6">
 
@@ -766,7 +964,7 @@ export default function ContadoresPage() {
                       Criado em
                     </th>
                     <th className="text-center text-[11px] font-semibold text-slate-500 uppercase tracking-wide px-4 py-3 hidden lg:table-cell">
-                      Asaas
+                      Provedor
                     </th>
                     <th className="px-5 py-3" />
                   </tr>
@@ -815,16 +1013,24 @@ export default function ContadoresPage() {
                         <span className="text-xs text-slate-500">{formatarData(c.createdAt)}</span>
                       </td>
 
-                      {/* Asaas */}
+                      {/* Provedor */}
                       <td className="px-4 py-3.5 text-center hidden lg:table-cell">
-                        <span className={`inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full border ${
-                          c.asaasConfigurado
-                            ? 'text-emerald-400 bg-emerald-900/30 border-emerald-700/40'
-                            : 'text-slate-500 bg-slate-800 border-slate-700'
-                        }`}>
-                          <span className={`w-1.5 h-1.5 rounded-full ${c.asaasConfigurado ? 'bg-emerald-400' : 'bg-slate-600'}`} />
-                          {c.asaasConfigurado ? 'Ativo' : 'Sem chave'}
-                        </span>
+                        {c.asaasConfigurado ? (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full border text-emerald-400 bg-emerald-900/30 border-emerald-700/40">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                            Asaas
+                          </span>
+                        ) : c.coraConfigurado ? (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full border text-blue-400 bg-blue-900/30 border-blue-700/40">
+                            <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+                            Cora
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full border text-slate-500 bg-slate-800 border-slate-700">
+                            <span className="w-1.5 h-1.5 rounded-full bg-slate-600" />
+                            PDF local
+                          </span>
+                        )}
                       </td>
 
                       {/* Ações */}
@@ -852,6 +1058,20 @@ export default function ContadoresPage() {
                           >
                             <KeyRound size={12} />
                             Asaas
+                          </button>
+
+                          {/* Cora */}
+                          <button
+                            onClick={() => setModalCora(c)}
+                            title="Configurar integração Cora"
+                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border ${
+                              c.coraConfigurado
+                                ? 'text-blue-400 bg-blue-900/20 hover:bg-blue-900/40 border-blue-800/40'
+                                : 'text-slate-400 bg-slate-800 hover:bg-slate-700 border-slate-700'
+                            }`}
+                          >
+                            <KeyRound size={12} />
+                            Cora
                           </button>
 
                           {/* Bloquear/Desbloquear */}
