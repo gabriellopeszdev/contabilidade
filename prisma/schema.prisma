@@ -437,8 +437,13 @@ model ConfiguracaoEscritorio {
   logoUrl        String? @map("logo_url") @db.VarChar(1000)
   corPrimaria    String  @default("#2563eb") @map("cor_primaria") @db.VarChar(9)
   corSecundaria  String  @default("#1e3a8a") @map("cor_secundaria") @db.VarChar(9)
-  // Chave Asaas do contador (gerenciada pelo admin SaaS, usada para emitir boletos reais)
+  // Integração Asaas
   asaasApiKey    String? @map("asaas_api_key") @db.VarChar(500)
+
+  // Integração Cora — autenticação mTLS (OAuth 2.0 + certificado TLS)
+  coraClientId       String? @map("cora_client_id")       @db.VarChar(200)
+  coraCertificatePem String? @map("cora_certificate_pem") @db.Text
+  coraPrivateKeyPem  String? @map("cora_private_key_pem") @db.Text
 
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
@@ -505,13 +510,19 @@ model BoletoHonorario {
   fileName       String?      @map("file_name") @db.VarChar(500)
   fileSizeBytes  BigInt?      @map("file_size_bytes")
   descricao      String?      @db.VarChar(500)
-  // Campos Asaas — preenchidos quando o boleto é emitido via integração real
-  asaasId           String? @map("asaas_id") @db.VarChar(100)
-  asaasBoletoUrl    String? @map("asaas_boleto_url") @db.VarChar(500)
-  asaasBarcode      String? @map("asaas_barcode") @db.VarChar(200)
-  asaasPixCopiaECola String? @map("asaas_pix_copia_e_cola") @db.Text
-  tipoPagamento      TipoPagamento @default(BOLETO) @map("tipo_pagamento")
-  asaasSubscriptionId String?      @map("asaas_subscription_id") @db.VarChar(100)
+  // Campos Asaas — preenchidos quando emitido via Asaas
+  asaasId             String? @map("asaas_id")              @db.VarChar(100)
+  asaasBoletoUrl      String? @map("asaas_boleto_url")      @db.VarChar(500)
+  asaasBarcode        String? @map("asaas_barcode")         @db.VarChar(200)
+  asaasPixCopiaECola  String? @map("asaas_pix_copia_e_cola") @db.Text
+  tipoPagamento       TipoPagamento @default(BOLETO)        @map("tipo_pagamento")
+  asaasSubscriptionId String? @map("asaas_subscription_id") @db.VarChar(100)
+
+  // Campos Cora — preenchidos quando emitido via Cora
+  coraId         String? @map("cora_id")          @db.VarChar(100)
+  coraBarcode    String? @map("cora_barcode")      @db.VarChar(300)
+  coraBoletoUrl  String? @map("cora_boleto_url")   @db.VarChar(500)
+  coraPixPayload String? @map("cora_pix_payload")  @db.Text
   createdAt      DateTime     @default(now()) @map("created_at") @db.Timestamptz
   updatedAt      DateTime     @updatedAt @map("updated_at") @db.Timestamptz
 
@@ -523,6 +534,7 @@ model BoletoHonorario {
   @@index([escritorioId, mesReferencia])
   @@index([escritorioId, status])
   @@index([asaasId])
+  @@index([coraId])
   @@map("boleto_honorario")
 }
 

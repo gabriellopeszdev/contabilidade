@@ -6,6 +6,7 @@ import { prisma, storageService } from '../../../../../src/infrastructure/di/Con
 import { logger }                 from '../../../../../src/utils/logger';
 import { gerarBoletoPdf }         from '../../../../../src/infrastructure/pdf/gerarBoletoPdf';
 import { AsaasService }           from '../../../../../src/infrastructure/asaas/AsaasService';
+import { CoraService }            from '../../../../../src/infrastructure/cora/CoraService';
 
 // =============================================================================
 // Schema de validação do POST
@@ -98,11 +99,18 @@ export const GET = withAuth(async (req, _ctx, auth) => {
         fileSizeBytes:    b.fileSizeBytes ? Number(b.fileSizeBytes) : null,
         descricao:        b.descricao,
         // Asaas
-        asaasId:          b.asaasId,
-        asaasBoletoUrl:   b.asaasBoletoUrl,
-        asaasBarcode:     b.asaasBarcode,
+        asaasId:           b.asaasId,
+        asaasBoletoUrl:    b.asaasBoletoUrl,
+        asaasBarcode:      b.asaasBarcode,
         asaasPixCopiaECola: b.asaasPixCopiaECola,
-        createdAt:        b.createdAt.toISOString(),
+        // Cora
+        coraId:            b.coraId,
+        coraBoletoUrl:     b.coraBoletoUrl,
+        coraBarcode:       b.coraBarcode,
+        coraPixPayload:    b.coraPixPayload,
+        // Qual provedor emitiu
+        provider: b.asaasId ? 'asaas' : b.coraId ? 'cora' : 'local',
+        createdAt:         b.createdAt.toISOString(),
       })),
       total,
       page,
@@ -154,10 +162,16 @@ export const POST = withAuth(async (req, _ctx, auth) => {
       return NextResponse.json({ message: 'Cliente não pertence à sua carteira.' }, { status: 403 });
     }
 
-    // Busca configuração do escritório (incluindo chave Asaas)
+    // Busca configuração do escritório (Asaas + Cora)
     const config = await prisma.configuracaoEscritorio.findUnique({
       where:  { contadorId: auth.sub },
-      select: { nomeEscritorio: true, asaasApiKey: true },
+      select: {
+        nomeEscritorio:    true,
+        asaasApiKey:       true,
+        coraClientId:      true,
+        coraCertificatePem: true,
+        coraPrivateKeyPem:  true,
+      },
     });
 
     const vencimentoDate = new Date(vencimento);
@@ -232,13 +246,76 @@ export const POST = withAuth(async (req, _ctx, auth) => {
           asaasBoletoUrl:  boleto.asaasBoletoUrl,
           asaasBarcode:    boleto.asaasBarcode,
           asaasPixCopiaECola: boleto.asaasPixCopiaECola,
-          viaAsaas:        true,
+          provider:        'asaas',
         },
       }, { status: 201 });
     }
 
     // =========================================================================
-    // Caminho B: Sem Asaas → gera PDF local (fallback)
+    // Caminho B: Cora configurado → emite boleto real via Cora
+    // =========================================================================
+    if (config?.coraClientId && config.coraCertificatePem && config.coraPrivateKeyPem) {
+      const cora = new CoraService(
+        config.coraClientId,
+        config.coraCertificatePem,
+        config.coraPrivateKeyPem,
+      );
+
+      const vencStr = vencimentoDate.toISOString().split('T')[0];
+      const comPix  = tipoPagamento === 'PIX' || tipoPagamento === 'INDEFINIDO';
+
+      const invoice = await cora.criarInvoice({
+        clienteNome:       vinculo.cliente.name,
+        clienteCnpjCpf:    vinculo.cliente.cnpj ?? '',
+        clienteEmail:      vinculo.cliente.email ?? '',
+        valor:             valorNum,
+        vencimento:        vencStr,
+        descricao:         descricao ?? `Honorários ${mesReferencia}`,
+        externalReference: boletoIdTemp,
+        comPix,
+      });
+
+      const boleto = await prisma.boletoHonorario.create({
+        data: {
+          id:            boletoIdTemp,
+          clienteId,
+          escritorioId:  auth.sub,
+          valor:         valorNum,
+          vencimento:    vencimentoDate,
+          mesReferencia,
+          descricao:     descricao || null,
+          coraId:        invoice.id,
+          coraBarcode:   invoice.barcode,
+          coraBoletoUrl: invoice.boleto_url,
+          coraPixPayload: invoice.pix?.qr_code ?? null,
+          tipoPagamento:  tipoPagamento ?? 'BOLETO',
+        },
+        include: { cliente: { select: { id: true, name: true } } },
+      });
+
+      await _publicarNotificacao(boleto);
+
+      return NextResponse.json({
+        boleto: {
+          id:            boleto.id,
+          clienteId:     boleto.clienteId,
+          clienteNome:   boleto.cliente.name,
+          valor:         Number(boleto.valor),
+          vencimento:    boleto.vencimento.toISOString(),
+          status:        boleto.status,
+          mesReferencia: boleto.mesReferencia,
+          descricao:     boleto.descricao,
+          coraId:        boleto.coraId,
+          coraBoletoUrl: boleto.coraBoletoUrl,
+          coraBarcode:   boleto.coraBarcode,
+          coraPixPayload: boleto.coraPixPayload,
+          provider:      'cora',
+        },
+      }, { status: 201 });
+    }
+
+    // =========================================================================
+    // Caminho C: Sem integração → gera PDF local (fallback)
     // =========================================================================
     const pdfBuffer = await gerarBoletoPdf({
       nomeEscritorio: config?.nomeEscritorio ?? 'Escritório Contábil',
@@ -284,7 +361,7 @@ export const POST = withAuth(async (req, _ctx, auth) => {
         mesReferencia: boleto.mesReferencia,
         fileName:      boleto.fileName,
         descricao:     boleto.descricao,
-        viaAsaas:      false,
+        provider:      'local',
       },
     }, { status: 201 });
   } catch (err) {
