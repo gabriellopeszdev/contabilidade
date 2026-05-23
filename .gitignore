@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+
+# Next.js build output
+.next/
+out/
+
+# Environment variables — never commit secrets
+.env
+.env.local
+.env.*.local
+
+# TypeScript build info
+tsconfig.tsbuildinfo
+*.tsbuildinfo
+
+# Local data (MinIO, etc.)
+.data/
+
+# IDE / editor
+.claude/
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Prisma generated client (regenerated from schema)
+# node_modules/@prisma — excluded via node_modules above
+
+# PDF and binary assets used only locally
+arquitetura-sistema-contabil-v2.pdf
+asaas-rotas.docx
