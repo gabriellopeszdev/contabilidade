@@ -1,0 +1,457 @@
+'use client';
+
+import { useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import useSWR from 'swr';
+import {
+  Users,
+  Plus,
+  Pencil,
+  Trash2,
+  Search,
+  Loader2,
+  AlertCircle,
+  Building2,
+  Mail,
+  Phone,
+  Eye,
+  Send,
+  Download,
+} from 'lucide-react';
+
+import {
+  ClienteModal,
+  type ClienteFormData,
+} from '../../../src/presentation/components/cliente/ClienteModal';
+import { useAuth } from '../../../src/presentation/hooks/useAuth';
+import { ClientesReadOnly } from '../../../src/presentation/components/cliente/ClientesReadOnly';
+
+// =============================================================================
+// Tipos
+// =============================================================================
+
+interface ClienteDTO {
+  id:          string;
+  nome:        string;
+  email:       string;
+  cnpj:        string;
+  phone:       string | null;
+  avatarUrl:   string | null;
+  isActive:    boolean;
+  assignedAt:  string;
+  createdAt:   string;
+  activatedAt: string | null;
+}
+
+// =============================================================================
+// SWR Fetcher
+// =============================================================================
+
+async function fetcher([url, token]: [string, string]): Promise<{ clientes: ClienteDTO[] }> {
+  const res = await fetch(url, {
+    headers: { Authorization: `Bearer ${token}` },
+    cache: 'no-store',
+  });
+
+  if (res.status === 401) throw new Error('Sessão expirada. Faça login novamente.');
+  if (!res.ok) throw new Error(`Erro ao buscar clientes (HTTP ${res.status})`);
+
+  return res.json() as Promise<{ clientes: ClienteDTO[] }>;
+}
+
+// =============================================================================
+// Helpers
+// =============================================================================
+
+function formatarCNPJ(cnpj: string): string {
+  const d = cnpj.replace(/\D/g, '');
+  if (d.length !== 14) return cnpj;
+  return d.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
+}
+
+function formatarData(iso: string): string {
+  return new Date(iso).toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
+}
+
+function iniciais(nome: string): string {
+  return nome
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((p) => p[0].toUpperCase())
+    .join('');
+}
+
+// =============================================================================
+// Página: /(contador)/clientes
+// =============================================================================
+
+export default function ClientesPage() {
+  const { token, isFuncionarioEscritorio } = useAuth();
+
+  if (isFuncionarioEscritorio) {
+    return <ClientesReadOnly />;
+  }
+
+  return <ClientesPageDono token={token} />;
+}
+
+function ClientesPageDono({ token }: { token: string | null }) {
+  const router = useRouter();
+
+  // SWR
+  const swrKey: [string, string] | null = token ? ['/api/v1/clientes', token] : null;
+  const { data, error, isLoading, mutate } = useSWR(swrKey, fetcher, {
+    revalidateOnFocus: true,
+    keepPreviousData:  true,
+  });
+
+  const clientes = data?.clientes ?? [];
+
+  // Busca local
+  const [busca, setBusca] = useState('');
+  const filtrados = busca.trim()
+    ? clientes.filter(
+        (c) =>
+          c.nome.toLowerCase().includes(busca.toLowerCase()) ||
+          c.cnpj.includes(busca.replace(/\D/g, '')) ||
+          c.email.toLowerCase().includes(busca.toLowerCase()),
+      )
+    : clientes;
+
+  // Modal
+  const [modalAberto, setModalAberto] = useState(false);
+  const [clienteEditando, setClienteEditando] = useState<ClienteFormData | null>(null);
+
+  const abrirCriar = useCallback(() => {
+    setClienteEditando(null);
+    setModalAberto(true);
+  }, []);
+
+  const abrirEditar = useCallback((c: ClienteDTO) => {
+    setClienteEditando({
+      id:    c.id,
+      nome:  c.nome,
+      email: c.email,
+      cnpj:  c.cnpj,
+      phone: c.phone ?? '',
+    });
+    setModalAberto(true);
+  }, []);
+
+  const handleSucesso = useCallback(() => {
+    mutate();
+  }, [mutate]);
+
+  // Exclusão com confirmação
+  const [excluindo, setExcluindo] = useState<string | null>(null);
+  const [reenviando, setReenviando] = useState<string | null>(null);
+
+  // Reenviar convite
+  const handleReenviarConvite = useCallback(
+    async (cliente: ClienteDTO) => {
+      setReenviando(cliente.id);
+      try {
+        const res = await fetch(`/api/v1/clientes/${cliente.id}/reenviar-convite`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) {
+          const body = (await res.json().catch(() => ({}))) as { message?: string };
+          throw new Error(body.message ?? `Erro HTTP ${res.status}`);
+        }
+        alert('Convite reenviado!');
+      } catch (err) {
+        alert(err instanceof Error ? err.message : 'Erro ao reenviar convite.');
+      } finally {
+        setReenviando(null);
+      }
+    },
+    [token],
+  );
+
+  // Exportar CSV
+  const handleExportarCSV = useCallback(async () => {
+    try {
+      const res = await fetch('/api/v1/clientes/export', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error(`Erro HTTP ${res.status}`);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'clientes.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Erro ao exportar CSV.');
+    }
+  }, [token]);
+
+  const handleExcluir = useCallback(
+    async (cliente: ClienteDTO) => {
+      const confirma = window.confirm(
+        `Tem certeza que deseja desativar "${cliente.nome}"?\n\nO cliente perderá acesso ao sistema.`,
+      );
+      if (!confirma) return;
+
+      setExcluindo(cliente.id);
+      try {
+        const res = await fetch(`/api/v1/clientes/${cliente.id}`, {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!res.ok) {
+          const body = (await res.json().catch(() => ({}))) as { message?: string };
+          throw new Error(body.message ?? `Erro HTTP ${res.status}`);
+        }
+
+        mutate();
+      } catch (err) {
+        alert(err instanceof Error ? err.message : 'Erro ao desativar cliente.');
+      } finally {
+        setExcluindo(null);
+      }
+    },
+    [token, mutate],
+  );
+
+  // ---------------------------------------------------------------------------
+  // Render
+  // ---------------------------------------------------------------------------
+  return (
+    <div className="p-4 sm:p-6 lg:p-8">
+
+      {/* Cabeçalho da página */}
+      <div className="flex items-center justify-between gap-4 mb-6">
+        <div>
+          <h1 className="text-xl font-bold text-gray-900">Gestão de Clientes</h1>
+          <p className="text-sm text-gray-500 mt-0.5">
+            {clientes.length} cliente{clientes.length !== 1 ? 's' : ''} na carteira
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleExportarCSV}
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-slate-700
+              bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-all shadow-sm
+              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          >
+            <Download size={16} />
+            <span className="hidden sm:inline">Exportar CSV</span>
+          </button>
+          <button
+            type="button"
+            onClick={abrirCriar}
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-primary
+              rounded-lg hover:brightness-90 transition-all shadow-sm
+              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <Plus size={16} />
+            <span className="hidden sm:inline">Novo Cliente</span>
+          </button>
+        </div>
+      </div>
+
+        {/* Barra de busca */}
+        <div className="mb-5">
+          <div className="relative max-w-md">
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
+              placeholder="Buscar por nome, CNPJ ou e-mail…"
+              className="w-full pl-9 pr-4 py-2.5 text-sm rounded-lg border border-slate-300 bg-white
+                text-slate-900 placeholder:text-slate-400
+                focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
+            />
+          </div>
+        </div>
+
+        {/* Estados */}
+        {error ? (
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-12 flex flex-col items-center gap-3 text-center">
+            <AlertCircle size={28} className="text-red-400" />
+            <p className="text-sm font-semibold text-slate-700">Falha ao carregar clientes</p>
+            <p className="text-xs text-slate-500">{error.message}</p>
+          </div>
+        ) : isLoading ? (
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-12 flex flex-col items-center gap-3">
+            <Loader2 size={28} className="animate-spin text-blue-500" />
+            <p className="text-sm text-slate-500">Carregando clientes…</p>
+          </div>
+        ) : filtrados.length === 0 ? (
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-12 flex flex-col items-center gap-3 text-center">
+            <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-slate-100">
+              <Users size={24} className="text-slate-400" />
+            </div>
+            <p className="text-sm font-semibold text-slate-700">
+              {busca.trim() ? 'Nenhum cliente encontrado' : 'Nenhum cliente cadastrado'}
+            </p>
+            <p className="text-xs text-slate-500 max-w-xs">
+              {busca.trim()
+                ? 'Tente uma busca diferente.'
+                : 'Clique em "+ Novo Cliente" para cadastrar o primeiro.'}
+            </p>
+          </div>
+        ) : (
+          /* Tabela */
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            {/* Header da tabela */}
+            <div className="hidden sm:grid sm:grid-cols-[1fr_180px_200px_120px_130px] gap-4 px-5 py-3
+              border-b border-slate-100 bg-slate-50 text-xs font-semibold text-slate-500 uppercase tracking-wide">
+              <span>Cliente</span>
+              <span>CNPJ</span>
+              <span>E-mail</span>
+              <span>Desde</span>
+              <span className="text-right">Ações</span>
+            </div>
+
+            {/* Linhas */}
+            <ul role="list" className="divide-y divide-slate-100">
+              {filtrados.map((c) => (
+                <li key={c.id} className="group">
+                  <div className="sm:grid sm:grid-cols-[1fr_180px_200px_120px_130px] gap-4 items-center
+                    px-5 py-4 hover:bg-slate-50 transition-colors">
+
+                    {/* Avatar + Nome + Telefone */}
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="shrink-0 w-9 h-9 rounded-full bg-blue-100 text-blue-700
+                        flex items-center justify-center text-xs font-bold">
+                        {iniciais(c.nome)}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <button
+                            type="button"
+                            onClick={() => router.push(`/clientes/${c.id}`)}
+                            className="text-sm font-semibold text-slate-900 truncate hover:text-primary
+                              transition-colors text-left"
+                          >
+                            {c.nome}
+                          </button>
+                          {c.activatedAt === null ? (
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px]
+                              font-semibold bg-amber-100 text-amber-700 border border-amber-200">
+                              Pendente
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px]
+                              font-semibold bg-emerald-100 text-emerald-700 border border-emerald-200">
+                              Ativo
+                            </span>
+                          )}
+                        </div>
+                        {c.phone && (
+                          <p className="text-xs text-slate-400 flex items-center gap-1 mt-0.5">
+                            <Phone size={10} /> {c.phone}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* CNPJ */}
+                    <div className="flex items-center gap-1.5 mt-2 sm:mt-0">
+                      <Building2 size={12} className="text-slate-400 shrink-0 hidden sm:block" />
+                      <span className="text-xs text-slate-700 font-mono">
+                        {formatarCNPJ(c.cnpj)}
+                      </span>
+                    </div>
+
+                    {/* E-mail */}
+                    <div className="flex items-center gap-1.5 mt-1 sm:mt-0 min-w-0">
+                      <Mail size={12} className="text-slate-400 shrink-0 hidden sm:block" />
+                      <span className="text-sm text-slate-600 truncate">{c.email}</span>
+                    </div>
+
+                    {/* Desde */}
+                    <span className="text-xs text-slate-500 mt-1 sm:mt-0">
+                      {formatarData(c.createdAt)}
+                    </span>
+
+                    {/* Ações */}
+                    <div className="flex items-center justify-end gap-1 mt-2 sm:mt-0">
+                      {c.activatedAt === null && (
+                        <button
+                          type="button"
+                          onClick={() => handleReenviarConvite(c)}
+                          disabled={reenviando === c.id}
+                          aria-label={`Reenviar convite para ${c.nome}`}
+                          title="Reenviar convite"
+                          className="p-2 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50
+                            transition-colors disabled:opacity-50
+                            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+                        >
+                          {reenviando === c.id
+                            ? <Loader2 size={15} className="animate-spin" />
+                            : <Send size={15} />
+                          }
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => router.push(`/clientes/${c.id}`)}
+                        aria-label={`Ver prontuário de ${c.nome}`}
+                        className="p-2 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50
+                          transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                      >
+                        <Eye size={15} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => abrirEditar(c)}
+                        aria-label={`Editar ${c.nome}`}
+                        className="p-2 rounded-lg text-slate-400 hover:text-primary hover:bg-primary-50
+                          transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        <Pencil size={15} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleExcluir(c)}
+                        disabled={excluindo === c.id}
+                        aria-label={`Desativar ${c.nome}`}
+                        className="p-2 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50
+                          transition-colors disabled:opacity-50
+                          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                      >
+                        {excluindo === c.id
+                          ? <Loader2 size={15} className="animate-spin" />
+                          : <Trash2 size={15} />
+                        }
+                      </button>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+
+            {/* Rodapé */}
+            <div className="px-5 py-3 border-t border-slate-100 bg-slate-50">
+              <span className="text-xs text-slate-500">
+                {filtrados.length} de {clientes.length} cliente{clientes.length !== 1 ? 's' : ''}
+                {busca.trim() ? ' (filtrado)' : ''}
+              </span>
+            </div>
+          </div>
+        )}
+      {/* Modal de Criar/Editar */}
+      <ClienteModal
+        aberto={modalAberto}
+        onFechar={() => setModalAberto(false)}
+        dadosIniciais={clienteEditando}
+        token={token ?? ''}
+        onSucesso={handleSucesso}
+      />
+    </div>
+  );
+}
