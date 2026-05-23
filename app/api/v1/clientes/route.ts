@@ -60,14 +60,16 @@ const criarClienteSchema = z.object({
 // GET /api/v1/clientes
 //
 // Retorna a lista de clientes atrelados ao Contador logado via tabela de
-// junção ContadorCliente. Usado pelo front-end no Select de upload de
-// documentos direcionados.
+// junção ContadorCliente.
 //
 // Query params:
-//   search → filtro parcial por nome ou CNPJ (opcional)
+//   search  → filtro parcial por nome ou CNPJ (opcional)
+//   page    → inteiro >= 1 (padrão: 1)
+//   perPage → inteiro 1–100 (padrão: 20); use perPage=0 para retornar todos
+//             (útil para selects de upload — sem paginação)
 //
 // Respostas:
-//   200 OK → { clientes: ClienteResumoDTO[] }
+//   200 OK → { clientes, total, page, perPage, totalPages, hasNextPage, hasPreviousPage }
 // =============================================================================
 
 export const GET = withAuth(async (req, _ctx, auth) => {
@@ -76,55 +78,77 @@ export const GET = withAuth(async (req, _ctx, auth) => {
     const { searchParams } = req.nextUrl;
     const search = searchParams.get('search')?.trim() ?? '';
 
-    const relacoes = await prisma.contadorCliente.findMany({
-      where: {
-        contadorId,
-        cliente: {
-          deletedAt: null,
-          isActive:  true,
-          ...(search
-            ? {
-                OR: [
-                  { name: { contains: search, mode: 'insensitive' as const } },
-                  { cnpj: { contains: search } },
-                ],
-              }
-            : {}),
-        },
-      },
-      select: {
-        assignedAt: true,
-        cliente: {
-          select: {
-            id:        true,
-            name:      true,
-            email:     true,
-            cnpj:      true,
-            phone:     true,
-            avatarUrl:   true,
-            isActive:    true,
-            activatedAt: true,
-            createdAt:   true,
+    const pageRaw    = parseInt(searchParams.get('page')    ?? '1',  10);
+    const perPageRaw = parseInt(searchParams.get('perPage') ?? '20', 10);
+    const all        = perPageRaw === 0; // sem paginação
+    const page       = Number.isFinite(pageRaw) && pageRaw >= 1 ? pageRaw : 1;
+    const perPage    = all ? 0 : (Number.isFinite(perPageRaw) && perPageRaw >= 1 && perPageRaw <= 100 ? perPageRaw : 20);
+
+    const whereCliente = {
+      deletedAt: null as null,
+      ...(search
+        ? {
+            OR: [
+              { name: { contains: search, mode: 'insensitive' as const } },
+              { cnpj: { contains: search } },
+            ],
+          }
+        : {}),
+    };
+
+    const [total, relacoes] = await Promise.all([
+      prisma.contadorCliente.count({
+        where: { contadorId, cliente: whereCliente },
+      }),
+      prisma.contadorCliente.findMany({
+        where: { contadorId, cliente: whereCliente },
+        select: {
+          assignedAt: true,
+          cliente: {
+            select: {
+              id:          true,
+              name:        true,
+              email:       true,
+              cnpj:        true,
+              phone:       true,
+              avatarUrl:   true,
+              isActive:    true,
+              activatedAt: true,
+              inviteToken: true,
+              createdAt:   true,
+            },
           },
         },
-      },
-      orderBy: { cliente: { name: 'asc' } },
-    });
+        orderBy: { cliente: { name: 'asc' } },
+        ...(all ? {} : { skip: (page - 1) * perPage, take: perPage }),
+      }),
+    ]);
+
+    const totalPages = all ? 1 : Math.ceil(total / perPage) || 1;
 
     const clientes = relacoes.map((r) => ({
-      id:          r.cliente.id,
-      nome:        r.cliente.name,
-      email:       r.cliente.email,
-      cnpj:        r.cliente.cnpj,
-      phone:       r.cliente.phone,
-      avatarUrl:   r.cliente.avatarUrl,
-      isActive:    r.cliente.isActive,
-      activatedAt: r.cliente.activatedAt?.toISOString() ?? null,
-      assignedAt:  r.assignedAt.toISOString(),
-      createdAt:   r.cliente.createdAt.toISOString(),
+      id:              r.cliente.id,
+      nome:            r.cliente.name,
+      email:           r.cliente.email,
+      cnpj:            r.cliente.cnpj,
+      phone:           r.cliente.phone,
+      avatarUrl:       r.cliente.avatarUrl,
+      isActive:        r.cliente.isActive,
+      activatedAt:     r.cliente.activatedAt?.toISOString() ?? null,
+      convitePendente: !r.cliente.isActive && !!r.cliente.inviteToken,
+      assignedAt:      r.assignedAt.toISOString(),
+      createdAt:       r.cliente.createdAt.toISOString(),
     }));
 
-    return NextResponse.json({ clientes });
+    return NextResponse.json({
+      clientes,
+      total,
+      page:            all ? 1 : page,
+      perPage:         all ? total : perPage,
+      totalPages,
+      hasPreviousPage: !all && page > 1,
+      hasNextPage:     !all && page < totalPages,
+    });
   } catch (err) {
     logger.error('[GET /clientes] Erro', err instanceof Error ? err : undefined);
     return NextResponse.json(
