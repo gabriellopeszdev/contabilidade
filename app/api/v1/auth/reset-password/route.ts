@@ -2,6 +2,7 @@ import { NextRequest, NextResponse }   from 'next/server';
 import { prisma }                       from '../../../../../src/infrastructure/di/Container';
 import { logger }                       from '../../../../../src/utils/logger';
 import { BcryptPasswordHasher }         from '../../../../../src/infrastructure/auth/BcryptPasswordHasher';
+import { checkRateLimit, getClientIp }  from '../../../../../src/utils/rateLimiter';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -11,6 +12,16 @@ const hasher = new BcryptPasswordHasher();
 // POST /api/v1/auth/reset-password
 // Body: { token: string, novaSenha: string }
 export async function POST(req: NextRequest) {
+  // Rate limiting — 5 tentativas por IP a cada 15 minutos
+  const ip = getClientIp(req);
+  const rl = await checkRateLimit(`reset:${ip}`, 5, 15 * 60);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { message: 'Muitas tentativas. Tente novamente em alguns minutos.' },
+      { status: 429, headers: { 'Retry-After': String(rl.resetInSec) } },
+    );
+  }
+
   try {
     let body: unknown;
     try { body = await req.json(); } catch { return NextResponse.json({ message: 'Body inválido.' }, { status: 400 }); }

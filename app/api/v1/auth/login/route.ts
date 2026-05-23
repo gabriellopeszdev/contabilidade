@@ -4,6 +4,7 @@ import { SignJWT } from 'jose';
 import { prisma }               from '../../../../../src/infrastructure/di/Container';
 import { logger }               from '../../../../../src/utils/logger';
 import { BcryptPasswordHasher } from '../../../../../src/infrastructure/auth/BcryptPasswordHasher';
+import { checkRateLimit, getClientIp } from '../../../../../src/utils/rateLimiter';
 
 // =============================================================================
 // Configuração do runtime
@@ -40,6 +41,25 @@ const hasher = new BcryptPasswordHasher();
 // =============================================================================
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  // --------------------------------------------------------------------------
+  // 0. Rate limiting — 5 tentativas por IP a cada 15 minutos
+  // --------------------------------------------------------------------------
+  const ip = getClientIp(request);
+  const rl = await checkRateLimit(`login:${ip}`, 5, 15 * 60);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { message: 'Muitas tentativas de login. Tente novamente em alguns minutos.' },
+      {
+        status: 429,
+        headers: {
+          'Retry-After':          String(rl.resetInSec),
+          'X-RateLimit-Limit':    '5',
+          'X-RateLimit-Remaining': '0',
+        },
+      },
+    );
+  }
+
   // --------------------------------------------------------------------------
   // 1. Parse do body
   // --------------------------------------------------------------------------

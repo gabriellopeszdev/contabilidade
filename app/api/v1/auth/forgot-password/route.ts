@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { randomBytes }               from 'node:crypto';
 import { prisma, emailService }      from '../../../../../src/infrastructure/di/Container';
 import { logger }                    from '../../../../../src/utils/logger';
+import { checkRateLimit, getClientIp } from '../../../../../src/utils/rateLimiter';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -12,6 +13,16 @@ const RESET_EXPIRY_MS = 2 * 60 * 60 * 1000; // 2 horas
 // Body: { email: string }
 // Resposta: sempre 200 { ok: true } (não revela se e-mail existe)
 export async function POST(req: NextRequest) {
+  // Rate limiting — 3 tentativas por IP a cada hora
+  const ip = getClientIp(req);
+  const rl = await checkRateLimit(`forgot:${ip}`, 3, 60 * 60);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { message: 'Muitas solicitações de recuperação. Tente novamente em 1 hora.' },
+      { status: 429, headers: { 'Retry-After': String(rl.resetInSec) } },
+    );
+  }
+
   try {
     let body: unknown;
     try { body = await req.json(); } catch { return NextResponse.json({ message: 'Body inválido.' }, { status: 400 }); }
