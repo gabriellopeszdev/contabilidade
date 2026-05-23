@@ -16,7 +16,8 @@ import {
   emailText,
   emailDivider,
   emailInfoBox,
-  emailNote,
+  emailCallout,
+  emailWarningCallout,
 } from './emailTemplate';
 
 export class ResendEmailAdapter implements IEmailService {
@@ -53,14 +54,14 @@ export class ResendEmailAdapter implements IEmailService {
   async enviarConviteCliente(params: ConviteClienteEmailParams): Promise<void> {
     const corpoHtml = emailWrapper(
       emailHeading(`Olá, ${params.nome}!`) +
-      emailSubheading('Você foi convidado para o Portal do Cliente') +
+      emailSubheading('Convite para o Portal do Cliente') +
       emailText(
         'Seu escritório de contabilidade criou um acesso exclusivo para você. ' +
         'Clique no botão abaixo para criar sua senha e ativar sua conta.',
       ) +
       emailButton('Ativar minha conta', params.link, '#16a34a') +
       emailDivider() +
-      emailNote('O link de ativação expira em <strong>48 horas</strong>. Após esse prazo, solicite um novo convite ao seu contador.'),
+      emailWarningCallout('O link de ativação expira em <strong>48 horas</strong>. Após esse prazo, solicite um novo convite ao seu contador.'),
     );
 
     await this.enviar({
@@ -74,14 +75,14 @@ export class ResendEmailAdapter implements IEmailService {
   async enviarRecuperacaoSenha(params: RecuperacaoSenhaEmailParams): Promise<void> {
     const corpoHtml = emailWrapper(
       emailHeading('Redefinição de senha') +
-      emailSubheading('Recebemos uma solicitação para redefinir sua senha') +
+      emailSubheading('Solicitação de nova senha') +
       emailText(
         'Se foi você quem solicitou, clique no botão abaixo para criar uma nova senha. ' +
         'Caso não tenha feito esta solicitação, ignore este e-mail — sua senha permanece a mesma.',
       ) +
       emailButton('Redefinir minha senha', params.link, '#7c3aed') +
       emailDivider() +
-      emailNote('Por segurança, este link expira em <strong>2 horas</strong>. Após isso, solicite uma nova redefinição na página de login.'),
+      emailWarningCallout('Por segurança, este link expira em <strong>2 horas</strong>. Após esse prazo, solicite uma nova redefinição na página de login.'),
     );
 
     await this.enviar({
@@ -95,14 +96,14 @@ export class ResendEmailAdapter implements IEmailService {
   async enviarBoasVindas(params: BoasVindasEmailParams): Promise<void> {
     const corpoHtml = emailWrapper(
       emailHeading(`Bem-vindo, ${params.nomeCliente}!`) +
-      emailSubheading(`Portal do escritório ${params.nomeEscritorio}`) +
+      emailSubheading(`Acesso liberado — ${params.nomeEscritorio}`) +
       emailText(
         'Seu acesso ao Portal de Documentos Fiscais foi criado com sucesso. ' +
         'Por aqui você pode visualizar e baixar todos os documentos disponibilizados pelo seu contador.',
       ) +
       emailButton('Acessar meu portal', params.urlPortal, '#16a34a') +
       emailDivider() +
-      emailNote('Em caso de dúvidas, entre em contato diretamente com o seu escritório de contabilidade.'),
+      emailCallout('Em caso de dúvidas, entre em contato diretamente com o seu escritório de contabilidade.', '💬'),
     );
 
     await this.enviar({
@@ -116,15 +117,15 @@ export class ResendEmailAdapter implements IEmailService {
   async enviarNovoDocumentoDisponivel(params: NovoDocumentoEmailParams): Promise<void> {
     const corpoHtml = emailWrapper(
       emailHeading(`Olá, ${params.nomeCliente}!`) +
-      emailSubheading('Novo documento disponível no seu portal') +
-      emailText('Seu escritório disponibilizou um novo documento. Acesse o portal para visualizá-lo.') +
+      emailSubheading('Novo documento disponível') +
+      emailText('Seu escritório disponibilizou um novo documento no portal. Confira os detalhes abaixo:') +
       emailInfoBox([
         { label: 'Arquivo', value: params.nomeArquivo },
         { label: 'Setor',   value: params.setor },
       ]) +
       emailButton('Ver documento', params.urlPortal, '#2563eb') +
       emailDivider() +
-      emailNote('Este documento foi disponibilizado pelo seu escritório de contabilidade.'),
+      emailCallout('Este documento foi disponibilizado pelo seu escritório de contabilidade.', '📄'),
     );
 
     await this.enviar({
