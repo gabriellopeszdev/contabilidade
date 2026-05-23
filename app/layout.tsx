@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { Toaster } from 'sonner';
 import { AuthProvider } from '../src/presentation/context/AuthContext';
 import { LGPDConsentGuard } from './components/LGPDConsentGuard';
 
@@ -49,6 +50,7 @@ export default function RootLayout({
         <AuthProvider>
           {children}
           <LGPDConsentGuard />
+          <Toaster richColors position="top-right" />
         </AuthProvider>
       </body>
     </html>

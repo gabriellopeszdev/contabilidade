@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import useSWR from 'swr';
 import {
@@ -164,9 +165,9 @@ function ClientesPageDono({ token }: { token: string | null }) {
           const body = (await res.json().catch(() => ({}))) as { message?: string };
           throw new Error(body.message ?? `Erro HTTP ${res.status}`);
         }
-        alert('Convite reenviado!');
+        toast.success('Convite reenviado com sucesso!', { description: `E-mail enviado para ${cliente.email}` });
       } catch (err) {
-        alert(err instanceof Error ? err.message : 'Erro ao reenviar convite.');
+        toast.error('Erro ao reenviar convite', { description: err instanceof Error ? err.message : 'Tente novamente.' });
       } finally {
         setReenviando(null);
       }
