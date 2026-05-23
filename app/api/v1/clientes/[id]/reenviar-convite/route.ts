@@ -17,12 +17,17 @@ const INVITE_EXPIRY_HOURS = 48;
 // ativados. Retorna 400 se a conta já estiver ativada.
 // =============================================================================
 
-export const POST = withAuth(async (_req: NextRequest, ctx) => {
+export const POST = withAuth(async (_req: NextRequest, ctx, auth) => {
   try {
     const { id } = await Promise.resolve(ctx.params as { id: string });
 
-    const relacao = await prisma.contadorCliente.findFirst({
-      where: { clienteId: id },
+    const relacao = await prisma.contadorCliente.findUnique({
+      where: {
+        contadorId_clienteId: {
+          contadorId: auth.sub,
+          clienteId:  id,
+        },
+      },
       select: {
         cliente: {
           select: {
@@ -36,7 +41,7 @@ export const POST = withAuth(async (_req: NextRequest, ctx) => {
     });
 
     if (!relacao) {
-      return NextResponse.json({ message: 'Cliente não encontrado.' }, { status: 404 });
+      return NextResponse.json({ message: 'Cliente não encontrado ou não pertence à sua carteira.' }, { status: 404 });
     }
 
     if (relacao.cliente.activatedAt !== null) {
