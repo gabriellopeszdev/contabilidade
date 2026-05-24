@@ -45,7 +45,7 @@ const SETORES: {
     exemplos: 'NF-e, DANFE, DARF, DAS, GPS, GNRE',
     Icon:     Receipt,
     styles: {
-      idle:   'border-gray-200 bg-white hover:border-indigo-300 hover:bg-indigo-50/40',
+      idle:   'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:border-indigo-300 hover:bg-indigo-50/40',
       active: 'border-indigo-500 bg-indigo-50 ring-2 ring-indigo-200',
       icon:   'bg-indigo-100 text-indigo-600',
     },
@@ -57,7 +57,7 @@ const SETORES: {
     exemplos: 'Admissão, demissão, férias, holerite, FGTS',
     Icon:     Users,
     styles: {
-      idle:   'border-gray-200 bg-white hover:border-violet-300 hover:bg-violet-50/40',
+      idle:   'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:border-violet-300 hover:bg-violet-50/40',
       active: 'border-violet-500 bg-violet-50 ring-2 ring-violet-200',
       icon:   'bg-violet-100 text-violet-600',
     },
@@ -69,7 +69,7 @@ const SETORES: {
     exemplos: 'Balanço, DRE, extrato bancário, conciliação',
     Icon:     BarChart3,
     styles: {
-      idle:   'border-gray-200 bg-white hover:border-teal-300 hover:bg-teal-50/40',
+      idle:   'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:border-teal-300 hover:bg-teal-50/40',
       active: 'border-teal-500 bg-teal-50 ring-2 ring-teal-200',
       icon:   'bg-teal-100 text-teal-600',
     },
@@ -188,7 +188,7 @@ export default function EnviarPage() {
       ? 'border-red-400 bg-red-50'
       : isDragActive
         ? 'border-sky-400 bg-sky-50 scale-[1.01] shadow-lg'
-        : `border-gray-300 bg-white hover:shadow-md ${
+        : `border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 hover:shadow-md ${
             setorSelecionado === 'FISCAL'   ? 'hover:border-indigo-400 hover:bg-indigo-50/30' :
             setorSelecionado === 'PESSOAL'  ? 'hover:border-violet-400 hover:bg-violet-50/30' :
                                               'hover:border-teal-400 hover:bg-teal-50/30'
@@ -200,15 +200,15 @@ export default function EnviarPage() {
 
       {/* Header */}
       <div>
-        <h2 className="text-xl font-bold text-gray-900">Enviar Arquivo</h2>
-        <p className="text-sm text-gray-500 mt-1">
+        <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">Enviar Arquivo</h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
           Selecione o setor, depois arraste ou escolha os documentos.
         </p>
       </div>
 
       {/* ── Passo 1: Seleção de Setor ──────────────────────────────────────────── */}
       <div className="space-y-2">
-        <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">
+        <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">
           1. Para qual setor é este envio?
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -231,9 +231,9 @@ export default function EnviarPage() {
                 </div>
 
                 {/* Texto */}
-                <p className="text-sm font-bold text-gray-900 leading-tight">{label}</p>
-                <p className="text-xs text-gray-500 mt-0.5 leading-tight">{desc}</p>
-                <p className="text-[10px] text-gray-400 mt-2 leading-relaxed">{exemplos}</p>
+                <p className="text-sm font-bold text-gray-900 dark:text-gray-100 leading-tight">{label}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 leading-tight">{desc}</p>
+                <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-2 leading-relaxed">{exemplos}</p>
 
                 {/* Indicador de seleção */}
                 {ativo && (
@@ -250,7 +250,7 @@ export default function EnviarPage() {
 
       {/* ── Passo 2: Dropzone ─────────────────────────────────────────────────── */}
       <div className="space-y-2">
-        <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">
+        <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">
           2. Arraste os arquivos ou clique para selecionar
         </p>
 
@@ -290,7 +290,7 @@ export default function EnviarPage() {
             </>
           ) : (
             <>
-              <p className="text-lg font-semibold text-gray-800">
+              <p className="text-lg font-semibold text-gray-800 dark:text-gray-200">
                 Arraste seus documentos de{' '}
                 <span className={
                   setorSelecionado === 'FISCAL'  ? 'text-indigo-600' :
@@ -300,13 +300,13 @@ export default function EnviarPage() {
                   {setorAtual.label}
                 </span>{' '}aqui
               </p>
-              <p className="text-sm text-gray-500 mt-1.5">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1.5">
                 ou{' '}
                 <span className="text-sky-600 underline underline-offset-2 font-medium">
                   clique para procurar no computador
                 </span>
               </p>
-              <p className="text-xs text-gray-400 mt-3">
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-3">
                 PDF ou XML · Máximo 10 MB por arquivo · Múltiplos arquivos aceitos
               </p>
             </>
@@ -330,10 +330,10 @@ export default function EnviarPage() {
       )}
 
       {/* ── Histórico de envios ───────────────────────────────────────────────── */}
-      <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-        <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-2">
-          <Clock size={15} className="text-gray-400" />
-          <h3 className="text-sm font-semibold text-gray-900">Enviados por mim</h3>
+      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800 flex items-center gap-2">
+          <Clock size={15} className="text-gray-400 dark:text-gray-500" />
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Enviados por mim</h3>
         </div>
 
         {loadingHistorico ? (
@@ -342,30 +342,30 @@ export default function EnviarPage() {
           </div>
         ) : enviosRecentes.length === 0 ? (
           <div className="py-10 text-center">
-            <CloudUpload size={28} className="mx-auto text-gray-300 mb-2" />
-            <p className="text-sm text-gray-500">Nenhum documento enviado ainda.</p>
-            <p className="text-xs text-gray-400 mt-0.5">
+            <CloudUpload size={28} className="mx-auto text-gray-300 dark:text-gray-600 mb-2" />
+            <p className="text-sm text-gray-500 dark:text-gray-400">Nenhum documento enviado ainda.</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
               Use a área acima para enviar seu primeiro documento.
             </p>
           </div>
         ) : (
-          <ul className="divide-y divide-gray-50">
+          <ul className="divide-y divide-gray-50 dark:divide-gray-800">
             {enviosRecentes.map((envio) => {
               const isPDF = envio.fileName.toLowerCase().endsWith('.pdf');
               return (
                 <li
                   key={envio.id}
-                  className="px-4 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors"
+                  className="px-4 py-3 flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
+                  <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center shrink-0">
                     {isPDF
                       ? <FileText  size={14} className="text-red-400" />
                       : <FileCode2 size={14} className="text-sky-400" />
                     }
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">{envio.fileName}</p>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{envio.fileName}</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">
                       {new Date(envio.date).toLocaleDateString('pt-BR', {
                         day: '2-digit', month: '2-digit', year: 'numeric',
                         hour: '2-digit', minute: '2-digit',
@@ -397,17 +397,17 @@ export default function EnviarPage() {
       {toast && (
         <div className="fixed bottom-6 right-6 z-50 max-w-sm animate-in slide-in-from-bottom-4 duration-300">
           <div className={`flex items-start gap-3 rounded-xl shadow-lg border p-4 pr-3
-            ${toast.tipo === 'sucesso' ? 'bg-white border-emerald-200' : 'bg-white border-red-200'}`}
+            ${toast.tipo === 'sucesso' ? 'bg-white dark:bg-gray-900 border-emerald-200 dark:border-emerald-800' : 'bg-white dark:bg-gray-900 border-red-200 dark:border-red-800'}`}
           >
             {toast.tipo === 'sucesso'
               ? <CheckCircle2 size={18} className="text-emerald-500 shrink-0 mt-0.5" />
               : <AlertCircle  size={18} className="text-red-500 shrink-0 mt-0.5" />
             }
-            <p className="text-sm text-gray-700 flex-1">{toast.msg}</p>
+            <p className="text-sm text-gray-700 dark:text-gray-300 flex-1">{toast.msg}</p>
             <button
               type="button"
               onClick={() => setToast(null)}
-              className="p-1 rounded-lg text-gray-400 hover:text-gray-600"
+              className="p-1 rounded-lg text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
             >
               <X size={14} />
             </button>

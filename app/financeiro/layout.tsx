@@ -143,7 +143,7 @@ export default function FinanceiroLayout({ children }: { children: React.ReactNo
 
   if (carregando) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-50">
+      <div className="flex items-center justify-center h-screen bg-gray-50 dark:bg-gray-950">
         <Loader2 size={32} className="animate-spin text-blue-600" />
       </div>
     );
@@ -166,7 +166,7 @@ export default function FinanceiroLayout({ children }: { children: React.ReactNo
   const statusWs = STATUS_CONFIG[status];
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-950 overflow-hidden">
       {/* Overlay mobile */}
       {sidebarAberta && (
         <div
@@ -177,13 +177,13 @@ export default function FinanceiroLayout({ children }: { children: React.ReactNo
 
       <aside
         className={`
-          fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200
+          fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700
           flex flex-col transition-transform duration-200 ease-in-out
           ${sidebarAberta ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}
       >
         {/* Logo */}
-        <div className="h-16 flex items-center gap-3 px-5 border-b border-gray-100 shrink-0">
+        <div className="h-16 flex items-center gap-3 px-5 border-b border-gray-100 dark:border-gray-800 shrink-0">
           {logoUrl ? (
             <img src={logoUrl} alt="Logo" className="w-8 h-8 rounded-lg object-contain" />
           ) : (
@@ -194,15 +194,15 @@ export default function FinanceiroLayout({ children }: { children: React.ReactNo
             </div>
           )}
           <div>
-            <p className="text-sm font-bold text-gray-900 leading-tight">
+            <p className="text-sm font-bold text-gray-900 dark:text-gray-100 leading-tight">
               {nomeEscritorio || (isVisaoCliente ? 'Portal do Cliente' : 'Gestão Contábil')}
             </p>
-            <p className="text-[10px] text-gray-400 leading-none">
+            <p className="text-[10px] text-gray-400 dark:text-gray-500 leading-none">
               {isVisaoCliente ? 'Gestão Contábil' : 'Painel Administrativo'}
             </p>
           </div>
           <button
-            className="ml-auto lg:hidden p-1 rounded-md text-gray-400 hover:text-gray-600"
+            className="ml-auto lg:hidden p-1 rounded-md text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
             onClick={() => setSidebarAberta(false)}
           >
             <X size={18} />
@@ -221,12 +221,12 @@ export default function FinanceiroLayout({ children }: { children: React.ReactNo
                 className={`
                   flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
                   ${ativo
-                    ? `bg-${accentColor}-50 text-${accentColor}-700`
-                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                    ? `bg-${accentColor}-50 dark:bg-${accentColor}-900/20 text-${accentColor}-700 dark:text-${accentColor}-400`
+                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
                   }
                 `}
               >
-                <span className={ativo ? `text-${accentColor}-600` : 'text-gray-400'}>{item.icon}</span>
+                <span className={ativo ? `text-${accentColor}-600 dark:text-${accentColor}-400` : 'text-gray-400 dark:text-gray-500'}>{item.icon}</span>
                 {item.label}
               </Link>
             );
@@ -234,18 +234,18 @@ export default function FinanceiroLayout({ children }: { children: React.ReactNo
         </nav>
 
         {/* Status WS + Perfil */}
-        <div className="border-t border-gray-100 px-3 py-3 space-y-3 shrink-0">
+        <div className="border-t border-gray-100 dark:border-gray-800 px-3 py-3 space-y-3 shrink-0">
           <div className="flex items-center gap-2 px-3 py-1.5">
             <span className={`w-2 h-2 rounded-full ${statusWs.cor}`} />
-            <span className="text-[11px] text-gray-500">{statusWs.label}</span>
+            <span className="text-[11px] text-gray-500 dark:text-gray-400">{statusWs.label}</span>
           </div>
-          <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-gray-50">
-            <div className={`w-8 h-8 rounded-full bg-${accentColor}-100 text-${accentColor}-700 flex items-center justify-center text-xs font-bold shrink-0`}>
+          <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-gray-50 dark:bg-gray-800">
+            <div className={`w-8 h-8 rounded-full bg-${accentColor}-100 dark:bg-${accentColor}-900/30 text-${accentColor}-700 dark:text-${accentColor}-400 flex items-center justify-center text-xs font-bold shrink-0`}>
               {iniciais}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-semibold text-gray-900 truncate">{usuario.nome}</p>
-              <p className="text-[10px] text-gray-400 truncate">{usuario.email}</p>
+              <p className="text-xs font-semibold text-gray-900 dark:text-gray-100 truncate">{usuario.nome}</p>
+              <p className="text-[10px] text-gray-400 dark:text-gray-500 truncate">{usuario.email}</p>
             </div>
           </div>
         </div>
@@ -254,9 +254,9 @@ export default function FinanceiroLayout({ children }: { children: React.ReactNo
       {/* Conteúdo */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Topbar */}
-        <header className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-4 sm:px-6 shrink-0 z-20">
+        <header className="h-14 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-4 sm:px-6 shrink-0 z-20">
           <button
-            className="lg:hidden p-2 -ml-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+            className="lg:hidden p-2 -ml-2 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
             onClick={() => setSidebarAberta(true)}
             aria-label="Abrir menu"
           >
@@ -264,7 +264,7 @@ export default function FinanceiroLayout({ children }: { children: React.ReactNo
           </button>
 
           <div className="hidden lg:block">
-            <h1 className="text-sm font-semibold text-gray-700">Financeiro</h1>
+            <h1 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Financeiro</h1>
           </div>
 
           <div className="flex items-center gap-2 ml-auto">
@@ -272,7 +272,7 @@ export default function FinanceiroLayout({ children }: { children: React.ReactNo
             <div ref={notifRef} className="relative">
               <button
                 onClick={() => setNotifAberto((v) => !v)}
-                className="relative p-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                className="relative p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                 aria-label={`Notificações${naoLidas > 0 ? ` — ${naoLidas} não lidas` : ''}`}
               >
                 <Bell size={18} />
@@ -284,9 +284,9 @@ export default function FinanceiroLayout({ children }: { children: React.ReactNo
               </button>
 
               {notifAberto && (
-                <div className="absolute right-0 top-full mt-1 w-80 bg-white rounded-xl shadow-xl border border-gray-200 z-50 overflow-hidden">
-                  <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-100">
-                    <span className="text-xs font-bold text-gray-900">Notificações</span>
+                <div className="absolute right-0 top-full mt-1 w-80 bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 z-50 overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-100 dark:border-gray-800">
+                    <span className="text-xs font-bold text-gray-900 dark:text-gray-100">Notificações</span>
                     <div className="flex gap-3">
                       {naoLidas > 0 && (
                         <button onClick={marcarTodasLidas} className="text-[10px] text-blue-600 hover:underline">
@@ -294,23 +294,23 @@ export default function FinanceiroLayout({ children }: { children: React.ReactNo
                         </button>
                       )}
                       {notificacoes.length > 0 && (
-                        <button onClick={limpar} className="text-[10px] text-gray-400 hover:text-red-500">
+                        <button onClick={limpar} className="text-[10px] text-gray-400 dark:text-gray-500 hover:text-red-500">
                           Limpar
                         </button>
                       )}
                     </div>
                   </div>
-                  <ul className="max-h-72 overflow-y-auto divide-y divide-gray-50">
+                  <ul className="max-h-72 overflow-y-auto divide-y divide-gray-50 dark:divide-gray-800">
                     {notificacoes.length === 0 ? (
-                      <li className="py-8 text-center text-xs text-gray-400">Nenhuma notificação</li>
+                      <li className="py-8 text-center text-xs text-gray-400 dark:text-gray-500">Nenhuma notificação</li>
                     ) : (
                       notificacoes.map((n) => (
                         <li
                           key={n.id}
                           onClick={() => marcarComoLida(n.id)}
-                          className={`px-4 py-2.5 cursor-pointer hover:bg-gray-50 transition-colors ${!n.lida ? 'bg-blue-50/40' : ''}`}
+                          className={`px-4 py-2.5 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${!n.lida ? 'bg-blue-50/40 dark:bg-blue-900/10' : ''}`}
                         >
-                          <p className="text-[11px] font-semibold text-gray-800">
+                          <p className="text-[11px] font-semibold text-gray-800 dark:text-gray-200">
                             {n.tipo === 'novoDocumentoUpload'
                               ? 'Upload concluído'
                               : n.tipo === 'documentoVisualizado'
@@ -319,7 +319,7 @@ export default function FinanceiroLayout({ children }: { children: React.ReactNo
                               ? 'Novo boleto'
                               : 'Nova mensagem'}
                           </p>
-                          <p className="text-[10px] text-gray-500 mt-0.5">{n.mensagem}</p>
+                          <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">{n.mensagem}</p>
                         </li>
                       ))
                     )}
@@ -332,26 +332,26 @@ export default function FinanceiroLayout({ children }: { children: React.ReactNo
             <div ref={userMenuRef} className="relative">
               <button
                 onClick={() => setUserMenuAberto((v) => !v)}
-                className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+                className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               >
-                <div className={`w-7 h-7 rounded-full bg-${accentColor}-100 text-${accentColor}-700 flex items-center justify-center text-[10px] font-bold`}>
+                <div className={`w-7 h-7 rounded-full bg-${accentColor}-100 dark:bg-${accentColor}-900/30 text-${accentColor}-700 dark:text-${accentColor}-400 flex items-center justify-center text-[10px] font-bold`}>
                   {iniciais}
                 </div>
-                <span className="hidden sm:block text-xs font-medium text-gray-700 max-w-[120px] truncate">
+                <span className="hidden sm:block text-xs font-medium text-gray-700 dark:text-gray-300 max-w-[120px] truncate">
                   {usuario.nome}
                 </span>
-                <ChevronDown size={14} className="text-gray-400" />
+                <ChevronDown size={14} className="text-gray-400 dark:text-gray-500" />
               </button>
 
               {userMenuAberto && (
-                <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-xl shadow-xl border border-gray-200 z-50 py-1">
-                  <div className="px-3 py-2 border-b border-gray-100">
-                    <p className="text-xs font-semibold text-gray-900 truncate">{usuario.nome}</p>
-                    <p className="text-[10px] text-gray-400 truncate">{usuario.email}</p>
+                <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 z-50 py-1">
+                  <div className="px-3 py-2 border-b border-gray-100 dark:border-gray-800">
+                    <p className="text-xs font-semibold text-gray-900 dark:text-gray-100 truncate">{usuario.nome}</p>
+                    <p className="text-[10px] text-gray-400 dark:text-gray-500 truncate">{usuario.email}</p>
                   </div>
                   <button
                     onClick={handleLogout}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-600 hover:bg-red-50 transition-colors"
+                    className="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                   >
                     <LogOut size={14} />
                     Sair do sistema

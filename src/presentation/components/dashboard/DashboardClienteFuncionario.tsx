@@ -119,8 +119,8 @@ export default function DashboardClienteFuncionario() {
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-5 max-w-6xl mx-auto">
       <div>
-        <h2 className="text-xl font-bold text-gray-900">Meus Documentos</h2>
-        <p className="text-sm text-gray-500 mt-1">
+        <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">Meus Documentos</h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
           Documentos disponíveis para {setoresLabel}.
         </p>
       </div>
@@ -161,8 +161,8 @@ export default function DashboardClienteFuncionario() {
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
             placeholder="Buscar por nome do arquivo…"
-            className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-slate-300 bg-white
-              text-slate-900 placeholder:text-slate-400
+            className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-slate-300 dark:border-gray-600 bg-white dark:bg-gray-900
+              text-slate-900 dark:text-gray-100 placeholder:text-slate-400 dark:placeholder:text-gray-500
               focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
           />
         </div>
@@ -173,8 +173,8 @@ export default function DashboardClienteFuncionario() {
           <select
             value={setor ?? ''}
             onChange={(e) => setSetor((e.target.value || undefined) as SetorFiltro | undefined)}
-            className="px-3 py-2 text-xs font-medium rounded-lg border border-slate-300 bg-white
-              text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-3 py-2 text-xs font-medium rounded-lg border border-slate-300 dark:border-gray-600 bg-white dark:bg-gray-900
+              text-slate-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">Todos os Setores</option>
             <option value="FISCAL">Fiscal</option>
@@ -185,8 +185,8 @@ export default function DashboardClienteFuncionario() {
           <select
             value={filtroLeitura}
             onChange={(e) => setFiltroLeitura(e.target.value as 'lido' | 'nao_lido' | '')}
-            className="px-3 py-2 text-xs font-medium rounded-lg border border-slate-300 bg-white
-              text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-3 py-2 text-xs font-medium rounded-lg border border-slate-300 dark:border-gray-600 bg-white dark:bg-gray-900
+              text-slate-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">Todos</option>
             <option value="nao_lido">Não lidos</option>
@@ -196,8 +196,8 @@ export default function DashboardClienteFuncionario() {
           <select
             value={filtroOrigem}
             onChange={(e) => setFiltroOrigem(e.target.value as Origem | '')}
-            className="px-3 py-2 text-xs font-medium rounded-lg border border-slate-300 bg-white
-              text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-3 py-2 text-xs font-medium rounded-lg border border-slate-300 dark:border-gray-600 bg-white dark:bg-gray-900
+              text-slate-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">Todas as Origens</option>
             <option value="UPLOAD_CLIENTE">Enviado pela empresa</option>
@@ -208,9 +208,9 @@ export default function DashboardClienteFuncionario() {
 
       {/* Tabela */}
       {carregando && documentos.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-12 flex flex-col items-center gap-3">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-700 shadow-sm p-12 flex flex-col items-center gap-3">
           <Loader2 size={24} className="animate-spin text-blue-500" />
-          <p className="text-sm text-slate-500">Carregando documentos…</p>
+          <p className="text-sm text-slate-500 dark:text-gray-400">Carregando documentos…</p>
         </div>
       ) : erro ? (
         <div className="bg-red-50 border border-red-200 rounded-xl p-5 flex items-center gap-3">
@@ -221,19 +221,19 @@ export default function DashboardClienteFuncionario() {
           </div>
         </div>
       ) : docsFiltrados.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-12 flex flex-col items-center gap-3 text-center">
-          <FileText size={28} className="text-slate-300" />
-          <p className="text-sm font-semibold text-slate-600">Nenhum documento encontrado</p>
-          <p className="text-xs text-slate-400 max-w-xs">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-700 shadow-sm p-12 flex flex-col items-center gap-3 text-center">
+          <FileText size={28} className="text-slate-300 dark:text-gray-600" />
+          <p className="text-sm font-semibold text-slate-600 dark:text-gray-400">Nenhum documento encontrado</p>
+          <p className="text-xs text-slate-400 dark:text-gray-500 max-w-xs">
             {busca.trim() || setor || filtroLeitura || filtroOrigem
               ? 'Tente ajustar os filtros.'
               : 'Nenhum documento disponível para seus setores.'}
           </p>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-700 shadow-sm overflow-hidden">
           <div className="hidden lg:grid lg:grid-cols-[1fr_100px_90px_100px_140px_150px_60px] gap-3 px-5 py-3
-            border-b border-slate-100 bg-slate-50 text-xs font-semibold text-slate-500 uppercase tracking-wide">
+            border-b border-slate-100 dark:border-gray-800 bg-slate-50 dark:bg-gray-800 text-xs font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wide">
             <span>Documento</span>
             <span>Setor</span>
             <span>Tipo</span>
@@ -243,7 +243,7 @@ export default function DashboardClienteFuncionario() {
             <span className="text-center">Ações</span>
           </div>
 
-          <ul role="list" className="divide-y divide-slate-100">
+          <ul role="list" className="divide-y divide-slate-100 dark:divide-gray-800">
             {docsFiltrados.map((doc) => {
               const origemCfg  = ORIGEM_CONFIG[doc.origem as Origem] ?? ORIGEM_CONFIG.UPLOAD_CONTADOR;
               const setorCfg   = SETOR_CONFIG[doc.sector as SetorTipo];
@@ -253,7 +253,7 @@ export default function DashboardClienteFuncionario() {
               return (
                 <li key={doc.id} className="group">
                   <div className="lg:grid lg:grid-cols-[1fr_100px_90px_100px_140px_150px_60px] gap-3 items-center
-                    px-5 py-4 hover:bg-slate-50 transition-colors">
+                    px-5 py-4 hover:bg-slate-50 dark:hover:bg-gray-800 transition-colors">
 
                     <div className="flex items-center gap-3 min-w-0">
                       <div className={`shrink-0 w-9 h-9 rounded-xl flex items-center justify-center ${origemCfg.classes}`}>
@@ -261,7 +261,7 @@ export default function DashboardClienteFuncionario() {
                       </div>
                       <div className="min-w-0">
                         <div className="flex items-center gap-1.5">
-                          <p className="text-sm font-semibold text-slate-900 truncate" title={doc.fileName}>
+                          <p className="text-sm font-semibold text-slate-900 dark:text-gray-100 truncate" title={doc.fileName}>
                             {doc.fileName}
                           </p>
                           {!doc.readStatus && (
@@ -271,10 +271,10 @@ export default function DashboardClienteFuncionario() {
                             </span>
                           )}
                         </div>
-                        <div className="flex items-center gap-1.5 mt-0.5 text-xs text-slate-400">
+                        <div className="flex items-center gap-1.5 mt-0.5 text-xs text-slate-400 dark:text-gray-500">
                           <Clock size={10} />
                           <span>{formatarDataHora(doc.createdAt)}</span>
-                          <span className="text-slate-300">·</span>
+                          <span className="text-slate-300 dark:text-gray-600">·</span>
                           <span>por {doc.uploaderNome}</span>
                         </div>
                       </div>
@@ -300,12 +300,12 @@ export default function DashboardClienteFuncionario() {
                       </span>
                     </div>
 
-                    <span className="text-xs text-slate-500 mt-1 lg:mt-0">
+                    <span className="text-xs text-slate-500 dark:text-gray-400 mt-1 lg:mt-0">
                       {formatarTamanho(doc.fileSizeBytes)}
                     </span>
 
                     <div className="mt-1 lg:mt-0">
-                      <span className="text-xs text-slate-500">
+                      <span className="text-xs text-slate-500 dark:text-gray-400">
                         {doc.origem === 'UPLOAD_CLIENTE' ? 'Empresa' : 'Escritório'}
                       </span>
                     </div>
@@ -315,9 +315,9 @@ export default function DashboardClienteFuncionario() {
                         <div className="flex items-center gap-1.5">
                           <CheckCircle2 size={13} className="text-emerald-500 shrink-0" />
                           <div>
-                            <p className="text-xs font-medium text-emerald-700">Lido</p>
+                            <p className="text-xs font-medium text-emerald-700 dark:text-emerald-400">Lido</p>
                             {doc.readAt && (
-                              <p className="text-[10px] text-slate-400">
+                              <p className="text-[10px] text-slate-400 dark:text-gray-500">
                                 {formatarDataHora(doc.readAt)}
                               </p>
                             )}
@@ -336,7 +336,7 @@ export default function DashboardClienteFuncionario() {
                         onClick={() => handleBaixar(doc.id)}
                         disabled={isBaixando}
                         title="Baixar arquivo"
-                        className="p-2 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50
+                        className="p-2 rounded-lg text-slate-400 dark:text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-sky-900/20
                           disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       >
                         {isBaixando ? (
@@ -352,8 +352,8 @@ export default function DashboardClienteFuncionario() {
             })}
           </ul>
 
-          <div className="px-5 py-3 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
-            <span className="text-xs text-slate-500">
+          <div className="px-5 py-3 border-t border-slate-100 dark:border-gray-800 bg-slate-50 dark:bg-gray-800 flex items-center justify-between">
+            <span className="text-xs text-slate-500 dark:text-gray-400">
               {docsFiltrados.length} documento{docsFiltrados.length !== 1 ? 's' : ''}
               {busca.trim() || filtroLeitura || filtroOrigem ? ' (filtrado)' : ''}
               {' · Página '}{page} de {totalPages || 1}
@@ -362,16 +362,16 @@ export default function DashboardClienteFuncionario() {
               <button
                 onClick={() => setPage(page - 1)}
                 disabled={!hasPreviousPage}
-                className="px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-300
-                  bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                className="px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-300 dark:border-gray-600
+                  bg-white dark:bg-gray-900 text-slate-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Anterior
               </button>
               <button
                 onClick={() => setPage(page + 1)}
                 disabled={!hasNextPage}
-                className="px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-300
-                  bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                className="px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-300 dark:border-gray-600
+                  bg-white dark:bg-gray-900 text-slate-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Próxima
               </button>
@@ -398,16 +398,16 @@ export default function DashboardClienteFuncionario() {
           <div
             className={`flex items-start gap-3 rounded-xl shadow-lg border p-4 pr-3 ${
               toast.tipo === 'sucesso'
-                ? 'bg-white border-emerald-200'
-                : 'bg-white border-red-200'
+                ? 'bg-white dark:bg-gray-900 border-emerald-200 dark:border-emerald-800'
+                : 'bg-white dark:bg-gray-900 border-red-200 dark:border-red-800'
             }`}
           >
             {toast.tipo === 'sucesso'
               ? <CheckCircle2 size={18} className="text-emerald-500 shrink-0 mt-0.5" />
               : <AlertCircle  size={18} className="text-red-500 shrink-0 mt-0.5" />
             }
-            <p className="text-sm text-gray-700 flex-1">{toast.msg}</p>
-            <button type="button" onClick={fecharToast} className="p-1 rounded-lg text-gray-400 hover:text-gray-600">
+            <p className="text-sm text-gray-700 dark:text-gray-300 flex-1">{toast.msg}</p>
+            <button type="button" onClick={fecharToast} className="p-1 rounded-lg text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
               <X size={14} />
             </button>
           </div>

@@ -241,11 +241,11 @@ export default function EquipePage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+          <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
             <UserCog size={22} />
             Gestão de Equipe
           </h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
             Cadastre funcionários e defina seus setores de acesso.
           </p>
         </div>
@@ -259,18 +259,18 @@ export default function EquipePage() {
       </div>
 
       {/* Tabela */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
         {carregando ? (
           <div className="flex justify-center py-16">
             <Loader2 size={24} className="animate-spin text-primary" />
           </div>
         ) : funcionarios.length === 0 ? (
-          <div className="py-16 text-center text-gray-400 text-sm">
+          <div className="py-16 text-center text-gray-400 dark:text-gray-500 text-sm">
             Nenhum funcionário cadastrado. Clique em &quot;Novo Funcionário&quot; para começar.
           </div>
         ) : (
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wide">
+            <thead className="bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wide">
               <tr>
                 <th className="px-4 py-3 text-left">Nome</th>
                 <th className="px-4 py-3 text-left">E-mail</th>
@@ -279,11 +279,11 @@ export default function EquipePage() {
                 <th className="px-4 py-3 text-center">Ações</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
               {funcionarios.map((f) => (
-                <tr key={f.id} className={`hover:bg-gray-50 ${!f.isActive ? 'opacity-50' : ''}`}>
-                  <td className="px-4 py-3 font-medium text-gray-900">{f.name}</td>
-                  <td className="px-4 py-3 text-gray-600">{f.email}</td>
+                <tr key={f.id} className={`hover:bg-gray-50 dark:hover:bg-gray-800 ${!f.isActive ? 'opacity-50' : ''}`}>
+                  <td className="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">{f.name}</td>
+                  <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{f.email}</td>
                   <td className="px-4 py-3">
                     <div className="flex gap-1.5 flex-wrap">
                       {f.setores.map((s) => (
@@ -310,14 +310,14 @@ export default function EquipePage() {
                     <div className="flex items-center justify-center gap-2">
                       <button
                         onClick={() => abrirEdicao(f)}
-                        className="rounded-lg p-1.5 text-gray-400 hover:text-primary hover:bg-gray-100 transition-colors"
+                        className="rounded-lg p-1.5 text-gray-400 dark:text-gray-500 hover:text-primary hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                         title="Editar"
                       >
                         <Pencil size={15} />
                       </button>
                       <button
                         onClick={() => handleExcluir(f.id)}
-                        className="rounded-lg p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                        className="rounded-lg p-1.5 text-gray-400 dark:text-gray-500 hover:text-red-600 hover:bg-red-50 transition-colors"
                         title="Excluir"
                       >
                         <Trash2 size={15} />
@@ -334,12 +334,12 @@ export default function EquipePage() {
       {/* Modal */}
       {modalAberto && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setModalAberto(false)}>
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-6 space-y-5" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl w-full max-w-md mx-4 p-6 space-y-5" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-900">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                 {editando ? 'Editar Funcionário' : 'Novo Funcionário'}
               </h2>
-              <button onClick={() => setModalAberto(false)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => setModalAberto(false)} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
                 <X size={20} />
               </button>
             </div>
@@ -347,12 +347,12 @@ export default function EquipePage() {
             <div className="space-y-4">
               {/* Nome */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nome *</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nome *</label>
                 <input
                   type="text"
                   value={nome}
                   onChange={(e) => setNome(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary focus:border-transparent"
                   placeholder="Nome completo"
                 />
               </div>
@@ -360,12 +360,12 @@ export default function EquipePage() {
               {/* E-mail (só na criação) */}
               {!editando && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">E-mail *</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">E-mail *</label>
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary focus:border-transparent"
                     placeholder="colaborador@escritorio.com"
                   />
                 </div>
@@ -374,12 +374,12 @@ export default function EquipePage() {
               {/* Senha (só na criação) */}
               {!editando && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Senha *</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Senha *</label>
                   <input
                     type="password"
                     value={senha}
                     onChange={(e) => setSenha(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary focus:border-transparent"
                     placeholder="Mínimo 8 caracteres"
                   />
                 </div>
@@ -387,19 +387,19 @@ export default function EquipePage() {
 
               {/* Telefone */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Telefone</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Telefone</label>
                 <input
                   type="text"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary focus:border-transparent"
                   placeholder="(11) 99999-0000"
                 />
               </div>
 
               {/* Setores */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Setores de Acesso *</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Setores de Acesso *</label>
                 <div className="flex gap-2 flex-wrap">
                   {SETORES_OPCOES.map((op) => {
                     const selecionado = setores.includes(op.value);
@@ -411,7 +411,7 @@ export default function EquipePage() {
                         className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium border transition-colors ${
                           selecionado
                             ? `${SETOR_CORES[op.value]} border-transparent`
-                            : 'bg-white text-gray-500 border-gray-300 hover:bg-gray-50'
+                            : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
                         }`}
                       >
                         {op.icon}
@@ -428,7 +428,7 @@ export default function EquipePage() {
               <button
                 type="button"
                 onClick={() => setModalAberto(false)}
-                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                className="rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
               >
                 Cancelar
               </button>

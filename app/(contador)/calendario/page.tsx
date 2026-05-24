@@ -276,10 +276,10 @@ export default function CalendarioPage() {
       {/* Cabeçalho da página */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Calendário de Obrigações</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Calendário de Obrigações</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
             {setoresLabel
-              ? <>Seus setores: <span className="font-medium text-gray-700">{setoresLabel}</span></>
+              ? <>Seus setores: <span className="font-medium text-gray-700 dark:text-gray-300">{setoresLabel}</span></>
               : 'Vencimentos fiscais e tarefas do escritório'
             }
           </p>
@@ -301,23 +301,23 @@ export default function CalendarioPage() {
         {/* ------------------------------------------------------------------ */}
         {/* Calendário mensal                                                    */}
         {/* ------------------------------------------------------------------ */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-5">
           {/* Navegação do mês */}
           <div className="flex items-center justify-between mb-5">
             <button
               onClick={mesAnterior}
-              className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
-              <ChevronLeft size={18} className="text-gray-600" />
+              <ChevronLeft size={18} className="text-gray-600 dark:text-gray-400" />
             </button>
-            <h2 className="text-lg font-bold text-gray-900">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">
               {MESES[mesAtual.mes]} {mesAtual.ano}
             </h2>
             <button
               onClick={mesSeguinte}
-              className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
-              <ChevronRight size={18} className="text-gray-600" />
+              <ChevronRight size={18} className="text-gray-600 dark:text-gray-400" />
             </button>
           </div>
 
@@ -332,7 +332,7 @@ export default function CalendarioPage() {
                 {DIAS_SEMANA.map((d) => (
                   <div
                     key={d}
-                    className="text-center text-[11px] font-semibold text-gray-400 py-2"
+                    className="text-center text-[11px] font-semibold text-gray-400 dark:text-gray-500 py-2"
                   >
                     {d}
                   </div>
@@ -355,9 +355,9 @@ export default function CalendarioPage() {
                       className={[
                         'relative h-20 rounded-lg p-1.5 text-left transition-all border',
                         !cell.mesAtual
-                          ? 'text-gray-300 bg-gray-50/50 border-transparent cursor-default'
+                          ? 'text-gray-300 dark:text-gray-600 bg-gray-50/50 dark:bg-gray-800/50 border-transparent cursor-default'
                           : !selecionado
-                          ? 'text-gray-700 hover:bg-gray-50 border-transparent'
+                          ? 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 border-transparent'
                           : 'bg-primary-50 border-primary ring-1 ring-primary',
                       ].join(' ')}
                     >
@@ -382,13 +382,13 @@ export default function CalendarioPage() {
                                 className="w-1.5 h-1.5 rounded-full shrink-0"
                                 style={{ backgroundColor: ev.cor }}
                               />
-                              <span className="text-[9px] text-gray-600 truncate leading-tight">
+                              <span className="text-[9px] text-gray-600 dark:text-gray-400 truncate leading-tight">
                                 {ev.titulo}
                               </span>
                             </div>
                           ))}
                           {evs.length > 2 && (
-                            <span className="text-[9px] text-gray-400 pl-2">
+                            <span className="text-[9px] text-gray-400 dark:text-gray-500 pl-2">
                               +{evs.length - 2}
                             </span>
                           )}
@@ -408,15 +408,15 @@ export default function CalendarioPage() {
         <div className="space-y-4">
 
           {/* Detalhes do dia selecionado */}
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
-            <h3 className="text-sm font-bold text-gray-900 mb-3">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-5">
+            <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 mb-3">
               {diaSelecionado
                 ? `${diaSelecionado} de ${MESES[mesAtual.mes]}${ehHoje(diaSelecionado) ? ' — Hoje' : ''}`
                 : 'Selecione um dia'}
             </h3>
 
             {diaSelecionado && eventosDoDia.length === 0 && (
-              <p className="text-xs text-gray-400 py-6 text-center">
+              <p className="text-xs text-gray-400 dark:text-gray-500 py-6 text-center">
                 Nenhum evento neste dia
               </p>
             )}
@@ -425,14 +425,14 @@ export default function CalendarioPage() {
               {eventosDoDia.map((ev) => (
                 <div
                   key={ev.id}
-                  className="flex items-start gap-3 rounded-lg border border-gray-100 p-3"
+                  className="flex items-start gap-3 rounded-lg border border-gray-100 dark:border-gray-700 p-3"
                 >
                   <div
                     className="w-2.5 h-2.5 rounded-full mt-1 shrink-0"
                     style={{ backgroundColor: ev.cor }}
                   />
                   <div className="min-w-0 flex-1">
-                    <p className="text-xs font-semibold text-gray-800 truncate">{ev.titulo}</p>
+                    <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 truncate">{ev.titulo}</p>
 
                     {ev.tipo === 'obrigacao' && (
                       <span className="text-[10px] text-amber-600 font-medium">Obrigação Fiscal</span>
@@ -456,16 +456,16 @@ export default function CalendarioPage() {
                             : ev.status}
                         </span>
                         {ev.clienteNome && (
-                          <span className="text-[10px] text-gray-400">• {ev.clienteNome}</span>
+                          <span className="text-[10px] text-gray-400 dark:text-gray-500">• {ev.clienteNome}</span>
                         )}
                         {ev.prioridade && (
-                          <span className="text-[10px] text-gray-400">• {ev.prioridade}</span>
+                          <span className="text-[10px] text-gray-400 dark:text-gray-500">• {ev.prioridade}</span>
                         )}
                       </div>
                     )}
 
                     {ev.descricao && (
-                      <p className="text-[10px] text-gray-400 mt-0.5 line-clamp-2">{ev.descricao}</p>
+                      <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5 line-clamp-2">{ev.descricao}</p>
                     )}
                   </div>
                 </div>
@@ -474,19 +474,19 @@ export default function CalendarioPage() {
           </div>
 
           {/* Lista de obrigações */}
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-5">
             <div className="flex items-center gap-2 mb-3">
               <Flag size={14} className="text-amber-500" />
-              <h3 className="text-sm font-bold text-gray-900">Obrigações Cadastradas</h3>
+              <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">Obrigações Cadastradas</h3>
               {obrigacoes.length > 0 && (
-                <span className="ml-auto text-[10px] bg-gray-100 text-gray-500 rounded-full px-1.5 py-0.5 font-medium">
+                <span className="ml-auto text-[10px] bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 rounded-full px-1.5 py-0.5 font-medium">
                   {obrigacoes.length}
                 </span>
               )}
             </div>
 
             {obrigacoes.length === 0 ? (
-              <p className="text-xs text-gray-400 text-center py-4">
+              <p className="text-xs text-gray-400 dark:text-gray-500 text-center py-4">
                 {isDono
                   ? 'Nenhuma obrigação. Crie a primeira acima.'
                   : 'Nenhuma obrigação cadastrada.'}
@@ -496,15 +496,15 @@ export default function CalendarioPage() {
                 {obrigacoes.map((ob) => (
                   <div
                     key={ob.id}
-                    className="flex items-center gap-3 rounded-lg bg-gray-50 px-3 py-2"
+                    className="flex items-center gap-3 rounded-lg bg-gray-50 dark:bg-gray-800 px-3 py-2"
                   >
                     <div
                       className="w-2.5 h-2.5 rounded-full shrink-0"
                       style={{ backgroundColor: ob.cor }}
                     />
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs font-semibold text-gray-800 truncate">{ob.nome}</p>
-                      <p className="text-[10px] text-gray-400">Todo dia {ob.diaVencimento}</p>
+                      <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 truncate">{ob.nome}</p>
+                      <p className="text-[10px] text-gray-400 dark:text-gray-500">Todo dia {ob.diaVencimento}</p>
                     </div>
 
                     {/* Controles de delete — apenas para dono */}
@@ -518,10 +518,10 @@ export default function CalendarioPage() {
                           >
                             {deletando ? '...' : 'Sim'}
                           </button>
-                          <span className="text-gray-300 text-xs">|</span>
+                          <span className="text-gray-300 dark:text-gray-600 text-xs">|</span>
                           <button
                             onClick={() => setConfirmandoDeleteId(null)}
-                            className="text-[10px] text-gray-400 hover:text-gray-600"
+                            className="text-[10px] text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
                           >
                             Não
                           </button>
@@ -543,20 +543,20 @@ export default function CalendarioPage() {
           </div>
 
           {/* Legenda */}
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
-            <h3 className="text-xs font-bold text-gray-700 mb-2">Legenda</h3>
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-5">
+            <h3 className="text-xs font-bold text-gray-700 dark:text-gray-300 mb-2">Legenda</h3>
             <div className="space-y-1.5">
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-[#3b82f6]" />
-                <span className="text-[11px] text-gray-600">Obrigação Fiscal</span>
+                <span className="text-[11px] text-gray-600 dark:text-gray-400">Obrigação Fiscal</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-[#6366f1]" />
-                <span className="text-[11px] text-gray-600">Tarefa Kanban</span>
+                <span className="text-[11px] text-gray-600 dark:text-gray-400">Tarefa Kanban</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-[#ef4444]" />
-                <span className="text-[11px] text-gray-600">Urgente (vence em 3 dias, pendente)</span>
+                <span className="text-[11px] text-gray-600 dark:text-gray-400">Urgente (vence em 3 dias, pendente)</span>
               </div>
             </div>
           </div>
@@ -568,43 +568,43 @@ export default function CalendarioPage() {
       {/* -------------------------------------------------------------------- */}
       {modalAberto && isDono && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-2xl shadow-xl border border-gray-200 w-full max-w-md mx-4">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-              <h3 className="text-base font-bold text-gray-900">Nova Obrigação Fiscal</h3>
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 w-full max-w-md mx-4">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-700">
+              <h3 className="text-base font-bold text-gray-900 dark:text-gray-100">Nova Obrigação Fiscal</h3>
               <button
                 onClick={() => setModalAberto(false)}
-                className="p-1 rounded-lg hover:bg-gray-100"
+                className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
               >
-                <X size={18} className="text-gray-400" />
+                <X size={18} className="text-gray-400 dark:text-gray-500" />
               </button>
             </div>
 
             <form onSubmit={handleCriarObrigacao} className="p-6 space-y-4">
               <div className="space-y-1.5">
-                <label className="block text-sm font-medium text-gray-700">Nome *</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Nome *</label>
                 <input
                   type="text"
                   value={novaObrigacao.nome}
                   onChange={(e) => setNovaObrigacao((o) => ({ ...o, nome: e.target.value }))}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className="w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-800"
                   placeholder="Ex: FGTS, DAS, ICMS"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-sm font-medium text-gray-700">Descrição</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Descrição</label>
                 <input
                   type="text"
                   value={novaObrigacao.descricao}
                   onChange={(e) => setNovaObrigacao((o) => ({ ...o, descricao: e.target.value }))}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className="w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-800"
                   placeholder="Descrição opcional"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="block text-sm font-medium text-gray-700">Dia de Vencimento</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Dia de Vencimento</label>
                   <input
                     type="number"
                     min={1}
@@ -613,20 +613,20 @@ export default function CalendarioPage() {
                     onChange={(e) =>
                       setNovaObrigacao((o) => ({ ...o, diaVencimento: parseInt(e.target.value) || 1 }))
                     }
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-800"
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-sm font-medium text-gray-700">Cor</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Cor</label>
                   <div className="flex items-center gap-2">
                     <input
                       type="color"
                       value={novaObrigacao.cor}
                       onChange={(e) => setNovaObrigacao((o) => ({ ...o, cor: e.target.value }))}
-                      className="w-10 h-10 rounded-lg border border-gray-300 cursor-pointer"
+                      className="w-10 h-10 rounded-lg border border-gray-300 dark:border-gray-600 cursor-pointer"
                     />
-                    <span className="text-xs text-gray-500 font-mono">{novaObrigacao.cor}</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400 font-mono">{novaObrigacao.cor}</span>
                   </div>
                 </div>
               </div>
@@ -635,7 +635,7 @@ export default function CalendarioPage() {
                 <button
                   type="button"
                   onClick={() => setModalAberto(false)}
-                  className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors"
+                  className="rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                 >
                   Cancelar
                 </button>

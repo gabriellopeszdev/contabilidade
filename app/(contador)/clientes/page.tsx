@@ -232,8 +232,8 @@ function ClientesPageDono({ token }: { token: string | null }) {
       {/* Cabeçalho da página */}
       <div className="flex items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">Gestão de Clientes</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">Gestão de Clientes</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
             {clientes.length} cliente{clientes.length !== 1 ? 's' : ''} na carteira
           </p>
         </div>
@@ -242,8 +242,8 @@ function ClientesPageDono({ token }: { token: string | null }) {
           <button
             type="button"
             onClick={handleExportarCSV}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-slate-700
-              bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-all shadow-sm
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300
+              bg-white dark:bg-gray-800 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-gray-700 transition-all shadow-sm
               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
           >
             <Download size={16} />
@@ -271,8 +271,8 @@ function ClientesPageDono({ token }: { token: string | null }) {
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
               placeholder="Buscar por nome, CNPJ ou e-mail…"
-              className="w-full pl-9 pr-4 py-2.5 text-sm rounded-lg border border-slate-300 bg-white
-                text-slate-900 placeholder:text-slate-400
+              className="w-full pl-9 pr-4 py-2.5 text-sm rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-gray-800
+                text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500
                 focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
             />
           </div>
@@ -280,25 +280,25 @@ function ClientesPageDono({ token }: { token: string | null }) {
 
         {/* Estados */}
         {error ? (
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-12 flex flex-col items-center gap-3 text-center">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-700 shadow-sm p-12 flex flex-col items-center gap-3 text-center">
             <AlertCircle size={28} className="text-red-400" />
-            <p className="text-sm font-semibold text-slate-700">Falha ao carregar clientes</p>
-            <p className="text-xs text-slate-500">{error.message}</p>
+            <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">Falha ao carregar clientes</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">{error.message}</p>
           </div>
         ) : isLoading ? (
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-12 flex flex-col items-center gap-3">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-700 shadow-sm p-12 flex flex-col items-center gap-3">
             <Loader2 size={28} className="animate-spin text-blue-500" />
-            <p className="text-sm text-slate-500">Carregando clientes…</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Carregando clientes…</p>
           </div>
         ) : filtrados.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-12 flex flex-col items-center gap-3 text-center">
-            <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-slate-100">
-              <Users size={24} className="text-slate-400" />
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-700 shadow-sm p-12 flex flex-col items-center gap-3 text-center">
+            <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-slate-100 dark:bg-gray-800">
+              <Users size={24} className="text-slate-400 dark:text-slate-500" />
             </div>
-            <p className="text-sm font-semibold text-slate-700">
+            <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
               {busca.trim() ? 'Nenhum cliente encontrado' : 'Nenhum cliente cadastrado'}
             </p>
-            <p className="text-xs text-slate-500 max-w-xs">
+            <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xs">
               {busca.trim()
                 ? 'Tente uma busca diferente.'
                 : 'Clique em "+ Novo Cliente" para cadastrar o primeiro.'}
@@ -306,10 +306,10 @@ function ClientesPageDono({ token }: { token: string | null }) {
           </div>
         ) : (
           /* Tabela */
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-700 shadow-sm overflow-hidden">
             {/* Header da tabela */}
             <div className="hidden sm:grid sm:grid-cols-[1fr_180px_200px_120px_130px] gap-4 px-5 py-3
-              border-b border-slate-100 bg-slate-50 text-xs font-semibold text-slate-500 uppercase tracking-wide">
+              border-b border-slate-100 dark:border-gray-700 bg-slate-50 dark:bg-gray-800 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
               <span>Cliente</span>
               <span>CNPJ</span>
               <span>E-mail</span>
@@ -318,11 +318,11 @@ function ClientesPageDono({ token }: { token: string | null }) {
             </div>
 
             {/* Linhas */}
-            <ul role="list" className="divide-y divide-slate-100">
+            <ul role="list" className="divide-y divide-slate-100 dark:divide-gray-700">
               {filtrados.map((c) => (
                 <li key={c.id} className="group">
                   <div className="sm:grid sm:grid-cols-[1fr_180px_200px_120px_130px] gap-4 items-center
-                    px-5 py-4 hover:bg-slate-50 transition-colors">
+                    px-5 py-4 hover:bg-slate-50 dark:hover:bg-gray-800 transition-colors">
 
                     {/* Avatar + Nome + Telefone */}
                     <div className="flex items-center gap-3 min-w-0">
@@ -335,7 +335,7 @@ function ClientesPageDono({ token }: { token: string | null }) {
                           <button
                             type="button"
                             onClick={() => router.push(`/clientes/${c.id}`)}
-                            className="text-sm font-semibold text-slate-900 truncate hover:text-primary
+                            className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate hover:text-primary
                               transition-colors text-left"
                           >
                             {c.nome}
@@ -353,7 +353,7 @@ function ClientesPageDono({ token }: { token: string | null }) {
                           )}
                         </div>
                         {c.phone && (
-                          <p className="text-xs text-slate-400 flex items-center gap-1 mt-0.5">
+                          <p className="text-xs text-slate-400 dark:text-slate-500 flex items-center gap-1 mt-0.5">
                             <Phone size={10} /> {c.phone}
                           </p>
                         )}
@@ -363,7 +363,7 @@ function ClientesPageDono({ token }: { token: string | null }) {
                     {/* CNPJ */}
                     <div className="flex items-center gap-1.5 mt-2 sm:mt-0">
                       <Building2 size={12} className="text-slate-400 shrink-0 hidden sm:block" />
-                      <span className="text-xs text-slate-700 font-mono">
+                      <span className="text-xs text-slate-700 dark:text-slate-300 font-mono">
                         {formatarCNPJ(c.cnpj)}
                       </span>
                     </div>
@@ -371,11 +371,11 @@ function ClientesPageDono({ token }: { token: string | null }) {
                     {/* E-mail */}
                     <div className="flex items-center gap-1.5 mt-1 sm:mt-0 min-w-0">
                       <Mail size={12} className="text-slate-400 shrink-0 hidden sm:block" />
-                      <span className="text-sm text-slate-600 truncate">{c.email}</span>
+                      <span className="text-sm text-slate-600 dark:text-slate-400 truncate">{c.email}</span>
                     </div>
 
                     {/* Desde */}
-                    <span className="text-xs text-slate-500 mt-1 sm:mt-0">
+                    <span className="text-xs text-slate-500 dark:text-slate-400 mt-1 sm:mt-0">
                       {formatarData(c.createdAt)}
                     </span>
 
@@ -437,8 +437,8 @@ function ClientesPageDono({ token }: { token: string | null }) {
             </ul>
 
             {/* Rodapé */}
-            <div className="px-5 py-3 border-t border-slate-100 bg-slate-50">
-              <span className="text-xs text-slate-500">
+            <div className="px-5 py-3 border-t border-slate-100 dark:border-gray-700 bg-slate-50 dark:bg-gray-800">
+              <span className="text-xs text-slate-500 dark:text-slate-400">
                 {filtrados.length} de {clientes.length} cliente{clientes.length !== 1 ? 's' : ''}
                 {busca.trim() ? ' (filtrado)' : ''}
               </span>

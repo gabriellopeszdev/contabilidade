@@ -42,15 +42,15 @@ function Toast({ notificacao, onFechar }: ToastProps) {
     <div
       role="alert"
       aria-live="assertive"
-      className="flex items-start gap-3 bg-white rounded-xl shadow-lg border border-gray-200
+      className="flex items-start gap-3 bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700
                  p-4 pr-3 w-80 animate-in slide-in-from-right-full duration-300"
     >
       {icone}
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-gray-800 leading-tight">
+        <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 leading-tight">
           {notificacao.tipo === 'novoDocumentoUpload' ? 'Upload concluído' : 'Documento visualizado'}
         </p>
-        <p className="text-xs text-gray-500 mt-0.5 leading-snug">
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 leading-snug">
           {notificacao.mensagem}
         </p>
       </div>
@@ -58,7 +58,7 @@ function Toast({ notificacao, onFechar }: ToastProps) {
         type="button"
         onClick={onFechar}
         aria-label="Fechar notificação"
-        className="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100
+        className="p-1 rounded-lg text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800
                    transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400"
       >
         <X size={14} />
@@ -109,24 +109,24 @@ export default function LotePage() {
 
       {/* Cabeçalho */}
       <div className="mb-6">
-        <h1 className="text-xl font-bold text-gray-900">Upload de Documentos</h1>
-        <p className="text-sm text-gray-500 mt-0.5">Envio em lote de documentos fiscais</p>
+        <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">Upload de Documentos</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Envio em lote de documentos fiscais</p>
       </div>
 
         {/* Card principal de upload */}
         <section
           aria-labelledby="titulo-upload"
-          className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 sm:p-8"
+          className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 sm:p-8"
         >
           <div className="flex items-center gap-3 mb-6">
             <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-blue-50">
               <Upload size={20} className="text-blue-600" />
             </div>
             <div>
-              <h2 id="titulo-upload" className="text-lg font-bold text-gray-900">
+              <h2 id="titulo-upload" className="text-lg font-bold text-gray-900 dark:text-gray-100">
                 Envio em Lote
               </h2>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
                 Selecione o cliente, o setor, o período de competência e os arquivos
               </p>
             </div>

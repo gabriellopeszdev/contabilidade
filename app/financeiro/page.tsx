@@ -415,25 +415,25 @@ export default function FinanceiroPage() {
 
         {/* Summary cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
                 <Clock size={18} className="text-amber-600" />
               </div>
               <div>
-                <p className="text-xs text-gray-500">Em Aberto</p>
-                <p className="text-lg font-bold text-gray-900">{formatMoney(resumo.totalAberto)}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Em Aberto</p>
+                <p className="text-lg font-bold text-gray-900 dark:text-gray-100">{formatMoney(resumo.totalAberto)}</p>
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center">
                 <CheckCircle2 size={18} className="text-emerald-600" />
               </div>
               <div>
-                <p className="text-xs text-gray-500">Total Pago</p>
-                <p className="text-lg font-bold text-gray-900">{formatMoney(resumo.recebido)}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Total Pago</p>
+                <p className="text-lg font-bold text-gray-900 dark:text-gray-100">{formatMoney(resumo.recebido)}</p>
               </div>
             </div>
           </div>
@@ -442,34 +442,34 @@ export default function FinanceiroPage() {
         {/* Título */}
         <div className="flex items-center gap-2">
           <DollarSign size={20} className="text-sky-600" />
-          <h2 className="text-lg font-bold text-gray-900">Meus Boletos</h2>
+          <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">Meus Boletos</h2>
         </div>
 
         {/* Tabela */}
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
           {loading ? (
             <div className="flex items-center justify-center py-16">
               <Loader2 className="animate-spin text-gray-400" size={24} />
             </div>
           ) : boletosFiltrados.length === 0 ? (
             <div className="py-16 text-center">
-              <FileText size={32} className="mx-auto text-gray-300 mb-2" />
-              <p className="text-sm text-gray-500">Nenhum boleto encontrado.</p>
+              <FileText size={32} className="mx-auto text-gray-300 dark:text-gray-600 mb-2" />
+              <p className="text-sm text-gray-500 dark:text-gray-400">Nenhum boleto encontrado.</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-gray-100 bg-gray-50/60">
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500">Mês Ref.</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500">Descrição</th>
-                    <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500">Valor</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500">Vencimento</th>
-                    <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500">Status</th>
-                    <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500">Ação</th>
+                  <tr className="border-b border-gray-100 dark:border-gray-800 bg-gray-50/60 dark:bg-gray-800/50">
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400">Mês Ref.</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400">Descrição</th>
+                    <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400">Valor</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400">Vencimento</th>
+                    <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400">Status</th>
+                    <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400">Ação</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-50">
+                <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
                   {boletosFiltrados.map((b) => {
                     const badge = STATUS_BADGE[b.status];
                     const urgente = b.status === 'PENDENTE' && (isVencido(b.vencimento) || isVenceHoje(b.vencimento));
@@ -478,14 +478,14 @@ export default function FinanceiroPage() {
                       <tr
                         key={b.id}
                         className={`
-                          hover:bg-gray-50/50 transition-colors
-                          ${urgente ? 'bg-red-50/40' : breve ? 'bg-amber-50/30' : ''}
+                          hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors
+                          ${urgente ? 'bg-red-50/40 dark:bg-red-900/10' : breve ? 'bg-amber-50/30 dark:bg-amber-900/10' : ''}
                         `}
                       >
-                        <td className="px-4 py-3 font-medium text-gray-900">{mesLabel(b.mesReferencia)}</td>
-                        <td className="px-4 py-3 text-gray-600 max-w-[200px] truncate">{b.descricao || '—'}</td>
-                        <td className="px-4 py-3 text-right font-semibold text-gray-900">{formatMoney(b.valor)}</td>
-                        <td className="px-4 py-3 text-gray-600">{formatDate(b.vencimento)}</td>
+                        <td className="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">{mesLabel(b.mesReferencia)}</td>
+                        <td className="px-4 py-3 text-gray-600 dark:text-gray-400 max-w-[200px] truncate">{b.descricao || '—'}</td>
+                        <td className="px-4 py-3 text-right font-semibold text-gray-900 dark:text-gray-100">{formatMoney(b.valor)}</td>
+                        <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{formatDate(b.vencimento)}</td>
                         <td className="px-4 py-3 text-center">
                           <span className={`inline-block px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${badge.classes}`}>
                             {badge.label}
@@ -533,22 +533,22 @@ export default function FinanceiroPage() {
 
           {/* Paginação */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
-              <p className="text-xs text-gray-500">
+            <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 dark:border-gray-800">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
                 {total} boleto{total !== 1 ? 's' : ''} • Página {page} de {totalPages}
               </p>
               <div className="flex gap-1">
                 <button
                   disabled={page <= 1}
                   onClick={() => fetchBoletos(page - 1)}
-                  className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100 disabled:opacity-40"
+                  className="p-1.5 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40"
                 >
                   <ChevronLeft size={16} />
                 </button>
                 <button
                   disabled={page >= totalPages}
                   onClick={() => fetchBoletos(page + 1)}
-                  className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100 disabled:opacity-40"
+                  className="p-1.5 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40"
                 >
                   <ChevronRight size={16} />
                 </button>
@@ -577,28 +577,28 @@ export default function FinanceiroPage() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <DollarSign size={20} className="text-blue-600" />
-          <h2 className="text-lg font-bold text-gray-900">Honorários</h2>
+          <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">Honorários</h2>
         </div>
 
         <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
           {/* Busca */}
           <div className="relative flex-1 sm:flex-initial">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
             <input
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
               placeholder="Buscar cliente…"
-              className="w-full sm:w-48 pl-9 pr-3 py-2 text-xs rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full sm:w-48 pl-9 pr-3 py-2 text-xs rounded-lg border border-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
 
           {/* Filtro status */}
           <div className="relative">
-            <Filter size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <Filter size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
             <select
               value={filtroStatus}
               onChange={(e) => { setFiltroStatus(e.target.value); setPage(1); }}
-              className="pl-9 pr-8 py-2 text-xs rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
+              className="pl-9 pr-8 py-2 text-xs rounded-lg border border-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
             >
               <option value="">Todos os status</option>
               <option value="PENDENTE">Pendente</option>
@@ -613,7 +613,7 @@ export default function FinanceiroPage() {
             <select
               value={filtroCliente}
               onChange={(e) => { setFiltroCliente(e.target.value); setPage(1); }}
-              className="px-3 py-2 text-xs rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white max-w-[180px]"
+              className="px-3 py-2 text-xs rounded-lg border border-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white max-w-[180px]"
             >
               <option value="">Todos os clientes</option>
               {clientes.map((c) => (
@@ -625,7 +625,7 @@ export default function FinanceiroPage() {
           {/* Botão Exportar CSV */}
           <button
             onClick={handleExportarCSV}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-gray-200 text-gray-700 text-xs font-semibold hover:bg-gray-100 transition-colors"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-xs font-semibold hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
           >
             <Download size={14} />
             Exportar CSV
@@ -645,41 +645,41 @@ export default function FinanceiroPage() {
       </div>
 
       {/* Tabela */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center py-16">
             <Loader2 className="animate-spin text-gray-400" size={24} />
           </div>
         ) : boletosFiltrados.length === 0 ? (
           <div className="py-16 text-center">
-            <FileText size={32} className="mx-auto text-gray-300 mb-2" />
-            <p className="text-sm text-gray-500">Nenhum boleto encontrado.</p>
+            <FileText size={32} className="mx-auto text-gray-300 dark:text-gray-600 mb-2" />
+            <p className="text-sm text-gray-500 dark:text-gray-400">Nenhum boleto encontrado.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-100 bg-gray-50/60">
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500">Cliente</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500">Mês Ref.</th>
-                  <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500">Valor</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500">Vencimento</th>
-                  <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500">Status</th>
-                  <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500">Ações</th>
+                <tr className="border-b border-gray-100 dark:border-gray-800 bg-gray-50/60 dark:bg-gray-800/50">
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400">Cliente</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400">Mês Ref.</th>
+                  <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400">Valor</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400">Vencimento</th>
+                  <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400">Status</th>
+                  <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400">Ações</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50">
+              <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
                 {boletosFiltrados.map((b) => {
                   const badge = STATUS_BADGE[b.status];
                   return (
-                    <tr key={b.id} className="hover:bg-gray-50/50 transition-colors">
+                    <tr key={b.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors">
                       <td className="px-4 py-3">
-                        <p className="font-medium text-gray-900 truncate max-w-[180px]">{b.clienteNome}</p>
-                        <p className="text-[11px] text-gray-400">{b.clienteCnpj}</p>
+                        <p className="font-medium text-gray-900 dark:text-gray-100 truncate max-w-[180px]">{b.clienteNome}</p>
+                        <p className="text-[11px] text-gray-400 dark:text-gray-500">{b.clienteCnpj}</p>
                       </td>
-                      <td className="px-4 py-3 text-gray-700">{mesLabel(b.mesReferencia)}</td>
-                      <td className="px-4 py-3 text-right font-semibold text-gray-900">{formatMoney(b.valor)}</td>
-                      <td className="px-4 py-3 text-gray-600">{formatDate(b.vencimento)}</td>
+                      <td className="px-4 py-3 text-gray-700 dark:text-gray-300">{mesLabel(b.mesReferencia)}</td>
+                      <td className="px-4 py-3 text-right font-semibold text-gray-900 dark:text-gray-100">{formatMoney(b.valor)}</td>
+                      <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{formatDate(b.vencimento)}</td>
                       <td className="px-4 py-3 text-center">
                         <span className={`inline-block px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${badge.classes}`}>
                           {badge.label}
@@ -690,7 +690,7 @@ export default function FinanceiroPage() {
                           {/* Ver/baixar boleto */}
                           <button
                             onClick={() => handleDownload(b)}
-                            className="p-1.5 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                            className="p-1.5 rounded-lg text-gray-400 dark:text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
                             title={b.asaasBoletoUrl ? 'Ver boleto no Asaas' : 'Baixar PDF'}
                           >
                             {b.asaasBoletoUrl ? <ExternalLink size={15} /> : <Download size={15} />}
@@ -700,7 +700,7 @@ export default function FinanceiroPage() {
                           {b.asaasBarcode && (
                             <button
                               onClick={() => copiarTexto(b.asaasBarcode!)}
-                              className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                              className="p-1.5 rounded-lg text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                               title="Copiar linha digitável"
                             >
                               <Copy size={15} />
@@ -711,7 +711,7 @@ export default function FinanceiroPage() {
                           {b.asaasPixCopiaECola && (
                             <button
                               onClick={() => copiarTexto(b.asaasPixCopiaECola!)}
-                              className="p-1.5 rounded-lg text-gray-400 hover:text-violet-600 hover:bg-violet-50 transition-colors"
+                              className="p-1.5 rounded-lg text-gray-400 dark:text-gray-500 hover:text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-colors"
                               title="Copiar PIX copia e cola"
                             >
                               <QrCode size={15} />
@@ -722,14 +722,14 @@ export default function FinanceiroPage() {
                             <>
                               <button
                                 onClick={() => handleStatusUpdate(b.id, 'PAGO')}
-                                className="p-1.5 rounded-lg text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+                                className="p-1.5 rounded-lg text-gray-400 dark:text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
                                 title="Marcar como Pago"
                               >
                                 <CheckCircle2 size={15} />
                               </button>
                               <button
                                 onClick={() => handleStatusUpdate(b.id, 'CANCELADO')}
-                                className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                                className="p-1.5 rounded-lg text-gray-400 dark:text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                                 title="Cancelar"
                               >
                                 <XCircle size={15} />
@@ -739,7 +739,7 @@ export default function FinanceiroPage() {
                           {isDono && b.status === 'VENCIDO' && (
                             <button
                               onClick={() => handleStatusUpdate(b.id, 'PAGO')}
-                              className="p-1.5 rounded-lg text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+                              className="p-1.5 rounded-lg text-gray-400 dark:text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
                               title="Marcar como Pago"
                             >
                               <CheckCircle2 size={15} />
@@ -757,22 +757,22 @@ export default function FinanceiroPage() {
 
         {/* Paginação */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
-            <p className="text-xs text-gray-500">
+          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 dark:border-gray-800">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               {total} registro{total !== 1 ? 's' : ''} • Página {page} de {totalPages}
             </p>
             <div className="flex gap-1">
               <button
                 disabled={page <= 1}
                 onClick={() => fetchBoletos(page - 1)}
-                className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100 disabled:opacity-40"
+                className="p-1.5 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40"
               >
                 <ChevronLeft size={16} />
               </button>
               <button
                 disabled={page >= totalPages}
                 onClick={() => fetchBoletos(page + 1)}
-                className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100 disabled:opacity-40"
+                className="p-1.5 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40"
               >
                 <ChevronRight size={16} />
               </button>
@@ -785,14 +785,14 @@ export default function FinanceiroPage() {
       {modalAberto && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50" onClick={fecharModal}>
           <div
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden"
+            className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-              <h3 className="text-sm font-bold text-gray-900">Gerar Novo Honorário</h3>
-              <button onClick={fecharModal} className="p-1 rounded-lg hover:bg-gray-100">
-                <X size={18} className="text-gray-400" />
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800">
+              <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">Gerar Novo Honorário</h3>
+              <button onClick={fecharModal} className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+                <X size={18} className="text-gray-400 dark:text-gray-500" />
               </button>
             </div>
 
@@ -807,11 +807,11 @@ export default function FinanceiroPage() {
 
               {/* Cliente */}
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">Cliente *</label>
+                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Cliente *</label>
                 <select
                   value={formCliente}
                   onChange={(e) => { setFormCliente(e.target.value); setErros((p) => ({ ...p, clienteId: '' })); }}
-                  className={`w-full px-3 py-2 text-sm rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-transparent ${erros.clienteId ? 'border-red-500 bg-red-50/30' : 'border-gray-200'}`}
+                  className={`w-full px-3 py-2 text-sm rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-gray-100 ${erros.clienteId ? 'border-red-500 bg-red-50/30' : 'border-gray-200 dark:border-gray-600'}`}
                 >
                   <option value="">Selecione um cliente</option>
                   {clientes.map((c) => (
@@ -824,7 +824,7 @@ export default function FinanceiroPage() {
               <div className="grid grid-cols-2 gap-4">
                 {/* Valor */}
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">Valor (R$) *</label>
+                  <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Valor (R$) *</label>
                   <input
                     type="number"
                     step="0.01"
@@ -832,19 +832,19 @@ export default function FinanceiroPage() {
                     value={formValor}
                     onChange={(e) => { setFormValor(e.target.value); setErros((p) => ({ ...p, valor: '' })); }}
                     placeholder="1500.00"
-                    className={`w-full px-3 py-2 text-sm rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-transparent ${erros.valor ? 'border-red-500 bg-red-50/30' : 'border-gray-200'}`}
+                    className={`w-full px-3 py-2 text-sm rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500 ${erros.valor ? 'border-red-500 bg-red-50/30' : 'border-gray-200 dark:border-gray-600'}`}
                   />
                   {erros.valor && <p className="mt-1 text-xs text-red-600">{erros.valor}</p>}
                 </div>
 
                 {/* Vencimento */}
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">Vencimento *</label>
+                  <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Vencimento *</label>
                   <input
                     type="date"
                     value={formVencimento}
                     onChange={(e) => { setFormVencimento(e.target.value); setErros((p) => ({ ...p, vencimento: '' })); }}
-                    className={`w-full px-3 py-2 text-sm rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-transparent ${erros.vencimento ? 'border-red-500 bg-red-50/30' : 'border-gray-200'}`}
+                    className={`w-full px-3 py-2 text-sm rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-gray-100 ${erros.vencimento ? 'border-red-500 bg-red-50/30' : 'border-gray-200 dark:border-gray-600'}`}
                   />
                   {erros.vencimento && <p className="mt-1 text-xs text-red-600">{erros.vencimento}</p>}
                 </div>
@@ -852,24 +852,24 @@ export default function FinanceiroPage() {
 
               {/* Mês referência */}
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">Mês de Referência *</label>
+                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Mês de Referência *</label>
                 <input
                   type="month"
                   value={formMes}
                   onChange={(e) => { setFormMes(e.target.value); setErros((p) => ({ ...p, mesReferencia: '' })); }}
-                  className={`w-full px-3 py-2 text-sm rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-transparent ${erros.mesReferencia ? 'border-red-500 bg-red-50/30' : 'border-gray-200'}`}
+                  className={`w-full px-3 py-2 text-sm rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-gray-100 ${erros.mesReferencia ? 'border-red-500 bg-red-50/30' : 'border-gray-200 dark:border-gray-600'}`}
                 />
                 {erros.mesReferencia && <p className="mt-1 text-xs text-red-600">{erros.mesReferencia}</p>}
               </div>
 
               {/* Descrição */}
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">Descrição</label>
+                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Descrição</label>
                 <input
                   value={formDescricao}
                   onChange={(e) => setFormDescricao(e.target.value)}
                   placeholder="Honorários contábeis, folha de pagamento, etc."
-                  className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
 
@@ -883,10 +883,10 @@ export default function FinanceiroPage() {
             </div>
 
             {/* Footer */}
-            <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-gray-100 bg-gray-50/50">
+            <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30">
               <button
                 onClick={fecharModal}
-                className="px-4 py-2 text-xs font-medium text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
+                className="px-4 py-2 text-xs font-medium text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               >
                 Cancelar
               </button>
@@ -922,14 +922,14 @@ function SummaryCard({
   cor: string;
 }) {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-5">
+    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
       <div className="flex items-center gap-3">
         <div className={`w-10 h-10 rounded-lg bg-${cor}-100 flex items-center justify-center text-${cor}-600`}>
           {icon}
         </div>
         <div>
-          <p className="text-xs text-gray-500">{label}</p>
-          <p className="text-lg font-bold text-gray-900">{value}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">{label}</p>
+          <p className="text-lg font-bold text-gray-900 dark:text-gray-100">{value}</p>
         </div>
       </div>
     </div>

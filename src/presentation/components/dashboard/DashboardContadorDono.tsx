@@ -56,17 +56,17 @@ interface MetricCardProps {
 
 function MetricCard({ label, valor, icone, cor, carregando }: MetricCardProps) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex items-center gap-4">
+    <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-5 flex items-center gap-4">
       <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${cor}`}>
         {icone}
       </div>
       <div>
         {carregando ? (
-          <div className="h-7 w-12 bg-gray-100 rounded animate-pulse" />
+          <div className="h-7 w-12 bg-gray-100 dark:bg-gray-800 rounded animate-pulse" />
         ) : (
-          <p className="text-2xl font-bold text-gray-900">{valor ?? 0}</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{valor ?? 0}</p>
         )}
-        <p className="text-xs text-gray-500 mt-0.5">{label}</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{label}</p>
       </div>
     </div>
   );
@@ -123,8 +123,8 @@ export function DashboardContadorDono({ token }: { token: string | null }) {
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6">
       <div>
-        <h1 className="text-xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-sm text-gray-500 mt-0.5">Visão geral do escritório em tempo real</p>
+        <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">Dashboard</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Visão geral do escritório em tempo real</p>
       </div>
 
       {error ? (
@@ -185,8 +185,8 @@ export function DashboardContadorDono({ token }: { token: string | null }) {
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-6">
         <section>
           <div className="flex items-center gap-2 mb-3">
-            <ClipboardList size={16} className="text-gray-400" />
-            <h2 className="text-sm font-bold text-gray-900">Fluxo de Trabalho</h2>
+            <ClipboardList size={16} className="text-gray-400 dark:text-gray-500" />
+            <h2 className="text-sm font-bold text-gray-900 dark:text-gray-100">Fluxo de Trabalho</h2>
           </div>
           <KanbanBoard token={token} onErro={handleKanbanErro} />
         </section>

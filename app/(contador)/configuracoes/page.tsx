@@ -133,14 +133,14 @@ export default function ConfiguracoesPage() {
 
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Configurações</h1>
-        <p className="mt-1 text-sm text-gray-500">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Configurações</h1>
+        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
           Gerencie seu perfil, segurança e dados do escritório.
         </p>
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200">
+      <div className="border-b border-gray-200 dark:border-gray-700">
         <nav className="flex gap-6" aria-label="Abas de configuração">
           {ABAS.map((aba) => (
             <button
@@ -150,7 +150,7 @@ export default function ConfiguracoesPage() {
               className={`flex items-center gap-2 pb-3 px-1 text-sm font-medium border-b-2 transition-colors
                 ${abaAtiva === aba.id
                   ? 'border-primary text-primary'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
                 }`}
             >
               {aba.icon}
@@ -297,13 +297,13 @@ function PerfilTab({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-5">
-        <h2 className="text-lg font-semibold text-gray-900">Dados Pessoais</h2>
+      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-6 space-y-5">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Dados Pessoais</h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           {/* Nome */}
           <div className="space-y-1.5">
-            <label htmlFor="perfil-nome" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="perfil-nome" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               Nome Completo
             </label>
             <input
@@ -311,8 +311,8 @@ function PerfilTab({
               type="text"
               value={form.nome}
               onChange={(e) => setForm((f) => ({ ...f, nome: e.target.value }))}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900
-                         placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary
+              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100
+                         placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary
                          focus:border-transparent transition-shadow"
               placeholder="Seu nome completo"
             />
@@ -320,7 +320,7 @@ function PerfilTab({
 
           {/* Email */}
           <div className="space-y-1.5">
-            <label htmlFor="perfil-email" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="perfil-email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               E-mail
             </label>
             <input
@@ -328,8 +328,8 @@ function PerfilTab({
               type="email"
               value={form.email}
               onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900
-                         placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary
+              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100
+                         placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary
                          focus:border-transparent transition-shadow"
               placeholder="seu@email.com"
             />
@@ -337,7 +337,7 @@ function PerfilTab({
 
           {/* Telefone */}
           <div className="space-y-1.5 sm:col-span-2">
-            <label htmlFor="perfil-phone" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="perfil-phone" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               Telefone
             </label>
             <input
@@ -345,8 +345,8 @@ function PerfilTab({
               type="tel"
               value={form.phone}
               onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900
-                         placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary
+              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100
+                         placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary
                          focus:border-transparent transition-shadow sm:max-w-xs"
               placeholder="(11) 99999-0000"
             />
@@ -441,16 +441,16 @@ function SegurancaTab({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-5">
-        <h2 className="text-lg font-semibold text-gray-900">Alterar Senha</h2>
-        <p className="text-sm text-gray-500">
+      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-6 space-y-5">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Alterar Senha</h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           A nova senha deve ter pelo menos 8 caracteres.
         </p>
 
         <div className="space-y-4 max-w-md">
           {/* Senha Atual */}
           <div className="space-y-1.5">
-            <label htmlFor="senha-atual" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="senha-atual" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               Senha Atual
             </label>
             <div className="relative">
@@ -459,8 +459,8 @@ function SegurancaTab({
                 type={mostrarSenhaAtual ? 'text' : 'password'}
                 value={form.senhaAtual}
                 onChange={(e) => setForm((f) => ({ ...f, senhaAtual: e.target.value }))}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 pr-10 text-sm text-gray-900
-                           placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary
+                className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 pr-10 text-sm text-gray-900 dark:text-gray-100
+                           placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary
                            focus:border-transparent transition-shadow"
                 placeholder="Digite sua senha atual"
                 autoComplete="current-password"
@@ -468,7 +468,7 @@ function SegurancaTab({
               <button
                 type="button"
                 onClick={() => setMostrarSenhaAtual((v) => !v)}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
                 tabIndex={-1}
               >
                 {mostrarSenhaAtual ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -478,7 +478,7 @@ function SegurancaTab({
 
           {/* Nova Senha */}
           <div className="space-y-1.5">
-            <label htmlFor="nova-senha" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="nova-senha" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               Nova Senha
             </label>
             <div className="relative">
@@ -487,8 +487,8 @@ function SegurancaTab({
                 type={mostrarNovaSenha ? 'text' : 'password'}
                 value={form.novaSenha}
                 onChange={(e) => setForm((f) => ({ ...f, novaSenha: e.target.value }))}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 pr-10 text-sm text-gray-900
-                           placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary
+                className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 pr-10 text-sm text-gray-900 dark:text-gray-100
+                           placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary
                            focus:border-transparent transition-shadow"
                 placeholder="Mínimo 8 caracteres"
                 autoComplete="new-password"
@@ -496,7 +496,7 @@ function SegurancaTab({
               <button
                 type="button"
                 onClick={() => setMostrarNovaSenha((v) => !v)}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
                 tabIndex={-1}
               >
                 {mostrarNovaSenha ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -506,7 +506,7 @@ function SegurancaTab({
 
           {/* Confirmar Nova Senha */}
           <div className="space-y-1.5">
-            <label htmlFor="confirmar-senha" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="confirmar-senha" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               Confirmar Nova Senha
             </label>
             <input
@@ -514,8 +514,8 @@ function SegurancaTab({
               type="password"
               value={form.confirmarSenha}
               onChange={(e) => setForm((f) => ({ ...f, confirmarSenha: e.target.value }))}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900
-                         placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary
+              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100
+                         placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary
                          focus:border-transparent transition-shadow"
               placeholder="Repita a nova senha"
               autoComplete="new-password"
@@ -608,13 +608,13 @@ function EscritorioTab({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-5">
-        <h2 className="text-lg font-semibold text-gray-900">Dados do Escritório</h2>
+      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-6 space-y-5">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Dados do Escritório</h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           {/* CRC */}
           <div className="space-y-1.5">
-            <label htmlFor="esc-crc" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="esc-crc" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               CRC (Registro no Conselho)
             </label>
             <input
@@ -622,8 +622,8 @@ function EscritorioTab({
               type="text"
               value={form.crc}
               onChange={(e) => setForm((f) => ({ ...f, crc: e.target.value }))}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900
-                         placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary
+              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100
+                         placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary
                          focus:border-transparent transition-shadow"
               placeholder="CRC-SP-123456/O-1"
             />
@@ -631,7 +631,7 @@ function EscritorioTab({
 
           {/* Telefone do Escritório */}
           <div className="space-y-1.5">
-            <label htmlFor="esc-phone" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="esc-phone" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               Telefone do Escritório
             </label>
             <input
@@ -639,8 +639,8 @@ function EscritorioTab({
               type="tel"
               value={form.phone}
               onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900
-                         placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary
+              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100
+                         placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary
                          focus:border-transparent transition-shadow"
               placeholder="(11) 3000-0000"
             />
@@ -816,23 +816,23 @@ function WhiteLabelTab({
   return (
     <form onSubmit={handleSalvar} className="space-y-6">
       {/* Logo */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
-        <h2 className="text-lg font-semibold text-gray-900">Logo do Escritório</h2>
-        <p className="text-sm text-gray-500">PNG, JPEG, WebP ou SVG. Máximo 2MB.</p>
+      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-6 space-y-4">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Logo do Escritório</h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400">PNG, JPEG, WebP ou SVG. Máximo 2MB.</p>
 
         <div className="flex items-center gap-6">
           {/* Preview */}
-          <div className="w-24 h-24 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden bg-gray-50">
+          <div className="w-24 h-24 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center overflow-hidden bg-gray-50 dark:bg-gray-800">
             {config.logoUrl ? (
               <img src={config.logoUrl} alt="Logo" className="w-full h-full object-contain" />
             ) : (
-              <ImageIcon size={32} className="text-gray-300" />
+              <ImageIcon size={32} className="text-gray-300 dark:text-gray-600" />
             )}
           </div>
 
           {/* Upload / Remove buttons */}
           <div className="flex items-center gap-3">
-            <label className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 cursor-pointer transition-colors">
+            <label className="inline-flex items-center gap-2 rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors">
               {uploadingLogo ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
               {uploadingLogo ? 'Enviando…' : 'Enviar Logo'}
               <input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" onChange={handleLogoUpload} className="hidden" />
@@ -853,30 +853,30 @@ function WhiteLabelTab({
       </div>
 
       {/* Dados do escritório */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-5">
-        <h2 className="text-lg font-semibold text-gray-900">Informações do Escritório</h2>
+      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-6 space-y-5">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Informações do Escritório</h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <div className="space-y-1.5">
-            <label htmlFor="wl-nome" className="block text-sm font-medium text-gray-700">Nome do Escritório</label>
+            <label htmlFor="wl-nome" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Nome do Escritório</label>
             <input
               id="wl-nome"
               type="text"
               value={config.nomeEscritorio}
               onChange={(e) => setConfig((c) => ({ ...c, nomeEscritorio: e.target.value }))}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow"
+              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow"
               placeholder="Meu Escritório Contábil"
             />
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="wl-cnpj" className="block text-sm font-medium text-gray-700">CNPJ do Escritório</label>
+            <label htmlFor="wl-cnpj" className="block text-sm font-medium text-gray-700 dark:text-gray-300">CNPJ do Escritório</label>
             <input
               id="wl-cnpj"
               type="text"
               value={config.cnpjEscritorio}
               onChange={(e) => setConfig((c) => ({ ...c, cnpjEscritorio: e.target.value }))}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow"
+              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow"
               placeholder="00.000.000/0000-00"
             />
           </div>
@@ -884,26 +884,26 @@ function WhiteLabelTab({
       </div>
 
       {/* Cores do tema */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-5">
-        <h2 className="text-lg font-semibold text-gray-900">Cores do Tema</h2>
-        <p className="text-sm text-gray-500">Personalize as cores da plataforma para o seu escritório.</p>
+      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-6 space-y-5">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Cores do Tema</h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400">Personalize as cores da plataforma para o seu escritório.</p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           {/* Cor Primária */}
           <div className="space-y-3">
-            <label className="block text-sm font-medium text-gray-700">Cor Primária</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Cor Primária</label>
             <div className="flex items-center gap-3">
               <input
                 type="color"
                 value={config.corPrimaria}
                 onChange={(e) => setConfig((c) => ({ ...c, corPrimaria: e.target.value }))}
-                className="w-10 h-10 rounded-lg border border-gray-300 cursor-pointer"
+                className="w-10 h-10 rounded-lg border border-gray-300 dark:border-gray-600 cursor-pointer"
               />
               <input
                 type="text"
                 value={config.corPrimaria}
                 onChange={(e) => setConfig((c) => ({ ...c, corPrimaria: e.target.value }))}
-                className="w-28 rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 font-mono focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-28 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 font-mono focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               />
             </div>
             <div className="flex gap-1.5 flex-wrap">
@@ -912,7 +912,7 @@ function WhiteLabelTab({
                   key={`p-${cor}`}
                   type="button"
                   onClick={() => setConfig((c) => ({ ...c, corPrimaria: cor }))}
-                  className={`w-7 h-7 rounded-lg border-2 transition-all ${config.corPrimaria === cor ? 'border-gray-900 scale-110' : 'border-transparent'}`}
+                  className={`w-7 h-7 rounded-lg border-2 transition-all ${config.corPrimaria === cor ? 'border-gray-900 dark:border-gray-100 scale-110' : 'border-transparent'}`}
                   style={{ backgroundColor: cor }}
                 />
               ))}
@@ -921,27 +921,27 @@ function WhiteLabelTab({
 
           {/* Cor Secundária */}
           <div className="space-y-3">
-            <label className="block text-sm font-medium text-gray-700">Cor Secundária</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Cor Secundária</label>
             <div className="flex items-center gap-3">
               <input
                 type="color"
                 value={config.corSecundaria}
                 onChange={(e) => setConfig((c) => ({ ...c, corSecundaria: e.target.value }))}
-                className="w-10 h-10 rounded-lg border border-gray-300 cursor-pointer"
+                className="w-10 h-10 rounded-lg border border-gray-300 dark:border-gray-600 cursor-pointer"
               />
               <input
                 type="text"
                 value={config.corSecundaria}
                 onChange={(e) => setConfig((c) => ({ ...c, corSecundaria: e.target.value }))}
-                className="w-28 rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 font-mono focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-28 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 font-mono focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               />
             </div>
           </div>
         </div>
 
         {/* Preview */}
-        <div className="mt-4 p-4 rounded-xl border border-gray-200 bg-gray-50">
-          <p className="text-xs text-gray-500 mb-3">Preview do tema:</p>
+        <div className="mt-4 p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">Preview do tema:</p>
           <div className="flex gap-3">
             <div className="h-10 w-32 rounded-lg flex items-center justify-center text-white text-xs font-semibold" style={{ backgroundColor: config.corPrimaria }}>
               Primária
@@ -1079,12 +1079,12 @@ function PrivacidadeTab({
   return (
     <div className="space-y-6">
       {/* Audit Log */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
+      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-6 space-y-4">
         <div className="flex items-center gap-2">
           <History size={18} className="text-primary" />
-          <h2 className="text-lg font-semibold text-gray-900">Histórico de Acessos</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Histórico de Acessos</h2>
         </div>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           Registro de todas as ações realizadas na sua conta, conforme a Lei Geral de Proteção de Dados (LGPD).
         </p>
 
@@ -1093,33 +1093,33 @@ function PrivacidadeTab({
             <Loader2 size={24} className="animate-spin text-primary" />
           </div>
         ) : logs.length === 0 ? (
-          <p className="text-center py-8 text-sm text-gray-400">Nenhum registro de atividade encontrado.</p>
+          <p className="text-center py-8 text-sm text-gray-400 dark:text-gray-500">Nenhum registro de atividade encontrado.</p>
         ) : (
           <>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-gray-100">
-                    <th className="text-left py-2.5 px-3 font-medium text-gray-500 text-xs uppercase tracking-wider">Ação</th>
-                    <th className="text-left py-2.5 px-3 font-medium text-gray-500 text-xs uppercase tracking-wider">Data/Hora</th>
-                    <th className="text-left py-2.5 px-3 font-medium text-gray-500 text-xs uppercase tracking-wider">IP</th>
+                  <tr className="border-b border-gray-100 dark:border-gray-700">
+                    <th className="text-left py-2.5 px-3 font-medium text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">Ação</th>
+                    <th className="text-left py-2.5 px-3 font-medium text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">Data/Hora</th>
+                    <th className="text-left py-2.5 px-3 font-medium text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">IP</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-50">
+                <tbody className="divide-y divide-gray-50 dark:divide-gray-700">
                   {logs.map((log) => {
                     const info = ACTION_LABELS[log.actionType] ?? { label: log.actionType, icon: <Activity size={14} /> };
                     return (
-                      <tr key={log.id} className="hover:bg-gray-50/50 transition-colors">
+                      <tr key={log.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors">
                         <td className="py-2.5 px-3">
-                          <div className="flex items-center gap-2 text-gray-700">
-                            <span className="text-gray-400">{info.icon}</span>
+                          <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                            <span className="text-gray-400 dark:text-gray-500">{info.icon}</span>
                             {info.label}
                           </div>
                         </td>
-                        <td className="py-2.5 px-3 text-gray-600 text-xs">
+                        <td className="py-2.5 px-3 text-gray-600 dark:text-gray-400 text-xs">
                           {new Date(log.timestamp).toLocaleString('pt-BR')}
                         </td>
-                        <td className="py-2.5 px-3 text-gray-400 font-mono text-xs">{log.ipAddress}</td>
+                        <td className="py-2.5 px-3 text-gray-400 dark:text-gray-500 font-mono text-xs">{log.ipAddress}</td>
                       </tr>
                     );
                   })}
@@ -1130,14 +1130,14 @@ function PrivacidadeTab({
             {/* Paginação */}
             {pagination && pagination.totalPages > 1 && (
               <div className="flex items-center justify-between pt-2">
-                <span className="text-xs text-gray-400">
+                <span className="text-xs text-gray-400 dark:text-gray-500">
                   Página {pagination.page} de {pagination.totalPages} ({pagination.total} registros)
                 </span>
                 <div className="flex gap-1">
                   <button
                     onClick={() => setPaginaAtual((p) => Math.max(1, p - 1))}
                     disabled={paginaAtual <= 1}
-                    className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100
+                    className="p-1.5 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800
                                disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                   >
                     <ChevronLeft size={14} />
@@ -1145,7 +1145,7 @@ function PrivacidadeTab({
                   <button
                     onClick={() => setPaginaAtual((p) => Math.min(pagination.totalPages, p + 1))}
                     disabled={paginaAtual >= pagination.totalPages}
-                    className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100
+                    className="p-1.5 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800
                                disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                   >
                     <ChevronRight size={14} />
@@ -1158,12 +1158,12 @@ function PrivacidadeTab({
       </div>
 
       {/* Exclusão de Conta */}
-      <div className="bg-white rounded-xl border border-red-200 p-6 space-y-4">
+      <div className="bg-white dark:bg-gray-900 rounded-xl border border-red-200 dark:border-red-900/40 p-6 space-y-4">
         <div className="flex items-center gap-2">
           <Trash2 size={18} className="text-red-500" />
-          <h2 className="text-lg font-semibold text-red-900">Excluir Conta</h2>
+          <h2 className="text-lg font-semibold text-red-900 dark:text-red-400">Excluir Conta</h2>
         </div>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-gray-600 dark:text-gray-400">
           Ao excluir sua conta, seus dados pessoais serão anonimizados e os documentos
           fiscais serão removidos do armazenamento. Esta ação é <strong>irreversível</strong>.
         </p>
@@ -1186,8 +1186,8 @@ function PrivacidadeTab({
               type="text"
               value={textoConfirmacao}
               onChange={(e) => setTextoConfirmacao(e.target.value)}
-              className="w-full max-w-sm rounded-lg border border-red-300 px-3 py-2 text-sm text-gray-900
-                         placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500
+              className="w-full max-w-sm rounded-lg border border-red-300 dark:border-red-800 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100
+                         placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500
                          focus:border-transparent transition-shadow"
               placeholder="EXCLUIR MINHA CONTA"
               autoComplete="off"
@@ -1205,8 +1205,8 @@ function PrivacidadeTab({
               </button>
               <button
                 onClick={() => { setConfirmandoExclusao(false); setTextoConfirmacao(''); }}
-                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-600
-                           hover:bg-gray-100 transition-colors"
+                className="rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400
+                           hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               >
                 Cancelar
               </button>

@@ -86,7 +86,7 @@ interface AccordionItemProps {
 
 function AccordionItem({ item, aberto, onClick }: AccordionItemProps) {
   return (
-    <div className={`border rounded-xl transition-all ${aberto ? 'border-sky-200 bg-sky-50/30' : 'border-gray-200 bg-white'}`}>
+    <div className={`border rounded-xl transition-all ${aberto ? 'border-sky-200 dark:border-sky-900/30 bg-sky-50/30 dark:bg-sky-900/10' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900'}`}>
       <button
         type="button"
         onClick={onClick}
@@ -95,18 +95,18 @@ function AccordionItem({ item, aberto, onClick }: AccordionItemProps) {
         aria-expanded={aberto}
       >
         <span className="shrink-0">{item.icone}</span>
-        <span className={`flex-1 text-sm font-semibold ${aberto ? 'text-sky-800' : 'text-gray-800'}`}>
+        <span className={`flex-1 text-sm font-semibold ${aberto ? 'text-sky-800 dark:text-sky-400' : 'text-gray-800 dark:text-gray-200'}`}>
           {item.pergunta}
         </span>
         <ChevronDown
           size={16}
-          className={`shrink-0 text-gray-400 transition-transform duration-200 ${aberto ? 'rotate-180 text-sky-500' : ''}`}
+          className={`shrink-0 text-gray-400 dark:text-gray-500 transition-transform duration-200 ${aberto ? 'rotate-180 text-sky-500 dark:text-sky-400' : ''}`}
         />
       </button>
 
       {aberto && (
         <div className="px-5 pb-4 pl-12">
-          <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
+          <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-line">
             {item.resposta}
           </p>
         </div>
@@ -130,8 +130,8 @@ export default function AjudaPage() {
         <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-sky-100 mb-4">
           <HelpCircle size={28} className="text-sky-600" />
         </div>
-        <h1 className="text-xl font-bold text-gray-900">Central de Ajuda</h1>
-        <p className="text-sm text-gray-500 mt-1">
+        <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">Central de Ajuda</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
           Encontre respostas para as dúvidas mais frequentes sobre o sistema
         </p>
       </div>
@@ -149,19 +149,19 @@ export default function AjudaPage() {
       </div>
 
       {/* Card de contato */}
-      <div className="mt-8 bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+      <div className="mt-8 bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">
         <div className="flex items-start gap-4">
-          <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-sky-50 shrink-0">
-            <Mail size={20} className="text-sky-600" />
+          <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-sky-50 dark:bg-sky-900/20 shrink-0">
+            <Mail size={20} className="text-sky-600 dark:text-sky-400" />
           </div>
           <div>
-            <h2 className="text-sm font-bold text-gray-900">Não encontrou o que procura?</h2>
-            <p className="text-sm text-gray-500 mt-1">
+            <h2 className="text-sm font-bold text-gray-900 dark:text-gray-100">Não encontrou o que procura?</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
               Entre em contato com seu contador diretamente. Ele tem acesso ao painel
               administrativo e pode ajudá-lo com qualquer questão sobre seus documentos,
               prazos ou configurações do sistema.
             </p>
-            <p className="text-xs text-gray-400 mt-3">
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-3">
               Horário de atendimento: Segunda a Sexta, 8h às 18h
             </p>
           </div>
@@ -169,7 +169,7 @@ export default function AjudaPage() {
       </div>
 
       {/* Versão do sistema */}
-      <p className="text-center text-[10px] text-gray-300 mt-6">
+      <p className="text-center text-[10px] text-gray-300 dark:text-gray-600 mt-6">
         Gestão Contábil v0.1.0 — Self-hosted · LGPD Compliant
       </p>
     </div>

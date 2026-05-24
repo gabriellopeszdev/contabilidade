@@ -174,10 +174,10 @@ export default function InicioPagina() {
       {/* ── Saudação ──────────────────────────────────────────────────────── */}
       <div className="flex items-end justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
             {saudacao}, {primeiroNome}!
           </h2>
-          <p className="text-sm text-gray-400 mt-0.5">{dataFormatada}</p>
+          <p className="text-sm text-gray-400 dark:text-gray-500 mt-0.5">{dataFormatada}</p>
         </div>
         {novosDoContador > 0 && (
           <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full
@@ -194,18 +194,18 @@ export default function InicioPagina() {
         {/* Novos documentos */}
         <div className={`rounded-2xl border p-4 space-y-3 transition-colors
           ${novosDoContador > 0
-            ? 'bg-blue-50 border-blue-200'
-            : 'bg-white border-gray-200'
+            ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-900/30'
+            : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700'
           }`}>
           <div className={`w-9 h-9 rounded-xl flex items-center justify-center
-            ${novosDoContador > 0 ? 'bg-blue-100' : 'bg-gray-100'}`}>
+            ${novosDoContador > 0 ? 'bg-blue-100 dark:bg-blue-900/40' : 'bg-gray-100 dark:bg-gray-800'}`}>
             <Bell size={16} className={novosDoContador > 0 ? 'text-blue-600' : 'text-gray-400'} />
           </div>
           <div>
-            <p className={`text-2xl font-bold ${novosDoContador > 0 ? 'text-blue-700' : 'text-gray-700'}`}>
+            <p className={`text-2xl font-bold ${novosDoContador > 0 ? 'text-blue-700 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'}`}>
               {docsCarregando ? '—' : novosDoContador}
             </p>
-            <p className="text-xs text-gray-500 mt-0.5 leading-tight">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 leading-tight">
               {novosDoContador === 1 ? 'Novo doc. do contador' : 'Novos docs. do contador'}
             </p>
           </div>
@@ -217,7 +217,7 @@ export default function InicioPagina() {
             ? 'bg-red-50 border-red-200'
             : boletosAbertos.length > 0
               ? 'bg-amber-50 border-amber-200'
-              : 'bg-white border-gray-200'
+              : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700'
           }`}>
           <div className={`w-9 h-9 rounded-xl flex items-center justify-center
             ${boletosVencidos.length > 0 ? 'bg-red-100' : boletosAbertos.length > 0 ? 'bg-amber-100' : 'bg-gray-100'}`}>
@@ -232,7 +232,7 @@ export default function InicioPagina() {
               ${boletosVencidos.length > 0 ? 'text-red-700' : boletosAbertos.length > 0 ? 'text-amber-700' : 'text-gray-700'}`}>
               {boletosCarregando ? '—' : boletosAbertos.length > 0 ? formatarMoeda(valorAberto) : 'R$ 0'}
             </p>
-            <p className="text-xs text-gray-500 mt-0.5 leading-tight">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 leading-tight">
               {boletosVencidos.length > 0
                 ? `${boletosVencidos.length} vencido${boletosVencidos.length > 1 ? 's' : ''}`
                 : boletosAbertos.length > 0
@@ -243,15 +243,15 @@ export default function InicioPagina() {
         </div>
 
         {/* Enviados este mês */}
-        <div className="rounded-2xl border border-gray-200 bg-white p-4 space-y-3">
+        <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 space-y-3">
           <div className="w-9 h-9 rounded-xl bg-emerald-100 flex items-center justify-center">
             <Send size={15} className="text-emerald-600" />
           </div>
           <div>
-            <p className="text-2xl font-bold text-gray-700">
+            <p className="text-2xl font-bold text-gray-700 dark:text-gray-300">
               {docsCarregando ? '—' : enviadosMes}
             </p>
-            <p className="text-xs text-gray-500 mt-0.5 leading-tight">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 leading-tight">
               Enviado{enviadosMes !== 1 ? 's' : ''} por você este mês
             </p>
           </div>
@@ -261,10 +261,10 @@ export default function InicioPagina() {
         <div className={`rounded-2xl border p-4 space-y-3 transition-colors
           ${diasAteVencer !== null && diasAteVencer <= 5
             ? 'bg-amber-50 border-amber-200'
-            : 'bg-white border-gray-200'
+            : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700'
           }`}>
           <div className={`w-9 h-9 rounded-xl flex items-center justify-center
-            ${diasAteVencer !== null && diasAteVencer <= 5 ? 'bg-amber-100' : 'bg-gray-100'}`}>
+            ${diasAteVencer !== null && diasAteVencer <= 5 ? 'bg-amber-100' : 'bg-gray-100 dark:bg-gray-800'}`}>
             <CalendarClock size={16} className={diasAteVencer !== null && diasAteVencer <= 5 ? 'text-amber-600' : 'text-gray-400'} />
           </div>
           <div>
@@ -279,7 +279,7 @@ export default function InicioPagina() {
                     : `${diasAteVencer}d`
               }
             </p>
-            <p className="text-xs text-gray-500 mt-0.5 leading-tight">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 leading-tight">
               {proximoVencimento
                 ? `Próximo venc. em ${formatarData(proximoVencimento.toISOString())}`
                 : 'Sem vencimentos'}
@@ -317,15 +317,15 @@ export default function InicioPagina() {
           )}
 
           {/* Documentos do contador */}
-          <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-            <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
               <div>
-                <h3 className="text-sm font-bold text-gray-900">Do seu Contador</h3>
-                <p className="text-xs text-gray-400 mt-0.5">Documentos enviados pelo escritório</p>
+                <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">Do seu Contador</h3>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Documentos enviados pelo escritório</p>
               </div>
               <Link
                 href="/documentos"
-                className="flex items-center gap-1 text-xs text-sky-600 hover:underline font-medium shrink-0"
+                className="flex items-center gap-1 text-xs text-sky-600 dark:text-sky-400 hover:underline font-medium shrink-0"
               >
                 Ver todos <ChevronRight size={13} />
               </Link>
@@ -333,7 +333,7 @@ export default function InicioPagina() {
 
             {/* Loading */}
             {docsCarregando && (
-              <div className="flex items-center justify-center gap-2 py-12 text-sm text-gray-400">
+              <div className="flex items-center justify-center gap-2 py-12 text-sm text-gray-400 dark:text-gray-500">
                 <Loader2 size={16} className="animate-spin" />
                 Carregando…
               </div>
@@ -342,11 +342,11 @@ export default function InicioPagina() {
             {/* Nenhum documento ainda */}
             {!docsCarregando && docsDoContador.length === 0 && (
               <div className="flex flex-col items-center gap-2 py-12 text-center">
-                <div className="w-12 h-12 rounded-2xl bg-gray-100 flex items-center justify-center">
-                  <FileText size={22} className="text-gray-300" />
+                <div className="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                  <FileText size={22} className="text-gray-300 dark:text-gray-600" />
                 </div>
-                <p className="text-sm font-semibold text-gray-500">Nenhum documento ainda</p>
-                <p className="text-xs text-gray-400 max-w-xs">
+                <p className="text-sm font-semibold text-gray-500 dark:text-gray-400">Nenhum documento ainda</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500 max-w-xs">
                   Quando seu contador enviar documentos, eles aparecerão aqui.
                 </p>
               </div>
@@ -354,7 +354,7 @@ export default function InicioPagina() {
 
             {/* Lista de documentos */}
             {!docsCarregando && docsDoContador.length > 0 && (
-              <ul className="divide-y divide-gray-100">
+              <ul className="divide-y divide-gray-100 dark:divide-gray-700">
                 {docsDoContador.map(doc => {
                   const setor     = SETOR_BADGE[doc.sector];
                   const isPDF     = doc.fileType === 'PDF';
@@ -365,7 +365,7 @@ export default function InicioPagina() {
                     <li
                       key={doc.id}
                       className={`flex items-center gap-3 px-5 py-3.5 transition-colors
-                        ${!doc.readStatus ? 'hover:bg-blue-50/40' : 'hover:bg-gray-50'}`}
+                        ${!doc.readStatus ? 'hover:bg-blue-50/40 dark:hover:bg-blue-900/10' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`}
                     >
                       {/* Ícone colorido pelo setor */}
                       <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0
@@ -385,7 +385,7 @@ export default function InicioPagina() {
                       {/* Info */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5">
-                          <p className={`text-sm truncate max-w-[260px] ${!doc.readStatus ? 'font-semibold text-gray-900' : 'font-medium text-gray-700'}`}>
+                          <p className={`text-sm truncate max-w-[260px] ${!doc.readStatus ? 'font-semibold text-gray-900 dark:text-gray-100' : 'font-medium text-gray-700 dark:text-gray-300'}`}>
                             {doc.fileName}
                           </p>
                           {!doc.readStatus && (
@@ -396,7 +396,7 @@ export default function InicioPagina() {
                           )}
                         </div>
                         <div className="flex items-center gap-1.5 mt-0.5">
-                          <span className="text-[11px] text-gray-400">{formatarData(doc.createdAt)}</span>
+                          <span className="text-[11px] text-gray-400 dark:text-gray-500">{formatarData(doc.createdAt)}</span>
                           {setor && (
                             <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md
                               text-[9px] font-bold uppercase border ${setor.classe}`}>
@@ -442,7 +442,7 @@ export default function InicioPagina() {
 
             {/* Rodapé — todos lidos */}
             {!docsCarregando && docsDoContador.length > 0 && novosDoContador === 0 && (
-              <div className="px-5 py-3 border-t border-gray-100 bg-emerald-50/60 flex items-center gap-2">
+              <div className="px-5 py-3 border-t border-gray-100 dark:border-gray-700 bg-emerald-50/60 dark:bg-emerald-900/10 flex items-center gap-2">
                 <CheckCircle2 size={13} className="text-emerald-500" />
                 <p className="text-xs text-emerald-700 font-medium">Todos os documentos estão lidos.</p>
               </div>
@@ -456,16 +456,16 @@ export default function InicioPagina() {
         <aside className="space-y-4">
 
           {/* Upload com pré-seleção de setor */}
-          <div className="bg-white rounded-2xl border border-gray-200 p-4 space-y-3">
-            <h3 className="text-sm font-bold text-gray-800">Enviar Documento</h3>
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-4 space-y-3">
+            <h3 className="text-sm font-bold text-gray-800 dark:text-gray-200">Enviar Documento</h3>
 
             {/* Chips de setor */}
             <div className="grid grid-cols-3 gap-1.5">
               {(
                 [
-                  { value: 'FISCAL',   label: 'Fiscal',   Icon: Receipt,   active: 'bg-indigo-600 text-white border-indigo-600', idle: 'bg-white text-gray-600 border-gray-200 hover:border-indigo-300 hover:text-indigo-600' },
-                  { value: 'PESSOAL',  label: 'Pessoal',  Icon: Users,     active: 'bg-violet-600 text-white border-violet-600', idle: 'bg-white text-gray-600 border-gray-200 hover:border-violet-300 hover:text-violet-600' },
-                  { value: 'CONTABIL', label: 'Contábil', Icon: BarChart3, active: 'bg-teal-600   text-white border-teal-600',   idle: 'bg-white text-gray-600 border-gray-200 hover:border-teal-300   hover:text-teal-600'   },
+                  { value: 'FISCAL',   label: 'Fiscal',   Icon: Receipt,   active: 'bg-indigo-600 text-white border-indigo-600', idle: 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-indigo-300 hover:text-indigo-600' },
+                  { value: 'PESSOAL',  label: 'Pessoal',  Icon: Users,     active: 'bg-violet-600 text-white border-violet-600', idle: 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-violet-300 hover:text-violet-600' },
+                  { value: 'CONTABIL', label: 'Contábil', Icon: BarChart3, active: 'bg-teal-600   text-white border-teal-600',   idle: 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-teal-300   hover:text-teal-600'   },
                 ] as const
               ).map(({ value, label, Icon, active, idle }) => (
                 <button
@@ -519,10 +519,10 @@ export default function InicioPagina() {
                 } />
               </div>
               <div>
-                <p className="text-xs font-semibold text-gray-700">
+                <p className="text-xs font-semibold text-gray-700 dark:text-gray-300">
                   {dragAtivo ? 'Solte aqui!' : 'Arraste ou clique para enviar'}
                 </p>
-                <p className="text-[10px] text-gray-400 mt-0.5">PDF ou XML · Máx. 10 MB</p>
+                <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">PDF ou XML · Máx. 10 MB</p>
               </div>
               {erroArquivo && <p className="text-[10px] text-red-600 font-medium">{erroArquivo}</p>}
             </div>
@@ -541,51 +541,51 @@ export default function InicioPagina() {
 
           {/* Ações Rápidas */}
           <div className="space-y-2">
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest px-1">Ações Rápidas</p>
+            <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest px-1">Ações Rápidas</p>
 
             <Link href="/documentos"
-              className="flex items-center gap-3 w-full px-4 py-3 rounded-xl border border-gray-200
-                bg-white text-sm font-medium text-gray-700 hover:border-sky-300 hover:bg-sky-50/40
-                hover:text-sky-700 transition-colors group"
+              className="flex items-center gap-3 w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700
+                bg-white dark:bg-gray-900 text-sm font-medium text-gray-700 dark:text-gray-300 hover:border-sky-300 hover:bg-sky-50/40 dark:hover:bg-sky-900/10
+                hover:text-sky-700 dark:hover:text-sky-400 transition-colors group"
             >
-              <div className="w-8 h-8 rounded-lg bg-gray-100 group-hover:bg-sky-100 flex items-center justify-center shrink-0">
-                <History size={14} className="text-gray-400 group-hover:text-sky-600" />
+              <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 group-hover:bg-sky-100 dark:group-hover:bg-sky-900/30 flex items-center justify-center shrink-0">
+                <History size={14} className="text-gray-400 dark:text-gray-500 group-hover:text-sky-600 dark:group-hover:text-sky-400" />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-semibold leading-tight">Histórico de Documentos</p>
-                <p className="text-[10px] text-gray-400">Ver todos os arquivos recebidos</p>
+                <p className="text-[10px] text-gray-400 dark:text-gray-500">Ver todos os arquivos recebidos</p>
               </div>
-              <ChevronRight size={13} className="text-gray-300 group-hover:text-sky-400 shrink-0" />
+              <ChevronRight size={13} className="text-gray-300 dark:text-gray-600 group-hover:text-sky-400 shrink-0" />
             </Link>
 
             <Link href="/chat"
-              className="flex items-center gap-3 w-full px-4 py-3 rounded-xl border border-gray-200
-                bg-white text-sm font-medium text-gray-700 hover:border-violet-300 hover:bg-violet-50/40
-                hover:text-violet-700 transition-colors group"
+              className="flex items-center gap-3 w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700
+                bg-white dark:bg-gray-900 text-sm font-medium text-gray-700 dark:text-gray-300 hover:border-violet-300 hover:bg-violet-50/40 dark:hover:bg-violet-900/10
+                hover:text-violet-700 dark:hover:text-violet-400 transition-colors group"
             >
-              <div className="w-8 h-8 rounded-lg bg-gray-100 group-hover:bg-violet-100 flex items-center justify-center shrink-0">
-                <MessageSquare size={14} className="text-gray-400 group-hover:text-violet-600" />
+              <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 group-hover:bg-violet-100 dark:group-hover:bg-violet-900/30 flex items-center justify-center shrink-0">
+                <MessageSquare size={14} className="text-gray-400 dark:text-gray-500 group-hover:text-violet-600 dark:group-hover:text-violet-400" />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-semibold leading-tight">Falar com o Contador</p>
-                <p className="text-[10px] text-gray-400">Envie uma mensagem agora</p>
+                <p className="text-[10px] text-gray-400 dark:text-gray-500">Envie uma mensagem agora</p>
               </div>
-              <ChevronRight size={13} className="text-gray-300 group-hover:text-violet-400 shrink-0" />
+              <ChevronRight size={13} className="text-gray-300 dark:text-gray-600 group-hover:text-violet-400 shrink-0" />
             </Link>
 
             <Link href="/enviar"
-              className="flex items-center gap-3 w-full px-4 py-3 rounded-xl border border-gray-200
-                bg-white text-sm font-medium text-gray-700 hover:border-emerald-300 hover:bg-emerald-50/40
-                hover:text-emerald-700 transition-colors group"
+              className="flex items-center gap-3 w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700
+                bg-white dark:bg-gray-900 text-sm font-medium text-gray-700 dark:text-gray-300 hover:border-emerald-300 hover:bg-emerald-50/40 dark:hover:bg-emerald-900/10
+                hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors group"
             >
-              <div className="w-8 h-8 rounded-lg bg-gray-100 group-hover:bg-emerald-100 flex items-center justify-center shrink-0">
-                <Send size={14} className="text-gray-400 group-hover:text-emerald-600" />
+              <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 group-hover:bg-emerald-100 dark:group-hover:bg-emerald-900/30 flex items-center justify-center shrink-0">
+                <Send size={14} className="text-gray-400 dark:text-gray-500 group-hover:text-emerald-600 dark:group-hover:text-emerald-400" />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-semibold leading-tight">Enviar Vários Arquivos</p>
-                <p className="text-[10px] text-gray-400">Página completa de envio</p>
+                <p className="text-[10px] text-gray-400 dark:text-gray-500">Página completa de envio</p>
               </div>
-              <ChevronRight size={13} className="text-gray-300 group-hover:text-emerald-400 shrink-0" />
+              <ChevronRight size={13} className="text-gray-300 dark:text-gray-600 group-hover:text-emerald-400 shrink-0" />
             </Link>
           </div>
         </aside>
