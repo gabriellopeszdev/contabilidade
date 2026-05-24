@@ -75,7 +75,7 @@ export default function ContadorLayout({ children }: { children: React.ReactNode
   const router   = useRouter();
 
   const { usuario, token, carregando, logout, getToken, isDono } = useAuth();
-  const { dark, toggle: toggleDark } = useDarkMode();
+  const { dark, toggle: toggleDark, mounted: darkMounted } = useDarkMode();
 
   const [sidebarAberta, setSidebarAberta] = useState(false);
 
@@ -271,13 +271,15 @@ export default function ContadorLayout({ children }: { children: React.ReactNode
             )}
 
             {/* Botão Dark Mode */}
-            <button
-              onClick={toggleDark}
-              title={dark ? 'Modo claro' : 'Modo escuro'}
-              className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-            >
-              {dark ? <Sun size={18} /> : <Moon size={18} />}
-            </button>
+            {darkMounted && (
+              <button
+                onClick={toggleDark}
+                title={dark ? 'Modo claro' : 'Modo escuro'}
+                className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              >
+                {dark ? <Sun size={18} /> : <Moon size={18} />}
+              </button>
+            )}
 
             {/* Notificações */}
             <div ref={notifRef} className="relative">
