@@ -322,18 +322,11 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
                           onClick={() => marcarComoLida(n.id)}
                           className={`px-4 py-2.5 cursor-pointer hover:bg-gray-50 transition-colors ${!n.lida ? 'bg-sky-50/40' : ''}`}
                         >
-                          <p className="text-[11px] font-semibold text-gray-800">
-                            {n.tipo === 'novoBoletoHonorario'
-                              ? `Novo boleto: R$ ${((n.payload as import('../../src/presentation/hooks/useNotificacoes').PayloadNovoBoleto).valor ?? 0).toFixed(2)}`
-                              : n.tipo === 'novoDocumentoUpload'
-                              ? `${(n.payload as import('../../src/presentation/hooks/useNotificacoes').PayloadNovoUpload).totalUploadados} documento(s) disponíveis`
-                              : n.tipo === 'chat_notification'
-                              ? 'Nova mensagem no chat'
-                              : n.tipo === 'documentoVisualizado'
-                              ? 'Documento visualizado'
-                              : 'Notificação'}
-                          </p>
+                          <p className="text-[11px] font-semibold text-gray-800">{n.titulo}</p>
                           <p className="text-[10px] text-gray-500 mt-0.5">{n.mensagem}</p>
+                          <p className="text-[9px] text-gray-300 mt-0.5">
+                            {n.createdAt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                          </p>
                         </li>
                       ))
                     )}

@@ -8,6 +8,7 @@ import type { PrismaClient } from '@prisma/client';
 import { REDIS_DOMAIN_EVENTS_CHANNEL } from '../events/RedisEventDispatcher';
 import type { DomainEvent } from '../../shared/DomainEvent';
 import type { ILogger } from '../../domain/ports/ILogger';
+import { NotificacaoService } from '../notifications/NotificacaoService';
 
 // =============================================================================
 // Tipos — garantem que o payload emitido ao cliente seja tipado end-to-end
@@ -74,6 +75,15 @@ interface ServerToClientEvents {
     roomId:     string;
     senderNome: string;
     preview:    string;
+  }) => void;
+
+  /** Disparado quando uma nova notificação in-app é persistida. */
+  nova_notificacao: (payload: {
+    id:        string;
+    tipo:      string;
+    titulo:    string;
+    mensagem:  string;
+    createdAt: string;
   }) => void;
 }
 
@@ -151,6 +161,7 @@ export class SocketServer {
   private readonly jwtSecret: Uint8Array;
   private readonly logger: ILogger;
   private readonly db: PrismaClient;
+  private readonly notificacaoSvc: NotificacaoService | null;
 
   constructor(
     httpServer: NodeHttpServer,
@@ -160,6 +171,7 @@ export class SocketServer {
   ) {
     this.logger = logger;
     this.db = db as PrismaClient;
+    this.notificacaoSvc = db ? new NotificacaoService(db, logger) : null;
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
 
     const isDev = process.env.NODE_ENV !== 'production';
@@ -504,6 +516,12 @@ export class SocketServer {
           totalFalhas:     falhas.length,
           mensagem,
         });
+
+        void this.persistirEEmitir(contadorId, 'CONTADOR', {
+          tipo:     'UPLOAD_DOCUMENTOS',
+          titulo:   'Upload de documentos',
+          mensagem,
+        });
         break;
       }
 
@@ -513,21 +531,20 @@ export class SocketServer {
         const visualizadoPorId = event.visualizadoPorId as string | undefined;
         const visualizadoPorRole = event.visualizadoPorRole as string | undefined;
 
-        // Determina o destinatário da notificação:
-        //   CLIENT visualizou   → notifica o CONTADOR responsável
-        //   ACCOUNTANT visualizou → notifica o CLIENTE dono do documento
         let destinatarioId: string | null;
+        let destinatarioTipo: 'CONTADOR' | 'CLIENTE';
         let mensagem: string;
 
         if (visualizadoPorRole === 'CLIENT') {
-          destinatarioId = contadorResponsavelId;
+          destinatarioId   = contadorResponsavelId;
+          destinatarioTipo = 'CONTADOR';
           mensagem = `"${(event.nomeArquivo as string) ?? ''}" foi visualizado pelo cliente`;
         } else {
-          destinatarioId = clienteId;
+          destinatarioId   = clienteId;
+          destinatarioTipo = 'CLIENTE';
           mensagem = `"${(event.nomeArquivo as string) ?? ''}" foi visualizado pelo escritório`;
         }
 
-        // Não notifica se não há destinatário ou se é a mesma pessoa
         if (!destinatarioId || destinatarioId === visualizadoPorId) break;
 
         this.io.to(`user:${destinatarioId}`).emit('documentoVisualizado', {
@@ -535,6 +552,12 @@ export class SocketServer {
           clienteId:   clienteId ?? '',
           nomeArquivo: (event.nomeArquivo  as string) ?? '',
           sector:      (event.sector       as string) ?? '',
+          mensagem,
+        });
+
+        void this.persistirEEmitir(destinatarioId, destinatarioTipo, {
+          tipo:     'DOCUMENTO_VISUALIZADO',
+          titulo:   'Documento visualizado',
           mensagem,
         });
         break;
@@ -548,13 +571,27 @@ export class SocketServer {
 
         if (!clienteId) break;
 
+        const mensagemBoleto = (payload.mensagem as string) ?? 'Novo boleto de honorários disponível.';
+
         this.io.to(`user:${clienteId}`).emit('novoBoletoHonorario', {
           boletoId:      (payload.boletoId      as string) ?? '',
           clienteId,
           mesReferencia: (payload.mesReferencia  as string) ?? '',
           valor:         (payload.valor          as number) ?? 0,
           vencimento:    (payload.vencimento     as string) ?? '',
-          mensagem:      (payload.mensagem       as string) ?? 'Novo boleto de honorários disponível.',
+          mensagem:      mensagemBoleto,
+        });
+
+        void this.persistirEEmitir(clienteId, 'CLIENTE', {
+          tipo:     'NOVO_BOLETO',
+          titulo:   'Novo boleto de honorários',
+          mensagem: mensagemBoleto,
+          metadados: {
+            boletoId:      payload.boletoId,
+            mesReferencia: payload.mesReferencia,
+            valor:         payload.valor,
+            vencimento:    payload.vencimento,
+          },
         });
         break;
       }
@@ -565,6 +602,27 @@ export class SocketServer {
         // eles simplesmente não serão roteados — sem quebrar os demais.
         break;
     }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Persiste notificação no banco e emite nova_notificacao via WS
+  // ---------------------------------------------------------------------------
+
+  private async persistirEEmitir(
+    userId: string,
+    userType: 'CONTADOR' | 'CLIENTE',
+    data: { tipo: string; titulo: string; mensagem: string; metadados?: Record<string, unknown> },
+  ): Promise<void> {
+    if (!this.notificacaoSvc) return;
+    const id = await this.notificacaoSvc.criar({ userId, userType, ...data });
+    if (!id) return;
+    this.io.to(`user:${userId}`).emit('nova_notificacao', {
+      id,
+      tipo:      data.tipo,
+      titulo:    data.titulo,
+      mensagem:  data.mensagem,
+      createdAt: new Date().toISOString(),
+    });
   }
 
   // ---------------------------------------------------------------------------

@@ -575,3 +575,27 @@ model WebhookEventLog {
 
   @@map("webhook_event_log")
 }
+
+// =============================================================================
+// Notificacao — Central de notificações in-app
+//
+// Persiste eventos relevantes para cada usuário (contador ou cliente).
+// O campo userId pode referenciar tanto UsuarioContador quanto UsuarioCliente,
+// sem FK para suportar os dois tipos sem complicar o schema.
+// =============================================================================
+
+model Notificacao {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  userType  String   @map("user_type") @db.VarChar(20)
+  tipo      String   @map("tipo") @db.VarChar(50)
+  titulo    String   @map("titulo") @db.VarChar(200)
+  mensagem  String   @map("mensagem") @db.VarChar(500)
+  lida      Boolean  @default(false) @map("lida")
+  metadados Json?    @map("metadados")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([userId, lida])
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("notificacao")
+}

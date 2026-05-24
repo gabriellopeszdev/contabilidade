@@ -6,15 +6,14 @@ import type { Socket } from 'socket.io-client';
 
 // =============================================================================
 // Singleton — conexão Socket.IO vive no escopo do módulo para sobreviver a
-// re-renders e ao Strict Mode do React (que remonta components em dev).
+// re-renders e ao Strict Mode do React.
 // =============================================================================
 
 let socket: Socket | null = null;
-let socketToken: string | null = null;   // token usado na conexão atual
+let socketToken: string | null = null;
 
 // =============================================================================
-// Tipos — espelham ServerToClientEvents do SocketServer.ts
-// Definidos aqui para manter a Anti-Corruption Layer do frontend.
+// Tipos
 // =============================================================================
 
 export interface PayloadNovoUpload {
@@ -48,15 +47,16 @@ export interface PayloadNovoBoleto {
   mensagem:      string;
 }
 
-export type TipoNotificacao = 'novoDocumentoUpload' | 'documentoVisualizado' | 'chat_notification' | 'novoBoletoHonorario';
-
+// Tipo unificado — usado tanto para eventos DB quanto in-memory (chat)
 export interface Notificacao {
   id:        string;
-  tipo:      TipoNotificacao;
+  tipo:      string;
+  titulo:    string;
   mensagem:  string;
   lida:      boolean;
-  timestamp: Date;
-  payload:   PayloadNovoUpload | PayloadDocumentoVisualizado | PayloadChatNotification | PayloadNovoBoleto;
+  createdAt: Date;
+  /** Presente apenas em notificações vindas de eventos WS legados */
+  payload?:  PayloadNovoUpload | PayloadDocumentoVisualizado | PayloadChatNotification | PayloadNovoBoleto;
 }
 
 export type StatusConexao =
@@ -82,6 +82,7 @@ type Acao =
   | { tipo: 'RECONECTANDO';   tentativa: number }
   | { tipo: 'ERRO_AUTH' }
   | { tipo: 'DESCONECTADO' }
+  | { tipo: 'CARREGAR_INICIAL'; notificacoes: Notificacao[] }
   | { tipo: 'NOVA_NOTIFICACAO'; notificacao: Notificacao }
   | { tipo: 'MARCAR_LIDA';     id: string }
   | { tipo: 'MARCAR_TODAS_LIDAS' }
@@ -92,23 +93,21 @@ function reducer(estado: Estado, acao: Acao): Estado {
   switch (acao.tipo) {
     case 'CONECTANDO':
       return { ...estado, status: 'conectando', erroConexao: null };
-
     case 'CONECTADO':
       return { ...estado, status: 'conectado', erroConexao: null };
-
     case 'RECONECTANDO':
       return { ...estado, status: 'reconectando' };
-
     case 'ERRO_AUTH':
       return { ...estado, status: 'erro_auth', erroConexao: 'Sessão expirada. Recarregue a página.' };
-
     case 'DESCONECTADO':
       return { ...estado, status: 'desconectado' };
+
+    case 'CARREGAR_INICIAL':
+      return { ...estado, notificacoes: acao.notificacoes };
 
     case 'NOVA_NOTIFICACAO':
       return {
         ...estado,
-        // Mantém no máximo 50 notificaç��es (FIFO — descarta as mais antigas)
         notificacoes: [acao.notificacao, ...estado.notificacoes].slice(0, 50),
       };
 
@@ -158,17 +157,11 @@ export interface UseNotificacoesReturn {
 // =============================================================================
 // useNotificacoes
 //
-// Conecta ao servidor Socket.IO, autentica via JWT e gerencia o ciclo de vida
-// da conexão usando o padrão SINGLETON no escopo do módulo.
-//
-// SINGLETON:
-//   A instância do socket vive em `let socket` no módulo. O useEffect apenas
-//   registra/remove listeners — nunca desconecta no cleanup. Isso impede que
-//   o Strict Mode do React (que remonta em dev) mate a conexão WebSocket.
-//
-// TOKEN:
-//   Passar `null` ou `undefined` desativa a conexão.
-//   Se o token mudar, o socket antigo é descartado e um novo é criado.
+// Combina Socket.IO (tempo-real) + REST API (persistência):
+//   • Ao conectar: busca as últimas 50 notificações da API
+//   • nova_notificacao WS: adiciona ao topo (DB-backed, id real)
+//   • chat_notification WS: notificação in-memory (não persiste)
+//   • marcarComoLida / marcarTodasLidas: chamam a API + atualizam estado local
 // =============================================================================
 
 export function useNotificacoes(
@@ -182,28 +175,53 @@ export function useNotificacoes(
     erroConexao:  null,
   });
 
-  // Ref para acessar onNovaNotificacao sem re-criar o effect
   const callbackRef = useRef(onNovaNotificacao);
   callbackRef.current = onNovaNotificacao;
 
+  const tokenRef = useRef(token);
+  tokenRef.current = token;
+
+  // ---------------------------------------------------------------------------
+  // Busca inicial da API (executa após conectar)
+  // ---------------------------------------------------------------------------
+  const carregarDaApi = useCallback(async () => {
+    if (!tokenRef.current) return;
+    try {
+      const res = await fetch('/api/v1/notificacoes', {
+        headers: { Authorization: `Bearer ${tokenRef.current}` },
+      });
+      if (!res.ok) return;
+      const data = await res.json() as {
+        items: { id: string; tipo: string; titulo: string; mensagem: string; lida: boolean; createdAt: string }[];
+      };
+      const notificacoes: Notificacao[] = data.items.map((item) => ({
+        id:        item.id,
+        tipo:      item.tipo,
+        titulo:    item.titulo,
+        mensagem:  item.mensagem,
+        lida:      item.lida,
+        createdAt: new Date(item.createdAt),
+      }));
+      despachar({ tipo: 'CARREGAR_INICIAL', notificacoes });
+    } catch {
+      // fail-open — WS ainda funciona sem persistência
+    }
+  }, []);
+
   useEffect(() => {
-    // Sem token → não conecta (aguarda autenticação)
     if (!token) {
       despachar({ tipo: 'DESCONECTADO' });
       return;
     }
 
-    // Se o token mudou (ex: refresh), descarta a conexão antiga para re-autenticar
     if (socket && socketToken !== token) {
       socket.disconnect();
       socket = null;
       socketToken = null;
     }
 
-    // Singleton: só cria a conexão se ainda não existir
     if (!socket) {
       despachar({ tipo: 'CONECTANDO' });
-
       socketToken = token;
       socket = io(
         process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
@@ -220,13 +238,12 @@ export function useNotificacoes(
         },
       );
     } else if (socket.connected) {
-      // Já conectado (remontagem React) — sincroniza estado do reducer
       despachar({ tipo: 'CONECTADO' });
+      void carregarDaApi();
     } else {
       despachar({ tipo: 'CONECTANDO' });
     }
 
-    // Referência local para o cleanup (captura o socket do momento da montagem)
     const s = socket;
 
     // -------------------------------------------------------------------------
@@ -235,6 +252,7 @@ export function useNotificacoes(
 
     const onConnect = () => {
       despachar({ tipo: 'CONECTADO' });
+      void carregarDaApi();
     };
 
     const onDisconnect = (reason: string) => {
@@ -258,101 +276,92 @@ export function useNotificacoes(
 
     const onReconnect = () => {
       despachar({ tipo: 'CONECTADO' });
+      void carregarDaApi();
     };
 
     // -------------------------------------------------------------------------
-    // Eventos de domínio
+    // nova_notificacao — evento DB-backed (id real, persiste)
     // -------------------------------------------------------------------------
 
-    const onNovoUpload = (payload: PayloadNovoUpload) => {
+    const onNovaNotificacaoDB = (payload: {
+      id: string; tipo: string; titulo: string; mensagem: string; createdAt: string;
+    }) => {
       const notificacao: Notificacao = {
-        id:        crypto.randomUUID(),
-        tipo:      'novoDocumentoUpload',
+        id:        payload.id,
+        tipo:      payload.tipo,
+        titulo:    payload.titulo,
         mensagem:  payload.mensagem,
         lida:      false,
-        timestamp: new Date(),
-        payload,
+        createdAt: new Date(payload.createdAt),
       };
       despachar({ tipo: 'NOVA_NOTIFICACAO', notificacao });
       callbackRef.current?.(notificacao);
     };
 
-    const onDocVisualizado = (payload: PayloadDocumentoVisualizado) => {
-      const notificacao: Notificacao = {
-        id:        crypto.randomUUID(),
-        tipo:      'documentoVisualizado',
-        mensagem:  payload.mensagem || `"${payload.nomeArquivo}" foi visualizado`,
-        lida:      false,
-        timestamp: new Date(),
-        payload,
-      };
-      despachar({ tipo: 'NOVA_NOTIFICACAO', notificacao });
-      callbackRef.current?.(notificacao);
-    };
+    // -------------------------------------------------------------------------
+    // chat_notification — in-memory (não persiste no DB)
+    // -------------------------------------------------------------------------
 
-    s.on('connect',        onConnect);
-    s.on('disconnect',     onDisconnect);
-    s.on('connect_error',  onConnectError);
     const onChatNotification = (payload: PayloadChatNotification) => {
       const notificacao: Notificacao = {
         id:        crypto.randomUUID(),
-        tipo:      'chat_notification',
+        tipo:      'CHAT',
+        titulo:    'Nova mensagem no chat',
         mensagem:  `${payload.senderNome}: ${payload.preview}`,
         lida:      false,
-        timestamp: new Date(),
+        createdAt: new Date(),
         payload,
       };
       despachar({ tipo: 'NOVA_NOTIFICACAO', notificacao });
       callbackRef.current?.(notificacao);
     };
 
-    s.on('novoDocumentoUpload',    onNovoUpload);
-    s.on('documentoVisualizado',   onDocVisualizado);
-    s.on('chat_notification',      onChatNotification);
+    s.on('connect',           onConnect);
+    s.on('disconnect',        onDisconnect);
+    s.on('connect_error',     onConnectError);
+    s.on('nova_notificacao',  onNovaNotificacaoDB);
+    s.on('chat_notification', onChatNotification);
+    s.io.on('reconnect_attempt', onReconnectAttempt);
+    s.io.on('reconnect',         onReconnect);
 
-    const onNovoBoleto = (payload: PayloadNovoBoleto) => {
-      const notificacao: Notificacao = {
-        id:        crypto.randomUUID(),
-        tipo:      'novoBoletoHonorario',
-        mensagem:  payload.mensagem || `Novo boleto de honorários disponível (${payload.mesReferencia}).`,
-        lida:      false,
-        timestamp: new Date(),
-        payload,
-      };
-      despachar({ tipo: 'NOVA_NOTIFICACAO', notificacao });
-      callbackRef.current?.(notificacao);
-    };
-
-    s.on('novoBoletoHonorario',    onNovoBoleto);
-    s.io.on('reconnect_attempt',   onReconnectAttempt);
-    s.io.on('reconnect',           onReconnect);
-
-    // -------------------------------------------------------------------------
-    // Cleanup: remove APENAS os listeners deste componente.
-    // NÃO desconecta o socket — ele é singleton e deve sobreviver a re-renders.
-    // -------------------------------------------------------------------------
     return () => {
-      s.off('connect',        onConnect);
-      s.off('disconnect',     onDisconnect);
-      s.off('connect_error',  onConnectError);
-      s.off('novoDocumentoUpload',    onNovoUpload);
-      s.off('documentoVisualizado',   onDocVisualizado);
-      s.off('chat_notification',      onChatNotification);
-      s.off('novoBoletoHonorario',    onNovoBoleto);
-      s.io.off('reconnect_attempt',   onReconnectAttempt);
-      s.io.off('reconnect',           onReconnect);
+      s.off('connect',           onConnect);
+      s.off('disconnect',        onDisconnect);
+      s.off('connect_error',     onConnectError);
+      s.off('nova_notificacao',  onNovaNotificacaoDB);
+      s.off('chat_notification', onChatNotification);
+      s.io.off('reconnect_attempt', onReconnectAttempt);
+      s.io.off('reconnect',         onReconnect);
     };
-  }, [token]); // Re-executa apenas quando o token muda
+  }, [token, carregarDaApi]);
 
-  const marcarComoLida = useCallback(
-    (id: string) => despachar({ tipo: 'MARCAR_LIDA', id }),
-    [],
-  );
+  // ---------------------------------------------------------------------------
+  // Marcar como lida — chama API + atualiza estado local
+  // ---------------------------------------------------------------------------
 
-  const marcarTodasLidas = useCallback(
-    () => despachar({ tipo: 'MARCAR_TODAS_LIDAS' }),
-    [],
-  );
+  const marcarComoLida = useCallback(async (id: string) => {
+    despachar({ tipo: 'MARCAR_LIDA', id });
+    // notificações in-memory (chat) não têm entrada no DB
+    const notif = estado.notificacoes.find((n) => n.id === id);
+    if (!notif || notif.tipo === 'CHAT') return;
+    try {
+      await fetch(`/api/v1/notificacoes/${id}/lida`, {
+        method:  'PATCH',
+        headers: tokenRef.current ? { Authorization: `Bearer ${tokenRef.current}` } : {},
+      });
+    } catch { /* fail-open */ }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [estado.notificacoes]);
+
+  const marcarTodasLidas = useCallback(async () => {
+    despachar({ tipo: 'MARCAR_TODAS_LIDAS' });
+    try {
+      await fetch('/api/v1/notificacoes/todas-lidas', {
+        method:  'PATCH',
+        headers: tokenRef.current ? { Authorization: `Bearer ${tokenRef.current}` } : {},
+      });
+    } catch { /* fail-open */ }
+  }, []);
 
   const remover = useCallback(
     (id: string) => despachar({ tipo: 'REMOVER', id }),
@@ -366,8 +375,8 @@ export function useNotificacoes(
     notificacoes:     estado.notificacoes,
     naoLidas:         estado.notificacoes.filter((n) => !n.lida).length,
     erroConexao:      estado.erroConexao,
-    marcarComoLida,
-    marcarTodasLidas,
+    marcarComoLida:   (id) => void marcarComoLida(id),
+    marcarTodasLidas: () => void marcarTodasLidas(),
     remover,
     limpar,
   };
