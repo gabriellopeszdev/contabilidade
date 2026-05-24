@@ -29,6 +29,14 @@
   --color-primary-50:    #eff6ff;
 }
 
+html.dark {
+  --color-bg:          #0f172a;  /* slate-900 */
+  --color-bg-card:     #1e293b;  /* slate-800 */
+  --color-text:        #f1f5f9;  /* slate-100 */
+  --color-text-muted:  #94a3b8;  /* slate-400 */
+  --color-border:      #334155;  /* slate-700 */
+}
+
 /* --------------------------------------------------------------------------
  * Base
  * -------------------------------------------------------------------------- */
@@ -83,13 +91,14 @@
 @layer components {
   /* Card padrão do dashboard */
   .card {
-    @apply bg-white rounded-2xl border border-slate-200 shadow-sm;
+    @apply bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm;
   }
 
   /* Input com estilo consistente */
   .input {
-    @apply w-full px-3 py-2.5 border border-slate-300 rounded-xl text-sm
-           text-slate-900 placeholder:text-slate-400 bg-white
+    @apply w-full px-3 py-2.5 border border-slate-300 dark:border-slate-600 rounded-xl text-sm
+           text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500
+           bg-white dark:bg-slate-800
            focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent
            transition-shadow;
   }

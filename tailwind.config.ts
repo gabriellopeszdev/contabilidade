@@ -2,6 +2,7 @@ import type { Config } from 'tailwindcss';
 import tailwindcssAnimate from 'tailwindcss-animate';
 
 const config: Config = {
+  darkMode: 'class',
   content: [
     // App Router — páginas, layouts e rotas
     './app/**/*.{js,ts,jsx,tsx,mdx}',
