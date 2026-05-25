@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   DollarSign,
   Download,
-  Search,
   ChevronLeft,
   ChevronRight,
   Plus,
@@ -23,6 +22,7 @@ import {
 } from 'lucide-react';
 
 import { useAuth } from '../../src/presentation/hooks/useAuth';
+import { FiltroClienteCombobox } from '../../src/presentation/components/financeiro/FiltroClienteCombobox';
 
 // =============================================================================
 // Tipos
@@ -49,8 +49,8 @@ interface Boleto {
 }
 
 interface ClienteOption {
-  id: string;
-  name: string;
+  id:   string;
+  nome: string;
   cnpj: string;
 }
 
@@ -62,10 +62,10 @@ interface BoletoListResponse {
 }
 
 const STATUS_BADGE: Record<Boleto['status'], { label: string; classes: string }> = {
-  PENDENTE:  { label: 'Pendente',  classes: 'bg-amber-100 text-amber-700' },
-  PAGO:      { label: 'Pago',      classes: 'bg-emerald-100 text-emerald-700' },
-  VENCIDO:   { label: 'Vencido',   classes: 'bg-red-100 text-red-700' },
-  CANCELADO: { label: 'Cancelado', classes: 'bg-gray-200 text-gray-600' },
+  PENDENTE:  { label: 'Pendente',  classes: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' },
+  PAGO:      { label: 'Pago',      classes: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' },
+  VENCIDO:   { label: 'Vencido',   classes: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' },
+  CANCELADO: { label: 'Cancelado', classes: 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400' },
 };
 
 // =============================================================================
@@ -132,17 +132,17 @@ export default function FinanceiroPage() {
   const [loading, setLoading]     = useState(true);
 
   // Filtros
-  const [filtroStatus, setFiltroStatus]     = useState('');
-  const [filtroCliente, setFiltroCliente]   = useState('');
-  const [busca, setBusca]                   = useState('');
+  const [filtroStatus, setFiltroStatus]   = useState('');
+  const [filtroCliente, setFiltroCliente] = useState('');
 
   // Modal (contador only)
-  const [modalAberto, setModalAberto] = useState(false);
-  const [clientes, setClientes]       = useState<ClienteOption[]>([]);
-  const [submitting, setSubmitting]   = useState(false);
+  const [modalAberto, setModalAberto]               = useState(false);
+  const [clienteSelecionado, setClienteSelecionado] = useState<ClienteOption | null>(null);
+  const [submitting, setSubmitting]                 = useState(false);
 
   // Form
-  const [formCliente, setFormCliente]       = useState('');
+  const [formCliente,    setFormCliente]    = useState('');
+  const [formClienteObj, setFormClienteObj] = useState<ClienteOption | null>(null);
   const [formValor, setFormValor]           = useState('');
   const [formVencimento, setFormVencimento] = useState('');
   const [formMes, setFormMes]               = useState('');
@@ -181,23 +181,7 @@ export default function FinanceiroPage() {
     if (!authCarregando && token) fetchBoletos(1);
   }, [authCarregando, token, fetchBoletos]);
 
-  // ===========================================================================
-  // Fetch clientes (para modal do contador)
-  // ===========================================================================
-  useEffect(() => {
-    if (!isVisaoContador || !token) return;
-    (async () => {
-      try {
-        const t = await getToken();
-        const res = await fetch('/api/v1/clientes?limit=200', {
-          headers: { Authorization: `Bearer ${t}` },
-        });
-        if (!res.ok) return;
-        const data = await res.json();
-        setClientes(data.clientes ?? data.data ?? []);
-      } catch { /* ignore */ }
-    })();
-  }, [isVisaoContador, token, getToken]);
+
 
   // ===========================================================================
   // Summary cards
@@ -226,17 +210,7 @@ export default function FinanceiroPage() {
     };
   }, [boletos]);
 
-  // Filtro de busca (client-side, sobre resultado atual)
-  const boletosFiltrados = useMemo(() => {
-    if (!busca.trim()) return boletos;
-    const q = busca.toLowerCase();
-    return boletos.filter(
-      (b) =>
-        b.clienteNome.toLowerCase().includes(q) ||
-        b.mesReferencia.includes(q) ||
-        (b.descricao && b.descricao.toLowerCase().includes(q)),
-    );
-  }, [boletos, busca]);
+  const boletosFiltrados = boletos;
 
   // ===========================================================================
   // Exportar CSV
@@ -322,6 +296,8 @@ export default function FinanceiroPage() {
     setModalAberto(false);
     setErros({});
     setFormErro('');
+    setFormCliente('');
+    setFormClienteObj(null);
   };
 
   const handleSubmit = async () => {
@@ -389,13 +365,13 @@ export default function FinanceiroPage() {
       <div className="space-y-6 max-w-6xl mx-auto">
         {/* Alertas */}
         {alertas.vencidos.length > 0 && (
-          <div className="flex items-start gap-3 p-4 rounded-xl bg-red-50 border border-red-200">
+          <div className="flex items-start gap-3 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
             <AlertTriangle size={20} className="text-red-500 shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-semibold text-red-800">
+              <p className="text-sm font-semibold text-red-800 dark:text-red-400">
                 Você tem {alertas.vencidos.length} boleto{alertas.vencidos.length > 1 ? 's' : ''} vencido{alertas.vencidos.length > 1 ? 's' : ''}
               </p>
-              <p className="text-xs text-red-600 mt-0.5">
+              <p className="text-xs text-red-600 dark:text-red-400 mt-0.5">
                 Total em atraso: {formatMoney(alertas.totalVencido)}
               </p>
             </div>
@@ -403,10 +379,10 @@ export default function FinanceiroPage() {
         )}
 
         {alertas.venceHoje.length > 0 && (
-          <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-50 border border-amber-200">
+          <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
             <Clock size={20} className="text-amber-500 shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-semibold text-amber-800">
+              <p className="text-sm font-semibold text-amber-800 dark:text-amber-400">
                 {alertas.venceHoje.length} boleto{alertas.venceHoje.length > 1 ? 's' : ''} vence{alertas.venceHoje.length > 1 ? 'm' : ''} hoje!
               </p>
             </div>
@@ -417,8 +393,8 @@ export default function FinanceiroPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
-                <Clock size={18} className="text-amber-600" />
+              <div className="w-10 h-10 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+                <Clock size={18} className="text-amber-600 dark:text-amber-400" />
               </div>
               <div>
                 <p className="text-xs text-gray-500 dark:text-gray-400">Em Aberto</p>
@@ -428,8 +404,8 @@ export default function FinanceiroPage() {
           </div>
           <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center">
-                <CheckCircle2 size={18} className="text-emerald-600" />
+              <div className="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+                <CheckCircle2 size={18} className="text-emerald-600 dark:text-emerald-400" />
               </div>
               <div>
                 <p className="text-xs text-gray-500 dark:text-gray-400">Total Pago</p>
@@ -495,7 +471,7 @@ export default function FinanceiroPage() {
                           <div className="flex items-center justify-center gap-1.5 flex-wrap">
                             <button
                               onClick={() => handleDownload(b)}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-sky-700 bg-sky-50 hover:bg-sky-100 transition-colors"
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/20 hover:bg-sky-100 dark:hover:bg-sky-900/30 transition-colors"
                               title={b.asaasBoletoUrl ? 'Ver boleto no Asaas' : 'Baixar PDF'}
                             >
                               {b.asaasBoletoUrl ? <ExternalLink size={14} /> : <Download size={14} />}
@@ -504,7 +480,7 @@ export default function FinanceiroPage() {
                             {b.asaasBarcode && (
                               <button
                                 onClick={() => copiarTexto(b.asaasBarcode!)}
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors"
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                                 title="Copiar linha digitável"
                               >
                                 <Copy size={14} />
@@ -514,7 +490,7 @@ export default function FinanceiroPage() {
                             {b.asaasPixCopiaECola && (
                               <button
                                 onClick={() => copiarTexto(b.asaasPixCopiaECola!)}
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-violet-700 bg-violet-50 hover:bg-violet-100 transition-colors"
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-violet-700 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/20 hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-colors"
                                 title="Copiar PIX copia e cola"
                               >
                                 <QrCode size={14} />
@@ -581,24 +557,13 @@ export default function FinanceiroPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-          {/* Busca */}
-          <div className="relative flex-1 sm:flex-initial">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
-            <input
-              value={busca}
-              onChange={(e) => setBusca(e.target.value)}
-              placeholder="Buscar cliente…"
-              className="w-full sm:w-48 pl-9 pr-3 py-2 text-xs rounded-lg border border-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-
           {/* Filtro status */}
           <div className="relative">
             <Filter size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
             <select
               value={filtroStatus}
               onChange={(e) => { setFiltroStatus(e.target.value); setPage(1); }}
-              className="pl-9 pr-8 py-2 text-xs rounded-lg border border-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
+              className="pl-9 pr-8 py-2 text-xs rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none dark:[color-scheme:dark]"
             >
               <option value="">Todos os status</option>
               <option value="PENDENTE">Pendente</option>
@@ -608,18 +573,17 @@ export default function FinanceiroPage() {
             </select>
           </div>
 
-          {/* Filtro cliente */}
-          {isVisaoContador && clientes.length > 0 && (
-            <select
-              value={filtroCliente}
-              onChange={(e) => { setFiltroCliente(e.target.value); setPage(1); }}
-              className="px-3 py-2 text-xs rounded-lg border border-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white max-w-[180px]"
-            >
-              <option value="">Todos os clientes</option>
-              {clientes.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
+          {/* Filtro cliente — combobox com busca server-side */}
+          {isVisaoContador && (
+            <FiltroClienteCombobox
+              getToken={getToken}
+              value={clienteSelecionado}
+              onChange={(c) => {
+                setClienteSelecionado(c);
+                setFiltroCliente(c?.id ?? '');
+                setPage(1);
+              }}
+            />
           )}
 
           {/* Botão Exportar CSV */}
@@ -800,7 +764,7 @@ export default function FinanceiroPage() {
             <div className="px-6 py-5 space-y-4">
               {/* Erro genérico (ex: erro de conexão, 500) */}
               {formErro && (
-                <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-xs text-red-700">
+                <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-xs text-red-700 dark:text-red-400">
                   {formErro}
                 </div>
               )}
@@ -808,16 +772,16 @@ export default function FinanceiroPage() {
               {/* Cliente */}
               <div>
                 <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Cliente *</label>
-                <select
-                  value={formCliente}
-                  onChange={(e) => { setFormCliente(e.target.value); setErros((p) => ({ ...p, clienteId: '' })); }}
-                  className={`w-full px-3 py-2 text-sm rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-gray-100 ${erros.clienteId ? 'border-red-500 bg-red-50/30' : 'border-gray-200 dark:border-gray-600'}`}
-                >
-                  <option value="">Selecione um cliente</option>
-                  {clientes.map((c) => (
-                    <option key={c.id} value={c.id}>{c.name} — {c.cnpj}</option>
-                  ))}
-                </select>
+                <FiltroClienteCombobox
+                  getToken={getToken}
+                  value={formClienteObj}
+                  onChange={(c) => {
+                    setFormClienteObj(c);
+                    setFormCliente(c?.id ?? '');
+                    setErros((p) => ({ ...p, clienteId: '' }));
+                  }}
+                  placeholder="Buscar cliente…"
+                />
                 {erros.clienteId && <p className="mt-1 text-xs text-red-600">{erros.clienteId}</p>}
               </div>
 
@@ -874,9 +838,9 @@ export default function FinanceiroPage() {
               </div>
 
               {/* Aviso geração automática */}
-              <div className="flex items-start gap-2 p-3 rounded-lg bg-blue-50 border border-blue-100">
+              <div className="flex items-start gap-2 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800">
                 <Sparkles size={15} className="text-blue-500 shrink-0 mt-0.5" />
-                <p className="text-xs text-blue-700">
+                <p className="text-xs text-blue-700 dark:text-blue-400">
                   Se a integração Asaas estiver configurada, um boleto bancário real será emitido. Caso contrário, um PDF será gerado automaticamente.
                 </p>
               </div>
@@ -924,7 +888,7 @@ function SummaryCard({
   return (
     <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
       <div className="flex items-center gap-3">
-        <div className={`w-10 h-10 rounded-lg bg-${cor}-100 flex items-center justify-center text-${cor}-600`}>
+        <div className={`w-10 h-10 rounded-lg bg-${cor}-100 dark:bg-${cor}-900/30 flex items-center justify-center text-${cor}-600 dark:text-${cor}-400`}>
           {icon}
         </div>
         <div>
