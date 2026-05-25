@@ -204,8 +204,8 @@ export function ClienteCombobox({
   return (
     <div ref={containerRef} className="relative">
       {/* Label */}
-      <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-        <Building2 size={14} className="inline-block mr-1.5 -mt-0.5 text-gray-500" />
+      <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+        <Building2 size={14} className="inline-block mr-1.5 -mt-0.5 text-gray-500 dark:text-gray-400" />
         Cliente (Empresa)
       </label>
 
@@ -216,8 +216,8 @@ export function ClienteCombobox({
                       transition-all
                       ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
                       ${value
-                        ? 'border-violet-300 bg-violet-50/50'
-                        : 'border-gray-300 bg-white hover:border-gray-400'
+                        ? 'border-violet-300 dark:border-violet-700 bg-violet-50/50 dark:bg-violet-900/20'
+                        : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:border-gray-400 dark:hover:border-gray-500'
                       }`}
         >
           {value ? (
@@ -229,12 +229,12 @@ export function ClienteCombobox({
                 className="flex items-center gap-3 flex-1 min-w-0 focus-visible:outline-none
                            focus-visible:ring-2 focus-visible:ring-violet-400 rounded-lg"
               >
-                <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-violet-100 shrink-0">
-                  <Building2 size={16} className="text-violet-600" />
+                <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-violet-100 dark:bg-violet-900/30 shrink-0">
+                  <Building2 size={16} className="text-violet-600 dark:text-violet-400" />
                 </div>
                 <div className="flex-1 min-w-0 text-left">
-                  <p className="text-sm font-semibold text-gray-900 truncate">{value.nome}</p>
-                  <p className="text-xs text-gray-500 font-mono">{formatarCNPJ(value.cnpj)}</p>
+                  <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">{value.nome}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 font-mono">{formatarCNPJ(value.cnpj)}</p>
                 </div>
               </button>
               {!disabled && (
@@ -242,7 +242,7 @@ export function ClienteCombobox({
                   type="button"
                   onClick={handleClear}
                   aria-label="Remover cliente selecionado"
-                  className="p-1 rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50
+                  className="p-1 rounded-md text-gray-400 dark:text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20
                              transition-colors shrink-0"
                 >
                   <X size={16} />
@@ -257,18 +257,18 @@ export function ClienteCombobox({
               className="flex items-center gap-3 flex-1 min-w-0 focus-visible:outline-none
                          focus-visible:ring-2 focus-visible:ring-violet-400 rounded-lg"
             >
-              <Search size={16} className="text-gray-400 shrink-0" />
-              <span className="text-sm text-gray-400 flex-1 text-left">
+              <Search size={16} className="text-gray-400 dark:text-gray-500 shrink-0" />
+              <span className="text-sm text-gray-400 dark:text-gray-500 flex-1 text-left">
                 Buscar por nome ou CNPJ…
               </span>
-              <ChevronDown size={16} className="text-gray-400 shrink-0" />
+              <ChevronDown size={16} className="text-gray-400 dark:text-gray-500 shrink-0" />
             </button>
           )}
         </div>
       ) : (
         /* Search Input (quando aberto) */
         <div className="relative">
-          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
           <input
             ref={inputRef}
             type="text"
@@ -281,9 +281,9 @@ export function ClienteCombobox({
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Digite o nome ou CNPJ…"
-            className="w-full rounded-xl border border-violet-400 bg-white pl-10 pr-10 py-2.5
-                       text-sm text-gray-900 placeholder:text-gray-400
-                       focus:outline-none focus:ring-2 focus:ring-violet-400 focus:ring-offset-1"
+            className="w-full rounded-xl border border-violet-400 dark:border-violet-600 bg-white dark:bg-gray-800 pl-10 pr-10 py-2.5
+                       text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500
+                       focus:outline-none focus:ring-2 focus:ring-violet-400 focus:ring-offset-1 dark:focus:ring-offset-gray-900"
           />
           {loading && (
             <Loader2 size={16} className="absolute right-3.5 top-1/2 -translate-y-1/2
@@ -299,15 +299,15 @@ export function ClienteCombobox({
           ref={listboxRef}
           role="listbox"
           className="absolute z-50 mt-1.5 w-full max-h-64 overflow-y-auto rounded-xl border
-                     border-gray-200 bg-white shadow-lg py-1"
+                     border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-lg py-1"
         >
           {loading && clientes.length === 0 ? (
-            <li className="px-4 py-6 text-center text-sm text-gray-400">
+            <li className="px-4 py-6 text-center text-sm text-gray-400 dark:text-gray-500">
               <Loader2 size={18} className="inline-block animate-spin mr-2" />
               Buscando clientes…
             </li>
           ) : clientes.length === 0 ? (
-            <li className="px-4 py-6 text-center text-sm text-gray-400">
+            <li className="px-4 py-6 text-center text-sm text-gray-400 dark:text-gray-500">
               {query ? 'Nenhum cliente encontrado.' : 'Digite para buscar…'}
             </li>
           ) : (
@@ -321,17 +321,17 @@ export function ClienteCombobox({
                 onClick={() => handleSelect(cliente)}
                 className={`flex items-center gap-3 px-4 py-2.5 cursor-pointer transition-colors
                             ${activeIndex === index
-                              ? 'bg-violet-50'
-                              : 'hover:bg-gray-50'
+                              ? 'bg-violet-50 dark:bg-violet-900/20'
+                              : 'hover:bg-gray-50 dark:hover:bg-gray-800'
                             }
-                            ${value?.id === cliente.id ? 'ring-2 ring-inset ring-violet-300' : ''}`}
+                            ${value?.id === cliente.id ? 'ring-2 ring-inset ring-violet-300 dark:ring-violet-700' : ''}`}
               >
-                <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100 shrink-0">
-                  <Building2 size={16} className="text-gray-500" />
+                <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-700 shrink-0">
+                  <Building2 size={16} className="text-gray-500 dark:text-gray-400" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">{cliente.nome}</p>
-                  <p className="text-xs text-gray-500 font-mono">{formatarCNPJ(cliente.cnpj)}</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{cliente.nome}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 font-mono">{formatarCNPJ(cliente.cnpj)}</p>
                 </div>
               </li>
             ))

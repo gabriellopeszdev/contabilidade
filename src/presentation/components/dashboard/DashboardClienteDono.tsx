@@ -215,7 +215,7 @@ export default function DashboardClienteDono() {
             value={setor ?? ''}
             onChange={(e) => { setSetor((e.target.value || undefined) as SetorFiltro | undefined); setPage(1); }}
             className="px-3 py-2 text-xs font-medium rounded-lg border border-slate-300 dark:border-gray-600 bg-white dark:bg-gray-900
-              text-slate-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-sky-500"
+              text-slate-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-sky-500 dark:[color-scheme:dark]"
           >
             <option value="">Todos os Setores</option>
             <option value="FISCAL">Fiscal</option>
@@ -227,7 +227,7 @@ export default function DashboardClienteDono() {
             value={filtroOrigem}
             onChange={(e) => setFiltroOrigem(e.target.value as Origem | '')}
             className="px-3 py-2 text-xs font-medium rounded-lg border border-slate-300 dark:border-gray-600 bg-white dark:bg-gray-900
-              text-slate-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-sky-500"
+              text-slate-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-sky-500 dark:[color-scheme:dark]"
           >
             <option value="">Todas as Origens</option>
             <option value="UPLOAD_CLIENTE">Enviado por mim</option>

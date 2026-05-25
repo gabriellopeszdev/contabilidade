@@ -17,9 +17,9 @@ import { estaAtrasada } from '../../hooks/useKanban';
 // =============================================================================
 
 const SETOR_CONFIG: Record<SetorTipo, { label: string; classes: string }> = {
-  FISCAL:   { label: 'Fiscal',   classes: 'bg-indigo-100  text-indigo-700  border-indigo-200'  },
-  PESSOAL:  { label: 'Pessoal',  classes: 'bg-pink-100    text-pink-700    border-pink-200'    },
-  CONTABIL: { label: 'Contábil', classes: 'bg-teal-100    text-teal-700    border-teal-200'    },
+  FISCAL:   { label: 'Fiscal',   classes: 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800'  },
+  PESSOAL:  { label: 'Pessoal',  classes: 'bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-400 border-pink-200 dark:border-pink-800'    },
+  CONTABIL: { label: 'Contábil', classes: 'bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400 border-teal-200 dark:border-teal-800'    },
 };
 
 // =============================================================================
@@ -30,10 +30,10 @@ const PRIORIDADE_CONFIG: Record<
   PrioridadeTarefa,
   { label: string; classes: string }
 > = {
-  LOW:    { label: 'Baixa',   classes: 'bg-gray-100   text-gray-600  border-gray-200'    },
-  MEDIUM: { label: 'Média',   classes: 'bg-blue-100   text-blue-700  border-blue-200'    },
-  HIGH:   { label: 'Alta',    classes: 'bg-orange-100 text-orange-700 border-orange-200' },
-  URGENT: { label: 'Urgente', classes: 'bg-red-100    text-red-700   border-red-200'     },
+  LOW:    { label: 'Baixa',   classes: 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-600'    },
+  MEDIUM: { label: 'Média',   classes: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800'    },
+  HIGH:   { label: 'Alta',    classes: 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-800' },
+  URGENT: { label: 'Urgente', classes: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800'     },
 };
 
 // =============================================================================
@@ -98,12 +98,12 @@ export function KanbanCard({ tarefa, isOverlay = false }: KanbanCardProps) {
       aria-label={`Card: ${tarefa.title}`}
       aria-grabbed={isDragging}
       className={[
-        'group relative bg-white rounded-xl border shadow-sm',
+        'group relative bg-white dark:bg-gray-900 rounded-xl border shadow-sm',
         'transition-all duration-150 select-none',
         // Estado de arraste: o card original fica translúcido
         isDragging && !isOverlay
           ? 'opacity-40 shadow-none border-dashed border-blue-300'
-          : 'border-gray-200 hover:border-blue-300 hover:shadow-md',
+          : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-md',
         // Overlay: sombra maior e leve rotação para sensação de "lift"
         isOverlay
           ? 'shadow-2xl border-blue-400 rotate-1 cursor-grabbing'
@@ -126,7 +126,7 @@ export function KanbanCard({ tarefa, isOverlay = false }: KanbanCardProps) {
           className="absolute left-0 inset-y-0 w-6 flex items-center justify-center
                      opacity-0 group-hover:opacity-100 transition-opacity
                      cursor-grab active:cursor-grabbing rounded-l-xl
-                     hover:bg-gray-50 focus-visible:opacity-100
+                     hover:bg-gray-50 dark:hover:bg-gray-800 focus-visible:opacity-100
                      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset
                      focus-visible:ring-blue-400"
         >
@@ -141,7 +141,7 @@ export function KanbanCard({ tarefa, isOverlay = false }: KanbanCardProps) {
         <div className="flex items-start justify-between gap-2 mb-2">
           <h3
             className={`text-sm font-semibold leading-snug line-clamp-2 flex-1 ${
-              isDone ? 'text-gray-400 line-through' : 'text-gray-800'
+              isDone ? 'text-gray-400 dark:text-gray-500 line-through' : 'text-gray-800 dark:text-gray-100'
             }`}
           >
             {tarefa.title}
@@ -196,7 +196,7 @@ export function KanbanCard({ tarefa, isOverlay = false }: KanbanCardProps) {
             {atrasada && (
               <span
                 className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md
-                           bg-red-100 text-red-700 text-[10px] font-bold border border-red-200"
+                           bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-[10px] font-bold border border-red-200 dark:border-red-800"
                 role="status"
                 aria-label="Tarefa atrasada"
               >

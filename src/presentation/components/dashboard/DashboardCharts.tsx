@@ -65,9 +65,9 @@ async function fetcher([url, token]: [string, string]): Promise<ChartsData> {
 function PieTooltip({ active, payload }: { active?: boolean; payload?: Array<{ name: string; value: number }> }) {
   if (!active || !payload?.[0]) return null;
   return (
-    <div className="bg-white border border-gray-200 rounded-lg shadow-lg px-3 py-2">
-      <p className="text-xs font-semibold text-gray-800">{payload[0].name}</p>
-      <p className="text-sm font-bold text-gray-900">{payload[0].value} tarefa{payload[0].value !== 1 ? 's' : ''}</p>
+    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg px-3 py-2">
+      <p className="text-xs font-semibold text-gray-800 dark:text-gray-200">{payload[0].name}</p>
+      <p className="text-sm font-bold text-gray-900 dark:text-gray-100">{payload[0].value} tarefa{payload[0].value !== 1 ? 's' : ''}</p>
     </div>
   );
 }
@@ -79,9 +79,9 @@ function PieTooltip({ active, payload }: { active?: boolean; payload?: Array<{ n
 function BarTooltip({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number }>; label?: string }) {
   if (!active || !payload?.[0]) return null;
   return (
-    <div className="bg-white border border-gray-200 rounded-lg shadow-lg px-3 py-2">
-      <p className="text-xs text-gray-500">{label}</p>
-      <p className="text-sm font-bold text-gray-900">{payload[0].value} documento{payload[0].value !== 1 ? 's' : ''}</p>
+    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg px-3 py-2">
+      <p className="text-xs text-gray-500 dark:text-gray-400">{label}</p>
+      <p className="text-sm font-bold text-gray-900 dark:text-gray-100">{payload[0].value} documento{payload[0].value !== 1 ? 's' : ''}</p>
     </div>
   );
 }
@@ -97,7 +97,7 @@ function renderLegend(props: any) {
   return (
     <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 mt-2">
       {payload.map((entry, index) => (
-        <span key={`leg-${index}`} className="flex items-center gap-1.5 text-[11px] text-gray-600">
+        <span key={`leg-${index}`} className="flex items-center gap-1.5 text-[11px] text-gray-600 dark:text-gray-400">
           <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: entry.color ?? '#6b7280' }} />
           {entry.value ?? ''}
         </span>
@@ -136,7 +136,7 @@ export function DashboardCharts({ token }: DashboardChartsProps) {
     return (
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {[0, 1, 2].map((i) => (
-          <div key={i} className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 h-72 flex items-center justify-center">
+          <div key={i} className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6 h-72 flex items-center justify-center">
             <RefreshCw size={20} className="animate-spin text-gray-300" />
           </div>
         ))}
@@ -156,11 +156,11 @@ export function DashboardCharts({ token }: DashboardChartsProps) {
       {/* ------------------------------------------------------------------ */}
       {/* Gráfico 1: Pizza — Tarefas por Status                              */}
       {/* ------------------------------------------------------------------ */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-5">
         <div className="flex items-center gap-2 mb-4">
           <PieIcon size={15} className="text-violet-500" />
-          <h3 className="text-sm font-bold text-gray-900">Tarefas por Status</h3>
-          <span className="ml-auto text-xs text-gray-400">{totalTarefasStatus} total</span>
+          <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">Tarefas por Status</h3>
+          <span className="ml-auto text-xs text-gray-400 dark:text-gray-500">{totalTarefasStatus} total</span>
         </div>
 
         {totalTarefasStatus === 0 ? (
@@ -195,11 +195,11 @@ export function DashboardCharts({ token }: DashboardChartsProps) {
       {/* ------------------------------------------------------------------ */}
       {/* Gráfico 2: Pizza — Tarefas por Setor                               */}
       {/* ------------------------------------------------------------------ */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-5">
         <div className="flex items-center gap-2 mb-4">
           <BarChart3 size={15} className="text-teal-500" />
-          <h3 className="text-sm font-bold text-gray-900">Tarefas por Setor</h3>
-          <span className="ml-auto text-xs text-gray-400">{totalTarefasSetor} total</span>
+          <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">Tarefas por Setor</h3>
+          <span className="ml-auto text-xs text-gray-400 dark:text-gray-500">{totalTarefasSetor} total</span>
         </div>
 
         {totalTarefasSetor === 0 ? (
@@ -234,10 +234,10 @@ export function DashboardCharts({ token }: DashboardChartsProps) {
       {/* ------------------------------------------------------------------ */}
       {/* Gráfico 3: Barras — Volume Mensal de Documentos                    */}
       {/* ------------------------------------------------------------------ */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-5">
         <div className="flex items-center gap-2 mb-4">
           <TrendingUp size={15} className="text-blue-500" />
-          <h3 className="text-sm font-bold text-gray-900">Documentos / Mês</h3>
+          <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">Documentos / Mês</h3>
         </div>
 
         <ResponsiveContainer width="100%" height={220}>
@@ -266,11 +266,11 @@ export function DashboardCharts({ token }: DashboardChartsProps) {
       {/* Gráfico 4: Barras Agrupadas — Eficiência da Equipe                 */}
       {/* ------------------------------------------------------------------ */}
       {eficienciaPorMes && eficienciaPorMes.length > 0 && (
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-5">
           <div className="flex items-center gap-2 mb-4">
             <Zap size={15} className="text-amber-500" />
-            <h3 className="text-sm font-bold text-gray-900">Eficiência da Equipe</h3>
-            <span className="ml-auto text-xs text-gray-400">Tarefas Criadas vs Concluídas</span>
+            <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">Eficiência da Equipe</h3>
+            <span className="ml-auto text-xs text-gray-400 dark:text-gray-500">Tarefas Criadas vs Concluídas</span>
           </div>
 
           <ResponsiveContainer width="100%" height={220}>
@@ -292,8 +292,8 @@ export function DashboardCharts({ token }: DashboardChartsProps) {
                 content={({ active, payload, label }) => {
                   if (!active || !payload?.[0]) return null;
                   return (
-                    <div className="bg-white border border-gray-200 rounded-lg shadow-lg px-3 py-2">
-                      <p className="text-xs text-gray-500 mb-1">{label}</p>
+                    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg px-3 py-2">
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{label}</p>
                       {payload.map((p, i) => (
                         <p key={i} className="text-xs">
                           <span className="font-bold" style={{ color: p.color }}>{p.name}: </span>

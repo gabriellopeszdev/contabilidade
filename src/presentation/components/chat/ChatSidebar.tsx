@@ -52,10 +52,10 @@ export function ChatSidebar({
   }, [rooms, busca]);
 
   return (
-    <div className="flex flex-col h-full bg-white border-r border-gray-200">
+    <div className="flex flex-col h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-gray-100">
-        <h2 className="text-sm font-bold text-gray-900 flex items-center gap-2 mb-3">
+      <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800">
+        <h2 className="text-sm font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2 mb-3">
           <MessageSquare size={16} className="text-blue-600" />
           Chat
         </h2>
@@ -67,7 +67,7 @@ export function ChatSidebar({
             value={busca}
             onChange={(e) => onBuscaChange(e.target.value)}
             placeholder="Buscar cliente..."
-            className="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400 focus:border-blue-400"
+            className="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-400 focus:border-blue-400"
           />
         </div>
       </div>
@@ -86,7 +86,7 @@ export function ChatSidebar({
             </p>
           </div>
         ) : (
-          <ul className="divide-y divide-gray-50">
+          <ul className="divide-y divide-gray-50 dark:divide-gray-800">
             {filtradas.map((room) => {
               const ativo = room.id === roomAtual;
               const iniciais = room.clienteNome
@@ -103,15 +103,15 @@ export function ChatSidebar({
                     className={`
                       w-full flex items-start gap-3 px-4 py-3 text-left transition-colors
                       ${ativo
-                        ? 'bg-blue-50 border-l-2 border-blue-600'
-                        : 'hover:bg-gray-50 border-l-2 border-transparent'
+                        ? 'bg-blue-50 dark:bg-blue-900/20 border-l-2 border-blue-600 dark:border-blue-500'
+                        : 'hover:bg-gray-50 dark:hover:bg-gray-800 border-l-2 border-transparent'
                       }
                     `}
                   >
                     {/* Avatar */}
                     <div className={`
                       w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold shrink-0
-                      ${ativo ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}
+                      ${ativo ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'}
                     `}>
                       {iniciais}
                     </div>
@@ -119,17 +119,17 @@ export function ChatSidebar({
                     {/* Info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
-                        <p className={`text-xs font-semibold truncate ${ativo ? 'text-blue-900' : 'text-gray-900'}`}>
+                        <p className={`text-xs font-semibold truncate ${ativo ? 'text-blue-900 dark:text-blue-300' : 'text-gray-900 dark:text-gray-100'}`}>
                           {room.clienteNome}
                         </p>
                         {room.ultimaMensagem && (
-                          <span className="text-[10px] text-gray-400 shrink-0 ml-2">
+                          <span className="text-[10px] text-gray-400 dark:text-gray-500 shrink-0 ml-2">
                             {formatarHora(room.ultimaMensagem.createdAt)}
                           </span>
                         )}
                       </div>
                       <div className="flex items-center justify-between mt-0.5">
-                        <p className="text-[11px] text-gray-500 truncate pr-2">
+                        <p className="text-[11px] text-gray-500 dark:text-gray-400 truncate pr-2">
                           {room.ultimaMensagem
                             ? room.ultimaMensagem.content
                             : 'Nenhuma mensagem ainda'}

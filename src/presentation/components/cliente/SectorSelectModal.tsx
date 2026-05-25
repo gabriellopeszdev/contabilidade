@@ -109,24 +109,24 @@ export function SectorSelectModal({ arquivo, onFechar, onSucesso, setorInicial }
       />
 
       {/* Card */}
-      <div className="relative w-full max-w-sm bg-white rounded-2xl shadow-2xl border border-gray-200 p-6 space-y-5">
+      <div className="relative w-full max-w-sm bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 p-6 space-y-5">
 
         {/* Header */}
         <div className="flex items-start justify-between gap-2">
           <div>
-            <h3 className="text-base font-bold text-gray-900">Para qual setor?</h3>
+            <h3 className="text-base font-bold text-gray-900 dark:text-gray-100">Para qual setor?</h3>
             <div className="flex items-center gap-1.5 mt-1">
               <FileText size={13} className="text-gray-400 shrink-0" />
-              <span className="text-xs text-gray-500 truncate max-w-[220px]" title={arquivo.name}>
+              <span className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[220px]" title={arquivo.name}>
                 {arquivo.name}
               </span>
-              <span className="text-[10px] text-gray-400 shrink-0">· {tamanhoStr}</span>
+              <span className="text-[10px] text-gray-400 dark:text-gray-500 shrink-0">· {tamanhoStr}</span>
             </div>
           </div>
           <button
             onClick={onFechar}
             disabled={enviando}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100
+            className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800
                        transition-colors disabled:opacity-40 shrink-0"
           >
             <X size={16} />
@@ -148,7 +148,7 @@ export function SectorSelectModal({ arquivo, onFechar, onSucesso, setorInicial }
                   disabled:opacity-50 focus-visible:outline-none
                   ${selecionado
                     ? s.active
-                    : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50'
+                    : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
                   }
                 `}
               >
@@ -161,17 +161,17 @@ export function SectorSelectModal({ arquivo, onFechar, onSucesso, setorInicial }
 
         {/* Feedback de erro */}
         {erro && (
-          <div className="flex items-center gap-2 rounded-lg px-3 py-2.5 bg-red-50 border border-red-200">
+          <div className="flex items-center gap-2 rounded-lg px-3 py-2.5 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
             <AlertCircle size={14} className="text-red-500 shrink-0" />
-            <span className="text-xs text-red-700">{erro}</span>
+            <span className="text-xs text-red-700 dark:text-red-400">{erro}</span>
           </div>
         )}
 
         {/* Feedback de sucesso */}
         {sucesso && (
-          <div className="flex items-center gap-2 rounded-lg px-3 py-2.5 bg-emerald-50 border border-emerald-200">
+          <div className="flex items-center gap-2 rounded-lg px-3 py-2.5 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
             <CheckCircle2 size={14} className="text-emerald-500 shrink-0" />
-            <span className="text-xs text-emerald-700">
+            <span className="text-xs text-emerald-700 dark:text-emerald-400">
               Enviado para <strong>{setorAtual.label}</strong>. Seu contador já foi notificado!
             </span>
           </div>

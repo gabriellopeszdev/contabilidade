@@ -51,15 +51,15 @@ export function KanbanColumn({
 
   // Visual feedback dinâmico durante o arraste
   const bgColumn = (() => {
-    if (!hayArrastre)  return 'bg-gray-50';              // estado normal
-    if (!aceitaDrop)   return 'bg-gray-100 opacity-60';  // destino inválido: muted
-    if (isOver)        return 'bg-blue-50 ring-2 ring-blue-300 ring-inset'; // hover válido
-    return             'bg-gray-50';                     // válido mas sem hover
+    if (!hayArrastre)  return 'bg-gray-50 dark:bg-gray-800/40';
+    if (!aceitaDrop)   return 'bg-gray-100 dark:bg-gray-800/20 opacity-60';
+    if (isOver)        return 'bg-blue-50 dark:bg-blue-900/20 ring-2 ring-blue-300 dark:ring-blue-700 ring-inset';
+    return             'bg-gray-50 dark:bg-gray-800/40';
   })();
 
   const borderColumn = isOver && aceitaDrop
-    ? `border-blue-400 ${corBorda}`
-    : `border-gray-200 ${corBorda}`;
+    ? `border-blue-400 dark:border-blue-600 ${corBorda}`
+    : `border-gray-200 dark:border-gray-700 ${corBorda}`;
 
   return (
     <section
@@ -80,7 +80,7 @@ export function KanbanColumn({
         {/* Contador de cards */}
         <span
           className="min-w-[22px] h-[22px] flex items-center justify-center
-                     rounded-full bg-white/70 text-xs font-bold tabular-nums"
+                     rounded-full bg-white/70 dark:bg-gray-900/70 text-xs font-bold tabular-nums"
           aria-label={`${tarefas.length} tarefas`}
         >
           {tarefas.length}
@@ -104,8 +104,8 @@ export function KanbanColumn({
             className={`flex-1 flex items-center justify-center rounded-xl border-2 border-dashed
                         transition-colors duration-150 min-h-[80px]
                         ${isOver && aceitaDrop
-                          ? 'border-blue-400 bg-blue-50/50'
-                          : 'border-gray-200 bg-transparent'
+                          ? 'border-blue-400 dark:border-blue-600 bg-blue-50/50 dark:bg-blue-900/20'
+                          : 'border-gray-200 dark:border-gray-700 bg-transparent'
                         }`}
           >
             <p className="text-xs text-gray-400 font-medium select-none">
@@ -126,7 +126,7 @@ export function KanbanColumn({
                 aria-hidden="true"
                 className={`h-8 rounded-xl border-2 border-dashed transition-all duration-150
                             ${isOver
-                              ? 'border-blue-400 bg-blue-50/50'
+                              ? 'border-blue-400 dark:border-blue-600 bg-blue-50/50 dark:bg-blue-900/20'
                               : 'border-transparent'
                             }`}
               />

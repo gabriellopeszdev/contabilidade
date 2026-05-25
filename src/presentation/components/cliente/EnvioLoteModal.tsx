@@ -49,8 +49,8 @@ const SETORES: {
     label:   'Fiscal',
     desc:    'Notas fiscais, DANFE, DARF, DAS, GPS',
     styles: {
-      idle:   'border-gray-200 bg-white hover:border-indigo-300 hover:bg-indigo-50/40',
-      active: 'border-indigo-500 bg-indigo-50 ring-2 ring-indigo-200',
+      idle:   'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-indigo-300 hover:bg-indigo-50/40 dark:hover:border-indigo-700 dark:hover:bg-indigo-900/20',
+      active: 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 ring-2 ring-indigo-200 dark:ring-indigo-800',
       dot:    'bg-indigo-500',
     },
   },
@@ -59,8 +59,8 @@ const SETORES: {
     label:   'Pessoal',
     desc:    'RG, CPF, comprovantes de residência',
     styles: {
-      idle:   'border-gray-200 bg-white hover:border-violet-300 hover:bg-violet-50/40',
-      active: 'border-violet-500 bg-violet-50 ring-2 ring-violet-200',
+      idle:   'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-violet-300 hover:bg-violet-50/40 dark:hover:border-violet-700 dark:hover:bg-violet-900/20',
+      active: 'border-violet-500 bg-violet-50 dark:bg-violet-900/30 ring-2 ring-violet-200 dark:ring-violet-800',
       dot:    'bg-violet-500',
     },
   },
@@ -69,8 +69,8 @@ const SETORES: {
     label:   'Contábil',
     desc:    'Balanços, DRE, extratos bancários',
     styles: {
-      idle:   'border-gray-200 bg-white hover:border-teal-300 hover:bg-teal-50/40',
-      active: 'border-teal-500 bg-teal-50 ring-2 ring-teal-200',
+      idle:   'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-teal-300 hover:bg-teal-50/40 dark:hover:border-teal-700 dark:hover:bg-teal-900/20',
+      active: 'border-teal-500 bg-teal-50 dark:bg-teal-900/30 ring-2 ring-teal-200 dark:ring-teal-800',
       dot:    'bg-teal-500',
     },
   },
@@ -149,21 +149,21 @@ export function EnvioLoteModal({ arquivos, onFechar, onSucesso, setorInicial }: 
       />
 
       {/* Painel */}
-      <div className="relative w-full sm:max-w-lg bg-white sm:rounded-2xl shadow-2xl border border-gray-200
+      <div className="relative w-full sm:max-w-lg bg-white dark:bg-gray-900 sm:rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700
         flex flex-col max-h-[92dvh] rounded-t-2xl">
 
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 shrink-0">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800 shrink-0">
           <div>
-            <h3 className="text-base font-bold text-gray-900">Confirmar envio</h3>
-            <p className="text-xs text-gray-500 mt-0.5">
+            <h3 className="text-base font-bold text-gray-900 dark:text-gray-100">Confirmar envio</h3>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
               {totalAtivos} arquivo{totalAtivos !== 1 ? 's' : ''} selecionado{totalAtivos !== 1 ? 's' : ''}
             </p>
           </div>
           <button
             onClick={onFechar}
             disabled={enviando}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100
+            className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800
               disabled:opacity-40 transition-colors"
           >
             <X size={16} />
@@ -176,7 +176,7 @@ export function EnvioLoteModal({ arquivos, onFechar, onSucesso, setorInicial }: 
           {/* Seletor de setor — Radio Cards */}
           {!concluido && (
             <div className="space-y-2">
-              <p className="text-xs font-semibold text-gray-600 uppercase tracking-widest">
+              <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-widest">
                 A qual setor pertencem estes documentos?
               </p>
               <div className="grid grid-cols-3 gap-2">
@@ -220,16 +220,16 @@ export function EnvioLoteModal({ arquivos, onFechar, onSucesso, setorInicial }: 
                   key={idx}
                   className={`flex items-center gap-3 rounded-xl px-3 py-2.5 border transition-colors
                     ${item.estado === 'sucesso'
-                      ? 'bg-emerald-50 border-emerald-200'
+                      ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800'
                       : item.estado === 'erro'
-                        ? 'bg-red-50 border-red-200'
+                        ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
                         : item.estado === 'enviando'
-                          ? 'bg-sky-50 border-sky-200'
-                          : 'bg-gray-50 border-gray-200'
+                          ? 'bg-sky-50 dark:bg-sky-900/20 border-sky-200 dark:border-sky-800'
+                          : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700'
                     }`}
                 >
                   {/* Ícone */}
-                  <div className="shrink-0 w-8 h-8 rounded-lg bg-white border border-gray-200
+                  <div className="shrink-0 w-8 h-8 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700
                     flex items-center justify-center">
                     {isPDF
                       ? <FileText  size={14} className="text-red-500" />
@@ -239,8 +239,8 @@ export function EnvioLoteModal({ arquivos, onFechar, onSucesso, setorInicial }: 
 
                   {/* Info */}
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-gray-800 truncate">{item.file.name}</p>
-                    <p className="text-[10px] text-gray-400">{formatarTamanho(item.file.size)}</p>
+                    <p className="text-xs font-semibold text-gray-800 dark:text-gray-100 truncate">{item.file.name}</p>
+                    <p className="text-[10px] text-gray-400 dark:text-gray-500">{formatarTamanho(item.file.size)}</p>
                     {item.erro && (
                       <p className="text-[10px] text-red-600 mt-0.5">{item.erro}</p>
                     )}
@@ -276,8 +276,8 @@ export function EnvioLoteModal({ arquivos, onFechar, onSucesso, setorInicial }: 
           {concluido && (
             <div className={`rounded-xl p-4 text-sm font-semibold text-center
               ${totalErro === 0
-                ? 'bg-emerald-50 border border-emerald-200 text-emerald-700'
-                : 'bg-amber-50 border border-amber-200 text-amber-700'
+                ? 'bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400'
+                : 'bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-400'
               }`}
             >
               {totalErro === 0
@@ -289,7 +289,7 @@ export function EnvioLoteModal({ arquivos, onFechar, onSucesso, setorInicial }: 
         </div>
 
         {/* Rodapé */}
-        <div className="px-5 py-4 border-t border-gray-100 shrink-0 flex items-center gap-3">
+        <div className="px-5 py-4 border-t border-gray-100 dark:border-gray-800 shrink-0 flex items-center gap-3">
           {concluido ? (
             <button
               onClick={totalErro === 0 ? onSucesso : undefined}
@@ -303,8 +303,8 @@ export function EnvioLoteModal({ arquivos, onFechar, onSucesso, setorInicial }: 
               <button
                 onClick={onFechar}
                 disabled={enviando}
-                className="flex-1 py-2.5 text-sm font-semibold text-gray-700 bg-white border border-gray-300
-                  rounded-xl hover:bg-gray-50 transition-colors disabled:opacity-40"
+                className="flex-1 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600
+                  rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-40"
               >
                 Cancelar
               </button>

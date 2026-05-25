@@ -70,14 +70,14 @@ export function BannerBoletosCliente({ token }: Props) {
       {vencidos > 0 && (
         <Link
           href="/financeiro"
-          className="flex items-start gap-3 p-4 rounded-xl bg-red-50 border border-red-200 hover:bg-red-100/60 transition-colors"
+          className="flex items-start gap-3 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 hover:bg-red-100/60 dark:hover:bg-red-900/30 transition-colors"
         >
-          <AlertTriangle size={20} className="text-red-600 shrink-0 mt-0.5" />
+          <AlertTriangle size={20} className="text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
           <div className="flex-1">
-            <p className="text-sm font-semibold text-red-800">
+            <p className="text-sm font-semibold text-red-800 dark:text-red-300">
               {vencidos} boleto{vencidos > 1 ? 's' : ''} de honorários vencido{vencidos > 1 ? 's' : ''} ({formatCurrency(valorVencido)})
             </p>
-            <p className="text-xs text-red-600 mt-0.5">Clique para ver seus boletos</p>
+            <p className="text-xs text-red-600 dark:text-red-400 mt-0.5">Clique para ver seus boletos</p>
           </div>
           <DollarSign size={16} className="text-red-400 shrink-0" />
         </Link>
@@ -86,14 +86,14 @@ export function BannerBoletosCliente({ token }: Props) {
       {venceHoje > 0 && (
         <Link
           href="/financeiro"
-          className="flex items-start gap-3 p-4 rounded-xl bg-amber-50 border border-amber-200 hover:bg-amber-100/60 transition-colors"
+          className="flex items-start gap-3 p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 hover:bg-amber-100/60 dark:hover:bg-amber-900/30 transition-colors"
         >
-          <Clock size={20} className="text-amber-600 shrink-0 mt-0.5" />
+          <Clock size={20} className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
           <div className="flex-1">
-            <p className="text-sm font-semibold text-amber-800">
+            <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">
               {venceHoje} boleto{venceHoje > 1 ? 's' : ''} vence{venceHoje > 1 ? 'm' : ''} hoje!
             </p>
-            <p className="text-xs text-amber-600 mt-0.5">Clique para ver seus boletos</p>
+            <p className="text-xs text-amber-600 dark:text-amber-400 mt-0.5">Clique para ver seus boletos</p>
           </div>
           <DollarSign size={16} className="text-amber-400 shrink-0" />
         </Link>

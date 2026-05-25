@@ -150,11 +150,11 @@ export const ChatWindow = forwardRef<ChatWindowHandle, ChatWindowProps>(function
   // ------------------------------------------------------------------
   if (semSala) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center bg-gray-50/50 text-center px-8">
-        <div className="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center mb-4">
+      <div className="flex-1 flex flex-col items-center justify-center bg-gray-50/50 dark:bg-gray-950/50 text-center px-8">
+        <div className="w-16 h-16 rounded-2xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center mb-4">
           <MessageSquare size={28} className="text-blue-400" />
         </div>
-        <h3 className="text-sm font-semibold text-gray-700 mb-1">
+        <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-1">
           Selecione uma conversa
         </h3>
         <p className="text-xs text-gray-400 max-w-xs">
@@ -170,10 +170,10 @@ export const ChatWindow = forwardRef<ChatWindowHandle, ChatWindowProps>(function
   let lastDate = '';
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-gray-50/30">
+    <div className="flex-1 flex flex-col min-h-0 bg-gray-50/30 dark:bg-gray-950/50">
       {/* Header */}
-      <div className="px-4 py-3 bg-white border-b border-gray-200 flex items-center gap-3 shrink-0">
-        <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold">
+      <div className="px-4 py-3 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 flex items-center gap-3 shrink-0">
+        <div className="w-9 h-9 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 flex items-center justify-center text-xs font-bold">
           {nomeDestinatario
             .split(' ')
             .filter(Boolean)
@@ -182,7 +182,7 @@ export const ChatWindow = forwardRef<ChatWindowHandle, ChatWindowProps>(function
             .join('')}
         </div>
         <div>
-          <p className="text-sm font-semibold text-gray-900">{nomeDestinatario}</p>
+          <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{nomeDestinatario}</p>
           {typing && (
             <p className="text-[10px] text-blue-600 animate-pulse">
               {typing.nome} está digitando…
@@ -202,7 +202,7 @@ export const ChatWindow = forwardRef<ChatWindowHandle, ChatWindowProps>(function
           <button
             onClick={onCarregarMais}
             disabled={carregando}
-            className="mx-auto flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-gray-200 text-[10px] text-gray-500 hover:bg-gray-50 mb-3"
+            className="mx-auto flex items-center gap-1.5 px-3 py-1 rounded-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-[10px] text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 mb-3"
           >
             {carregando ? (
               <Loader2 size={10} className="animate-spin" />
@@ -237,11 +237,11 @@ export const ChatWindow = forwardRef<ChatWindowHandle, ChatWindowProps>(function
                 {/* Separador de data */}
                 {mostrarSeparador && (
                   <div className="flex items-center gap-3 my-3">
-                    <div className="flex-1 h-px bg-gray-200" />
-                    <span className="text-[10px] text-gray-400 font-medium shrink-0">
+                    <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
+                    <span className="text-[10px] text-gray-400 dark:text-gray-500 font-medium shrink-0">
                       {formatarDataSeparador(msg.createdAt)}
                     </span>
-                    <div className="flex-1 h-px bg-gray-200" />
+                    <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
                   </div>
                 )}
 
@@ -252,7 +252,7 @@ export const ChatWindow = forwardRef<ChatWindowHandle, ChatWindowProps>(function
                       max-w-[75%] px-3 py-2 rounded-2xl text-[13px] leading-relaxed
                       ${isMe
                         ? 'bg-primary text-white rounded-br-none self-end'
-                        : 'bg-gray-200 text-gray-800 rounded-bl-none self-start shadow-sm'
+                        : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-bl-none self-start shadow-sm'
                       }
                     `}
                   >
@@ -263,7 +263,7 @@ export const ChatWindow = forwardRef<ChatWindowHandle, ChatWindowProps>(function
                       </p>
                     )}
                     <p className="whitespace-pre-wrap break-words">{msg.content}</p>
-                    <p className={`text-[9px] mt-1 ${isMe ? 'text-white/60' : 'text-gray-500'} text-right`}>
+                    <p className={`text-[9px] mt-1 ${isMe ? 'text-white/60' : 'text-gray-500 dark:text-gray-400'} text-right`}>
                       {formatarHoraMensagem(msg.createdAt)}
                     </p>
                   </div>
@@ -276,11 +276,11 @@ export const ChatWindow = forwardRef<ChatWindowHandle, ChatWindowProps>(function
         {/* Typing bubble */}
         {typing && (
           <div className="flex justify-start mb-1">
-            <div className="bg-gray-200 rounded-2xl rounded-bl-none px-4 py-2.5 shadow-sm">
+            <div className="bg-gray-200 dark:bg-gray-700 rounded-2xl rounded-bl-none px-4 py-2.5 shadow-sm">
               <div className="flex gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '0ms' }} />
-                <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '150ms' }} />
-                <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '300ms' }} />
+                <span className="w-1.5 h-1.5 rounded-full bg-gray-400 dark:bg-gray-500 animate-bounce" style={{ animationDelay: '0ms' }} />
+                <span className="w-1.5 h-1.5 rounded-full bg-gray-400 dark:bg-gray-500 animate-bounce" style={{ animationDelay: '150ms' }} />
+                <span className="w-1.5 h-1.5 rounded-full bg-gray-400 dark:bg-gray-500 animate-bounce" style={{ animationDelay: '300ms' }} />
               </div>
             </div>
           </div>
@@ -291,7 +291,7 @@ export const ChatWindow = forwardRef<ChatWindowHandle, ChatWindowProps>(function
       </div>
 
       {/* Input area */}
-      <div className="px-4 py-3 bg-white border-t border-gray-200 shrink-0">
+      <div className="px-4 py-3 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shrink-0">
         <form onSubmit={handleSubmit} className="flex items-end gap-2">
           <textarea
             ref={inputRef}
@@ -300,7 +300,7 @@ export const ChatWindow = forwardRef<ChatWindowHandle, ChatWindowProps>(function
             onKeyDown={handleKeyDown}
             placeholder="Digite sua mensagem..."
             rows={1}
-            className="flex-1 resize-none px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary max-h-32 overflow-y-auto"
+            className="flex-1 resize-none px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary max-h-32 overflow-y-auto"
             style={{ minHeight: '38px' }}
           />
           <button

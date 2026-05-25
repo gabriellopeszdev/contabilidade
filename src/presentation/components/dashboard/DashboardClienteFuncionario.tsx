@@ -174,7 +174,7 @@ export default function DashboardClienteFuncionario() {
             value={setor ?? ''}
             onChange={(e) => setSetor((e.target.value || undefined) as SetorFiltro | undefined)}
             className="px-3 py-2 text-xs font-medium rounded-lg border border-slate-300 dark:border-gray-600 bg-white dark:bg-gray-900
-              text-slate-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              text-slate-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:[color-scheme:dark]"
           >
             <option value="">Todos os Setores</option>
             <option value="FISCAL">Fiscal</option>
@@ -186,7 +186,7 @@ export default function DashboardClienteFuncionario() {
             value={filtroLeitura}
             onChange={(e) => setFiltroLeitura(e.target.value as 'lido' | 'nao_lido' | '')}
             className="px-3 py-2 text-xs font-medium rounded-lg border border-slate-300 dark:border-gray-600 bg-white dark:bg-gray-900
-              text-slate-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              text-slate-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:[color-scheme:dark]"
           >
             <option value="">Todos</option>
             <option value="nao_lido">Não lidos</option>
@@ -197,7 +197,7 @@ export default function DashboardClienteFuncionario() {
             value={filtroOrigem}
             onChange={(e) => setFiltroOrigem(e.target.value as Origem | '')}
             className="px-3 py-2 text-xs font-medium rounded-lg border border-slate-300 dark:border-gray-600 bg-white dark:bg-gray-900
-              text-slate-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              text-slate-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:[color-scheme:dark]"
           >
             <option value="">Todas as Origens</option>
             <option value="UPLOAD_CLIENTE">Enviado pela empresa</option>

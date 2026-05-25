@@ -244,16 +244,16 @@ export function ClienteModal({
       />
 
       {/* Modal */}
-      <div className="relative bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-lg mx-4 animate-in zoom-in-95 duration-200">
+      <div className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-gray-700 w-full max-w-lg mx-4 animate-in zoom-in-95 duration-200">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-          <h2 className="text-lg font-bold text-slate-900">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-gray-700">
+          <h2 className="text-lg font-bold text-slate-900 dark:text-gray-100">
             {modoEdicao ? 'Editar Cliente' : 'Novo Cliente'}
           </h2>
           <button
             type="button"
             onClick={onFechar}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-gray-200 hover:bg-slate-100 dark:hover:bg-gray-800 transition-colors"
             aria-label="Fechar modal"
           >
             <X size={18} />
@@ -264,15 +264,15 @@ export function ClienteModal({
         <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
           {/* Erro geral da API */}
           {erroApi && (
-            <div className="flex items-start gap-2 p-3 rounded-lg bg-red-50 border border-red-200">
+            <div className="flex items-start gap-2 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
               <AlertCircle size={16} className="text-red-500 mt-0.5 shrink-0" />
-              <p className="text-sm text-red-700">{erroApi}</p>
+              <p className="text-sm text-red-700 dark:text-red-400">{erroApi}</p>
             </div>
           )}
 
           {/* Nome */}
           <div>
-            <label htmlFor="cliente-nome" className="block text-sm font-medium text-slate-700 mb-1">
+            <label htmlFor="cliente-nome" className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-1">
               Razão Social / Nome <span className="text-red-400">*</span>
             </label>
             <input
@@ -282,16 +282,16 @@ export function ClienteModal({
               value={form.nome}
               onChange={handleChange('nome')}
               placeholder="Empresa Exemplo Ltda"
-              className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400
-                focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors
-                ${erros.nome ? 'border-red-300 bg-red-50' : 'border-slate-300'}`}
+              className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 dark:text-gray-100 placeholder:text-slate-400 dark:placeholder:text-gray-500
+                bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors
+                ${erros.nome ? 'border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/20' : 'border-slate-300 dark:border-gray-600'}`}
             />
             {erros.nome && <p className="mt-1 text-xs text-red-600">{erros.nome}</p>}
           </div>
 
           {/* E-mail */}
           <div>
-            <label htmlFor="cliente-email" className="block text-sm font-medium text-slate-700 mb-1">
+            <label htmlFor="cliente-email" className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-1">
               E-mail <span className="text-red-400">*</span>
             </label>
             <input
@@ -300,16 +300,16 @@ export function ClienteModal({
               value={form.email}
               onChange={handleChange('email')}
               placeholder="contato@empresa.com.br"
-              className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400
-                focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors
-                ${erros.email ? 'border-red-300 bg-red-50' : 'border-slate-300'}`}
+              className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 dark:text-gray-100 placeholder:text-slate-400 dark:placeholder:text-gray-500
+                bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors
+                ${erros.email ? 'border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/20' : 'border-slate-300 dark:border-gray-600'}`}
             />
             {erros.email && <p className="mt-1 text-xs text-red-600">{erros.email}</p>}
           </div>
 
           {/* CNPJ */}
           <div>
-            <label htmlFor="cliente-cnpj" className="block text-sm font-medium text-slate-700 mb-1">
+            <label htmlFor="cliente-cnpj" className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-1">
               CNPJ <span className="text-red-400">*</span>
             </label>
             <input
@@ -319,16 +319,16 @@ export function ClienteModal({
               onChange={handleChange('cnpj')}
               placeholder="00.000.000/0000-00"
               maxLength={18}
-              className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400
-                focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors
-                ${erros.cnpj ? 'border-red-300 bg-red-50' : 'border-slate-300'}`}
+              className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 dark:text-gray-100 placeholder:text-slate-400 dark:placeholder:text-gray-500
+                bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors
+                ${erros.cnpj ? 'border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/20' : 'border-slate-300 dark:border-gray-600'}`}
             />
             {erros.cnpj && <p className="mt-1 text-xs text-red-600">{erros.cnpj}</p>}
           </div>
 
           {/* Telefone */}
           <div>
-            <label htmlFor="cliente-phone" className="block text-sm font-medium text-slate-700 mb-1">
+            <label htmlFor="cliente-phone" className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-1">
               Telefone
             </label>
             <input
@@ -338,14 +338,14 @@ export function ClienteModal({
               onChange={handleChange('phone')}
               placeholder="(11) 99999-0000"
               maxLength={15}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900
-                placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+              className="w-full rounded-lg border border-slate-300 dark:border-gray-600 px-3 py-2 text-sm text-slate-900 dark:text-gray-100
+                bg-white dark:bg-gray-800 placeholder:text-slate-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
             />
           </div>
 
           {/* Nota sobre senha padrão (apenas Criação) */}
           {!modoEdicao && (
-            <p className="text-xs text-slate-500 bg-slate-50 rounded-lg px-3 py-2">
+            <p className="text-xs text-slate-500 dark:text-gray-400 bg-slate-50 dark:bg-gray-800 rounded-lg px-3 py-2">
               O cliente receberá a senha padrão <strong>mudar@123</strong> para o primeiro acesso.
             </p>
           )}
@@ -356,7 +356,7 @@ export function ClienteModal({
               type="button"
               onClick={onFechar}
               disabled={salvando}
-              className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 rounded-lg hover:bg-slate-200
+              className="px-4 py-2 text-sm font-medium text-slate-700 dark:text-gray-300 bg-slate-100 dark:bg-gray-800 rounded-lg hover:bg-slate-200 dark:hover:bg-gray-700
                 transition-colors disabled:opacity-50"
             >
               Cancelar

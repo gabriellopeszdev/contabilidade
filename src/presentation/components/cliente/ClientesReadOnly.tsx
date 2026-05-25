@@ -114,16 +114,16 @@ export function ClientesReadOnly() {
 
       {/* Cabeçalho */}
       <div className="mb-6">
-        <h1 className="text-xl font-bold text-gray-900">Clientes do Escritório</h1>
-        <p className="text-sm text-gray-500 mt-0.5">
+        <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">Clientes do Escritório</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
           {clientes.length} cliente{clientes.length !== 1 ? 's' : ''} na carteira
         </p>
       </div>
 
       {/* Banner informativo */}
-      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-center gap-3 mb-5">
+      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 flex items-center gap-3 mb-5">
         <ShieldCheck size={18} className="text-blue-500 shrink-0" />
-        <p className="text-sm text-blue-700">
+        <p className="text-sm text-blue-700 dark:text-blue-400">
           Modo visualização — você pode consultar clientes e documentos de {setoresLabel}.
         </p>
       </div>
@@ -137,42 +137,42 @@ export function ClientesReadOnly() {
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
             placeholder="Buscar por nome, CNPJ ou e-mail…"
-            className="w-full pl-9 pr-4 py-2.5 text-sm rounded-lg border border-slate-300 bg-white
-              text-slate-900 placeholder:text-slate-400
-              focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
+            className="w-full pl-9 pr-4 py-2.5 text-sm rounded-lg border border-slate-300 dark:border-gray-600 bg-white dark:bg-gray-800
+              text-slate-900 dark:text-gray-100 placeholder:text-slate-400 dark:placeholder:text-gray-500
+              focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
           />
         </div>
       </div>
 
       {/* Estados */}
       {error ? (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-12 flex flex-col items-center gap-3 text-center">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-700 shadow-sm p-12 flex flex-col items-center gap-3 text-center">
           <AlertCircle size={28} className="text-red-400" />
-          <p className="text-sm font-semibold text-slate-700">Falha ao carregar clientes</p>
-          <p className="text-xs text-slate-500">{error.message}</p>
+          <p className="text-sm font-semibold text-slate-700 dark:text-gray-300">Falha ao carregar clientes</p>
+          <p className="text-xs text-slate-500 dark:text-gray-400">{error.message}</p>
         </div>
       ) : isLoading ? (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-12 flex flex-col items-center gap-3">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-700 shadow-sm p-12 flex flex-col items-center gap-3">
           <Loader2 size={28} className="animate-spin text-blue-500" />
-          <p className="text-sm text-slate-500">Carregando clientes…</p>
+          <p className="text-sm text-slate-500 dark:text-gray-400">Carregando clientes…</p>
         </div>
       ) : filtrados.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-12 flex flex-col items-center gap-3 text-center">
-          <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-slate-100">
-            <Users size={24} className="text-slate-400" />
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-700 shadow-sm p-12 flex flex-col items-center gap-3 text-center">
+          <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-slate-100 dark:bg-gray-800">
+            <Users size={24} className="text-slate-400 dark:text-gray-500" />
           </div>
-          <p className="text-sm font-semibold text-slate-700">
+          <p className="text-sm font-semibold text-slate-700 dark:text-gray-300">
             {busca.trim() ? 'Nenhum cliente encontrado' : 'Nenhum cliente cadastrado'}
           </p>
-          <p className="text-xs text-slate-500 max-w-xs">
+          <p className="text-xs text-slate-500 dark:text-gray-400 max-w-xs">
             {busca.trim() ? 'Tente uma busca diferente.' : 'Não há clientes na carteira.'}
           </p>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-700 shadow-sm overflow-hidden">
           {/* Header da tabela */}
           <div className="hidden sm:grid sm:grid-cols-[1fr_180px_200px_120px_80px] gap-4 px-5 py-3
-            border-b border-slate-100 bg-slate-50 text-xs font-semibold text-slate-500 uppercase tracking-wide">
+            border-b border-slate-100 dark:border-gray-700 bg-slate-50 dark:bg-gray-800 text-xs font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wide">
             <span>Cliente</span>
             <span>CNPJ</span>
             <span>E-mail</span>
@@ -181,15 +181,15 @@ export function ClientesReadOnly() {
           </div>
 
           {/* Linhas */}
-          <ul role="list" className="divide-y divide-slate-100">
+          <ul role="list" className="divide-y divide-slate-100 dark:divide-gray-700">
             {filtrados.map((c) => (
               <li key={c.id} className="group">
                 <div className="sm:grid sm:grid-cols-[1fr_180px_200px_120px_80px] gap-4 items-center
-                  px-5 py-4 hover:bg-slate-50 transition-colors">
+                  px-5 py-4 hover:bg-slate-50 dark:hover:bg-gray-800 transition-colors">
 
                   {/* Avatar + Nome + Telefone */}
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="shrink-0 w-9 h-9 rounded-full bg-blue-100 text-blue-700
+                    <div className="shrink-0 w-9 h-9 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400
                       flex items-center justify-center text-xs font-bold">
                       {iniciais(c.nome)}
                     </div>
@@ -197,13 +197,13 @@ export function ClientesReadOnly() {
                       <button
                         type="button"
                         onClick={() => router.push(`/clientes/${c.id}`)}
-                        className="text-sm font-semibold text-slate-900 truncate hover:text-primary
+                        className="text-sm font-semibold text-slate-900 dark:text-gray-100 truncate hover:text-blue-600 dark:hover:text-blue-400
                           transition-colors text-left"
                       >
                         {c.nome}
                       </button>
                       {c.phone && (
-                        <p className="text-xs text-slate-400 flex items-center gap-1 mt-0.5">
+                        <p className="text-xs text-slate-400 dark:text-gray-500 flex items-center gap-1 mt-0.5">
                           <Phone size={10} /> {c.phone}
                         </p>
                       )}
@@ -213,7 +213,7 @@ export function ClientesReadOnly() {
                   {/* CNPJ */}
                   <div className="flex items-center gap-1.5 mt-2 sm:mt-0">
                     <Building2 size={12} className="text-slate-400 shrink-0 hidden sm:block" />
-                    <span className="text-xs text-slate-700 font-mono">
+                    <span className="text-xs text-slate-700 dark:text-gray-300 font-mono">
                       {formatarCNPJ(c.cnpj)}
                     </span>
                   </div>
@@ -221,11 +221,11 @@ export function ClientesReadOnly() {
                   {/* E-mail */}
                   <div className="flex items-center gap-1.5 mt-1 sm:mt-0 min-w-0">
                     <Mail size={12} className="text-slate-400 shrink-0 hidden sm:block" />
-                    <span className="text-sm text-slate-600 truncate">{c.email}</span>
+                    <span className="text-sm text-slate-600 dark:text-gray-400 truncate">{c.email}</span>
                   </div>
 
                   {/* Desde */}
-                  <span className="text-xs text-slate-500 mt-1 sm:mt-0">
+                  <span className="text-xs text-slate-500 dark:text-gray-400 mt-1 sm:mt-0">
                     {formatarData(c.createdAt)}
                   </span>
 
@@ -235,7 +235,7 @@ export function ClientesReadOnly() {
                       type="button"
                       onClick={() => router.push(`/clientes/${c.id}`)}
                       aria-label={`Ver prontuário de ${c.nome}`}
-                      className="p-2 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50
+                      className="p-2 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20
                         transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
                     >
                       <Eye size={15} />
@@ -247,8 +247,8 @@ export function ClientesReadOnly() {
           </ul>
 
           {/* Rodapé */}
-          <div className="px-5 py-3 border-t border-slate-100 bg-slate-50">
-            <span className="text-xs text-slate-500">
+          <div className="px-5 py-3 border-t border-slate-100 dark:border-gray-700 bg-slate-50 dark:bg-gray-800">
+            <span className="text-xs text-slate-500 dark:text-gray-400">
               {filtrados.length} de {clientes.length} cliente{clientes.length !== 1 ? 's' : ''}
               {busca.trim() ? ' (filtrado)' : ''}
             </span>

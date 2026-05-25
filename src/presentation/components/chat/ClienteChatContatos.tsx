@@ -22,10 +22,10 @@ interface Props {
 }
 
 const SETOR_BADGE: Record<string, { label: string; cls: string }> = {
-  FISCAL:   { label: 'Fiscal',   cls: 'bg-indigo-100 text-indigo-700' },
-  PESSOAL:  { label: 'Pessoal',  cls: 'bg-violet-100 text-violet-700' },
-  CONTABIL: { label: 'Contábil', cls: 'bg-teal-100   text-teal-700'   },
-  TODOS:    { label: 'Geral',    cls: 'bg-gray-100   text-gray-600'   },
+  FISCAL:   { label: 'Fiscal',   cls: 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400' },
+  PESSOAL:  { label: 'Pessoal',  cls: 'bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400' },
+  CONTABIL: { label: 'Contábil', cls: 'bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400'         },
+  TODOS:    { label: 'Geral',    cls: 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'             },
 };
 
 function iniciais(nome: string) {
@@ -52,11 +52,11 @@ export function ClienteChatContatos({ rooms, roomAtual, carregando, onSelectRoom
   }, [rooms]);
 
   return (
-    <div className="flex flex-col h-full bg-white border-r border-gray-200 w-64 shrink-0">
+    <div className="flex flex-col h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 w-64 shrink-0">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-2 shrink-0">
+      <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800 flex items-center gap-2 shrink-0">
         <Users size={15} className="text-sky-600" />
-        <h2 className="text-sm font-bold text-gray-900">Seu Escritório</h2>
+        <h2 className="text-sm font-bold text-gray-900 dark:text-gray-100">Seu Escritório</h2>
       </div>
 
       {/* Lista */}
@@ -70,7 +70,7 @@ export function ClienteChatContatos({ rooms, roomAtual, carregando, onSelectRoom
             Nenhum contato encontrado.
           </p>
         ) : (
-          <ul className="divide-y divide-gray-50">
+          <ul className="divide-y divide-gray-50 dark:divide-gray-800">
             {ordenadas.map((room) => {
               const ativo   = room.id === roomAtual;
               const nome    = room.membroNome ?? 'Desconhecido';
@@ -84,8 +84,8 @@ export function ClienteChatContatos({ rooms, roomAtual, carregando, onSelectRoom
                     className={`
                       w-full flex items-start gap-3 px-4 py-3 text-left transition-colors
                       ${ativo
-                        ? 'bg-sky-50 border-l-2 border-sky-500'
-                        : 'hover:bg-gray-50 border-l-2 border-transparent'
+                        ? 'bg-sky-50 dark:bg-sky-900/20 border-l-2 border-sky-500 dark:border-sky-400'
+                        : 'hover:bg-gray-50 dark:hover:bg-gray-800 border-l-2 border-transparent'
                       }
                     `}
                   >
@@ -101,8 +101,8 @@ export function ClienteChatContatos({ rooms, roomAtual, carregando, onSelectRoom
                         w-10 h-10 rounded-full flex items-center justify-center
                         text-xs font-bold shrink-0
                         ${room.membroTipo === 'CONTADOR'
-                          ? ativo ? 'bg-sky-200 text-sky-800' : 'bg-sky-100 text-sky-700'
-                          : ativo ? 'bg-gray-200 text-gray-700' : 'bg-gray-100 text-gray-600'
+                          ? ativo ? 'bg-sky-200 dark:bg-sky-800 text-sky-800 dark:text-sky-200' : 'bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400'
+                          : ativo ? 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
                         }
                       `}>
                         {iniciais(nome)}
@@ -112,12 +112,12 @@ export function ClienteChatContatos({ rooms, roomAtual, carregando, onSelectRoom
                     {/* Info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-1">
-                        <p className={`text-xs font-semibold truncate ${ativo ? 'text-sky-900' : 'text-gray-900'}`}>
+                        <p className={`text-xs font-semibold truncate ${ativo ? 'text-sky-900 dark:text-sky-300' : 'text-gray-900 dark:text-gray-100'}`}>
                           {nome}
                         </p>
                         <div className="flex items-center gap-1 shrink-0">
                           {room.ultimaMensagem && (
-                            <span className="text-[10px] text-gray-400">
+                            <span className="text-[10px] text-gray-400 dark:text-gray-500">
                               {formatarHora(room.ultimaMensagem.createdAt)}
                             </span>
                           )}
@@ -130,18 +130,18 @@ export function ClienteChatContatos({ rooms, roomAtual, carregando, onSelectRoom
                       </div>
 
                       {/* Tipo */}
-                      <p className="text-[10px] text-gray-400 mt-0.5">
+                      <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">
                         {room.membroTipo === 'CONTADOR' ? 'Contador principal' : 'Funcionário'}
                       </p>
 
                       {/* Prévia da última mensagem */}
                       {room.ultimaMensagem ? (
-                        <p className="text-[10px] text-gray-500 truncate mt-0.5">
+                        <p className="text-[10px] text-gray-500 dark:text-gray-400 truncate mt-0.5">
                           {room.ultimaMensagem.senderType === 'CLIENTE' ? 'Você: ' : ''}
                           {room.ultimaMensagem.content}
                         </p>
                       ) : (
-                        <p className="text-[10px] text-gray-400 mt-0.5 italic">Nenhuma mensagem</p>
+                        <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5 italic">Nenhuma mensagem</p>
                       )}
 
                       {/* Badges de setor (só funcionários) */}

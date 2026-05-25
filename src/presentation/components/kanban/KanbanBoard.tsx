@@ -52,29 +52,29 @@ const COLUNAS: ColConfig[] = [
     estado:    'PENDING',
     label:     'Aguardando',
     icone:     Clock,
-    corBorda:  'border-gray-200',
-    corHeader: 'bg-gray-100  text-gray-700',
+    corBorda:  'border-gray-200 dark:border-gray-700',
+    corHeader: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300',
   },
   {
     estado:    'PROCESSING',
     label:     'Em Execução',
     icone:     Zap,
-    corBorda:  'border-blue-200',
-    corHeader: 'bg-blue-100  text-blue-800',
+    corBorda:  'border-blue-200 dark:border-blue-800',
+    corHeader: 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300',
   },
   {
     estado:    'REVIEW',
     label:     'Em Revisão',
     icone:     Eye,
-    corBorda:  'border-amber-200',
-    corHeader: 'bg-amber-100 text-amber-800',
+    corBorda:  'border-amber-200 dark:border-amber-800',
+    corHeader: 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300',
   },
   {
     estado:    'DONE',
     label:     'Concluído',
     icone:     CheckCircle2,
-    corBorda:  'border-emerald-200',
-    corHeader: 'bg-emerald-100 text-emerald-800',
+    corBorda:  'border-emerald-200 dark:border-emerald-800',
+    corHeader: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300',
   },
 ];
 
@@ -83,9 +83,9 @@ const COLUNAS: ColConfig[] = [
 // =============================================================================
 
 const SETORES_FILTRO: { valor: SetorTipo; label: string; cor: string; corAtivo: string }[] = [
-  { valor: 'FISCAL',   label: 'Fiscal',   cor: 'text-indigo-700 border-indigo-200 hover:bg-indigo-50', corAtivo: 'bg-indigo-600  text-white border-indigo-600' },
-  { valor: 'PESSOAL',  label: 'Pessoal',  cor: 'text-pink-700   border-pink-200   hover:bg-pink-50',   corAtivo: 'bg-pink-600    text-white border-pink-600'   },
-  { valor: 'CONTABIL', label: 'Contábil', cor: 'text-teal-700   border-teal-200   hover:bg-teal-50',   corAtivo: 'bg-teal-600    text-white border-teal-600'   },
+  { valor: 'FISCAL',   label: 'Fiscal',   cor: 'text-indigo-700 dark:text-indigo-400 border-indigo-200 dark:border-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-900/20', corAtivo: 'bg-indigo-600  text-white border-indigo-600' },
+  { valor: 'PESSOAL',  label: 'Pessoal',  cor: 'text-pink-700 dark:text-pink-400 border-pink-200 dark:border-pink-700 hover:bg-pink-50 dark:hover:bg-pink-900/20',           corAtivo: 'bg-pink-600    text-white border-pink-600'   },
+  { valor: 'CONTABIL', label: 'Contábil', cor: 'text-teal-700 dark:text-teal-400 border-teal-200 dark:border-teal-700 hover:bg-teal-50 dark:hover:bg-teal-900/20',           corAtivo: 'bg-teal-600    text-white border-teal-600'   },
 ];
 
 // =============================================================================
@@ -259,7 +259,7 @@ export function KanbanBoard({ token, clienteId, onErro }: KanbanBoardProps) {
             type="button"
             onClick={() => setFiltroSetor((prev) => prev === s.valor ? null : s.valor)}
             className={`px-3 py-1 rounded-full text-[11px] font-bold border transition-all
-                        ${filtroSetor === s.valor ? s.corAtivo : `bg-white ${s.cor}`}`}
+                        ${filtroSetor === s.valor ? s.corAtivo : `bg-white dark:bg-gray-800 ${s.cor}`}`}
           >
             {s.label}
           </button>
@@ -275,9 +275,9 @@ export function KanbanBoard({ token, clienteId, onErro }: KanbanBoardProps) {
           <select
             value={filtroCliente}
             onChange={(e) => setFiltroCliente(e.target.value)}
-            className="text-[11px] font-medium text-gray-700 border border-gray-200 rounded-lg
-                       px-2.5 py-1 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400
-                       max-w-[180px]"
+            className="text-[11px] font-medium text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded-lg
+                       px-2.5 py-1 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400
+                       max-w-[180px] dark:[color-scheme:dark]"
           >
             <option value="">Todos os clientes</option>
             {clientesUnicos.map((c) => (
