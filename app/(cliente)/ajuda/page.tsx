@@ -127,8 +127,8 @@ export default function AjudaPage() {
 
       {/* Cabeçalho */}
       <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-sky-100 mb-4">
-          <HelpCircle size={28} className="text-sky-600" />
+        <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-sky-100 dark:bg-sky-900/30 mb-4">
+          <HelpCircle size={28} className="text-sky-600 dark:text-sky-400" />
         </div>
         <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">Central de Ajuda</h1>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">

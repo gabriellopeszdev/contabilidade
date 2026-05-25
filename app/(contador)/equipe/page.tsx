@@ -41,10 +41,10 @@ const SETORES_OPCOES = [
 ];
 
 const SETOR_CORES: Record<string, string> = {
-  TODOS:    'bg-amber-100 text-amber-700',
-  FISCAL:   'bg-blue-100 text-blue-700',
-  PESSOAL:  'bg-purple-100 text-purple-700',
-  CONTABIL: 'bg-emerald-100 text-emerald-700',
+  TODOS:    'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400',
+  FISCAL:   'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400',
+  PESSOAL:  'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400',
+  CONTABIL: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400',
 };
 
 // =============================================================================
@@ -229,8 +229,8 @@ export default function EquipePage() {
       {toast && (
         <div className={`fixed top-4 right-4 z-50 flex items-center gap-2 rounded-lg border px-4 py-3 text-sm shadow-lg animate-in slide-in-from-right ${
           toast.tipo === 'sucesso'
-            ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
-            : 'bg-red-50 border-red-200 text-red-800'
+            ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300'
+            : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-800 dark:text-red-300'
         }`}>
           {toast.tipo === 'sucesso' ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
           {toast.msg}
@@ -299,8 +299,8 @@ export default function EquipePage() {
                       onClick={() => toggleAtivo(f)}
                       className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors ${
                         f.isActive
-                          ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
-                          : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                          ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-200 dark:hover:bg-emerald-900/40'
+                          : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
                       }`}
                     >
                       {f.isActive ? 'Ativo' : 'Inativo'}
@@ -317,7 +317,7 @@ export default function EquipePage() {
                       </button>
                       <button
                         onClick={() => handleExcluir(f.id)}
-                        className="rounded-lg p-1.5 text-gray-400 dark:text-gray-500 hover:text-red-600 hover:bg-red-50 transition-colors"
+                        className="rounded-lg p-1.5 text-gray-400 dark:text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                         title="Excluir"
                       >
                         <Trash2 size={15} />

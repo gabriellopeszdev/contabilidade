@@ -33,9 +33,11 @@ const SETORES: {
   exemplos: string;
   Icon:     React.ElementType;
   styles: {
-    idle:   string;
-    active: string;
-    icon:   string;
+    idle:    string;
+    active:  string;
+    icon:    string;
+    bgIcon:  string;
+    txtIcon: string;
   };
 }[] = [
   {
@@ -45,9 +47,11 @@ const SETORES: {
     exemplos: 'NF-e, DANFE, DARF, DAS, GPS, GNRE',
     Icon:     Receipt,
     styles: {
-      idle:   'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:border-indigo-300 hover:bg-indigo-50/40',
-      active: 'border-indigo-500 bg-indigo-50 ring-2 ring-indigo-200',
-      icon:   'bg-indigo-100 text-indigo-600',
+      idle:    'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:border-indigo-300 hover:bg-indigo-50/40',
+      active:  'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 ring-2 ring-indigo-200 dark:ring-indigo-800',
+      icon:    'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400',
+      bgIcon:  'bg-indigo-100 dark:bg-indigo-900/40',
+      txtIcon: 'text-indigo-600 dark:text-indigo-400',
     },
   },
   {
@@ -57,9 +61,11 @@ const SETORES: {
     exemplos: 'Admissão, demissão, férias, holerite, FGTS',
     Icon:     Users,
     styles: {
-      idle:   'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:border-violet-300 hover:bg-violet-50/40',
-      active: 'border-violet-500 bg-violet-50 ring-2 ring-violet-200',
-      icon:   'bg-violet-100 text-violet-600',
+      idle:    'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:border-violet-300 hover:bg-violet-50/40',
+      active:  'border-violet-500 bg-violet-50 dark:bg-violet-900/30 ring-2 ring-violet-200 dark:ring-violet-800',
+      icon:    'bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400',
+      bgIcon:  'bg-violet-100 dark:bg-violet-900/40',
+      txtIcon: 'text-violet-600 dark:text-violet-400',
     },
   },
   {
@@ -69,17 +75,19 @@ const SETORES: {
     exemplos: 'Balanço, DRE, extrato bancário, conciliação',
     Icon:     BarChart3,
     styles: {
-      idle:   'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:border-teal-300 hover:bg-teal-50/40',
-      active: 'border-teal-500 bg-teal-50 ring-2 ring-teal-200',
-      icon:   'bg-teal-100 text-teal-600',
+      idle:    'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:border-teal-300 hover:bg-teal-50/40',
+      active:  'border-teal-500 bg-teal-50 dark:bg-teal-900/30 ring-2 ring-teal-200 dark:ring-teal-800',
+      icon:    'bg-teal-100 dark:bg-teal-900/40 text-teal-600 dark:text-teal-400',
+      bgIcon:  'bg-teal-100 dark:bg-teal-900/40',
+      txtIcon: 'text-teal-600 dark:text-teal-400',
     },
   },
 ];
 
 const SETOR_COR: Record<string, string> = {
-  FISCAL:   'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200',
-  PESSOAL:  'bg-violet-50 text-violet-700 ring-1 ring-violet-200',
-  CONTABIL: 'bg-teal-50   text-teal-700   ring-1 ring-teal-200',
+  FISCAL:   'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 ring-1 ring-indigo-200 dark:ring-indigo-800',
+  PESSOAL:  'bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400 ring-1 ring-violet-200 dark:ring-violet-800',
+  CONTABIL: 'bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400 ring-1 ring-teal-200 dark:ring-teal-800',
 };
 
 const SETOR_LABEL: Record<string, string> = {
@@ -185,9 +193,9 @@ export default function EnviarPage() {
     'transition-all duration-200 flex flex-col items-center justify-center',
     'p-12 sm:p-16 text-center min-h-[260px]',
     isDragReject
-      ? 'border-red-400 bg-red-50'
+      ? 'border-red-400 bg-red-50 dark:bg-red-900/20'
       : isDragActive
-        ? 'border-sky-400 bg-sky-50 scale-[1.01] shadow-lg'
+        ? 'border-sky-400 bg-sky-50 dark:bg-sky-900/20 scale-[1.01] shadow-lg'
         : `border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 hover:shadow-md ${
             setorSelecionado === 'FISCAL'   ? 'hover:border-indigo-400 hover:bg-indigo-50/30' :
             setorSelecionado === 'PESSOAL'  ? 'hover:border-violet-400 hover:bg-violet-50/30' :
@@ -260,33 +268,33 @@ export default function EnviarPage() {
           {/* Ícone central */}
           <div className={`w-20 h-20 rounded-2xl flex items-center justify-center mb-5 transition-colors
             ${isDragReject
-              ? 'bg-red-100'
+              ? 'bg-red-100 dark:bg-red-900/30'
               : isDragActive
-                ? 'bg-sky-100'
-                : setorAtual.styles.icon.split(' ')[0]   // bg-* da cor do setor
+                ? 'bg-sky-100 dark:bg-sky-900/30'
+                : setorAtual.styles.bgIcon
             }`}
           >
             <CloudUpload
               size={40}
               className={
-                isDragReject ? 'text-red-500' :
-                isDragActive ? 'text-sky-500' :
-                setorAtual.styles.icon.split(' ')[1]    // text-* da cor do setor
+                isDragReject ? 'text-red-500 dark:text-red-400' :
+                isDragActive ? 'text-sky-500 dark:text-sky-400' :
+                setorAtual.styles.txtIcon
               }
             />
           </div>
 
           {isDragReject ? (
             <>
-              <p className="text-base font-semibold text-red-700">Formato não suportado</p>
-              <p className="text-sm text-red-500 mt-1">Apenas arquivos PDF e XML são aceitos.</p>
+              <p className="text-base font-semibold text-red-700 dark:text-red-400">Formato não suportado</p>
+              <p className="text-sm text-red-500 dark:text-red-400 mt-1">Apenas arquivos PDF e XML são aceitos.</p>
             </>
           ) : isDragActive ? (
             <>
-              <p className="text-base font-semibold text-sky-700">
+              <p className="text-base font-semibold text-sky-700 dark:text-sky-400">
                 Solte para enviar para {setorAtual.label}!
               </p>
-              <p className="text-sm text-sky-500 mt-1">Todos os arquivos serão adicionados.</p>
+              <p className="text-sm text-sky-500 dark:text-sky-400 mt-1">Todos os arquivos serão adicionados.</p>
             </>
           ) : (
             <>
@@ -316,7 +324,7 @@ export default function EnviarPage() {
 
       {/* Avisos de rejeição */}
       {rejeicoes.length > 0 && (
-        <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 space-y-1.5">
+        <div className="rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-4 py-3 space-y-1.5">
           <p className="text-xs font-semibold text-red-700 flex items-center gap-1.5">
             <AlertCircle size={13} />
             {rejeicoes.length} arquivo{rejeicoes.length > 1 ? 's' : ''} rejeitado{rejeicoes.length > 1 ? 's' : ''}:

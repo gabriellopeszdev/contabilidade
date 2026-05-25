@@ -326,7 +326,7 @@ function ClientesPageDono({ token }: { token: string | null }) {
 
                     {/* Avatar + Nome + Telefone */}
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="shrink-0 w-9 h-9 rounded-full bg-blue-100 text-blue-700
+                      <div className="shrink-0 w-9 h-9 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400
                         flex items-center justify-center text-xs font-bold">
                         {iniciais(c.nome)}
                       </div>
@@ -342,12 +342,12 @@ function ClientesPageDono({ token }: { token: string | null }) {
                           </button>
                           {c.activatedAt === null ? (
                             <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px]
-                              font-semibold bg-amber-100 text-amber-700 border border-amber-200">
+                              font-semibold bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
                               Pendente
                             </span>
                           ) : (
                             <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px]
-                              font-semibold bg-emerald-100 text-emerald-700 border border-emerald-200">
+                              font-semibold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
                               Ativo
                             </span>
                           )}
@@ -388,7 +388,7 @@ function ClientesPageDono({ token }: { token: string | null }) {
                           disabled={reenviando === c.id}
                           aria-label={`Reenviar convite para ${c.nome}`}
                           title="Reenviar convite"
-                          className="p-2 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50
+                          className="p-2 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20
                             transition-colors disabled:opacity-50
                             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
                         >
@@ -402,7 +402,7 @@ function ClientesPageDono({ token }: { token: string | null }) {
                         type="button"
                         onClick={() => router.push(`/clientes/${c.id}`)}
                         aria-label={`Ver prontuário de ${c.nome}`}
-                        className="p-2 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50
+                        className="p-2 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20
                           transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
                       >
                         <Eye size={15} />
@@ -411,8 +411,8 @@ function ClientesPageDono({ token }: { token: string | null }) {
                         type="button"
                         onClick={() => abrirEditar(c)}
                         aria-label={`Editar ${c.nome}`}
-                        className="p-2 rounded-lg text-slate-400 hover:text-primary hover:bg-primary-50
-                          transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        className="p-2 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20
+                          transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                       >
                         <Pencil size={15} />
                       </button>
@@ -421,7 +421,7 @@ function ClientesPageDono({ token }: { token: string | null }) {
                         onClick={() => handleExcluir(c)}
                         disabled={excluindo === c.id}
                         aria-label={`Desativar ${c.nome}`}
-                        className="p-2 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50
+                        className="p-2 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20
                           transition-colors disabled:opacity-50
                           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                       >

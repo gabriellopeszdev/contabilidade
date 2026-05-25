@@ -110,7 +110,7 @@ export default function AdminBoletosPage() {
           <select
             value={status}
             onChange={(e) => { setStatus(e.target.value); carregar(1, search, e.target.value); }}
-            className="bg-slate-800 border border-slate-700 text-slate-100 text-sm rounded-lg pl-9 pr-8 py-2.5 focus:outline-none focus:border-violet-500 appearance-none"
+            className="bg-slate-800 border border-slate-700 text-slate-100 text-sm rounded-lg pl-9 pr-8 py-2.5 focus:outline-none focus:border-violet-500 appearance-none [color-scheme:dark]"
           >
             <option value="">Todos os status</option>
             <option value="PENDENTE">Pendente</option>

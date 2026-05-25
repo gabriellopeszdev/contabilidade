@@ -24,9 +24,12 @@ import {
   UserCog,
   DollarSign,
   Home,
+  Sun,
+  Moon,
 } from 'lucide-react';
 
 import { useAuth } from '../../src/presentation/hooks/useAuth';
+import { useDarkMode } from '../../src/presentation/hooks/useDarkMode';
 import { useTheme } from '../../src/presentation/hooks/useTheme';
 import {
   useNotificacoes,
@@ -83,6 +86,7 @@ export default function FinanceiroLayout({ children }: { children: React.ReactNo
 
   const { usuario, carregando, logout, getToken, isCliente, isFuncionarioCliente, isDono } = useAuth();
   const isVisaoCliente = isCliente || isFuncionarioCliente;
+  const { dark, toggle: toggleDark, mounted: darkMounted } = useDarkMode();
 
   const [sidebarAberta, setSidebarAberta] = useState(false);
 
@@ -268,6 +272,17 @@ export default function FinanceiroLayout({ children }: { children: React.ReactNo
           </div>
 
           <div className="flex items-center gap-2 ml-auto">
+            {/* Dark Mode Toggle */}
+            {darkMounted && (
+              <button
+                onClick={toggleDark}
+                className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                aria-label={dark ? 'Modo claro' : 'Modo escuro'}
+              >
+                {dark ? <Sun size={18} /> : <Moon size={18} />}
+              </button>
+            )}
+
             {/* Notificações */}
             <div ref={notifRef} className="relative">
               <button
@@ -311,13 +326,7 @@ export default function FinanceiroLayout({ children }: { children: React.ReactNo
                           className={`px-4 py-2.5 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${!n.lida ? 'bg-blue-50/40 dark:bg-blue-900/10' : ''}`}
                         >
                           <p className="text-[11px] font-semibold text-gray-800 dark:text-gray-200">
-                            {n.tipo === 'novoDocumentoUpload'
-                              ? 'Upload concluído'
-                              : n.tipo === 'documentoVisualizado'
-                              ? 'Documento visualizado'
-                              : n.tipo === 'novoBoletoHonorario'
-                              ? 'Novo boleto'
-                              : 'Nova mensagem'}
+                            {n.titulo}
                           </p>
                           <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">{n.mensagem}</p>
                         </li>

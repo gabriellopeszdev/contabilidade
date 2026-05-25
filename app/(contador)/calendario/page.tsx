@@ -358,7 +358,7 @@ export default function CalendarioPage() {
                           ? 'text-gray-300 dark:text-gray-600 bg-gray-50/50 dark:bg-gray-800/50 border-transparent cursor-default'
                           : !selecionado
                           ? 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 border-transparent'
-                          : 'bg-primary-50 border-primary ring-1 ring-primary',
+                          : 'bg-blue-50 dark:bg-blue-900/20 border-blue-500 dark:border-blue-500 ring-1 ring-blue-500 dark:ring-blue-500',
                       ].join(' ')}
                     >
                       {/* Número do dia */}

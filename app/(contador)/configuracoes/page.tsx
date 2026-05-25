@@ -212,8 +212,8 @@ export default function ConfiguracoesPage() {
         <div className="fixed bottom-6 right-6 z-50 animate-in slide-in-from-bottom-4 duration-300">
           <div className={`flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border
             ${toast.tipo === 'sucesso'
-              ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
-              : 'bg-red-50 border-red-200 text-red-800'
+              ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300'
+              : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-800 dark:text-red-300'
             }`}
           >
             {toast.tipo === 'sucesso'
@@ -842,7 +842,7 @@ function WhiteLabelTab({
                 type="button"
                 onClick={handleRemoverLogo}
                 disabled={uploadingLogo}
-                className="inline-flex items-center gap-2 rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
+                className="inline-flex items-center gap-2 rounded-lg border border-red-200 dark:border-red-800 px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-50"
               >
                 <Trash2 size={14} />
                 Remover
@@ -1171,16 +1171,16 @@ function PrivacidadeTab({
         {!confirmandoExclusao ? (
           <button
             onClick={() => setConfirmandoExclusao(true)}
-            className="inline-flex items-center gap-2 rounded-lg border border-red-300 px-4 py-2
-                       text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+            className="inline-flex items-center gap-2 rounded-lg border border-red-300 dark:border-red-800 px-4 py-2
+                       text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
           >
             <Trash2 size={14} />
             Solicitar Exclusão da Conta
           </button>
         ) : (
-          <div className="space-y-3 bg-red-50/50 rounded-lg p-4 border border-red-100">
-            <p className="text-sm text-red-700 font-medium">
-              Para confirmar, digite <code className="bg-red-100 px-1.5 py-0.5 rounded text-xs">EXCLUIR MINHA CONTA</code> abaixo:
+          <div className="space-y-3 bg-red-50/50 dark:bg-red-900/10 rounded-lg p-4 border border-red-100 dark:border-red-900/40">
+            <p className="text-sm text-red-700 dark:text-red-400 font-medium">
+              Para confirmar, digite <code className="bg-red-100 dark:bg-red-900/30 px-1.5 py-0.5 rounded text-xs">EXCLUIR MINHA CONTA</code> abaixo:
             </p>
             <input
               type="text"

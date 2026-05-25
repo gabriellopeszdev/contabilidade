@@ -199,12 +199,12 @@ export default function ContadorLayout({ children }: { children: React.ReactNode
                 className={`
                   flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
                   ${ativo
-                    ? 'bg-primary-50 dark:bg-primary/15 text-primary-dark dark:text-primary'
+                    ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
                     : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
                   }
                 `}
               >
-                <span className={ativo ? 'text-primary' : 'text-gray-400 dark:text-gray-500'}>{item.icon}</span>
+                <span className={ativo ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'}>{item.icon}</span>
                 {item.label}
               </Link>
             );
@@ -219,7 +219,7 @@ export default function ContadorLayout({ children }: { children: React.ReactNode
           </div>
 
           <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-gray-50 dark:bg-gray-800">
-            <div className="w-8 h-8 rounded-full bg-primary-light text-primary flex items-center justify-center text-xs font-bold shrink-0">
+            <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 flex items-center justify-center text-xs font-bold shrink-0">
               {iniciais}
             </div>
             <div className="min-w-0 flex-1">
@@ -342,7 +342,7 @@ export default function ContadorLayout({ children }: { children: React.ReactNode
                 onClick={() => setUserMenuAberto((v) => !v)}
                 className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               >
-                <div className="w-7 h-7 rounded-full bg-primary-light text-primary flex items-center justify-center text-[10px] font-bold">
+                <div className="w-7 h-7 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 flex items-center justify-center text-[10px] font-bold">
                   {iniciais}
                 </div>
                 <span className="hidden sm:block text-xs font-medium text-gray-700 dark:text-gray-300 max-w-[120px] truncate">

@@ -83,7 +83,7 @@ function HomeContent() {
   // Tela de loading enquanto lê o localStorage
   if (carregando) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center">
         <Loader2 size={32} className="animate-spin text-blue-600" />
       </div>
     );
@@ -113,14 +113,14 @@ function HomeContent() {
         </div>
 
         {/* Card de login */}
-        <div className="bg-white rounded-2xl shadow-2xl p-8">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-8">
           <form onSubmit={handleSubmit} className="space-y-5" noValidate>
 
             {/* E-mail */}
             <div>
               <label
                 htmlFor="email"
-                className="block text-sm font-medium text-slate-700 mb-1.5"
+                className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5"
               >
                 E-mail
               </label>
@@ -146,7 +146,7 @@ function HomeContent() {
             <div>
               <label
                 htmlFor="senha"
-                className="block text-sm font-medium text-slate-700 mb-1.5"
+                className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5"
               >
                 Senha
               </label>
@@ -172,7 +172,7 @@ function HomeContent() {
             {erro && (
               <p
                 role="alert"
-                className="text-sm text-red-700 bg-red-50 border border-red-200
+                className="text-sm text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800
                            rounded-xl px-3 py-2 leading-snug"
               >
                 {erro}

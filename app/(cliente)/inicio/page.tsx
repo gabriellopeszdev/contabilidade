@@ -37,9 +37,9 @@ const MESES  = ['janeiro','fevereiro','março','abril','maio','junho','julho','a
 const SEMANA = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
 
 const SETOR_BADGE: Record<string, { label: string; classe: string }> = {
-  FISCAL:   { label: 'Fiscal',      classe: 'bg-indigo-100 text-indigo-700 border-indigo-200' },
-  PESSOAL:  { label: 'Dep. Pessoal',classe: 'bg-violet-100 text-violet-700 border-violet-200' },
-  CONTABIL: { label: 'Contábil',    classe: 'bg-teal-100   text-teal-700   border-teal-200'   },
+  FISCAL:   { label: 'Fiscal',      classe: 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800' },
+  PESSOAL:  { label: 'Dep. Pessoal',classe: 'bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400 border-violet-200 dark:border-violet-800' },
+  CONTABIL: { label: 'Contábil',    classe: 'bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400 border-teal-200 dark:border-teal-800'   },
 };
 
 function formatarData(iso: string) {
@@ -181,7 +181,7 @@ export default function InicioPagina() {
         </div>
         {novosDoContador > 0 && (
           <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full
-            bg-blue-50 border border-blue-200 text-xs font-semibold text-blue-700">
+            bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 text-xs font-semibold text-blue-700 dark:text-blue-400">
             <Bell size={13} className="animate-pulse" />
             {novosDoContador} novo{novosDoContador > 1 ? 's' : ''} do contador
           </div>
@@ -214,22 +214,22 @@ export default function InicioPagina() {
         {/* Boletos em aberto */}
         <div className={`rounded-2xl border p-4 space-y-3 transition-colors
           ${boletosVencidos.length > 0
-            ? 'bg-red-50 border-red-200'
+            ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
             : boletosAbertos.length > 0
-              ? 'bg-amber-50 border-amber-200'
+              ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800'
               : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700'
           }`}>
           <div className={`w-9 h-9 rounded-xl flex items-center justify-center
-            ${boletosVencidos.length > 0 ? 'bg-red-100' : boletosAbertos.length > 0 ? 'bg-amber-100' : 'bg-gray-100'}`}>
+            ${boletosVencidos.length > 0 ? 'bg-red-100 dark:bg-red-900/40' : boletosAbertos.length > 0 ? 'bg-amber-100 dark:bg-amber-900/40' : 'bg-gray-100 dark:bg-gray-800'}`}>
             <DollarSign size={16} className={
-              boletosVencidos.length > 0 ? 'text-red-600' :
-              boletosAbertos.length  > 0 ? 'text-amber-600' :
+              boletosVencidos.length > 0 ? 'text-red-600 dark:text-red-400' :
+              boletosAbertos.length  > 0 ? 'text-amber-600 dark:text-amber-400' :
               'text-gray-400'
             } />
           </div>
           <div>
             <p className={`text-2xl font-bold
-              ${boletosVencidos.length > 0 ? 'text-red-700' : boletosAbertos.length > 0 ? 'text-amber-700' : 'text-gray-700'}`}>
+              ${boletosVencidos.length > 0 ? 'text-red-700 dark:text-red-400' : boletosAbertos.length > 0 ? 'text-amber-700 dark:text-amber-400' : 'text-gray-700 dark:text-gray-300'}`}>
               {boletosCarregando ? '—' : boletosAbertos.length > 0 ? formatarMoeda(valorAberto) : 'R$ 0'}
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 leading-tight">
@@ -244,8 +244,8 @@ export default function InicioPagina() {
 
         {/* Enviados este mês */}
         <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 space-y-3">
-          <div className="w-9 h-9 rounded-xl bg-emerald-100 flex items-center justify-center">
-            <Send size={15} className="text-emerald-600" />
+          <div className="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+            <Send size={15} className="text-emerald-600 dark:text-emerald-400" />
           </div>
           <div>
             <p className="text-2xl font-bold text-gray-700 dark:text-gray-300">
@@ -260,16 +260,16 @@ export default function InicioPagina() {
         {/* Próximo vencimento */}
         <div className={`rounded-2xl border p-4 space-y-3 transition-colors
           ${diasAteVencer !== null && diasAteVencer <= 5
-            ? 'bg-amber-50 border-amber-200'
+            ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800'
             : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700'
           }`}>
           <div className={`w-9 h-9 rounded-xl flex items-center justify-center
-            ${diasAteVencer !== null && diasAteVencer <= 5 ? 'bg-amber-100' : 'bg-gray-100 dark:bg-gray-800'}`}>
-            <CalendarClock size={16} className={diasAteVencer !== null && diasAteVencer <= 5 ? 'text-amber-600' : 'text-gray-400'} />
+            ${diasAteVencer !== null && diasAteVencer <= 5 ? 'bg-amber-100 dark:bg-amber-900/40' : 'bg-gray-100 dark:bg-gray-800'}`}>
+            <CalendarClock size={16} className={diasAteVencer !== null && diasAteVencer <= 5 ? 'text-amber-600 dark:text-amber-400' : 'text-gray-400'} />
           </div>
           <div>
             <p className={`text-2xl font-bold
-              ${diasAteVencer !== null && diasAteVencer <= 5 ? 'text-amber-700' : 'text-gray-700'}`}>
+              ${diasAteVencer !== null && diasAteVencer <= 5 ? 'text-amber-700 dark:text-amber-400' : 'text-gray-700 dark:text-gray-300'}`}>
               {boletosCarregando
                 ? '—'
                 : diasAteVencer === null
@@ -300,17 +300,17 @@ export default function InicioPagina() {
           {!boletosCarregando && boletosVencidos.length > 0 && (
             <Link
               href="/financeiro"
-              className="flex items-center gap-3 px-4 py-3 rounded-xl bg-red-50 border border-red-200
-                hover:bg-red-100/70 transition-colors group"
+              className="flex items-center gap-3 px-4 py-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800
+                hover:bg-red-100/70 dark:hover:bg-red-900/30 transition-colors group"
             >
               <AlertTriangle size={16} className="text-red-500 shrink-0" />
-              <p className="text-sm text-red-700 flex-1">
+              <p className="text-sm text-red-700 dark:text-red-400 flex-1">
                 <span className="font-semibold">
                   {boletosVencidos.length} boleto{boletosVencidos.length > 1 ? 's' : ''} vencido{boletosVencidos.length > 1 ? 's'  : ''}
                 </span>
                 {' · '}{formatarMoeda(boletosVencidos.reduce((s, b) => s + b.valor, 0))} em aberto
               </p>
-              <span className="text-xs font-semibold text-red-600 group-hover:underline shrink-0">
+              <span className="text-xs font-semibold text-red-600 dark:text-red-400 group-hover:underline shrink-0">
                 Ver boletos →
               </span>
             </Link>
@@ -369,9 +369,9 @@ export default function InicioPagina() {
                     >
                       {/* Ícone colorido pelo setor */}
                       <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0
-                        ${doc.sector === 'FISCAL'   ? 'bg-indigo-50' :
-                          doc.sector === 'PESSOAL'  ? 'bg-violet-50' :
-                          doc.sector === 'CONTABIL' ? 'bg-teal-50'   : 'bg-gray-100'}`}
+                        ${doc.sector === 'FISCAL'   ? 'bg-indigo-50 dark:bg-indigo-900/30' :
+                          doc.sector === 'PESSOAL'  ? 'bg-violet-50 dark:bg-violet-900/30' :
+                          doc.sector === 'CONTABIL' ? 'bg-teal-50 dark:bg-teal-900/30'   : 'bg-gray-100 dark:bg-gray-800'}`}
                       >
                         {isPDF
                           ? <FileText  size={15} className={
@@ -418,7 +418,7 @@ export default function InicioPagina() {
                             onClick={() => marcarComoLido(doc.id)}
                             disabled={isMarcando || isBaixando}
                             title="Marcar como lido"
-                            className="p-2 rounded-lg text-gray-300 hover:text-emerald-500 hover:bg-emerald-50
+                            className="p-2 rounded-lg text-gray-300 dark:text-gray-600 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20
                               disabled:opacity-40 transition-colors"
                           >
                             {isMarcando ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle size={14} />}
@@ -428,7 +428,7 @@ export default function InicioPagina() {
                           onClick={() => baixarDocumento(doc.id)}
                           disabled={isBaixando || isMarcando}
                           title="Baixar"
-                          className="p-2 rounded-lg text-gray-300 hover:text-sky-500 hover:bg-sky-50
+                          className="p-2 rounded-lg text-gray-300 dark:text-gray-600 hover:text-sky-500 hover:bg-sky-50 dark:hover:bg-sky-900/20
                             disabled:opacity-40 transition-colors"
                         >
                           {isBaixando ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
@@ -493,12 +493,12 @@ export default function InicioPagina() {
                 transition-all duration-200 flex flex-col items-center justify-center
                 gap-2 py-7 text-center
                 ${dragAtivo
-                  ? 'border-sky-400 bg-sky-50 scale-[1.02]'
+                  ? 'border-sky-400 bg-sky-50 dark:bg-sky-900/20 scale-[1.02]'
                   : setorDropzone === 'FISCAL'
-                    ? 'border-indigo-200 bg-indigo-50/40 hover:border-indigo-400 hover:bg-indigo-50'
+                    ? 'border-indigo-200 dark:border-indigo-800 bg-indigo-50/40 dark:bg-indigo-900/10 hover:border-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20'
                     : setorDropzone === 'PESSOAL'
-                      ? 'border-violet-200 bg-violet-50/40 hover:border-violet-400 hover:bg-violet-50'
-                      : 'border-teal-200 bg-teal-50/40 hover:border-teal-400 hover:bg-teal-50'
+                      ? 'border-violet-200 dark:border-violet-800 bg-violet-50/40 dark:bg-violet-900/10 hover:border-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/20'
+                      : 'border-teal-200 dark:border-teal-800 bg-teal-50/40 dark:bg-teal-900/10 hover:border-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/20'
                 }
               `}
             >
@@ -510,7 +510,7 @@ export default function InicioPagina() {
                 onChange={e => { const f = e.target.files?.[0]; if (f) abrirModal(f); }}
               />
               <div className={`w-10 h-10 rounded-xl flex items-center justify-center
-                ${dragAtivo ? 'bg-sky-100' : setorDropzone === 'FISCAL' ? 'bg-indigo-100' : setorDropzone === 'PESSOAL' ? 'bg-violet-100' : 'bg-teal-100'}`}>
+                ${dragAtivo ? 'bg-sky-100 dark:bg-sky-900/30' : setorDropzone === 'FISCAL' ? 'bg-indigo-100 dark:bg-indigo-900/40' : setorDropzone === 'PESSOAL' ? 'bg-violet-100 dark:bg-violet-900/40' : 'bg-teal-100 dark:bg-teal-900/40'}`}>
                 <CloudUpload size={20} className={
                   dragAtivo ? 'text-sky-500' :
                   setorDropzone === 'FISCAL'   ? 'text-indigo-500' :
@@ -532,8 +532,8 @@ export default function InicioPagina() {
               type="button"
               onClick={() => fileInputRef.current?.click()}
               className="w-full flex items-center justify-center gap-2 py-2 text-xs
-                font-semibold text-sky-700 bg-sky-50 border border-sky-200 rounded-xl
-                hover:bg-sky-100 transition-colors lg:hidden"
+                font-semibold text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/20 border border-sky-200 dark:border-sky-800 rounded-xl
+                hover:bg-sky-100 dark:hover:bg-sky-900/30 transition-colors lg:hidden"
             >
               <Upload size={14} /> Selecionar arquivo
             </button>

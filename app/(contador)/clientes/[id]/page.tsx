@@ -336,7 +336,7 @@ function ClienteDetalhesPageDono() {
             value={filtroSetor}
             onChange={(e) => setFiltroSetor(e.target.value as SetorTipo | '')}
             className="px-3 py-2 text-xs font-medium rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-gray-800
-              text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:[color-scheme:dark]"
           >
             <option value="">Todos os Setores</option>
             <option value="FISCAL">Fiscal</option>
@@ -349,7 +349,7 @@ function ClienteDetalhesPageDono() {
             value={filtroLeitura}
             onChange={(e) => setFiltroLeitura(e.target.value as 'lido' | 'nao_lido' | '')}
             className="px-3 py-2 text-xs font-medium rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-gray-800
-              text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:[color-scheme:dark]"
           >
             <option value="">Todos</option>
             <option value="nao_lido">Não lidos</option>
@@ -361,7 +361,7 @@ function ClienteDetalhesPageDono() {
             value={filtroOrigem}
             onChange={(e) => setFiltroOrigem(e.target.value as Origem | '')}
             className="px-3 py-2 text-xs font-medium rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-gray-800
-              text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:[color-scheme:dark]"
           >
             <option value="">Todas as Origens</option>
             <option value="UPLOAD_CLIENTE">Enviado pelo Cliente</option>
