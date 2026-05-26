@@ -10,6 +10,8 @@ import {
   FolderOpen,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 
 import type {
@@ -129,6 +131,9 @@ interface DocumentoLinhaProps {
 
 function DocumentoLinha({ doc, baixando, onBaixar }: DocumentoLinhaProps) {
   const [erro, setErro] = useState<string | null>(null);
+  const [expandido, setExpandido] = useState(false);
+  const [metadata, setMetadata] = useState<Record<string, unknown> | null>(null);
+  const [carregandoMeta, setCarregandoMeta] = useState(false);
 
   const handleBaixar = useCallback(async () => {
     setErro(null);
@@ -138,10 +143,33 @@ function DocumentoLinha({ doc, baixando, onBaixar }: DocumentoLinhaProps) {
       setErro(
         e instanceof Error ? e.message : 'Falha ao baixar. Tente novamente.',
       );
-      // Limpa o erro após 5s
       setTimeout(() => setErro(null), 5_000);
     }
   }, [doc.id, onBaixar]);
+
+  const handleExpandir = useCallback(async () => {
+    if (doc.fileType !== 'XML') return;
+    const novoEstado = !expandido;
+    setExpandido(novoEstado);
+    if (novoEstado && metadata === null) {
+      setCarregandoMeta(true);
+      try {
+        const r = await fetch(`/api/v1/documentos/${doc.id}/metadata`);
+        if (r.ok) {
+          const d = await r.json();
+          setMetadata(d.metadata ?? {});
+        } else {
+          setMetadata({});
+        }
+      } catch {
+        setMetadata({});
+      } finally {
+        setCarregandoMeta(false);
+      }
+    }
+  }, [doc.fileType, doc.id, expandido, metadata]);
+
+  const isXml = doc.fileType === 'XML';
 
   return (
     <li className="group relative">
@@ -157,7 +185,6 @@ function DocumentoLinha({ doc, baixando, onBaixar }: DocumentoLinhaProps) {
               {doc.fileName}
             </span>
 
-            {/* Badge "Novo" — visível apenas quando readStatus === false */}
             {!doc.readStatus && (
               <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold
                                bg-blue-500 text-white leading-none tracking-wide animate-pulse">
@@ -165,7 +192,6 @@ function DocumentoLinha({ doc, baixando, onBaixar }: DocumentoLinhaProps) {
               </span>
             )}
 
-            {/* Badge de setor (em mobile: segunda linha; em sm+: inline) */}
             <span className={`inline-flex text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${COR_SETOR[doc.sector as SetorFiltro] ?? 'bg-gray-100 text-gray-600'}`}>
               {LABEL_SETOR[doc.sector as SetorFiltro] ?? doc.sector}
             </span>
@@ -185,7 +211,6 @@ function DocumentoLinha({ doc, baixando, onBaixar }: DocumentoLinhaProps) {
             </span>
           </div>
 
-          {/* Erro inline */}
           {erro && (
             <p className="text-xs text-red-600 mt-1 flex items-center gap-1">
               <AlertCircle size={11} />
@@ -193,6 +218,18 @@ function DocumentoLinha({ doc, baixando, onBaixar }: DocumentoLinhaProps) {
             </p>
           )}
         </div>
+
+        {/* Botão expandir NF-e (apenas XMLs) */}
+        {isXml && (
+          <button
+            type="button"
+            onClick={handleExpandir}
+            title="Ver dados extraídos da NF-e"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-700 transition-colors shrink-0"
+          >
+            {expandido ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
+          </button>
+        )}
 
         {/* Botão de download */}
         <button
@@ -213,6 +250,43 @@ function DocumentoLinha({ doc, baixando, onBaixar }: DocumentoLinhaProps) {
         </button>
 
       </div>
+
+      {/* Painel de dados NF-e */}
+      {isXml && expandido && (
+        <div className="px-4 pb-3 bg-amber-50/50 dark:bg-amber-900/10 border-t border-amber-100 dark:border-amber-900/30">
+          {carregandoMeta ? (
+            <p className="text-xs text-slate-400 py-2 flex items-center gap-1.5">
+              <Loader2 size={12} className="animate-spin" /> Carregando dados da NF-e…
+            </p>
+          ) : metadata && Object.keys(metadata).length > 0 ? (
+            <div className="pt-2 grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1">
+              {(metadata as { emitenteNome?: string }).emitenteNome && (
+                <div className="col-span-2 sm:col-span-1 text-xs"><span className="text-slate-500">Emitente: </span><span className="font-medium">{(metadata as { emitenteNome: string }).emitenteNome}</span></div>
+              )}
+              {(metadata as { destinatarioNome?: string }).destinatarioNome && (
+                <div className="col-span-2 sm:col-span-1 text-xs"><span className="text-slate-500">Destinatário: </span><span className="font-medium">{(metadata as { destinatarioNome: string }).destinatarioNome}</span></div>
+              )}
+              {(metadata as { numero?: string }).numero && (
+                <div className="text-xs"><span className="text-slate-500">Nº NF-e: </span><span className="font-medium">{(metadata as { numero: string }).numero}</span></div>
+              )}
+              {(metadata as { valorTotal?: number }).valorTotal && (
+                <div className="text-xs"><span className="text-slate-500">Valor: </span><span className="font-medium">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format((metadata as { valorTotal: number }).valorTotal)}</span></div>
+              )}
+              {(metadata as { cfop?: string }).cfop && (
+                <div className="text-xs"><span className="text-slate-500">CFOP: </span><span className="font-medium">{(metadata as { cfop: string }).cfop}</span></div>
+              )}
+              {(metadata as { dataEmissao?: string }).dataEmissao && (
+                <div className="text-xs"><span className="text-slate-500">Emissão: </span><span className="font-medium">{new Date((metadata as { dataEmissao: string }).dataEmissao).toLocaleDateString('pt-BR')}</span></div>
+              )}
+              {(metadata as { chaveAcesso?: string }).chaveAcesso && (
+                <div className="col-span-2 sm:col-span-3 text-xs"><span className="text-slate-500">Chave: </span><span className="font-mono text-[10px] break-all">{(metadata as { chaveAcesso: string }).chaveAcesso}</span></div>
+              )}
+            </div>
+          ) : (
+            <p className="text-xs text-slate-400 py-2">Dados ainda não extraídos. O processamento ocorre em segundos após o upload.</p>
+          )}
+        </div>
+      )}
     </li>
   );
 }
