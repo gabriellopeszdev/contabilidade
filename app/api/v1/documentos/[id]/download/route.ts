@@ -94,7 +94,7 @@ async function verificarJWT(
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   // -------------------------------------------------------------------------
   // 1. Autenticação
@@ -109,7 +109,7 @@ export async function GET(
 
   const userId  = authResult.payload.sub;
   const role    = authResult.payload.role;
-  const documentoId = params.id;
+  const { id: documentoId } = await params;
 
   if (!documentoId?.match(/^[0-9a-f-]{36}$/i)) {
     return NextResponse.json(

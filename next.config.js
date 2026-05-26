@@ -8,19 +8,19 @@ const nextConfig = {
   // Por isso NÃO usar output: 'standalone' nem output: 'export'.
   // ==========================================================================
 
-  experimental: {
-    // Pacotes que contêm código nativo do Node.js (bindings C++, módulos net/fs)
-    // não devem ser bundlados pelo webpack — precisam ser resolvidos em runtime.
-    serverComponentsExternalPackages: [
-      '@prisma/client',
-      'ioredis',
-      'minio',
-      'socket.io',
-      'bullmq',
-      'pino', 
-      'pino-pretty',
-    ],
-  },
+  // Pacotes que contêm código nativo do Node.js (bindings C++, módulos net/fs)
+  // não devem ser bundlados pelo webpack — precisam ser resolvidos em runtime.
+  // Movido de experimental.serverComponentsExternalPackages (Next.js 14) para
+  // serverExternalPackages (Next.js 15/16).
+  serverExternalPackages: [
+    '@prisma/client',
+    'ioredis',
+    'minio',
+    'socket.io',
+    'bullmq',
+    'pino',
+    'pino-pretty',
+  ],
 
   // Cabeçalhos de segurança básicos para um SaaS self-hosted
   async headers() {
