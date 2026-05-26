@@ -79,6 +79,14 @@ enum ResourceType {
   ASSINATURA
 }
 
+enum RecorrenciaTipo {
+  MENSAL
+  BIMESTRAL
+  TRIMESTRAL
+  SEMESTRAL
+  ANUAL
+}
+
 // =============================================================================
 // UsuarioCliente
 //
@@ -164,6 +172,7 @@ model UsuarioContador {
   tarefasAssign TarefaKanban[]
   configuracao  ConfiguracaoEscritorio?
   obrigacoes    ObrigacaoFiscal[]
+  instanciasObrigacoes InstanciaObrigacao[]
   funcionarios  Funcionario[] @relation("FuncionarioContador")
   boletosEmitidos BoletoHonorario[]
   assinaturas   AssinaturaHonorario[]
@@ -474,13 +483,44 @@ model ObrigacaoFiscal {
   diaVencimento Int     @map("dia_vencimento")
   cor         String    @default("#3b82f6") @db.VarChar(9)
   ativo       Boolean   @default(true)
+  recorrencia          RecorrenciaTipo? // null = não recorrente
+  lembreteAntecedencia Int              @default(3) @map("lembrete_antecedencia")
+  lembreteEmail        Boolean          @default(true) @map("lembrete_email")
+  lembreteNotificacao  Boolean          @default(true) @map("lembrete_notificacao")
+  mesesAplicacao       Int[]            @map("meses_aplicacao")
+  ultimoLembreteEm     DateTime?        @map("ultimo_lembrete_em") @db.Timestamptz
   createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz
   updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz
 
   contador UsuarioContador @relation(fields: [contadorId], references: [id], onDelete: Cascade)
+  instancias InstanciaObrigacao[]
 
   @@index([contadorId])
   @@map("obrigacao_fiscal")
+}
+
+// =============================================================================
+// InstanciaObrigacao — Instâncias recorrentes de obrigações fiscais
+// =============================================================================
+
+model InstanciaObrigacao {
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  obrigacaoId      String    @map("obrigacao_id") @db.Uuid
+  contadorId       String    @map("contador_id") @db.Uuid
+  mesReferencia    String    @map("mes_referencia") @db.VarChar(7)
+  vencimento       DateTime  @db.Date
+  concluida        Boolean   @default(false)
+  concluidaEm      DateTime? @map("concluida_em") @db.Timestamptz
+  lembreteEnviado  Boolean   @default(false) @map("lembrete_enviado")
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  obrigacao ObrigacaoFiscal @relation(fields: [obrigacaoId], references: [id], onDelete: Cascade)
+  contador  UsuarioContador @relation(fields: [contadorId], references: [id], onDelete: Cascade)
+
+  @@unique([obrigacaoId, mesReferencia])
+  @@index([contadorId, vencimento])
+  @@index([vencimento, lembreteEnviado])
+  @@map("instancia_obrigacao")
 }
 
 // =============================================================================
