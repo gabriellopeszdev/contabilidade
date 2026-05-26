@@ -12,6 +12,9 @@ const nextConfig = {
   // não devem ser bundlados pelo webpack — precisam ser resolvidos em runtime.
   // Movido de experimental.serverComponentsExternalPackages (Next.js 14) para
   // serverExternalPackages (Next.js 15/16).
+  // Permite HMR via ngrok/túneis em dev (não tem efeito em produção)
+  allowedDevOrigins: ['*.ngrok-free.app', '*.ngrok.io', '*.ngrok-free.dev'],
+
   serverExternalPackages: [
     '@prisma/client',
     'ioredis',
