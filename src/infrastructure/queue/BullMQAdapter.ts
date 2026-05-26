@@ -4,6 +4,8 @@ import type { ILogger } from '../../domain/ports/ILogger';
 import type { PrismaClient } from '@prisma/client';
 import type { IEmailService } from '../../domain/ports/IEmailService';
 import { emailWrapper, emailButton, emailHeading, emailSubheading, emailCallout, emailWarningCallout, emailInfoBox } from '../email/emailTemplate';
+import { verificarLembretesJob } from './jobs/verificarLembretesJob';
+import { gerarObrigacoesRecorrentesJob } from './jobs/gerarObrigacoesRecorrentesJob';
 
 // =============================================================================
 // BullMQAdapter — Processamento Assíncrono em Background
@@ -160,6 +162,28 @@ export class BullMQAdapter {
     this.logger.info('[BullMQAdapter] Lembrete de boleto agendado (08:00 diário).');
   }
 
+  /**
+   * Agenda jobs recorrentes de obrigações fiscais:
+   *  - verificar-lembretes: diariamente às 08:00
+   *  - gerar-obrigacoes-recorrentes: todo dia 25 às 09:00
+   * Idempotente — IDs fixos evitam duplicação de schedules.
+   */
+  async agendarJobsObrigacoes(): Promise<void> {
+    // Daily at 08:00 — check reminders
+    await this.queue.add('verificar-lembretes', {}, {
+      repeat: { pattern: '0 8 * * *' },
+      jobId: 'verificar-lembretes',
+    });
+
+    // Monthly on 25th at 09:00 — generate next month's recurring obligations
+    await this.queue.add('gerar-obrigacoes-recorrentes', {}, {
+      repeat: { pattern: '0 9 25 * *' },
+      jobId: 'gerar-obrigacoes-recorrentes',
+    });
+
+    this.logger.info('[BullMQAdapter] Jobs de obrigações agendados (lembretes 08:00 diário, recorrências dia 25 09:00).');
+  }
+
   // ---------------------------------------------------------------------------
   // Consumidor — inicia o Worker que processa jobs em background
   // ---------------------------------------------------------------------------
@@ -224,6 +248,16 @@ export class BullMQAdapter {
       tipo:      job.data.tipo,
       tentativa: job.attemptsMade + 1,
     });
+
+    // Scheduled jobs with empty payloads are dispatched by job.name
+    if (job.name === 'verificar-lembretes') {
+      await verificarLembretesJob();
+      return;
+    }
+    if (job.name === 'gerar-obrigacoes-recorrentes') {
+      await gerarObrigacoesRecorrentesJob();
+      return;
+    }
 
     switch (job.data.tipo) {
 
