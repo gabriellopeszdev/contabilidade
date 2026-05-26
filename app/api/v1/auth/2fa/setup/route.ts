@@ -29,4 +29,4 @@ export const GET = withAuth(async (req, ctx, auth) => {
   }
 
   return NextResponse.json({ qrCode: qrCodeDataUrl, secret });
-}, ['ACCOUNTANT', 'CLIENT', 'EMPLOYEE', 'ADMIN']);
+}, ['ACCOUNTANT', 'CLIENT', 'ADMIN']);
