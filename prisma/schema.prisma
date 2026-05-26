@@ -67,6 +67,9 @@ enum ActionType {
   ACCOUNT_DELETED
   ESTORNO_SOLICITADO
   ASSINATURA_CANCELADA
+  ASSINATURA_SOLICITADA
+  ASSINATURA_CONCLUIDA
+  ASSINATURA_RECUSADA
 }
 
 enum ResourceType {
@@ -289,6 +292,7 @@ model DocumentoFiscal {
   chatMessages ChatMessage[]
   versaoAtual   Int               @default(1) @map("versao_atual")
   versoes       DocumentoVersao[]
+  assinaturas   AssinaturaDocumento[]
 
   // ------------------------------------------------------------------
   // Índices — projetados para as queries do IDocumentoRepository
@@ -560,6 +564,13 @@ enum StatusBoleto {
   CANCELADO
 }
 
+enum StatusAssinaturaDoc {
+  PENDENTE
+  ASSINADO
+  RECUSADO
+  EXPIRADO
+}
+
 enum TipoPagamento {
   BOLETO
   PIX
@@ -667,4 +678,31 @@ model Notificacao {
   @@index([userId, lida])
   @@index([userId, createdAt(sort: Desc)])
   @@map("notificacao")
+}
+
+model AssinaturaDocumento {
+  id                     String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  documentoId            String               @map("documento_id") @db.Uuid
+  solicitanteId          String               @map("solicitante_id") @db.Uuid
+  signatarioId           String               @map("signatario_id") @db.Uuid
+  signatarioEmail        String               @map("signatario_email") @db.VarChar(255)
+  signatarioNome         String               @map("signatario_nome") @db.VarChar(255)
+  status                 StatusAssinaturaDoc  @default(PENDENTE)
+  tokenAssinatura        String               @unique @map("token_assinatura") @db.VarChar(128)
+  expiresAt              DateTime             @map("expires_at") @db.Timestamptz
+  assinadoAt             DateTime?            @map("assinado_at") @db.Timestamptz
+  ipAssinatura           String?              @map("ip_assinatura") @db.VarChar(45)
+  hashDocumento          String               @map("hash_documento") @db.Char(64)
+  comprovanteStoragePath String?              @map("comprovante_storage_path") @db.VarChar(1000)
+  motivoRecusa           String?              @map("motivo_recusa") @db.VarChar(500)
+  createdAt              DateTime             @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt              DateTime             @updatedAt @map("updated_at") @db.Timestamptz
+
+  documento DocumentoFiscal @relation(fields: [documentoId], references: [id], onDelete: Cascade)
+
+  @@index([documentoId])
+  @@index([signatarioId])
+  @@index([tokenAssinatura])
+  @@index([status, expiresAt])
+  @@map("assinatura_documento")
 }
