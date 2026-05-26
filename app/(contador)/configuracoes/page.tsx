@@ -53,13 +53,14 @@ interface EscritorioForm {
 }
 
 interface UsuarioAPI {
-  id:        string;
-  name:      string;
-  email:     string;
-  crc:       string;
-  phone:     string | null;
-  avatarUrl: string | null;
-  role:      string;
+  id:               string;
+  name:             string;
+  email:            string;
+  crc:              string;
+  phone:            string | null;
+  avatarUrl:        string | null;
+  role:             string;
+  twoFactorEnabled: boolean;
 }
 
 interface Toast {
@@ -178,6 +179,7 @@ export default function ConfiguracoesPage() {
           {abaAtiva === 'seguranca' && (
             <SegurancaTab
               token={token}
+              twoFactorEnabled={dadosUsuario?.twoFactorEnabled ?? false}
               onSucesso={(msg) => mostrarToast('sucesso', msg)}
               onErro={(msg) => mostrarToast('erro', msg)}
             />
@@ -377,10 +379,12 @@ function PerfilTab({
 
 function SegurancaTab({
   token,
+  twoFactorEnabled: twoFactorEnabledProp,
   onSucesso,
   onErro,
 }: {
-  token:     string | null;
+  token:              string | null;
+  twoFactorEnabled:   boolean;
   onSucesso: (msg: string) => void;
   onErro:    (msg: string) => void;
 }) {
@@ -392,6 +396,99 @@ function SegurancaTab({
   const [salvando, setSalvando] = useState(false);
   const [mostrarSenhaAtual, setMostrarSenhaAtual] = useState(false);
   const [mostrarNovaSenha,  setMostrarNovaSenha]  = useState(false);
+
+  // ---------------------------------------------------------------------------
+  // 2FA state
+  // ---------------------------------------------------------------------------
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState(twoFactorEnabledProp);
+  const [qrCode,           setQrCode]           = useState('');
+  const [secret,           setSecret]           = useState('');
+  const [totpInput,        setTotpInput]        = useState('');
+  const [backupCodes,      setBackupCodes]      = useState<string[]>([]);
+  const [disablePassword,  setDisablePassword]  = useState('');
+  const [setupStep,        setSetupStep]        = useState<'idle' | 'qr' | 'codes' | 'disabling'>('idle');
+  const [twoFactorLoading, setTwoFactorLoading] = useState(false);
+
+  // Sync initial prop (in case parent fetches after first render)
+  useEffect(() => {
+    setTwoFactorEnabled(twoFactorEnabledProp);
+  }, [twoFactorEnabledProp]);
+
+  // ---------------------------------------------------------------------------
+  // 2FA handlers
+  // ---------------------------------------------------------------------------
+  async function handleSetup2FA() {
+    setTwoFactorLoading(true);
+    try {
+      const res = await fetch('/api/v1/auth/2fa/setup', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.message ?? 'Falha ao iniciar setup');
+      }
+      const data = await res.json();
+      setQrCode(data.qrCode);
+      setSecret(data.secret);
+      setSetupStep('qr');
+    } catch (e: unknown) {
+      onErro(e instanceof Error ? e.message : 'Falha ao iniciar setup do 2FA.');
+    } finally {
+      setTwoFactorLoading(false);
+    }
+  }
+
+  async function handleEnable2FA() {
+    setTwoFactorLoading(true);
+    try {
+      const res = await fetch('/api/v1/auth/2fa/enable', {
+        method:  'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization:  `Bearer ${token}`,
+        },
+        body: JSON.stringify({ token: totpInput }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.message ?? 'Código inválido');
+      }
+      const data = await res.json();
+      setBackupCodes(data.backupCodes);
+      setTwoFactorEnabled(true);
+      setSetupStep('codes');
+    } catch (e: unknown) {
+      onErro(e instanceof Error ? e.message : 'Código inválido. Tente novamente.');
+    } finally {
+      setTwoFactorLoading(false);
+    }
+  }
+
+  async function handleDisable2FA() {
+    setTwoFactorLoading(true);
+    try {
+      const res = await fetch('/api/v1/auth/2fa/disable', {
+        method:  'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization:  `Bearer ${token}`,
+        },
+        body: JSON.stringify({ senha: disablePassword }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.message ?? 'Falha ao desativar');
+      }
+      setTwoFactorEnabled(false);
+      setSetupStep('idle');
+      setDisablePassword('');
+      onSucesso('2FA desativado com sucesso.');
+    } catch (e: unknown) {
+      onErro(e instanceof Error ? e.message : 'Falha ao desativar o 2FA.');
+    } finally {
+      setTwoFactorLoading(false);
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -440,104 +537,262 @@ function SegurancaTab({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-6 space-y-5">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Alterar Senha</h2>
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          A nova senha deve ter pelo menos 8 caracteres.
-        </p>
+    <div className="space-y-6">
+      {/* Alterar Senha */}
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-6 space-y-5">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Alterar Senha</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            A nova senha deve ter pelo menos 8 caracteres.
+          </p>
 
-        <div className="space-y-4 max-w-md">
-          {/* Senha Atual */}
-          <div className="space-y-1.5">
-            <label htmlFor="senha-atual" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Senha Atual
-            </label>
-            <div className="relative">
+          <div className="space-y-4 max-w-md">
+            {/* Senha Atual */}
+            <div className="space-y-1.5">
+              <label htmlFor="senha-atual" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Senha Atual
+              </label>
+              <div className="relative">
+                <input
+                  id="senha-atual"
+                  type={mostrarSenhaAtual ? 'text' : 'password'}
+                  value={form.senhaAtual}
+                  onChange={(e) => setForm((f) => ({ ...f, senhaAtual: e.target.value }))}
+                  className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 pr-10 text-sm text-gray-900 dark:text-gray-100
+                             placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary
+                             focus:border-transparent transition-shadow"
+                  placeholder="Digite sua senha atual"
+                  autoComplete="current-password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setMostrarSenhaAtual((v) => !v)}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+                  tabIndex={-1}
+                >
+                  {mostrarSenhaAtual ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+            </div>
+
+            {/* Nova Senha */}
+            <div className="space-y-1.5">
+              <label htmlFor="nova-senha" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Nova Senha
+              </label>
+              <div className="relative">
+                <input
+                  id="nova-senha"
+                  type={mostrarNovaSenha ? 'text' : 'password'}
+                  value={form.novaSenha}
+                  onChange={(e) => setForm((f) => ({ ...f, novaSenha: e.target.value }))}
+                  className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 pr-10 text-sm text-gray-900 dark:text-gray-100
+                             placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary
+                             focus:border-transparent transition-shadow"
+                  placeholder="Mínimo 8 caracteres"
+                  autoComplete="new-password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setMostrarNovaSenha((v) => !v)}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+                  tabIndex={-1}
+                >
+                  {mostrarNovaSenha ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+            </div>
+
+            {/* Confirmar Nova Senha */}
+            <div className="space-y-1.5">
+              <label htmlFor="confirmar-senha" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Confirmar Nova Senha
+              </label>
               <input
-                id="senha-atual"
-                type={mostrarSenhaAtual ? 'text' : 'password'}
-                value={form.senhaAtual}
-                onChange={(e) => setForm((f) => ({ ...f, senhaAtual: e.target.value }))}
-                className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 pr-10 text-sm text-gray-900 dark:text-gray-100
+                id="confirmar-senha"
+                type="password"
+                value={form.confirmarSenha}
+                onChange={(e) => setForm((f) => ({ ...f, confirmarSenha: e.target.value }))}
+                className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100
                            placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary
                            focus:border-transparent transition-shadow"
-                placeholder="Digite sua senha atual"
+                placeholder="Repita a nova senha"
+                autoComplete="new-password"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="flex justify-end">
+          <button
+            type="submit"
+            disabled={salvando}
+            className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm
+                       font-semibold text-white shadow-sm hover:brightness-90 disabled:opacity-50
+                       disabled:cursor-not-allowed transition-colors focus-visible:outline-none
+                       focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+          >
+            {salvando ? <Loader2 size={16} className="animate-spin" /> : <Shield size={16} />}
+            {salvando ? 'Alterando…' : 'Alterar Senha'}
+          </button>
+        </div>
+      </form>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* Autenticação em dois fatores                                        */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-6 space-y-4">
+        <div className="flex items-center gap-2">
+          <ShieldCheck size={18} className="text-primary" />
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Autenticação em dois fatores</h2>
+        </div>
+
+        {/* idle + 2FA disabled → show activate button */}
+        {setupStep === 'idle' && !twoFactorEnabled && (
+          <div>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
+              Adicione uma camada extra de segurança à sua conta.
+            </p>
+            <button
+              type="button"
+              onClick={handleSetup2FA}
+              disabled={twoFactorLoading}
+              className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm
+                         font-semibold text-white shadow-sm hover:brightness-90 disabled:opacity-50
+                         disabled:cursor-not-allowed transition-colors"
+            >
+              {twoFactorLoading ? <Loader2 size={16} className="animate-spin" /> : <ShieldCheck size={16} />}
+              {twoFactorLoading ? 'Aguarde…' : 'Ativar 2FA'}
+            </button>
+          </div>
+        )}
+
+        {/* idle + 2FA enabled → show active badge + disable button */}
+        {setupStep === 'idle' && twoFactorEnabled && (
+          <div className="flex items-center gap-3">
+            <span className="text-sm bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300 px-2 py-1 rounded text-xs font-medium">
+              Ativo
+            </span>
+            <button
+              type="button"
+              onClick={() => setSetupStep('disabling')}
+              className="inline-flex items-center gap-2 rounded-lg border border-red-300 dark:border-red-800 px-4 py-2
+                         text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+            >
+              Desativar
+            </button>
+          </div>
+        )}
+
+        {/* qr step → show QR code + TOTP input */}
+        {setupStep === 'qr' && (
+          <div className="space-y-4">
+            <p className="text-sm text-gray-700 dark:text-gray-300">
+              Escaneie o QR Code com seu app autenticador (Google Authenticator, Authy):
+            </p>
+            {qrCode && (
+              <img src={qrCode} alt="QR Code 2FA" className="w-48 h-48 rounded-lg border border-gray-200 dark:border-gray-700" />
+            )}
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Ou insira manualmente:{' '}
+              <code className="font-mono bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-xs">{secret}</code>
+            </p>
+            <div className="flex gap-2 items-center">
+              <input
+                type="text"
+                value={totpInput}
+                onChange={(e) => setTotpInput(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                placeholder="000000"
+                maxLength={6}
+                inputMode="numeric"
+                className="w-32 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100
+                           placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary
+                           focus:border-transparent transition-shadow font-mono tracking-widest"
+              />
+              <button
+                type="button"
+                onClick={handleEnable2FA}
+                disabled={totpInput.length !== 6 || twoFactorLoading}
+                className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm
+                           font-semibold text-white shadow-sm hover:brightness-90 disabled:opacity-50
+                           disabled:cursor-not-allowed transition-colors"
+              >
+                {twoFactorLoading ? <Loader2 size={16} className="animate-spin" /> : null}
+                {twoFactorLoading ? 'Verificando…' : 'Confirmar'}
+              </button>
+              <button
+                type="button"
+                onClick={() => { setSetupStep('idle'); setTotpInput(''); setQrCode(''); setSecret(''); }}
+                className="rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400
+                           hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* codes step → show backup codes */}
+        {setupStep === 'codes' && (
+          <div className="space-y-3">
+            <p className="text-sm font-medium text-green-700 dark:text-green-400">2FA ativado com sucesso!</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Guarde os códigos de backup em local seguro. Cada código só pode ser usado uma vez:
+            </p>
+            <div className="grid grid-cols-2 gap-1 font-mono text-sm bg-gray-50 dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700">
+              {backupCodes.map((code) => (
+                <span key={code} className="text-gray-800 dark:text-gray-200">{code}</span>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={() => setSetupStep('idle')}
+              className="inline-flex items-center gap-2 rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400
+                         hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            >
+              Feito
+            </button>
+          </div>
+        )}
+
+        {/* disabling step → confirm with password */}
+        {setupStep === 'disabling' && (
+          <div className="space-y-3">
+            <p className="text-sm text-gray-700 dark:text-gray-300">Digite sua senha para desativar o 2FA:</p>
+            <div className="flex gap-2 flex-wrap">
+              <input
+                type="password"
+                value={disablePassword}
+                onChange={(e) => setDisablePassword(e.target.value)}
+                placeholder="Sua senha atual"
+                className="max-w-xs rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100
+                           placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary
+                           focus:border-transparent transition-shadow"
                 autoComplete="current-password"
               />
               <button
                 type="button"
-                onClick={() => setMostrarSenhaAtual((v) => !v)}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
-                tabIndex={-1}
+                onClick={handleDisable2FA}
+                disabled={!disablePassword || twoFactorLoading}
+                className="inline-flex items-center gap-2 rounded-lg border border-red-300 dark:border-red-800 bg-red-600 px-4 py-2 text-sm font-semibold
+                           text-white hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                {mostrarSenhaAtual ? <EyeOff size={16} /> : <Eye size={16} />}
+                {twoFactorLoading ? <Loader2 size={14} className="animate-spin" /> : null}
+                {twoFactorLoading ? 'Desativando…' : 'Desativar'}
               </button>
-            </div>
-          </div>
-
-          {/* Nova Senha */}
-          <div className="space-y-1.5">
-            <label htmlFor="nova-senha" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Nova Senha
-            </label>
-            <div className="relative">
-              <input
-                id="nova-senha"
-                type={mostrarNovaSenha ? 'text' : 'password'}
-                value={form.novaSenha}
-                onChange={(e) => setForm((f) => ({ ...f, novaSenha: e.target.value }))}
-                className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 pr-10 text-sm text-gray-900 dark:text-gray-100
-                           placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary
-                           focus:border-transparent transition-shadow"
-                placeholder="Mínimo 8 caracteres"
-                autoComplete="new-password"
-              />
               <button
                 type="button"
-                onClick={() => setMostrarNovaSenha((v) => !v)}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
-                tabIndex={-1}
+                onClick={() => { setSetupStep('idle'); setDisablePassword(''); }}
+                className="rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400
+                           hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               >
-                {mostrarNovaSenha ? <EyeOff size={16} /> : <Eye size={16} />}
+                Cancelar
               </button>
             </div>
           </div>
-
-          {/* Confirmar Nova Senha */}
-          <div className="space-y-1.5">
-            <label htmlFor="confirmar-senha" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Confirmar Nova Senha
-            </label>
-            <input
-              id="confirmar-senha"
-              type="password"
-              value={form.confirmarSenha}
-              onChange={(e) => setForm((f) => ({ ...f, confirmarSenha: e.target.value }))}
-              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100
-                         placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary
-                         focus:border-transparent transition-shadow"
-              placeholder="Repita a nova senha"
-              autoComplete="new-password"
-            />
-          </div>
-        </div>
+        )}
       </div>
-
-      <div className="flex justify-end">
-        <button
-          type="submit"
-          disabled={salvando}
-          className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm
-                     font-semibold text-white shadow-sm hover:brightness-90 disabled:opacity-50
-                     disabled:cursor-not-allowed transition-colors focus-visible:outline-none
-                     focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-        >
-          {salvando ? <Loader2 size={16} className="animate-spin" /> : <Shield size={16} />}
-          {salvando ? 'Alterando…' : 'Alterar Senha'}
-        </button>
-      </div>
-    </form>
+    </div>
   );
 }
 

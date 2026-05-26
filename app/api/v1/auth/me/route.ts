@@ -30,14 +30,15 @@ export const GET = withAuth(async (_req, _ctx, auth) => {
       const contador = await prisma.usuarioContador.findUnique({
         where: { id: auth.sub },
         select: {
-          id:        true,
-          name:      true,
-          email:     true,
-          crc:       true,
-          phone:     true,
-          avatarUrl: true,
-          isActive:  true,
-          createdAt: true,
+          id:               true,
+          name:             true,
+          email:            true,
+          crc:              true,
+          phone:            true,
+          avatarUrl:        true,
+          isActive:         true,
+          createdAt:        true,
+          twoFactorEnabled: true,
         },
       });
 
