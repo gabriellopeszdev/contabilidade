@@ -287,6 +287,8 @@ model DocumentoFiscal {
   cliente UsuarioCliente @relation(fields: [clientId], references: [id])
   tarefas TarefaKanban[]
   chatMessages ChatMessage[]
+  versaoAtual   Int               @default(1) @map("versao_atual")
+  versoes       DocumentoVersao[]
 
   // ------------------------------------------------------------------
   // Índices — projetados para as queries do IDocumentoRepository
@@ -305,6 +307,27 @@ model DocumentoFiscal {
   @@index([fileHash, clientId])
   @@index([deletedAt])
   @@map("documento_fiscal")
+}
+
+// Versões de um documento fiscal.
+// Versão 1 é criada junto com o DocumentoFiscal.
+// Versões 2, 3... são criadas quando o mesmo arquivo (fileName + clientId) é reenviado.
+model DocumentoVersao {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  documentoId   String   @map("documento_id") @db.Uuid
+  versao        Int
+  storagePath   String   @map("storage_path") @db.VarChar(1000)
+  fileHash      String   @map("file_hash") @db.Char(64)
+  fileSizeBytes BigInt   @map("file_size_bytes")
+  uploadedById  String   @map("uploaded_by_id") @db.Uuid
+  motivo        String?  @db.VarChar(500)
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  documento DocumentoFiscal @relation(fields: [documentoId], references: [id], onDelete: Cascade)
+
+  @@unique([documentoId, versao])
+  @@index([documentoId])
+  @@map("documento_versao")
 }
 
 // =============================================================================
