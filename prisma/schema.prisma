@@ -170,6 +170,10 @@ model UsuarioContador {
   twoFactorSecret      String?   @map("two_factor_secret") @db.VarChar(500)
   twoFactorBackupCodes String[]  @map("two_factor_backup_codes")
 
+  onboardingConcluido Boolean   @default(false) @map("onboarding_concluido")
+  onboardingPassos    String[]  @map("onboarding_passos")
+  primeiroLoginEm     DateTime? @map("primeiro_login_em") @db.Timestamptz
+
   // Relações
   clientesRel   ContadorCliente[]
   tarefasAssign TarefaKanban[]
@@ -705,4 +709,17 @@ model AssinaturaDocumento {
   @@index([tokenAssinatura])
   @@index([status, expiresAt])
   @@map("assinatura_documento")
+}
+
+model NpsResponse {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  userType   String   @map("user_type") @db.VarChar(20)
+  score      Int
+  comentario String?  @db.VarChar(1000)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("nps_response")
 }
