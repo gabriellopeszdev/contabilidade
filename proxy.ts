@@ -47,6 +47,37 @@ function matchesRoutes(pathname: string, routes: string[]): boolean {
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Modo manutenção — bloqueia acesso de não-admins
+  if (process.env.MAINTENANCE_MODE === 'true') {
+    const isPublic =
+      pathname === '/manutencao' ||
+      pathname.startsWith('/_next') ||
+      pathname.startsWith('/api/v1/auth/login') ||
+      pathname.startsWith('/api/v1/assinatura') ||
+      pathname.startsWith('/assinar');
+
+    if (!isPublic) {
+      const key = getJwtKey();
+      let isAdmin = false;
+      if (key) {
+        const authHeader = request.headers.get('Authorization');
+        let token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
+        if (!token) token = request.cookies.get('contabilidade_jwt')?.value ?? null;
+        if (token) {
+          try {
+            const { payload } = await jwtVerify(token, key, { algorithms: ['HS256'] });
+            isAdmin = (payload as Record<string, unknown>).role === 'ADMIN';
+          } catch { /* invalid token */ }
+        }
+      }
+      if (!isAdmin) {
+        const url = request.nextUrl.clone();
+        url.pathname = '/manutencao';
+        return NextResponse.redirect(url);
+      }
+    }
+  }
+
   // Ignora rotas que não precisam de proteção
   const isProtected =
     matchesRoutes(pathname, ROTAS_ADMIN)    ||
