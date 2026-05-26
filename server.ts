@@ -44,8 +44,9 @@ import { parse }         from 'node:url';
 
 import next from 'next';
 
-import { SocketServer }  from './src/infrastructure/websockets/SocketServer';
-import { PinoLogger }    from './src/infrastructure/logger/PinoLogger';
+import { SocketServer }        from './src/infrastructure/websockets/SocketServer';
+import { PinoLogger }          from './src/infrastructure/logger/PinoLogger';
+import { withRequestLogging }  from './src/infrastructure/http/middlewares/withRequestLogging';
 
 // =============================================================================
 // PASSO 2 — Carregamento do .env ANTES de qualquer infraestrutura
@@ -92,10 +93,13 @@ app.prepare().then(async () => {
   // Servidor HTTP — todas as requisições são passadas ao handler do Next.js
   // ---------------------------------------------------------------------------
 
+  // Envolve o handler do Next.js com logging HTTP estruturado + RequestContext
+  const loggingHandler = withRequestLogging(handler, logger);
+
   const httpServer = createServer((req, res) => {
     // parse(url, true) → querystring como objeto (necessário para o router)
     const parsedUrl = parse(req.url ?? '/', true);
-    handler(req, res, parsedUrl);
+    loggingHandler(req, res, parsedUrl);
   });
 
   // ---------------------------------------------------------------------------

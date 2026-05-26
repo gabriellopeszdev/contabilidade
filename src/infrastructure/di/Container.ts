@@ -72,7 +72,14 @@ function buildPrismaClient(): PrismaClient {
   //   - max: 10 conexões (padrão pg.Pool — adequado para um escritório)
   //   - idleTimeoutMillis: 30s — fecha conexões ociosas
   //   - Em produção com alta carga: ajustar max e usar PgBouncer na frente.
+  //
+  // LOGGING:
+  //   Usamos emit: 'event' para redirecionar os logs do Prisma ao PinoLogger
+  //   em vez de escrever diretamente em stdout. Isso garante que os logs do
+  //   Prisma apareçam no mesmo formato estruturado e com o requestId correto.
   // -------------------------------------------------------------------------
+  const isDev = process.env.NODE_ENV === 'development';
+
   const pool = new Pool({
     connectionString:  process.env.DATABASE_URL,
     max:               10,
@@ -81,17 +88,38 @@ function buildPrismaClient(): PrismaClient {
 
   const adapter = new PrismaPg(pool);
 
-  return new PrismaClient({
+  const client = new PrismaClient({
     adapter,
-    log:
-      process.env.NODE_ENV === 'development'
-        ? [
-            { emit: 'stdout', level: 'query' },
-            { emit: 'stdout', level: 'warn' },
-            { emit: 'stdout', level: 'error' },
-          ]
-        : [{ emit: 'stdout', level: 'error' }],
+    log: isDev
+      ? [
+          { emit: 'event', level: 'query' },
+          { emit: 'event', level: 'warn'  },
+          { emit: 'event', level: 'error' },
+        ]
+      : [{ emit: 'event', level: 'error' }],
   });
+
+  // Redireciona eventos do Prisma para o PinoLogger estruturado
+  // `logger` já está disponível aqui — é instanciado antes do prisma no módulo.
+  if (isDev) {
+    client.$on('query', (e) => {
+      logger.debug('[Prisma] query', {
+        query:    e.query,
+        params:   e.params,
+        duration: `${e.duration}ms`,
+      });
+    });
+
+    client.$on('warn', (e) => {
+      logger.warn('[Prisma] warn', { message: e.message });
+    });
+  }
+
+  client.$on('error', (e) => {
+    logger.error('[Prisma] error', { message: e.message });
+  });
+
+  return client;
 }
 
 function buildRedisPublisher(): Redis {

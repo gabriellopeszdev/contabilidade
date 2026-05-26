@@ -2,6 +2,7 @@ import pino from 'pino';
 import pretty from 'pino-pretty';
 
 import type { ILogger, LogMeta } from '../../domain/ports/ILogger';
+import { RequestContext } from './RequestContext';
 
 // =============================================================================
 // PinoLogger — Adapter concreto de logging usando Pino
@@ -21,6 +22,10 @@ import type { ILogger, LogMeta } from '../../domain/ports/ILogger';
 // SERIALIZAÇÃO DE ERROS:
 //   Quando `meta` é um `Error`, passamos como `{ err: meta }` para que o
 //   serializador nativo do Pino inclua `type`, `message` e `stack` no JSON.
+//
+// REQUEST CONTEXT (AsyncLocalStorage):
+//   Todos os métodos de log mesclam automaticamente requestId, userId e role
+//   do AsyncLocalStorage — sem exigir passagem manual por toda a cadeia.
 // =============================================================================
 
 /** Caminhos redactados em qualquer profundidade de objeto. */
@@ -30,6 +35,22 @@ const REDACT_PATHS: string[] = [
   // Um nível de aninhamento (ex: req.body.password, payload.token)
   '*.senha', '*.password', '*.token', '*.secret', '*.authorization',
 ];
+
+/** Extrai os campos relevantes do RequestContext para mesclar nos logs. */
+function getContextFields(): Record<string, string> {
+  const ctx = RequestContext.get();
+  if (!ctx) return {};
+
+  const fields: Record<string, string> = { requestId: ctx.requestId };
+  if (ctx.userId) fields.userId = ctx.userId;
+  if (ctx.role)   fields.role   = ctx.role;
+  return fields;
+}
+
+/** Mescla o contexto de requisição em um objeto de meta-dados. */
+function mergeContext(meta?: LogMeta): LogMeta {
+  return { ...getContextFields(), ...meta };
+}
 
 export class PinoLogger implements ILogger {
   private readonly logger: ReturnType<typeof pino>;
@@ -42,7 +63,17 @@ export class PinoLogger implements ILogger {
     // Stream síncrono do pino-pretty — bypassa Worker Threads que o Webpack
     // do Next.js não consegue resolver (erro "unable to determine transport target").
     const stream = isDev
-      ? pretty({ colorize: true, translateTime: 'SYS:standard' })
+      ? pretty({
+          colorize:      true,
+          translateTime: 'HH:MM:ss',
+          ignore:        'pid,hostname',
+          singleLine:    false,
+          messageFormat: (log, messageKey) => {
+            const reqId = (log as Record<string, unknown>).requestId;
+            const msg   = String((log as Record<string, unknown>)[messageKey] ?? '');
+            return reqId ? `[${reqId}] ${msg}` : msg;
+          },
+        })
       : undefined;
 
     this.logger = pino(
@@ -64,34 +95,36 @@ export class PinoLogger implements ILogger {
   // ---------------------------------------------------------------------------
   // Métodos públicos — delegam ao logger Pino com a assinatura (obj, msg)
   // que coloca os metadados como campos de primeiro nível no JSON.
+  // Todos os métodos mesclam automaticamente o contexto de requisição (requestId,
+  // userId, role) via AsyncLocalStorage.
   // ---------------------------------------------------------------------------
 
   debug(mensagem: string, meta?: LogMeta): void {
-    meta ? this.logger.debug(meta, mensagem) : this.logger.debug(mensagem);
+    this.logger.debug(mergeContext(meta), mensagem);
   }
 
   info(mensagem: string, meta?: LogMeta): void {
-    meta ? this.logger.info(meta, mensagem) : this.logger.info(mensagem);
+    this.logger.info(mergeContext(meta), mensagem);
   }
 
   warn(mensagem: string, meta?: LogMeta): void {
-    meta ? this.logger.warn(meta, mensagem) : this.logger.warn(mensagem);
+    this.logger.warn(mergeContext(meta), mensagem);
   }
 
   error(mensagem: string, meta?: LogMeta | Error): void {
     if (meta instanceof Error) {
       // Pino serializa `err` com type, message, stack (serializador nativo)
-      this.logger.error({ err: meta }, mensagem);
+      this.logger.error({ ...getContextFields(), err: meta }, mensagem);
     } else {
-      meta ? this.logger.error(meta, mensagem) : this.logger.error(mensagem);
+      this.logger.error(mergeContext(meta), mensagem);
     }
   }
 
   fatal(mensagem: string, meta?: LogMeta | Error): void {
     if (meta instanceof Error) {
-      this.logger.fatal({ err: meta }, mensagem);
+      this.logger.fatal({ ...getContextFields(), err: meta }, mensagem);
     } else {
-      meta ? this.logger.fatal(meta, mensagem) : this.logger.fatal(mensagem);
+      this.logger.fatal(mergeContext(meta), mensagem);
     }
   }
 }
