@@ -33,6 +33,7 @@ import { useSessionTimer }  from '../../src/presentation/hooks/useSessionTimer';
 import { useDarkMode }      from '../../src/presentation/hooks/useDarkMode';
 import { InstitutionalFooter } from '../../src/presentation/components/lgpd/InstitutionalFooter';
 import { OnboardingChecklist } from './components/OnboardingChecklist';
+import { NpsModal } from './components/NpsModal';
 
 // =============================================================================
 // Navegação da Sidebar
@@ -381,6 +382,7 @@ export default function ContadorLayout({ children }: { children: React.ReactNode
         <InstitutionalFooter />
       </div>
       <OnboardingChecklist />
+      <NpsModal />
     </div>
   );
 }
