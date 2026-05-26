@@ -93,6 +93,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   let passwordHash: string;
   let role:         UserRole;
   let avatarUrl:    string | null;
+  let twoFactorEnabled: boolean = false;
+  let twoFactorSecret: string | null = null;
   // Campos extras para EMPLOYEE
   let setores:      string[] | null = null;
   let vinculo:      string | null   = null;
@@ -101,7 +103,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const contador = await prisma.usuarioContador.findFirst({
       where: { email, deletedAt: null, isActive: true },
-      select: { id: true, name: true, passwordHash: true, avatarUrl: true, isAdmin: true },
+      select: { id: true, name: true, passwordHash: true, avatarUrl: true, isAdmin: true, twoFactorEnabled: true, twoFactorSecret: true },
     });
 
     if (contador) {
@@ -110,10 +112,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       passwordHash = contador.passwordHash;
       role         = contador.isAdmin ? 'ADMIN' : 'ACCOUNTANT';
       avatarUrl    = contador.avatarUrl;
+      twoFactorEnabled = contador.twoFactorEnabled;
+      twoFactorSecret = contador.twoFactorSecret;
     } else {
       const cliente = await prisma.usuarioCliente.findFirst({
         where: { email, deletedAt: null, isActive: true },
-        select: { id: true, name: true, passwordHash: true, avatarUrl: true, cnpj: true },
+        select: { id: true, name: true, passwordHash: true, avatarUrl: true, cnpj: true, twoFactorEnabled: true, twoFactorSecret: true },
       });
 
       if (!cliente) {
@@ -138,6 +142,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         setores      = funcionario.setores;
         vinculo      = funcionario.vinculo;
         superiorId   = funcionario.contadorId ?? funcionario.clienteId ?? null;
+        // Funcionario não tem 2FA por enquanto
+        twoFactorEnabled = false;
+        twoFactorSecret = null;
       } else {
         // Conta ainda não ativada (convite pendente)
         if (!cliente.passwordHash) {
@@ -152,6 +159,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         passwordHash = cliente.passwordHash;
         role         = 'CLIENT';
         avatarUrl    = cliente.avatarUrl;
+        twoFactorEnabled = cliente.twoFactorEnabled;
+        twoFactorSecret = cliente.twoFactorSecret;
       }
     }
   } catch (err) {
@@ -172,6 +181,31 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       { message: 'Credenciais inválidas.' },
       { status: 401 },
     );
+  }
+
+  // --------------------------------------------------------------------------
+  // 3.5. Verificação de 2FA — se ativo, retornar tempToken em vez do JWT final
+  // --------------------------------------------------------------------------
+  if (twoFactorEnabled && twoFactorSecret) {
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+      logger.fatal('[POST /auth/login] JWT_SECRET não configurado');
+      return NextResponse.json(
+        { message: 'Erro de configuração do servidor.' },
+        { status: 500 },
+      );
+    }
+
+    const tempToken = await new SignJWT({
+      sub: userId,
+      type: 'TEMP_2FA',
+      role,
+    })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setExpirationTime('5m')
+      .sign(new TextEncoder().encode(secret));
+
+    return NextResponse.json({ requires2FA: true, tempToken }, { status: 200 });
   }
 
   // --------------------------------------------------------------------------
