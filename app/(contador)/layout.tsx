@@ -20,6 +20,7 @@ import {
   CalendarDays,
   UserCog,
   DollarSign,
+  FileBarChart,
   Clock,
   Sun,
   Moon,
@@ -50,6 +51,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/equipe',        label: 'Equipe',          icon: <UserCog size={18} />,      donoOnly: true },
   { href: '/calendario',    label: 'Calendário',     icon: <CalendarDays size={18} /> },
   { href: '/financeiro',    label: 'Financeiro',      icon: <DollarSign size={18} />,   donoOnly: true },
+  { href: '/relatorios',    label: 'Relatórios',      icon: <FileBarChart size={18} />, donoOnly: true },
   { href: '/chat',          label: 'Chat',           icon: <MessageSquare size={18} /> },
   { href: '/configuracoes', label: 'Configurações',  icon: <Settings size={18} />,     donoOnly: true },
 ];
