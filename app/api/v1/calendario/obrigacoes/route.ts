@@ -32,11 +32,26 @@ export const GET = withAuth(async (_req, _ctx, auth) => {
 export const POST = withAuth(async (req, _ctx, auth) => {
   try {
     const body = await req.json();
-    const { nome, descricao, diaVencimento, cor } = body as {
+    const {
+      nome,
+      descricao,
+      diaVencimento,
+      cor,
+      recorrencia,
+      lembreteAntecedencia,
+      lembreteEmail,
+      lembreteNotificacao,
+      mesesAplicacao,
+    } = body as {
       nome: string;
       descricao?: string;
       diaVencimento: number;
       cor?: string;
+      recorrencia?: 'MENSAL' | 'BIMESTRAL' | 'TRIMESTRAL' | 'SEMESTRAL' | 'ANUAL' | null;
+      lembreteAntecedencia?: number;
+      lembreteEmail?: boolean;
+      lembreteNotificacao?: boolean;
+      mesesAplicacao?: number[];
     };
 
     if (!nome || nome.length < 2 || nome.length > 100) {
@@ -54,6 +69,11 @@ export const POST = withAuth(async (req, _ctx, auth) => {
         descricao: descricao ?? null,
         diaVencimento,
         cor: cor ?? '#3b82f6',
+        ...(recorrencia !== undefined && { recorrencia: recorrencia ?? null }),
+        ...(lembreteAntecedencia !== undefined && { lembreteAntecedencia }),
+        ...(lembreteEmail !== undefined && { lembreteEmail }),
+        ...(lembreteNotificacao !== undefined && { lembreteNotificacao }),
+        ...(mesesAplicacao !== undefined && { mesesAplicacao }),
       },
     });
 
