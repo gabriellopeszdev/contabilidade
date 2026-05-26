@@ -95,6 +95,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   let avatarUrl:    string | null;
   let twoFactorEnabled: boolean = false;
   let twoFactorSecret: string | null = null;
+  let primeiroLoginEm: Date | null = null;
   // Campos extras para EMPLOYEE
   let setores:      string[] | null = null;
   let vinculo:      string | null   = null;
@@ -103,7 +104,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const contador = await prisma.usuarioContador.findFirst({
       where: { email, deletedAt: null, isActive: true },
-      select: { id: true, name: true, passwordHash: true, avatarUrl: true, isAdmin: true, twoFactorEnabled: true, twoFactorSecret: true },
+      select: { id: true, name: true, passwordHash: true, avatarUrl: true, isAdmin: true, twoFactorEnabled: true, twoFactorSecret: true, primeiroLoginEm: true },
     });
 
     if (contador) {
@@ -114,6 +115,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       avatarUrl    = contador.avatarUrl;
       twoFactorEnabled = contador.twoFactorEnabled;
       twoFactorSecret = contador.twoFactorSecret;
+      primeiroLoginEm = contador.primeiroLoginEm;
     } else {
       const cliente = await prisma.usuarioCliente.findFirst({
         where: { email, deletedAt: null, isActive: true },
@@ -243,6 +245,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       where: { id: userId },
       data:  { lastLoginAt: now },
     }).catch(() => {});
+    // Track first login time (fire-and-forget)
+    if (!primeiroLoginEm) {
+      prisma.usuarioContador.update({
+        where: { id: userId },
+        data: { primeiroLoginEm: new Date() },
+      }).catch(() => {/* non-critical */});
+    }
   } else if (role === 'CLIENT') {
     prisma.usuarioCliente.update({
       where: { id: userId },
