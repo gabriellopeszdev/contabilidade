@@ -12,6 +12,7 @@ import {
   ChevronRight,
   ChevronDown,
   ChevronUp,
+  History,
 } from 'lucide-react';
 
 import type {
@@ -135,6 +136,10 @@ function DocumentoLinha({ doc, baixando, onBaixar }: DocumentoLinhaProps) {
   const [metadata, setMetadata] = useState<Record<string, unknown> | null>(null);
   const [carregandoMeta, setCarregandoMeta] = useState(false);
 
+  const [mostrarVersoes, setMostrarVersoes] = useState(false);
+  const [versoes, setVersoes] = useState<Array<{ id: string; versao: number; fileSizeBytes: string; createdAt: string; motivo: string | null }> | null>(null);
+  const [carregandoVersoes, setCarregandoVersoes] = useState(false);
+
   const handleBaixar = useCallback(async () => {
     setErro(null);
     try {
@@ -168,6 +173,27 @@ function DocumentoLinha({ doc, baixando, onBaixar }: DocumentoLinhaProps) {
       }
     }
   }, [doc.fileType, doc.id, expandido, metadata]);
+
+  const handleVerVersoes = useCallback(async () => {
+    const novoEstado = !mostrarVersoes;
+    setMostrarVersoes(novoEstado);
+    if (novoEstado && versoes === null) {
+      setCarregandoVersoes(true);
+      try {
+        const r = await fetch(`/api/v1/documentos/${doc.id}/versoes`);
+        if (r.ok) {
+          const d = await r.json();
+          setVersoes(d.versoes ?? []);
+        } else {
+          setVersoes([]);
+        }
+      } catch {
+        setVersoes([]);
+      } finally {
+        setCarregandoVersoes(false);
+      }
+    }
+  }, [doc.id, mostrarVersoes, versoes]);
 
   const isXml = doc.fileType === 'XML';
 
@@ -231,6 +257,16 @@ function DocumentoLinha({ doc, baixando, onBaixar }: DocumentoLinhaProps) {
           </button>
         )}
 
+        {/* Botão histórico de versões */}
+        <button
+          type="button"
+          onClick={handleVerVersoes}
+          title="Histórico de versões"
+          className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-700 transition-colors shrink-0"
+        >
+          <History size={15} />
+        </button>
+
         {/* Botão de download */}
         <button
           type="button"
@@ -284,6 +320,38 @@ function DocumentoLinha({ doc, baixando, onBaixar }: DocumentoLinhaProps) {
             </div>
           ) : (
             <p className="text-xs text-slate-400 py-2">Dados ainda não extraídos. O processamento ocorre em segundos após o upload.</p>
+          )}
+        </div>
+      )}
+
+      {/* Painel de histórico de versões */}
+      {mostrarVersoes && (
+        <div className="px-4 pb-3 bg-slate-50/50 dark:bg-gray-800/30 border-t border-slate-100 dark:border-gray-700">
+          <p className="text-xs font-semibold text-slate-600 dark:text-gray-400 pt-2 mb-2">Histórico de Versões</p>
+          {carregandoVersoes ? (
+            <p className="text-xs text-slate-400 flex items-center gap-1.5"><Loader2 size={12} className="animate-spin" /> Carregando…</p>
+          ) : versoes && versoes.length > 0 ? (
+            <div className="space-y-1.5">
+              {versoes.map((v, idx) => (
+                <div key={v.id} className="flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-slate-700 dark:text-gray-300">v{v.versao}</span>
+                    {idx === 0 && <span className="text-[10px] bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400 px-1.5 py-0.5 rounded">Atual</span>}
+                    <span className="text-slate-400">{new Date(v.createdAt).toLocaleDateString('pt-BR')}</span>
+                  </div>
+                  <a
+                    href={`/api/v1/documentos/${doc.id}/versoes/${v.versao}/download`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline text-xs flex items-center gap-1"
+                  >
+                    <Download size={11} /> Baixar
+                  </a>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-slate-400">Apenas 1 versão disponível.</p>
           )}
         </div>
       )}
