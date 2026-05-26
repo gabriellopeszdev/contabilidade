@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify, SignJWT } from 'jose';
-import { prisma } from '@/src/infrastructure/database/prisma';
-import { verifyBackupCode } from '@/src/lib/totp';
+import { prisma } from '@/infrastructure/di/Container';
+import { verifyBackupCode } from '@/lib/totp';
 
 export async function POST(req: NextRequest) {
   const { tempToken, backupCode } = await req.json();

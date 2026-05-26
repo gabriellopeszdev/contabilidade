@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { withAuth } from '@/src/infrastructure/http/middlewares/withAuth';
-import { prisma } from '@/src/infrastructure/database/prisma';
-import { generateSecret, generateOtpAuthUrl, encryptSecret } from '@/src/lib/totp';
+import { withAuth } from '@/infrastructure/http/middlewares/withAuth';
+import { prisma } from '@/infrastructure/di/Container';
+import { generateSecret, generateOtpAuthUrl, encryptSecret } from '@/lib/totp';
 import QRCode from 'qrcode';
 
 export const GET = withAuth(async (req, ctx, auth) => {

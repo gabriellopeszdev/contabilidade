@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import { withAuth } from '@/src/infrastructure/http/middlewares/withAuth';
-import { prisma } from '@/src/infrastructure/database/prisma';
-import { verifyToken, generateBackupCodes } from '@/src/lib/totp';
+import { withAuth } from '@/infrastructure/http/middlewares/withAuth';
+import { prisma } from '@/infrastructure/di/Container';
+import { verifyToken, generateBackupCodes } from '@/lib/totp';
 
 export const POST = withAuth(async (req, _ctx, auth) => {
   const { token } = await req.json();

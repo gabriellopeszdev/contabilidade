@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { withAuth } from '@/src/infrastructure/http/middlewares/withAuth';
-import { prisma } from '@/src/infrastructure/database/prisma';
+import { withAuth } from '@/infrastructure/http/middlewares/withAuth';
+import { prisma } from '@/infrastructure/di/Container';
 import bcrypt from 'bcryptjs';
 
 export const POST = withAuth(async (req, _ctx, auth) => {
