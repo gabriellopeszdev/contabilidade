@@ -2,9 +2,9 @@
 
 import { Suspense, useEffect, useState, type FormEvent } from 'react';
 import { useRouter, useSearchParams }           from 'next/navigation';
-import { Building2, Lock, Mail, Loader2 }       from 'lucide-react';
+import { Building2, Lock, Mail, Loader2, ShieldCheck, KeyRound } from 'lucide-react';
 
-import { useAuth } from '../src/presentation/hooks/useAuth';
+import { useAuth, Requer2FAError } from '../src/presentation/hooks/useAuth';
 
 // =============================================================================
 // Página raiz — /
@@ -45,12 +45,18 @@ function rotaSegura(role: string, redirect: string | null): string {
 function HomeContent() {
   const router          = useRouter();
   const searchParams    = useSearchParams();
-  const { usuario, carregando, login, role } = useAuth();
+  const { usuario, carregando, login, finalizarLogin, role } = useAuth();
 
-  const [email,    setEmail]    = useState('');
-  const [senha,    setSenha]    = useState('');
-  const [erro,     setErro]     = useState('');
-  const [enviando, setEnviando] = useState(false);
+  const [email,      setEmail]      = useState('');
+  const [senha,      setSenha]      = useState('');
+  const [erro,       setErro]       = useState('');
+  const [enviando,   setEnviando]   = useState(false);
+
+  // 2FA multi-step state
+  const [step,       setStep]       = useState<'LOGIN' | 'TOTP' | 'BACKUP'>('LOGIN');
+  const [tempToken,  setTempToken]  = useState('');
+  const [totpCode,   setTotpCode]   = useState('');
+  const [backupCode, setBackupCode] = useState('');
 
   // Se já autenticado, vai direto para a rota da role
   useEffect(() => {
@@ -68,13 +74,69 @@ function HomeContent() {
     try {
       await login(email, senha);
       // Após login, o useEffect acima detecta a mudança de `usuario`
-      // e faz o redirect correto. Fazemos aqui também para UX imediata.
+      // e faz o redirect correto.
     } catch (err) {
-      setErro(
-        err instanceof Error
-          ? err.message
-          : 'Credenciais inválidas. Verifique o e-mail e a senha.',
-      );
+      if (err instanceof Requer2FAError) {
+        // Backend exige 2FA — transita para o step TOTP sem exibir erro
+        setTempToken(err.tempToken);
+        setStep('TOTP');
+      } else {
+        setErro(
+          err instanceof Error
+            ? err.message
+            : 'Credenciais inválidas. Verifique o e-mail e a senha.',
+        );
+      }
+    } finally {
+      setEnviando(false);
+    }
+  };
+
+  const handleTotpSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setEnviando(true);
+    setErro('');
+
+    try {
+      const res = await fetch('/api/v1/auth/2fa/verify', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ tempToken, totpToken: totpCode }),
+      });
+      const data = (await res.json()) as { token?: string; message?: string };
+      if (!res.ok) {
+        setErro(data.message ?? 'Código inválido. Tente novamente.');
+        return;
+      }
+      finalizarLogin(data.token ?? '');
+      // useEffect detecta a mudança de `usuario` e faz o redirect
+    } catch {
+      setErro('Erro de conexão. Tente novamente.');
+    } finally {
+      setEnviando(false);
+    }
+  };
+
+  const handleBackupSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setEnviando(true);
+    setErro('');
+
+    try {
+      const res = await fetch('/api/v1/auth/2fa/backup', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ tempToken, backupCode }),
+      });
+      const data = (await res.json()) as { token?: string; message?: string };
+      if (!res.ok) {
+        setErro(data.message ?? 'Código de backup inválido. Tente novamente.');
+        return;
+      }
+      finalizarLogin(data.token ?? '');
+      // useEffect detecta a mudança de `usuario` e faz o redirect
+    } catch {
+      setErro('Erro de conexão. Tente novamente.');
     } finally {
       setEnviando(false);
     }
@@ -90,7 +152,202 @@ function HomeContent() {
   }
 
   // ---------------------------------------------------------------------------
-  // Login form
+  // Bloco de erro reutilizável
+  // ---------------------------------------------------------------------------
+  const ErroAlert = erro ? (
+    <p
+      role="alert"
+      className="text-sm text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800
+                 rounded-xl px-3 py-2 leading-snug"
+    >
+      {erro}
+    </p>
+  ) : null;
+
+  // ---------------------------------------------------------------------------
+  // Step: TOTP
+  // ---------------------------------------------------------------------------
+  if (step === 'TOTP') {
+    return (
+      <div
+        className="min-h-screen flex items-center justify-center p-4
+                   bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900"
+      >
+        <div className="w-full max-w-sm">
+
+          {/* Ícone e título */}
+          <div className="flex flex-col items-center mb-8">
+            <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-600 shadow-lg mb-4">
+              <ShieldCheck size={32} className="text-white" />
+            </div>
+            <h1 className="text-2xl font-bold text-white tracking-tight">
+              Verificação em dois fatores
+            </h1>
+            <p className="text-slate-400 text-sm mt-1">
+              Digite o código do seu aplicativo autenticador
+            </p>
+          </div>
+
+          {/* Card */}
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-8">
+            <form onSubmit={handleTotpSubmit} className="space-y-5" noValidate>
+
+              <div>
+                <label
+                  htmlFor="totp"
+                  className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5"
+                >
+                  Código de 6 dígitos
+                </label>
+                <div className="relative">
+                  <ShieldCheck
+                    size={15}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+                  />
+                  <input
+                    id="totp"
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    maxLength={6}
+                    required
+                    value={totpCode}
+                    onChange={(e) => {
+                      setErro('');
+                      setTotpCode(e.target.value.replace(/\D/g, '').slice(0, 6));
+                    }}
+                    placeholder="000000"
+                    className="input pl-9 tracking-widest text-center"
+                  />
+                </div>
+              </div>
+
+              {ErroAlert}
+
+              <button
+                type="submit"
+                disabled={enviando || totpCode.length !== 6}
+                className="btn-primary w-full"
+              >
+                {enviando && <Loader2 size={15} className="animate-spin" />}
+                {enviando ? 'Verificando…' : 'Verificar'}
+              </button>
+
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={() => { setErro(''); setStep('BACKUP'); }}
+                  className="text-xs text-blue-600 hover:underline"
+                >
+                  Usar código de backup
+                </button>
+              </div>
+
+            </form>
+          </div>
+
+          {/* Rodapé */}
+          <p className="text-center text-slate-500 text-xs mt-6">
+            Sistema self-hosted &bull; LGPD Compliant
+          </p>
+
+        </div>
+      </div>
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Step: Backup Code
+  // ---------------------------------------------------------------------------
+  if (step === 'BACKUP') {
+    return (
+      <div
+        className="min-h-screen flex items-center justify-center p-4
+                   bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900"
+      >
+        <div className="w-full max-w-sm">
+
+          {/* Ícone e título */}
+          <div className="flex flex-col items-center mb-8">
+            <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-600 shadow-lg mb-4">
+              <KeyRound size={32} className="text-white" />
+            </div>
+            <h1 className="text-2xl font-bold text-white tracking-tight">
+              Usar código de backup
+            </h1>
+            <p className="text-slate-400 text-sm mt-1">
+              Digite um dos seus códigos de recuperação
+            </p>
+          </div>
+
+          {/* Card */}
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-8">
+            <form onSubmit={handleBackupSubmit} className="space-y-5" noValidate>
+
+              <div>
+                <label
+                  htmlFor="backup"
+                  className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5"
+                >
+                  Código de backup
+                </label>
+                <div className="relative">
+                  <KeyRound
+                    size={15}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+                  />
+                  <input
+                    id="backup"
+                    type="text"
+                    autoComplete="off"
+                    required
+                    value={backupCode}
+                    onChange={(e) => {
+                      setErro('');
+                      setBackupCode(e.target.value);
+                    }}
+                    placeholder="xxxxxxxx-xxxx"
+                    className="input pl-9"
+                  />
+                </div>
+              </div>
+
+              {ErroAlert}
+
+              <button
+                type="submit"
+                disabled={enviando || !backupCode.trim()}
+                className="btn-primary w-full"
+              >
+                {enviando && <Loader2 size={15} className="animate-spin" />}
+                {enviando ? 'Verificando…' : 'Verificar'}
+              </button>
+
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={() => { setErro(''); setStep('TOTP'); }}
+                  className="text-xs text-blue-600 hover:underline"
+                >
+                  Voltar
+                </button>
+              </div>
+
+            </form>
+          </div>
+
+          {/* Rodapé */}
+          <p className="text-center text-slate-500 text-xs mt-6">
+            Sistema self-hosted &bull; LGPD Compliant
+          </p>
+
+        </div>
+      </div>
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Step: LOGIN (default)
   // ---------------------------------------------------------------------------
   return (
     <div
@@ -169,15 +426,7 @@ function HomeContent() {
             </div>
 
             {/* Mensagem de erro */}
-            {erro && (
-              <p
-                role="alert"
-                className="text-sm text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800
-                           rounded-xl px-3 py-2 leading-snug"
-              >
-                {erro}
-              </p>
-            )}
+            {ErroAlert}
 
             {/* Botão */}
             <button

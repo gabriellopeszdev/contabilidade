@@ -54,11 +54,33 @@ interface AuthContextValue {
   /**
    * Autentica o usuário via POST /api/v1/auth/login.
    * Armazena o JWT no localStorage e atualiza o estado global.
-   * Lança Error com mensagem legível em caso de falha.
+   * Lança `Requer2FAError` se o backend exigir 2FA, ou Error em caso de falha.
    */
   login:              (email: string, senha: string) => Promise<void>;
+  /**
+   * Finaliza o login após verificação 2FA bem-sucedida.
+   * Recebe o JWT retornado pelo endpoint de verificação e o armazena.
+   * Lança Error se o token for inválido.
+   */
+  finalizarLogin:     (jwt: string) => void;
   /** Limpa o JWT e o estado global, efetivamente deslogando o usuário. */
   logout:             () => void;
+}
+
+// =============================================================================
+// Erro tipado para fluxo 2FA
+// =============================================================================
+
+/**
+ * Lançado por `login` quando o backend exige verificação de segundo fator.
+ * O caller deve capturar este erro, exibir o formulário TOTP/backup e, após
+ * verificação bem-sucedida, chamar `finalizarLogin(jwt)` com o token final.
+ */
+export class Requer2FAError extends Error {
+  constructor(public readonly tempToken: string) {
+    super('2FA_REQUIRED');
+    this.name = 'Requer2FAError';
+  }
 }
 
 // =============================================================================
@@ -206,13 +228,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw new Error(mensagem);
     }
 
-    const { token: jwt } = (await res.json()) as { token: string };
+    const data = (await res.json()) as { token?: string; requires2FA?: boolean; tempToken?: string };
+
+    // Segundo fator exigido — lança erro tipado para o caller exibir o step TOTP
+    if (data.requires2FA) {
+      throw new Requer2FAError(data.tempToken ?? '');
+    }
+
+    const jwt = data.token ?? '';
     const decoded = decodificarToken(jwt);
 
     if (!decoded) {
       throw new Error('O servidor retornou um token inválido.');
     }
 
+    localStorage.setItem(TOKEN_KEY, jwt);
+    sincronizarCookie(jwt);
+    setToken(jwt);
+    setUsuario(decoded);
+  }, []);
+
+  // ---------------------------------------------------------------------------
+  // finalizarLogin — usado após verificação 2FA bem-sucedida
+  // ---------------------------------------------------------------------------
+  const finalizarLogin = useCallback((jwt: string): void => {
+    const decoded = decodificarToken(jwt);
+    if (!decoded) {
+      throw new Error('O servidor retornou um token inválido após verificação 2FA.');
+    }
     localStorage.setItem(TOKEN_KEY, jwt);
     sincronizarCookie(jwt);
     setToken(jwt);
@@ -266,9 +309,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       selecionarCliente,
       getToken,
       login,
+      finalizarLogin,
       logout,
     }),
-    [usuario, token, carregando, clienteSelecionado, selecionarCliente, getToken, login, logout],
+    [usuario, token, carregando, clienteSelecionado, selecionarCliente, getToken, login, finalizarLogin, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

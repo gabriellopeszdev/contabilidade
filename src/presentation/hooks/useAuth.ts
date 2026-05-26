@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuthContext, type RoleUsuario, type UsuarioLogado } from '../context/AuthContext';
+export { Requer2FAError } from '../context/AuthContext';
 
 // =============================================================================
 // useAuth — Interface pública do sistema de autenticação
@@ -73,9 +74,15 @@ export interface UseAuthReturn {
   /**
    * Autentica o usuário via POST /api/v1/auth/login.
    * Em caso de sucesso, o estado global e o localStorage são atualizados.
-   * Lança Error com mensagem legível em caso de falha.
+   * Lança `Requer2FAError` se o backend exigir 2FA, ou Error em caso de falha.
    */
   login: (email: string, senha: string) => Promise<void>;
+
+  /**
+   * Finaliza o login após verificação 2FA bem-sucedida.
+   * Recebe o JWT retornado pelo endpoint de verificação e o armazena.
+   */
+  finalizarLogin: (jwt: string) => void;
 
   /** Encerra a sessão local. Limpa JWT e cliente selecionado do localStorage. */
   logout: () => void;
@@ -111,6 +118,7 @@ export function useAuth(): UseAuthReturn {
     selecionarCliente,
     getToken,
     login,
+    finalizarLogin,
     logout,
   } = useAuthContext();
 
@@ -124,6 +132,7 @@ export function useAuth(): UseAuthReturn {
     selecionarCliente,
     getToken,
     login,
+    finalizarLogin,
     logout,
     isContador:        usuario?.role === 'Contador',
     isCliente:         usuario?.role === 'Cliente',
