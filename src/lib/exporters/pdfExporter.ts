@@ -14,7 +14,7 @@ export interface ExportOptions {
   rodape?:  string;
 }
 
-export async function gerarPDF(opts: ExportOptions): Promise<Uint8Array> {
+export async function gerarPDF(opts: ExportOptions): Promise<ArrayBuffer> {
   const doc  = await PDFDocument.create();
   const font = await doc.embedFont(StandardFonts.Helvetica);
   const bold = await doc.embedFont(StandardFonts.HelveticaBold);
@@ -81,5 +81,6 @@ export async function gerarPDF(opts: ExportOptions): Promise<Uint8Array> {
     lastPage.drawText(opts.rodape, { x: MARGIN, y: MARGIN - 10, font, size: 7, color: rgb(0.5, 0.5, 0.5) });
   }
 
-  return doc.save();
+  const bytes = await doc.save();
+  return bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer;
 }

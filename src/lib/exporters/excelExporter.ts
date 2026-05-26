@@ -13,7 +13,7 @@ export interface ExcelOptions {
   linhas:   Record<string, unknown>[];
 }
 
-export async function gerarExcel(opts: ExcelOptions): Promise<Buffer> {
+export async function gerarExcel(opts: ExcelOptions): Promise<ArrayBuffer> {
   const wb = new ExcelJS.Workbook();
   wb.creator = 'Konto Contábil';
   wb.created = new Date();
@@ -56,5 +56,7 @@ export async function gerarExcel(opts: ExcelOptions): Promise<Buffer> {
   // Auto-filtro
   ws.autoFilter = { from: { row: 4, column: 1 }, to: { row: 4, column: opts.colunas.length } };
 
-  return wb.xlsx.writeBuffer() as Promise<Buffer>;
+  const buf = await wb.xlsx.writeBuffer();
+  const nb = buf as unknown as Buffer;
+  return nb.buffer.slice(nb.byteOffset, nb.byteOffset + nb.byteLength) as ArrayBuffer;
 }
