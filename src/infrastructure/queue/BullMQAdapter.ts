@@ -6,6 +6,7 @@ import type { IEmailService } from '../../domain/ports/IEmailService';
 import { emailWrapper, emailButton, emailHeading, emailSubheading, emailCallout, emailWarningCallout, emailInfoBox } from '../email/emailTemplate';
 import { verificarLembretesJob } from './jobs/verificarLembretesJob';
 import { gerarObrigacoesRecorrentesJob } from './jobs/gerarObrigacoesRecorrentesJob';
+import { parsearXmlNfeJob } from './jobs/parsearXmlNfeJob';
 
 // =============================================================================
 // BullMQAdapter — Processamento Assíncrono em Background
@@ -69,6 +70,13 @@ export type ProcessamentoJobData =
   | {
       tipo: 'LEMBRETE_BOLETO_VENCIMENTO';
       payload: Record<string, never>; // disparo automático sem payload
+    }
+  | {
+      tipo: 'PARSEAR_XML_NFE';
+      payload: {
+        documentoId: string;
+        storagePath: string;
+      };
     }
   | Record<string, never>; // Empty object for scheduled jobs (verificar-lembretes, gerar-obrigacoes-recorrentes)
 
@@ -298,6 +306,11 @@ export class BullMQAdapter {
 
       case 'LEMBRETE_BOLETO_VENCIMENTO': {
         await this.processarLembreteBoleto();
+        break;
+      }
+
+      case 'PARSEAR_XML_NFE': {
+        await parsearXmlNfeJob(job.data.payload);
         break;
       }
 

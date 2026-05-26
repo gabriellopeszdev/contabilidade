@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { Queue } from 'bullmq';
 import { PrismaPg }    from '@prisma/adapter-pg';
 import { Pool }        from 'pg';
 import { Client as MinioClient } from 'minio';
@@ -233,5 +234,24 @@ export const emailService: IEmailService = buildEmailService();
 //   - `redisPublisher`→ injetado no SocketServer para criar o subscriber
 //                       com a mesma configuração de conexão
 // ---------------------------------------------------------------------------
+
+declare global {
+  // eslint-disable-next-line no-var
+  var __contabilidade_bullmq_queue: Queue | undefined;
+}
+
+function buildQueueProducer(): Queue {
+  return new Queue('processamento_arquivos_pesados', {
+    connection: {
+      host:     process.env.REDIS_HOST     ?? 'localhost',
+      port:     parseInt(process.env.REDIS_PORT ?? '6379', 10),
+      password: process.env.REDIS_PASSWORD ?? undefined,
+    },
+  });
+}
+
+export const queueProducer =
+  globalThis.__contabilidade_bullmq_queue ??
+  (globalThis.__contabilidade_bullmq_queue = buildQueueProducer());
 
 export { prisma, redisPublisher, storageService, documentoRepository };

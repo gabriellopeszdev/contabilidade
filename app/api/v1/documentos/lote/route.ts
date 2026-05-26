@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { withAuth }                  from '../../../../../src/infrastructure/http/middlewares/withAuth';
 import { processarUploadLoteUseCase } from '../../../../../src/infrastructure/di/Container';
 import { prisma }                     from '../../../../../src/infrastructure/di/Container';
+import { queueProducer }              from '../../../../../src/infrastructure/di/Container';
 import { logger }                     from '../../../../../src/utils/logger';
 import { parsearFormDataUploadLote } from '../../../../../src/infrastructure/http/validators/UploadLoteSchema';
 import { DomainException }           from '../../../../../src/domain/exceptions/DomainException';
@@ -215,6 +216,17 @@ export const POST = withAuth(async (request, _ctx, auth): Promise<NextResponse> 
       },
       { status: 500 },
     );
+  }
+
+  // Fire-and-forget: enqueue XML parse jobs for uploaded NF-e files
+  for (const uploadado of output.uploadados) {
+    const arquivo = parseResult.dto.arquivos.find((a) => a.fileName === uploadado.fileName);
+    if (arquivo && (arquivo.mimeType === 'application/xml' || arquivo.mimeType === 'text/xml')) {
+      queueProducer.add('PARSEAR_XML_NFE', {
+        tipo: 'PARSEAR_XML_NFE',
+        payload: { documentoId: uploadado.documentoId, storagePath: uploadado.storagePath },
+      }).catch(() => {/* fire-and-forget */});
+    }
   }
 
   // -------------------------------------------------------------------------
