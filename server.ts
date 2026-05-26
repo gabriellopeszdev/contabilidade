@@ -121,6 +121,7 @@ app.prepare().then(async () => {
   const bullMQ = new BullMQAdapter(redisConn, logger, prisma, emailService);
   bullMQ.iniciarWorker(2);
   await bullMQ.agendarLembreteBoleto();
+  await bullMQ.agendarJobsObrigacoes();
 
   // ---------------------------------------------------------------------------
   // Listen
