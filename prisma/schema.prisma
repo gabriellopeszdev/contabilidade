@@ -118,6 +118,9 @@ model UsuarioCliente {
   inviteToken     String?   @unique @map("invite_token") @db.VarChar(255)
   inviteExpiresAt DateTime? @map("invite_expires_at") @db.Timestamptz
   activatedAt     DateTime? @map("activated_at") @db.Timestamptz
+  twoFactorEnabled     Boolean   @default(false) @map("two_factor_enabled")
+  twoFactorSecret      String?   @map("two_factor_secret") @db.VarChar(500)
+  twoFactorBackupCodes String[]  @map("two_factor_backup_codes")
 
   // Índice parcial para ignorar registros soft-deleted em queries comuns.
   // OBS: índices parciais via Prisma requerem a cláusula `where` no schema.
@@ -152,6 +155,9 @@ model UsuarioContador {
   deletedAt    DateTime? @map("deleted_at") @db.Timestamptz
   resetToken          String?   @unique @map("reset_token") @db.VarChar(255)
   resetTokenExpiresAt DateTime? @map("reset_token_expires_at") @db.Timestamptz
+  twoFactorEnabled     Boolean   @default(false) @map("two_factor_enabled")
+  twoFactorSecret      String?   @map("two_factor_secret") @db.VarChar(500)
+  twoFactorBackupCodes String[]  @map("two_factor_backup_codes")
 
   // Relações
   clientesRel   ContadorCliente[]
