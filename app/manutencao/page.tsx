@@ -7,7 +7,13 @@ export default function ManutencaoPage() {
         <p className="text-gray-500 text-lg">
           Estamos atualizando o sistema para melhorar sua experiência. Voltaremos em breve!
         </p>
-        <p className="text-gray-400 text-sm">Se você é administrador, faça login normalmente.</p>
+        <p className="text-gray-400 text-sm">
+          Se você é administrador,{' '}
+          <a href="/" className="text-blue-600 underline hover:text-blue-800">
+            clique aqui para fazer login
+          </a>
+          .
+        </p>
       </div>
     </div>
   );

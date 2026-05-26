@@ -50,11 +50,13 @@ export async function proxy(request: NextRequest) {
   // Modo manutenção — bloqueia acesso de não-admins
   if (process.env.MAINTENANCE_MODE === 'true') {
     const isPublic =
+      pathname === '/' ||
       pathname === '/manutencao' ||
       pathname.startsWith('/_next') ||
-      pathname.startsWith('/api/v1/auth/login') ||
+      pathname.startsWith('/api/v1/auth/') ||
       pathname.startsWith('/api/v1/assinatura') ||
-      pathname.startsWith('/assinar');
+      pathname.startsWith('/assinar') ||
+      pathname.startsWith('/auth/');
 
     if (!isPublic) {
       const key = getJwtKey();
@@ -66,7 +68,8 @@ export async function proxy(request: NextRequest) {
         if (token) {
           try {
             const { payload } = await jwtVerify(token, key, { algorithms: ['HS256'] });
-            isAdmin = (payload as Record<string, unknown>).role === 'ADMIN';
+            const r = (payload as Record<string, unknown>).role as string;
+            isAdmin = r === 'ADMIN' || r === 'ACCOUNTANT' || r === 'EMPLOYEE';
           } catch { /* invalid token */ }
         }
       }
