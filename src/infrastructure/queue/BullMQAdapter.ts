@@ -69,7 +69,8 @@ export type ProcessamentoJobData =
   | {
       tipo: 'LEMBRETE_BOLETO_VENCIMENTO';
       payload: Record<string, never>; // disparo automático sem payload
-    };
+    }
+  | Record<string, never>; // Empty object for scheduled jobs (verificar-lembretes, gerar-obrigacoes-recorrentes)
 
 // ---------------------------------------------------------------------------
 // Nome da fila
