@@ -229,6 +229,21 @@ export const POST = withAuth(async (request, _ctx, auth): Promise<NextResponse> 
     }
   }
 
+  // Create version 1 for each newly uploaded document (fire-and-forget)
+  if (output.uploadados.length > 0) {
+    prisma.documentoVersao.createMany({
+      data: output.uploadados.map((u) => ({
+        documentoId:   u.documentoId,
+        versao:        1,
+        storagePath:   u.storagePath,
+        fileHash:      u.fileHash,
+        fileSizeBytes: BigInt(parseResult.dto.arquivos.find((a) => a.fileName === u.fileName)?.fileSizeBytes ?? 0),
+        uploadedById:  parseResult.dto.contadorId,
+      })),
+      skipDuplicates: true,
+    }).catch(() => {/* non-critical */});
+  }
+
   // -------------------------------------------------------------------------
   // Etapa 6: Mapeamento Railway-Oriented → Status HTTP
   // -------------------------------------------------------------------------
