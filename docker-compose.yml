@@ -194,7 +194,7 @@ services:
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-8h}
       NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL}
       RESEND_API_KEY: ${RESEND_API_KEY}
-      RESEND_FROM: ${RESEND_FROM:-}
+      RESEND_FROM_EMAIL: ${RESEND_FROM_EMAIL:-}
       ASAAS_ENV: ${ASAAS_ENV:-sandbox}
       ASAAS_WEBHOOK_TOKEN: ${ASAAS_WEBHOOK_TOKEN}
     # A porta 3000 NÃO é exposta ao host — só o nginx acessa o app internamente
