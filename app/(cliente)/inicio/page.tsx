@@ -59,7 +59,7 @@ export default function InicioPagina() {
 
   useEffect(() => {
     if (authCarregando) return;
-    if (!usuario || (!isCliente && !isFuncionarioCliente)) router.push('/');
+    if (!usuario || (!isCliente && !isFuncionarioCliente)) router.push('/login');
   }, [authCarregando, usuario, isCliente, isFuncionarioCliente, router]);
 
   // ── Documentos ─────────────────────────────────────────────────────────────

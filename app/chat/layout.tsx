@@ -142,12 +142,12 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
 
   const handleLogout = useCallback(() => {
     logout();
-    router.push('/');
+    router.push('/login');
   }, [logout, router]);
 
   useEffect(() => {
     if (!carregando && !usuario) {
-      router.push('/');
+      router.push('/login');
     }
   }, [carregando, usuario, router]);
 

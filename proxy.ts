@@ -51,6 +51,7 @@ export async function proxy(request: NextRequest) {
   if (process.env.MAINTENANCE_MODE === 'true') {
     const isPublic =
       pathname === '/' ||
+      pathname === '/login' ||
       pathname === '/manutencao' ||
       pathname.startsWith('/_next') ||
       pathname.startsWith('/api/v1/auth/') ||
@@ -106,7 +107,7 @@ export async function proxy(request: NextRequest) {
   // Sem token → redireciona para login
   if (!token) {
     const loginUrl = request.nextUrl.clone();
-    loginUrl.pathname = '/';
+    loginUrl.pathname = '/login';
     loginUrl.searchParams.set('redirect', pathname);
     return NextResponse.redirect(loginUrl);
   }
@@ -127,7 +128,7 @@ export async function proxy(request: NextRequest) {
   } catch {
     // Token inválido/expirado — redireciona para login
     const loginUrl = request.nextUrl.clone();
-    loginUrl.pathname = '/';
+    loginUrl.pathname = '/login';
     return NextResponse.redirect(loginUrl);
   }
 
@@ -172,7 +173,7 @@ export async function proxy(request: NextRequest) {
   if (matchesRoutes(pathname, ROTAS_COMPARTILHADAS)) {
     if (!isContador && !isCliente && !isAdmin && !isEmployee) {
       const loginUrl = request.nextUrl.clone();
-      loginUrl.pathname = '/';
+      loginUrl.pathname = '/login';
       return NextResponse.redirect(loginUrl);
     }
     return NextResponse.next();

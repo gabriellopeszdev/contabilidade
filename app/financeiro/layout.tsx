@@ -142,12 +142,12 @@ export default function FinanceiroLayout({ children }: { children: React.ReactNo
 
   const handleLogout = useCallback(() => {
     logout();
-    router.push('/');
+    router.push('/login');
   }, [logout, router]);
 
   useEffect(() => {
     if (!carregando && !usuario) {
-      router.push('/');
+      router.push('/login');
     }
   }, [carregando, usuario, router]);
 

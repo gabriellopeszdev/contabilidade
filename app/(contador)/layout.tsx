@@ -122,11 +122,11 @@ export default function ContadorLayout({ children }: { children: React.ReactNode
 
   const handleLogout = useCallback(() => {
     logout();
-    router.push('/');
+    router.push('/login');
   }, [logout, router]);
 
   useEffect(() => {
-    if (!carregando && !usuario) router.push('/');
+    if (!carregando && !usuario) router.push('/login');
   }, [carregando, usuario, router]);
 
   if (carregando) {

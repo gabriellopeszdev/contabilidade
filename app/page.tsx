@@ -1,489 +1,293 @@
 'use client';
 
-import { Suspense, useEffect, useState, type FormEvent } from 'react';
-import { useRouter, useSearchParams }           from 'next/navigation';
-import { Building2, Lock, Mail, Loader2, ShieldCheck, KeyRound } from 'lucide-react';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import {
+  Building2,
+  CalendarClock,
+  Cloud,
+  CreditCard,
+  Users,
+  ArrowRight,
+  CheckCircle2,
+  MessageSquare,
+  FileSignature,
+  BarChart3,
+  Bell,
+  ShieldCheck,
+  ChevronRight,
+} from 'lucide-react';
+import { useAuth } from '../src/presentation/hooks/useAuth';
 
-import { useAuth, Requer2FAError } from '../src/presentation/hooks/useAuth';
-
-// =============================================================================
-// Página raiz — /
-//
-// Comportamento:
-//   • Se o usuário já estiver autenticado (token válido no localStorage)
-//     → redireciona para a rota padrão da role (Contador → /dashboard, Cliente → /documentos)
-//   • Caso contrário → exibe o formulário de login
-//
-// Após autenticação bem-sucedida, o redirect é determinado pela role do JWT
-// ou pelo query param `?redirect=` (definido pelo middleware).
-// =============================================================================
-
-/** Rota padrão pós-login por role */
 const ROTA_DEFAULT: Record<string, string> = {
   Contador: '/dashboard',
   Cliente:  '/inicio',
   Admin:    '/dashboard-admin',
 };
 
-/** Rotas válidas para cada role (prefixo). Evita redirecionar role errada. */
-const ROTAS_PERMITIDAS: Record<string, string[]> = {
-  Contador: ['/dashboard', '/lote', '/clientes', '/configuracoes', '/calendario', '/chat'],
-  Cliente:  ['/inicio', '/documentos', '/enviar', '/ajuda', '/chat', '/financeiro'],
-  Admin:    ['/dashboard-admin', '/contadores', '/faturamento', '/admin-config', '/webhook-logs', '/admin-boletos', '/admin-clientes'],
-};
+const FEATURES = [
+  {
+    icon: <CalendarClock size={28} className="text-blue-500" />,
+    titulo: 'Automação Fiscal',
+    descricao:
+      'Lembretes automáticos de obrigações, geração de relatórios mensais e alertas de boletos. Nunca mais perca um prazo.',
+    itens: [
+      'Lembretes de obrigações com 7 dias de antecedência',
+      'Relatório mensal automático por e-mail',
+      'Alertas de boletos vencendo em 3 dias',
+      'Geração automática de obrigações recorrentes',
+    ],
+  },
+  {
+    icon: <Cloud size={28} className="text-sky-500" />,
+    titulo: 'Acesso em Nuvem',
+    descricao:
+      'Documentos e dados sempre disponíveis, com armazenamento seguro e backups automáticos. Acesse de qualquer lugar.',
+    itens: [
+      'Armazenamento MinIO (S3-compatível) com URLs temporárias',
+      'Bucket privado com versionamento habilitado',
+      'Infraestrutura containerizada com Docker',
+      'Proxy reverso HTTPS com suporte a WebSocket',
+    ],
+  },
+  {
+    icon: <CreditCard size={28} className="text-emerald-500" />,
+    titulo: 'Integração Bancária',
+    descricao:
+      'Emita boletos e cobranças PIX diretamente pela plataforma. Automatize cobranças e receba alertas de inadimplência.',
+    itens: [
+      'Boletos e PIX QR Code via Asaas API',
+      'Cobranças recorrentes e assinaturas',
+      'Webhook automático de pagamentos',
+      'Estorno e cancelamento integrados',
+    ],
+  },
+  {
+    icon: <Users size={28} className="text-violet-500" />,
+    titulo: 'Colaboração com o Cliente',
+    descricao:
+      'Chat em tempo real, assinatura eletrônica e portal exclusivo. Comunicação ágil, sem e-mail vai-e-vem.',
+    itens: [
+      'Chat em tempo real via WebSocket',
+      'Assinatura eletrônica com link de 72h',
+      'Portal do cliente para envio de documentos',
+      'Notificações em tempo real no painel',
+    ],
+  },
+];
 
-function rotaSegura(role: string, redirect: string | null): string {
-  const padrao = ROTA_DEFAULT[role] ?? '/dashboard';
-  if (!redirect) return padrao;
-  const permitidas = ROTAS_PERMITIDAS[role] ?? [];
-  const isPermitida = permitidas.some(
-    (r) => redirect === r || redirect.startsWith(r + '/'),
-  );
-  return isPermitida ? redirect : padrao;
-}
+const DIFERENCIAIS = [
+  { icon: <ShieldCheck size={16} />, texto: 'LGPD Compliant' },
+  { icon: <ShieldCheck size={16} />, texto: '2FA com TOTP' },
+  { icon: <ShieldCheck size={16} />, texto: 'Self-hosted' },
+  { icon: <ShieldCheck size={16} />, texto: 'Open Source' },
+];
 
-function HomeContent() {
-  const router          = useRouter();
-  const searchParams    = useSearchParams();
-  const { usuario, carregando, login, finalizarLogin, role } = useAuth();
+export default function LandingPage() {
+  const router = useRouter();
+  const { usuario, carregando, role } = useAuth();
 
-  const [email,      setEmail]      = useState('');
-  const [senha,      setSenha]      = useState('');
-  const [erro,       setErro]       = useState('');
-  const [enviando,   setEnviando]   = useState(false);
-
-  // 2FA multi-step state
-  const [step,       setStep]       = useState<'LOGIN' | 'TOTP' | 'BACKUP'>('LOGIN');
-  const [tempToken,  setTempToken]  = useState('');
-  const [totpCode,   setTotpCode]   = useState('');
-  const [backupCode, setBackupCode] = useState('');
-
-  // Se já autenticado, vai direto para a rota da role
+  // Redireciona usuários já autenticados
   useEffect(() => {
     if (!carregando && usuario && role) {
-      const redirect = searchParams.get('redirect');
-      router.replace(rotaSegura(role, redirect));
+      router.replace(ROTA_DEFAULT[role] ?? '/dashboard');
     }
-  }, [carregando, usuario, role, router, searchParams]);
+  }, [carregando, usuario, role, router]);
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setEnviando(true);
-    setErro('');
-
-    try {
-      await login(email, senha);
-      // Após login, o useEffect acima detecta a mudança de `usuario`
-      // e faz o redirect correto.
-    } catch (err) {
-      if (err instanceof Requer2FAError) {
-        // Backend exige 2FA — transita para o step TOTP sem exibir erro
-        setTempToken(err.tempToken);
-        setStep('TOTP');
-      } else {
-        setErro(
-          err instanceof Error
-            ? err.message
-            : 'Credenciais inválidas. Verifique o e-mail e a senha.',
-        );
-      }
-    } finally {
-      setEnviando(false);
-    }
-  };
-
-  const handleTotpSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setEnviando(true);
-    setErro('');
-
-    try {
-      const res = await fetch('/api/v1/auth/2fa/verify', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ tempToken, totpToken: totpCode }),
-      });
-      const data = (await res.json()) as { token?: string; message?: string };
-      if (!res.ok) {
-        setErro(data.message ?? 'Código inválido. Tente novamente.');
-        return;
-      }
-      finalizarLogin(data.token ?? '');
-      // useEffect detecta a mudança de `usuario` e faz o redirect
-    } catch {
-      setErro('Erro de conexão. Tente novamente.');
-    } finally {
-      setEnviando(false);
-    }
-  };
-
-  const handleBackupSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setEnviando(true);
-    setErro('');
-
-    try {
-      const res = await fetch('/api/v1/auth/2fa/backup', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ tempToken, backupCode }),
-      });
-      const data = (await res.json()) as { token?: string; message?: string };
-      if (!res.ok) {
-        setErro(data.message ?? 'Código de backup inválido. Tente novamente.');
-        return;
-      }
-      finalizarLogin(data.token ?? '');
-      // useEffect detecta a mudança de `usuario` e faz o redirect
-    } catch {
-      setErro('Erro de conexão. Tente novamente.');
-    } finally {
-      setEnviando(false);
-    }
-  };
-
-  // Tela de loading enquanto lê o localStorage
-  if (carregando) {
-    return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center">
-        <Loader2 size={32} className="animate-spin text-blue-600" />
-      </div>
-    );
-  }
-
-  // ---------------------------------------------------------------------------
-  // Bloco de erro reutilizável
-  // ---------------------------------------------------------------------------
-  const ErroAlert = erro ? (
-    <p
-      role="alert"
-      className="text-sm text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800
-                 rounded-xl px-3 py-2 leading-snug"
-    >
-      {erro}
-    </p>
-  ) : null;
-
-  // ---------------------------------------------------------------------------
-  // Step: TOTP
-  // ---------------------------------------------------------------------------
-  if (step === 'TOTP') {
-    return (
-      <div
-        className="min-h-screen flex items-center justify-center p-4
-                   bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900"
-      >
-        <div className="w-full max-w-sm">
-
-          {/* Ícone e título */}
-          <div className="flex flex-col items-center mb-8">
-            <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-600 shadow-lg mb-4">
-              <ShieldCheck size={32} className="text-white" />
-            </div>
-            <h1 className="text-2xl font-bold text-white tracking-tight">
-              Verificação em dois fatores
-            </h1>
-            <p className="text-slate-400 text-sm mt-1">
-              Digite o código do seu aplicativo autenticador
-            </p>
-          </div>
-
-          {/* Card */}
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-8">
-            <form onSubmit={handleTotpSubmit} className="space-y-5" noValidate>
-
-              <div>
-                <label
-                  htmlFor="totp"
-                  className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5"
-                >
-                  Código de 6 dígitos
-                </label>
-                <div className="relative">
-                  <ShieldCheck
-                    size={15}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-                  />
-                  <input
-                    id="totp"
-                    type="text"
-                    inputMode="numeric"
-                    autoComplete="one-time-code"
-                    maxLength={6}
-                    required
-                    value={totpCode}
-                    onChange={(e) => {
-                      setErro('');
-                      setTotpCode(e.target.value.replace(/\D/g, '').slice(0, 6));
-                    }}
-                    placeholder="000000"
-                    className="input pl-9 tracking-widest text-center"
-                  />
-                </div>
-              </div>
-
-              {ErroAlert}
-
-              <button
-                type="submit"
-                disabled={enviando || totpCode.length !== 6}
-                className="btn-primary w-full"
-              >
-                {enviando && <Loader2 size={15} className="animate-spin" />}
-                {enviando ? 'Verificando…' : 'Verificar'}
-              </button>
-
-              <div className="text-center">
-                <button
-                  type="button"
-                  onClick={() => { setErro(''); setStep('BACKUP'); }}
-                  className="text-xs text-blue-600 hover:underline"
-                >
-                  Usar código de backup
-                </button>
-              </div>
-
-            </form>
-          </div>
-
-          {/* Rodapé */}
-          <p className="text-center text-slate-500 text-xs mt-6">
-            Sistema self-hosted &bull; LGPD Compliant
-          </p>
-
-        </div>
-      </div>
-    );
-  }
-
-  // ---------------------------------------------------------------------------
-  // Step: Backup Code
-  // ---------------------------------------------------------------------------
-  if (step === 'BACKUP') {
-    return (
-      <div
-        className="min-h-screen flex items-center justify-center p-4
-                   bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900"
-      >
-        <div className="w-full max-w-sm">
-
-          {/* Ícone e título */}
-          <div className="flex flex-col items-center mb-8">
-            <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-600 shadow-lg mb-4">
-              <KeyRound size={32} className="text-white" />
-            </div>
-            <h1 className="text-2xl font-bold text-white tracking-tight">
-              Usar código de backup
-            </h1>
-            <p className="text-slate-400 text-sm mt-1">
-              Digite um dos seus códigos de recuperação
-            </p>
-          </div>
-
-          {/* Card */}
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-8">
-            <form onSubmit={handleBackupSubmit} className="space-y-5" noValidate>
-
-              <div>
-                <label
-                  htmlFor="backup"
-                  className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5"
-                >
-                  Código de backup
-                </label>
-                <div className="relative">
-                  <KeyRound
-                    size={15}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-                  />
-                  <input
-                    id="backup"
-                    type="text"
-                    autoComplete="off"
-                    required
-                    value={backupCode}
-                    onChange={(e) => {
-                      setErro('');
-                      setBackupCode(e.target.value);
-                    }}
-                    placeholder="xxxxxxxx-xxxx"
-                    className="input pl-9"
-                  />
-                </div>
-              </div>
-
-              {ErroAlert}
-
-              <button
-                type="submit"
-                disabled={enviando || !backupCode.trim()}
-                className="btn-primary w-full"
-              >
-                {enviando && <Loader2 size={15} className="animate-spin" />}
-                {enviando ? 'Verificando…' : 'Verificar'}
-              </button>
-
-              <div className="text-center">
-                <button
-                  type="button"
-                  onClick={() => { setErro(''); setStep('TOTP'); }}
-                  className="text-xs text-blue-600 hover:underline"
-                >
-                  Voltar
-                </button>
-              </div>
-
-            </form>
-          </div>
-
-          {/* Rodapé */}
-          <p className="text-center text-slate-500 text-xs mt-6">
-            Sistema self-hosted &bull; LGPD Compliant
-          </p>
-
-        </div>
-      </div>
-    );
-  }
-
-  // ---------------------------------------------------------------------------
-  // Step: LOGIN (default)
-  // ---------------------------------------------------------------------------
   return (
-    <div
-      className="min-h-screen flex items-center justify-center p-4
-                 bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900"
-    >
-      <div className="w-full max-w-sm">
+    <div className="min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100">
 
-        {/* Logotipo e título */}
-        <div className="flex flex-col items-center mb-8">
-          <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-600 shadow-lg mb-4">
-            <Building2 size={32} className="text-white" />
+      {/* ================================================================ */}
+      {/* Header                                                             */}
+      {/* ================================================================ */}
+      <header className="sticky top-0 z-50 bg-white/80 dark:bg-gray-950/80 backdrop-blur border-b border-gray-100 dark:border-gray-800">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center shrink-0">
+              <Building2 size={16} className="text-white" />
+            </div>
+            <span className="font-bold text-gray-900 dark:text-gray-100 text-sm">Gestão Contábil</span>
           </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">
-            Gestão Contábil
+
+          <nav className="hidden md:flex items-center gap-6 text-sm text-gray-600 dark:text-gray-400">
+            <a href="#funcionalidades" className="hover:text-gray-900 dark:hover:text-gray-100 transition-colors">Funcionalidades</a>
+            <a href="#diferenciais" className="hover:text-gray-900 dark:hover:text-gray-100 transition-colors">Diferenciais</a>
+          </nav>
+
+          <Link
+            href="/login"
+            className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
+          >
+            Entrar
+            <ChevronRight size={14} />
+          </Link>
+        </div>
+      </header>
+
+      {/* ================================================================ */}
+      {/* Hero                                                               */}
+      {/* ================================================================ */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900 text-white">
+        {/* Grid decorativo */}
+        <div
+          className="absolute inset-0 opacity-10"
+          style={{
+            backgroundImage: 'linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px)',
+            backgroundSize: '48px 48px',
+          }}
+        />
+
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-24 sm:py-32 text-center">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-300 text-xs font-medium mb-6">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
+            Plataforma SaaS para Escritórios Contábeis
+          </div>
+
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6 leading-tight">
+            Gestão contábil
+            <br />
+            <span className="text-blue-400">inteligente e colaborativa</span>
           </h1>
-          <p className="text-slate-400 text-sm mt-1">
-            Acesso restrito — faça login para continuar
+
+          <p className="text-lg sm:text-xl text-slate-300 max-w-2xl mx-auto mb-10 leading-relaxed">
+            Automatize processos fiscais, colabore com clientes em tempo real e tenha tudo
+            na nuvem — seguro, acessível e pronto para o seu escritório.
           </p>
-        </div>
 
-        {/* Card de login */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-8">
-          <form onSubmit={handleSubmit} className="space-y-5" noValidate>
-
-            {/* E-mail */}
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5"
-              >
-                E-mail
-              </label>
-              <div className="relative">
-                <Mail
-                  size={15}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-                />
-                <input
-                  id="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="contador@escritorio.com.br"
-                  className="input pl-9"
-                />
-              </div>
-            </div>
-
-            {/* Senha */}
-            <div>
-              <label
-                htmlFor="senha"
-                className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5"
-              >
-                Senha
-              </label>
-              <div className="relative">
-                <Lock
-                  size={15}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-                />
-                <input
-                  id="senha"
-                  type="password"
-                  autoComplete="current-password"
-                  required
-                  value={senha}
-                  onChange={(e) => setSenha(e.target.value)}
-                  placeholder="••••••••"
-                  className="input pl-9"
-                />
-              </div>
-            </div>
-
-            {/* Mensagem de erro */}
-            {ErroAlert}
-
-            {/* Botão */}
-            <button
-              type="submit"
-              disabled={enviando || !email || !senha}
-              className="btn-primary w-full"
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Link
+              href="/login"
+              className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition-colors shadow-lg shadow-blue-900/40"
             >
-              {enviando && <Loader2 size={15} className="animate-spin" />}
-              {enviando ? 'Entrando…' : 'Entrar'}
-            </button>
+              Acessar o sistema
+              <ArrowRight size={18} />
+            </Link>
+            <a
+              href="#funcionalidades"
+              className="flex items-center gap-2 px-6 py-3 bg-white/10 hover:bg-white/20 text-white font-medium rounded-xl transition-colors border border-white/20"
+            >
+              Ver funcionalidades
+            </a>
+          </div>
 
-            <div className="text-center">
-              <a
-                href="/auth/recuperar-senha"
-                className="text-xs text-blue-600 hover:underline"
+          {/* Diferenciais rápidos */}
+          <div id="diferenciais" className="flex flex-wrap items-center justify-center gap-4 mt-12 text-sm text-slate-400">
+            {DIFERENCIAIS.map((d) => (
+              <span key={d.texto} className="flex items-center gap-1.5">
+                <span className="text-blue-400">{d.icon}</span>
+                {d.texto}
+              </span>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ================================================================ */}
+      {/* Funcionalidades                                                    */}
+      {/* ================================================================ */}
+      <section id="funcionalidades" className="py-20 sm:py-28 bg-gray-50 dark:bg-gray-900">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-14">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+              Tudo que seu escritório precisa
+            </h2>
+            <p className="text-gray-500 dark:text-gray-400 text-lg max-w-xl mx-auto">
+              Uma plataforma completa, do controle fiscal à comunicação com o cliente.
+            </p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 gap-6">
+            {FEATURES.map((f) => (
+              <div
+                key={f.titulo}
+                className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-8 hover:shadow-md dark:hover:shadow-gray-900/50 transition-shadow"
               >
-                Esqueci minha senha
-              </a>
+                <div className="w-12 h-12 rounded-xl bg-gray-50 dark:bg-gray-700 flex items-center justify-center mb-5">
+                  {f.icon}
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">{f.titulo}</h3>
+                <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed mb-5">{f.descricao}</p>
+                <ul className="space-y-2">
+                  {f.itens.map((item) => (
+                    <li key={item} className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300">
+                      <CheckCircle2 size={15} className="text-green-500 mt-0.5 shrink-0" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ================================================================ */}
+      {/* Destaques adicionais                                               */}
+      {/* ================================================================ */}
+      <section className="py-16 sm:py-20 bg-white dark:bg-gray-950">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="grid sm:grid-cols-3 gap-6 text-center">
+            {[
+              { icon: <MessageSquare size={24} className="text-blue-500" />, titulo: 'Chat em Tempo Real', descricao: 'Comunicação direta com cada cliente via WebSocket, com histórico e notificações.' },
+              { icon: <FileSignature size={24} className="text-violet-500" />, titulo: 'Assinatura Eletrônica', descricao: 'Solicite assinaturas com link seguro de 72 horas. Rastreamento de IP e data/hora.' },
+              { icon: <BarChart3 size={24} className="text-emerald-500" />, titulo: 'Relatórios e Busca', descricao: 'Relatórios exportáveis em PDF/Excel e busca global por documentos, clientes e obrigações.' },
+            ].map((item) => (
+              <div key={item.titulo} className="flex flex-col items-center gap-3 p-6">
+                <div className="w-12 h-12 rounded-xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center">
+                  {item.icon}
+                </div>
+                <h3 className="font-bold text-gray-900 dark:text-gray-100">{item.titulo}</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">{item.descricao}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ================================================================ */}
+      {/* CTA Final                                                          */}
+      {/* ================================================================ */}
+      <section className="py-20 sm:py-24 bg-gradient-to-br from-blue-600 to-blue-800 text-white">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 text-center">
+          <Bell size={32} className="mx-auto mb-4 opacity-80" />
+          <h2 className="text-3xl sm:text-4xl font-bold mb-4">
+            Pronto para modernizar seu escritório?
+          </h2>
+          <p className="text-blue-100 text-lg mb-8 leading-relaxed">
+            Acesse a plataforma agora e tenha controle total da sua operação contábil.
+          </p>
+          <Link
+            href="/login"
+            className="inline-flex items-center gap-2 px-8 py-3.5 bg-white text-blue-700 hover:bg-blue-50 font-bold rounded-xl transition-colors shadow-lg"
+          >
+            Entrar na plataforma
+            <ArrowRight size={18} />
+          </Link>
+        </div>
+      </section>
+
+      {/* ================================================================ */}
+      {/* Footer                                                             */}
+      {/* ================================================================ */}
+      <footer className="bg-gray-50 dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded bg-blue-600 flex items-center justify-center">
+              <Building2 size={12} className="text-white" />
             </div>
-
-          </form>
+            <span className="text-sm text-gray-500 dark:text-gray-400">
+              © {new Date().getFullYear()} Gestão Contábil — Sistema self-hosted · LGPD Compliant
+            </span>
+          </div>
+          <div className="flex items-center gap-4 text-xs text-gray-400 dark:text-gray-500">
+            <a href="/privacidade" className="hover:text-gray-600 dark:hover:text-gray-300 transition-colors">Política de Privacidade</a>
+            <span>·</span>
+            <a href="/termos" className="hover:text-gray-600 dark:hover:text-gray-300 transition-colors">Termos de Uso</a>
+          </div>
         </div>
+      </footer>
 
-        {/* Rodapé */}
-        <p className="text-center text-slate-500 text-xs mt-6 space-x-1">
-          <span>Sistema self-hosted</span>
-          <span aria-hidden="true">&bull;</span>
-          <span>LGPD Compliant</span>
-          <span aria-hidden="true">&bull;</span>
-          <span>Dados armazenados localmente</span>
-        </p>
-
-        <div className="flex items-center justify-center gap-3 mt-3 text-[11px] text-slate-400">
-          <a href="/privacidade" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 transition-colors">
-            Política de Privacidade
-          </a>
-          <span>|</span>
-          <a href="/termos" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 transition-colors">
-            Termos de Uso
-          </a>
-        </div>
-
-      </div>
     </div>
-  );
-}
-
-export default function HomePage() {
-  return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-          <Loader2 size={32} className="animate-spin text-blue-600" />
-        </div>
-      }
-    >
-      <HomeContent />
-    </Suspense>
   );
 }

@@ -48,7 +48,7 @@ export default function ChatPage() {
   // Redirect se não autenticado
   useEffect(() => {
     if (!carregando && !usuario) {
-      router.push('/');
+      router.push('/login');
     }
   }, [carregando, usuario, router]);
 

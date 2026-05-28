@@ -108,12 +108,12 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
 
   const handleLogout = useCallback(() => {
     logout();
-    router.push('/');
+    router.push('/login');
   }, [logout, router]);
 
   useEffect(() => {
     if (carregando) return;
-    if (!usuario) { router.push('/'); return; }
+    if (!usuario) { router.push('/login'); return; }
     if (!isCliente && !isFuncionarioCliente) router.push('/dashboard');
   }, [carregando, usuario, isCliente, isFuncionarioCliente, router]);
 

@@ -58,7 +58,7 @@ function AtivarContaContent() {
       }
 
       setSucesso(true);
-      setTimeout(() => router.push('/'), 3000);
+      setTimeout(() => router.push('/login'), 3000);
     } catch {
       setErro('Erro de conexão. Tente novamente.');
     } finally {

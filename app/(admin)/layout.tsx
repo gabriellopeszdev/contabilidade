@@ -56,7 +56,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   useEffect(() => {
     if (carregando) return;
     if (!usuario) {
-      router.push('/');
+      router.push('/login');
       return;
     }
     if (!isAdmin) {
@@ -66,7 +66,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const handleLogout = useCallback(() => {
     logout();
-    router.push('/');
+    router.push('/login');
   }, [logout, router]);
 
   if (carregando || !usuario || !isAdmin) {
