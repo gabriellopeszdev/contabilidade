@@ -29,7 +29,10 @@ import {
   FileBarChart,
   PenLine,
   Search,
+  ChevronsLeft,
+  ChevronsRight,
 } from 'lucide-react';
+import { FiscoHubLogo } from '../components/FiscoHubLogo';
 
 import { useAuth } from '../../src/presentation/hooks/useAuth';
 import { useDarkMode } from '../../src/presentation/hooks/useDarkMode';
@@ -95,6 +98,18 @@ export default function FinanceiroLayout({ children }: { children: React.ReactNo
   const { dark, toggle: toggleDark, mounted: darkMounted } = useDarkMode();
 
   const [sidebarAberta, setSidebarAberta] = useState(false);
+  const [colapsada,     setColapsada]     = useState(false);
+
+  useEffect(() => {
+    if (localStorage.getItem('sidebar-colapsada') === 'true') setColapsada(true);
+  }, []);
+
+  const toggleColapsada = () => {
+    setColapsada((v) => {
+      localStorage.setItem('sidebar-colapsada', String(!v));
+      return !v;
+    });
+  };
 
   // Token
   const [token, setToken] = useState<string | null>(null);
@@ -187,40 +202,52 @@ export default function FinanceiroLayout({ children }: { children: React.ReactNo
 
       <aside
         className={`
-          fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700
-          flex flex-col transition-transform duration-200 ease-in-out
+          fixed lg:static inset-y-0 left-0 z-50
+          ${colapsada ? 'w-16' : 'w-64'}
+          bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700
+          flex flex-col transition-all duration-300 ease-in-out
           ${sidebarAberta ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}
       >
         {/* Logo */}
-        <div className="h-16 flex items-center gap-3 px-5 border-b border-gray-100 dark:border-gray-800 shrink-0">
+        <div className={`h-16 flex items-center border-b border-gray-100 dark:border-gray-800 shrink-0 ${colapsada ? 'justify-center' : 'gap-3 px-4'}`}>
           {logoUrl ? (
-            <img src={logoUrl} alt="Logo" className="w-8 h-8 rounded-lg object-contain" />
-          ) : (
-            <div className={`w-8 h-8 rounded-lg bg-${accentColor}-600 flex items-center justify-center`}>
-              {isVisaoCliente
-                ? <Building2 size={16} className="text-white" />
-                : <LayoutDashboard size={16} className="text-white" />}
+            <img src={logoUrl} alt="Logo" className="w-8 h-8 rounded-lg object-contain shrink-0" />
+          ) : isVisaoCliente ? (
+            <div className={`w-8 h-8 rounded-lg bg-sky-600 flex items-center justify-center shrink-0`}>
+              <Building2 size={16} className="text-white" />
             </div>
+          ) : (
+            <FiscoHubLogo size="sm" variant={colapsada ? 'icon' : 'full'} />
           )}
-          <div>
-            <p className="text-sm font-bold text-gray-900 dark:text-gray-100 leading-tight">
-              {nomeEscritorio || (isVisaoCliente ? 'Portal do Cliente' : 'FiscoHub')}
-            </p>
-            <p className="text-[10px] text-gray-400 dark:text-gray-500 leading-none">
-              {isVisaoCliente ? 'FiscoHub' : 'Painel Administrativo'}
-            </p>
-          </div>
-          <button
-            className="ml-auto lg:hidden p-1 rounded-md text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
-            onClick={() => setSidebarAberta(false)}
-          >
-            <X size={18} />
-          </button>
+          {!colapsada && !isVisaoCliente && (
+            <button
+              className="ml-auto lg:hidden p-1 rounded-md text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+              onClick={() => setSidebarAberta(false)}
+            >
+              <X size={18} />
+            </button>
+          )}
+          {!colapsada && isVisaoCliente && (
+            <>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-bold text-gray-900 dark:text-gray-100 leading-tight truncate">
+                  {nomeEscritorio || 'Portal do Cliente'}
+                </p>
+                <p className="text-[10px] text-gray-400 dark:text-gray-500 leading-none">FiscoHub</p>
+              </div>
+              <button
+                className="ml-auto lg:hidden p-1 rounded-md text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+                onClick={() => setSidebarAberta(false)}
+              >
+                <X size={18} />
+              </button>
+            </>
+          )}
         </div>
 
         {/* Navegação */}
-        <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
+        <nav className={`flex-1 py-4 space-y-0.5 overflow-y-auto ${colapsada ? 'px-2' : 'px-3'}`}>
           {navItems.map((item) => {
             const ativo = pathname === item.href || pathname.startsWith(item.href + '/');
             return (
@@ -228,35 +255,39 @@ export default function FinanceiroLayout({ children }: { children: React.ReactNo
                 key={item.href}
                 href={item.href}
                 onClick={() => setSidebarAberta(false)}
+                title={colapsada ? item.label : undefined}
                 className={`
-                  flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
+                  flex items-center rounded-lg text-sm font-medium transition-colors
+                  ${colapsada ? 'justify-center py-2.5' : 'gap-3 px-3 py-2.5'}
                   ${ativo
                     ? `bg-${accentColor}-50 dark:bg-${accentColor}-900/20 text-${accentColor}-700 dark:text-${accentColor}-400`
                     : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
                   }
                 `}
               >
-                <span className={ativo ? `text-${accentColor}-600 dark:text-${accentColor}-400` : 'text-gray-400 dark:text-gray-500'}>{item.icon}</span>
-                {item.label}
+                <span className={`shrink-0 ${ativo ? `text-${accentColor}-600 dark:text-${accentColor}-400` : 'text-gray-400 dark:text-gray-500'}`}>{item.icon}</span>
+                {!colapsada && item.label}
               </Link>
             );
           })}
         </nav>
 
         {/* Status WS + Perfil */}
-        <div className="border-t border-gray-100 dark:border-gray-800 px-3 py-3 space-y-3 shrink-0">
-          <div className="flex items-center gap-2 px-3 py-1.5">
-            <span className={`w-2 h-2 rounded-full ${statusWs.cor}`} />
-            <span className="text-[11px] text-gray-500 dark:text-gray-400">{statusWs.label}</span>
+        <div className={`border-t border-gray-100 dark:border-gray-800 py-3 shrink-0 space-y-2 ${colapsada ? 'px-2' : 'px-3'}`}>
+          <div className={`flex items-center gap-2 ${colapsada ? 'justify-center py-1' : 'px-3 py-1'}`}>
+            <span title={colapsada ? statusWs.label : undefined} className={`w-2 h-2 rounded-full shrink-0 ${statusWs.cor}`} />
+            {!colapsada && <span className="text-[11px] text-gray-500 dark:text-gray-400">{statusWs.label}</span>}
           </div>
-          <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-gray-50 dark:bg-gray-800">
-            <div className={`w-8 h-8 rounded-full bg-${accentColor}-100 dark:bg-${accentColor}-900/30 text-${accentColor}-700 dark:text-${accentColor}-400 flex items-center justify-center text-xs font-bold shrink-0`}>
+          <div className={`flex items-center rounded-lg bg-gray-50 dark:bg-gray-800 ${colapsada ? 'justify-center p-2' : 'gap-3 px-3 py-2'}`}>
+            <div title={colapsada ? usuario.nome : undefined} className={`w-8 h-8 rounded-full bg-${accentColor}-100 dark:bg-${accentColor}-900/30 text-${accentColor}-700 dark:text-${accentColor}-400 flex items-center justify-center text-xs font-bold shrink-0`}>
               {iniciais}
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-semibold text-gray-900 dark:text-gray-100 truncate">{usuario.nome}</p>
-              <p className="text-[10px] text-gray-400 dark:text-gray-500 truncate">{usuario.email}</p>
-            </div>
+            {!colapsada && (
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-semibold text-gray-900 dark:text-gray-100 truncate">{usuario.nome}</p>
+                <p className="text-[10px] text-gray-400 dark:text-gray-500 truncate">{usuario.email}</p>
+              </div>
+            )}
           </div>
         </div>
       </aside>
@@ -273,7 +304,14 @@ export default function FinanceiroLayout({ children }: { children: React.ReactNo
             <Menu size={20} />
           </button>
 
-          <div className="hidden lg:block">
+          <div className="hidden lg:flex items-center gap-2">
+            <button
+              onClick={toggleColapsada}
+              title={colapsada ? 'Expandir sidebar' : 'Recolher sidebar'}
+              className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            >
+              {colapsada ? <ChevronsRight size={18} /> : <ChevronsLeft size={18} />}
+            </button>
             <h1 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Financeiro</h1>
           </div>
 
