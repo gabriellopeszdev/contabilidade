@@ -48,6 +48,7 @@ html.dark {
   }
 
   html {
+    scroll-behavior: smooth;
     /* Melhora a renderização de fontes em todos os sistemas */
     -webkit-font-smoothing:  antialiased;
     -moz-osx-font-smoothing: grayscale;
