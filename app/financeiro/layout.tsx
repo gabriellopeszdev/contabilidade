@@ -26,6 +26,9 @@ import {
   Home,
   Sun,
   Moon,
+  FileBarChart,
+  PenLine,
+  Search,
 } from 'lucide-react';
 
 import { useAuth } from '../../src/presentation/hooks/useAuth';
@@ -54,9 +57,12 @@ const NAV_CONTADOR: NavItem[] = [
   { href: '/clientes',      label: 'Meus Clientes',   icon: <Users size={18} /> },
   { href: '/equipe',        label: 'Equipe',           icon: <UserCog size={18} />,       donoOnly: true },
   { href: '/calendario',    label: 'Calendário',      icon: <CalendarDays size={18} /> },
-  { href: '/financeiro',    label: 'Financeiro',       icon: <DollarSign size={18} />,     donoOnly: true },
-  { href: '/chat',          label: 'Chat',             icon: <MessageSquare size={18} /> },
-  { href: '/configuracoes', label: 'Configurações',    icon: <Settings size={18} />,      donoOnly: true },
+  { href: '/financeiro',    label: 'Financeiro',       icon: <DollarSign size={18} />,    donoOnly: true },
+  { href: '/relatorios',   label: 'Relatórios',       icon: <FileBarChart size={18} />,  donoOnly: true },
+  { href: '/assinaturas',  label: 'Assinaturas',      icon: <PenLine size={18} />,       donoOnly: true },
+  { href: '/busca',        label: 'Busca',            icon: <Search size={18} /> },
+  { href: '/chat',         label: 'Chat',             icon: <MessageSquare size={18} /> },
+  { href: '/configuracoes', label: 'Configurações',   icon: <Settings size={18} />,      donoOnly: true },
 ];
 
 const NAV_CLIENTE: NavItem[] = [

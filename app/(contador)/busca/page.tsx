@@ -3,6 +3,7 @@
 import { useState, useCallback, useRef } from 'react';
 import { Search, FileText, Users, CalendarCheck, Loader2, X } from 'lucide-react';
 import Link from 'next/link';
+import { useAuth } from '../../../src/presentation/hooks/useAuth';
 
 interface DocResult     { id: string; fileName: string; fileType: string; sector: string; cliente: string; createdAt: string }
 interface ClienteResult { id: string; name: string; email: string; cnpj: string; isActive: boolean }
@@ -15,6 +16,7 @@ interface SearchResults {
 }
 
 export default function BuscaPage() {
+  const { getToken } = useAuth();
   const [q, setQ]             = useState('');
   const [results, setResults] = useState<SearchResults | null>(null);
   const [loading, setLoading] = useState(false);
@@ -26,7 +28,10 @@ export default function BuscaPage() {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch(`/api/v1/busca?q=${encodeURIComponent(texto)}`);
+      const token = await getToken();
+      const res = await fetch(`/api/v1/busca?q=${encodeURIComponent(texto)}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       if (!res.ok) throw new Error();
       setResults(await res.json() as SearchResults);
     } catch {
@@ -34,7 +39,7 @@ export default function BuscaPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [getToken]);
 
   function handleChange(valor: string) {
     setQ(valor);
@@ -51,25 +56,25 @@ export default function BuscaPage() {
 
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Busca Global</h1>
-        <p className="text-sm text-gray-500 mt-1">Pesquise documentos, clientes e obrigações fiscais</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Busca Global</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Pesquise documentos, clientes e obrigações fiscais</p>
       </div>
 
       {/* Search input */}
       <div className="relative">
-        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 pointer-events-none" />
         <input
           autoFocus
           type="search"
           value={q}
           onChange={(e) => handleChange(e.target.value)}
           placeholder="Digite para pesquisar… (mín. 2 caracteres)"
-          className="w-full pl-11 pr-10 py-3 border border-gray-200 rounded-xl text-sm bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full pl-11 pr-10 py-3 border border-gray-200 dark:border-gray-700 rounded-xl text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         />
         {q && (
           <button
             onClick={() => { setQ(''); setResults(null); }}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
           >
             <X size={16} />
           </button>
@@ -78,18 +83,18 @@ export default function BuscaPage() {
 
       {/* Loading */}
       {loading && (
-        <div className="flex items-center gap-2 text-gray-500 text-sm">
+        <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
           <Loader2 size={16} className="animate-spin" />
           Buscando…
         </div>
       )}
 
       {/* Error */}
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
 
       {/* Empty state */}
       {results && total === 0 && !loading && (
-        <div className="text-center py-12 text-gray-400">
+        <div className="text-center py-12 text-gray-400 dark:text-gray-500">
           <Search size={40} className="mx-auto mb-3 opacity-30" />
           <p className="text-sm">Nenhum resultado encontrado para <strong>&quot;{q}&quot;</strong></p>
         </div>
@@ -98,24 +103,24 @@ export default function BuscaPage() {
       {/* Results */}
       {results && total > 0 && (
         <div className="space-y-6">
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             {total} resultado{total !== 1 ? 's' : ''} encontrado{total !== 1 ? 's' : ''}
           </p>
 
           {/* Documentos */}
           {results.documentos.length > 0 && (
             <section className="space-y-2">
-              <h2 className="flex items-center gap-2 text-xs font-semibold text-gray-500 uppercase tracking-widest">
+              <h2 className="flex items-center gap-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest">
                 <FileText size={13} /> Documentos ({results.documentos.length})
               </h2>
-              <div className="divide-y divide-gray-100 border border-gray-200 rounded-xl overflow-hidden bg-white">
+              <div className="divide-y divide-gray-100 dark:divide-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden bg-white dark:bg-gray-900">
                 {results.documentos.map((d) => (
-                  <div key={d.id} className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors">
+                  <div key={d.id} className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-gray-800 truncate">{d.fileName}</p>
-                      <p className="text-xs text-gray-500">{d.cliente} · {d.sector} · {d.createdAt}</p>
+                      <p className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">{d.fileName}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{d.cliente} · {d.sector} · {d.createdAt}</p>
                     </div>
-                    <span className="ml-4 text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded font-mono shrink-0">
+                    <span className="ml-4 text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded font-mono shrink-0">
                       {d.fileType}
                     </span>
                   </div>
@@ -127,21 +132,25 @@ export default function BuscaPage() {
           {/* Clientes */}
           {results.clientes.length > 0 && (
             <section className="space-y-2">
-              <h2 className="flex items-center gap-2 text-xs font-semibold text-gray-500 uppercase tracking-widest">
+              <h2 className="flex items-center gap-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest">
                 <Users size={13} /> Clientes ({results.clientes.length})
               </h2>
-              <div className="divide-y divide-gray-100 border border-gray-200 rounded-xl overflow-hidden bg-white">
+              <div className="divide-y divide-gray-100 dark:divide-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden bg-white dark:bg-gray-900">
                 {results.clientes.map((c) => (
                   <Link
                     key={c.id}
                     href={`/clientes/${c.id}`}
-                    className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors"
+                    className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                   >
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-gray-800 truncate">{c.name}</p>
-                      <p className="text-xs text-gray-500">{c.cnpj} · {c.email}</p>
+                      <p className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">{c.name}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{c.cnpj} · {c.email}</p>
                     </div>
-                    <span className={`ml-4 text-xs px-2 py-0.5 rounded shrink-0 ${c.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                    <span className={`ml-4 text-xs px-2 py-0.5 rounded shrink-0 ${
+                      c.isActive
+                        ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+                        : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
+                    }`}>
                       {c.isActive ? 'Ativo' : 'Inativo'}
                     </span>
                   </Link>
@@ -153,21 +162,21 @@ export default function BuscaPage() {
           {/* Obrigações */}
           {results.obrigacoes.length > 0 && (
             <section className="space-y-2">
-              <h2 className="flex items-center gap-2 text-xs font-semibold text-gray-500 uppercase tracking-widest">
+              <h2 className="flex items-center gap-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest">
                 <CalendarCheck size={13} /> Obrigações Fiscais ({results.obrigacoes.length})
               </h2>
-              <div className="divide-y divide-gray-100 border border-gray-200 rounded-xl overflow-hidden bg-white">
+              <div className="divide-y divide-gray-100 dark:divide-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden bg-white dark:bg-gray-900">
                 {results.obrigacoes.map((o) => (
                   <Link
                     key={o.id}
                     href="/calendario"
-                    className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors"
+                    className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                   >
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-gray-800 truncate">{o.nome}</p>
-                      <p className="text-xs text-gray-500">{o.descricao || o.tipo}</p>
+                      <p className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">{o.nome}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{o.descricao || o.tipo}</p>
                     </div>
-                    <span className="ml-4 text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded shrink-0">
+                    <span className="ml-4 text-xs bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 px-2 py-0.5 rounded shrink-0">
                       {o.tipo}
                     </span>
                   </Link>

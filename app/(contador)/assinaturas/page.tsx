@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { FileSignature, Loader2, Clock, CheckCircle2, XCircle, AlertCircle, RefreshCw, ExternalLink, Filter } from 'lucide-react';
+import { useAuth } from '../../../src/presentation/hooks/useAuth';
 
 type StatusAssinatura = 'TODOS' | 'PENDENTE' | 'ASSINADO' | 'RECUSADO' | 'EXPIRADO';
 
@@ -21,10 +22,10 @@ interface Assinatura {
 }
 
 const STATUS_CONFIG: Record<string, { label: string; cor: string; icon: React.ReactNode }> = {
-  PENDENTE:  { label: 'Pendente',  cor: 'bg-yellow-100 text-yellow-800 border-yellow-200', icon: <Clock size={12} /> },
-  ASSINADO:  { label: 'Assinado',  cor: 'bg-green-100  text-green-800  border-green-200',  icon: <CheckCircle2 size={12} /> },
-  RECUSADO:  { label: 'Recusado',  cor: 'bg-red-100    text-red-800    border-red-200',    icon: <XCircle size={12} /> },
-  EXPIRADO:  { label: 'Expirado',  cor: 'bg-gray-100   text-gray-600   border-gray-200',  icon: <AlertCircle size={12} /> },
+  PENDENTE:  { label: 'Pendente',  cor: 'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800', icon: <Clock size={12} /> },
+  ASSINADO:  { label: 'Assinado',  cor: 'bg-green-100  text-green-800  border-green-200  dark:bg-green-900/30  dark:text-green-400  dark:border-green-800',  icon: <CheckCircle2 size={12} /> },
+  RECUSADO:  { label: 'Recusado',  cor: 'bg-red-100    text-red-800    border-red-200    dark:bg-red-900/30    dark:text-red-400    dark:border-red-800',    icon: <XCircle size={12} /> },
+  EXPIRADO:  { label: 'Expirado',  cor: 'bg-gray-100   text-gray-600   border-gray-200   dark:bg-gray-700      dark:text-gray-400   dark:border-gray-600',  icon: <AlertCircle size={12} /> },
 };
 
 const FILTROS: { value: StatusAssinatura; label: string }[] = [
@@ -36,6 +37,7 @@ const FILTROS: { value: StatusAssinatura; label: string }[] = [
 ];
 
 export default function AssinaturasPage() {
+  const { getToken } = useAuth();
   const [filtro, setFiltro]           = useState<StatusAssinatura>('TODOS');
   const [assinaturas, setAssinaturas] = useState<Assinatura[]>([]);
   const [carregando, setCarregando]   = useState(true);
@@ -45,8 +47,11 @@ export default function AssinaturasPage() {
     setCarregando(true);
     setErro('');
     try {
+      const token = await getToken();
       const params = filtro !== 'TODOS' ? `?status=${filtro}` : '';
-      const res = await fetch(`/api/v1/assinaturas${params}`);
+      const res = await fetch(`/api/v1/assinaturas${params}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       if (!res.ok) throw new Error();
       const data = await res.json() as { assinaturas: Assinatura[] };
       setAssinaturas(data.assinaturas);
@@ -55,7 +60,7 @@ export default function AssinaturasPage() {
     } finally {
       setCarregando(false);
     }
-  }, [filtro]);
+  }, [filtro, getToken]);
 
   useEffect(() => { carregar(); }, [carregar]);
 
@@ -77,14 +82,14 @@ export default function AssinaturasPage() {
         <div className="flex items-center gap-3">
           <FileSignature size={24} className="text-blue-600" />
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Assinaturas</h1>
-            <p className="text-sm text-gray-500">Gerencie solicitações de assinatura eletrônica</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Assinaturas</h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Gerencie solicitações de assinatura eletrônica</p>
           </div>
         </div>
         <button
           onClick={carregar}
           disabled={carregando}
-          className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+          className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
         >
           <RefreshCw size={14} className={carregando ? 'animate-spin' : ''} />
           Atualizar
@@ -100,11 +105,13 @@ export default function AssinaturasPage() {
               key={s}
               onClick={() => setFiltro(filtro === s ? 'TODOS' : s)}
               className={`p-4 rounded-xl border text-left transition-all ${
-                filtro === s ? 'ring-2 ring-blue-500 ' + cfg.cor : 'bg-white border-gray-200 hover:border-gray-300'
+                filtro === s
+                  ? 'ring-2 ring-blue-500 ' + cfg.cor
+                  : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
               }`}
             >
-              <div className="text-2xl font-bold text-gray-900">{counts[s] ?? 0}</div>
-              <div className="text-xs text-gray-500 mt-1">{cfg.label}{(counts[s] ?? 0) !== 1 ? 's' : ''}</div>
+              <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">{counts[s] ?? 0}</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{cfg.label}{(counts[s] ?? 0) !== 1 ? 's' : ''}</div>
             </button>
           );
         })}
@@ -112,7 +119,7 @@ export default function AssinaturasPage() {
 
       {/* Filtros */}
       <div className="flex items-center gap-2 flex-wrap">
-        <Filter size={14} className="text-gray-400" />
+        <Filter size={14} className="text-gray-400 dark:text-gray-500" />
         {FILTROS.map((f) => (
           <button
             key={f.value}
@@ -120,7 +127,7 @@ export default function AssinaturasPage() {
             className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
               filtro === f.value
                 ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
             }`}
           >
             {f.label}
@@ -137,12 +144,12 @@ export default function AssinaturasPage() {
 
       {/* Erro */}
       {erro && !carregando && (
-        <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">{erro}</div>
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-lg px-4 py-3 text-sm">{erro}</div>
       )}
 
       {/* Vazio */}
       {!carregando && !erro && assinaturas.length === 0 && (
-        <div className="text-center py-16 text-gray-400">
+        <div className="text-center py-16 text-gray-400 dark:text-gray-500">
           <FileSignature size={40} className="mx-auto mb-3 opacity-30" />
           <p className="text-sm font-medium">Nenhuma solicitação de assinatura encontrada</p>
           <p className="text-xs mt-1">As solicitações aparecem aqui quando você pede assinatura de um documento</p>
@@ -151,10 +158,10 @@ export default function AssinaturasPage() {
 
       {/* Tabela */}
       {!carregando && assinaturas.length > 0 && (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-gray-50 text-xs font-medium text-gray-500 uppercase tracking-wide">
+              <thead className="bg-gray-50 dark:bg-gray-800 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
                 <tr>
                   <th className="px-4 py-3 text-left">Documento</th>
                   <th className="px-4 py-3 text-left">Signatário</th>
@@ -165,46 +172,46 @@ export default function AssinaturasPage() {
                   <th className="px-4 py-3 text-right">Ação</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                 {assinaturas.map((a) => {
                   const cfg = STATUS_CONFIG[a.status] ?? STATUS_CONFIG.EXPIRADO;
                   const vencido = a.status === 'PENDENTE' && new Date(a.expiresAt) < new Date();
                   return (
-                    <tr key={a.id} className="hover:bg-gray-50 transition-colors">
+                    <tr key={a.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                       <td className="px-4 py-3">
-                        <p className="font-medium text-gray-800 truncate max-w-[200px]">{a.documentoNome}</p>
-                        <p className="text-xs text-gray-400">{a.documentoTipo}</p>
+                        <p className="font-medium text-gray-800 dark:text-gray-200 truncate max-w-[200px]">{a.documentoNome}</p>
+                        <p className="text-xs text-gray-400 dark:text-gray-500">{a.documentoTipo}</p>
                       </td>
                       <td className="px-4 py-3">
-                        <p className="text-gray-800">{a.signatarioNome}</p>
-                        <p className="text-xs text-gray-400">{a.signatarioEmail}</p>
+                        <p className="text-gray-800 dark:text-gray-200">{a.signatarioNome}</p>
+                        <p className="text-xs text-gray-400 dark:text-gray-500">{a.signatarioEmail}</p>
                       </td>
                       <td className="px-4 py-3">
                         <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${cfg.cor}`}>
                           {cfg.icon}{cfg.label}
                         </span>
                         {a.motivoRecusa && (
-                          <p className="text-xs text-gray-400 mt-1 max-w-[150px] truncate" title={a.motivoRecusa}>
+                          <p className="text-xs text-gray-400 dark:text-gray-500 mt-1 max-w-[150px] truncate" title={a.motivoRecusa}>
                             {a.motivoRecusa}
                           </p>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
+                      <td className="px-4 py-3 text-gray-600 dark:text-gray-400 whitespace-nowrap">
                         {new Date(a.createdAt).toLocaleDateString('pt-BR')}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
-                        <span className={vencido ? 'text-red-600 font-medium' : 'text-gray-600'}>
+                        <span className={vencido ? 'text-red-600 dark:text-red-400 font-medium' : 'text-gray-600 dark:text-gray-400'}>
                           {new Date(a.expiresAt).toLocaleDateString('pt-BR')}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
+                      <td className="px-4 py-3 text-gray-600 dark:text-gray-400 whitespace-nowrap">
                         {a.assinadoAt ? new Date(a.assinadoAt).toLocaleDateString('pt-BR') : '—'}
                       </td>
                       <td className="px-4 py-3 text-right">
                         {(a.status === 'PENDENTE' || a.status === 'EXPIRADO') && (
                           <button
                             onClick={() => abrirLinkAssinatura(a.tokenAssinatura)}
-                            className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
+                            className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
                           >
                             <ExternalLink size={12} />
                             Ver link
@@ -217,7 +224,7 @@ export default function AssinaturasPage() {
               </tbody>
             </table>
           </div>
-          <div className="px-4 py-3 border-t border-gray-100 text-xs text-gray-400">
+          <div className="px-4 py-3 border-t border-gray-100 dark:border-gray-800 text-xs text-gray-400 dark:text-gray-500">
             {assinaturas.length} solicitaç{assinaturas.length !== 1 ? 'ões' : 'ão'}
           </div>
         </div>
