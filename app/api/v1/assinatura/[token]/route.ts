@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/infrastructure/di/Container';
+import { prisma, emailService } from '@/infrastructure/di/Container';
+import { checkRateLimit, getClientIp } from '@/utils/rateLimiter';
 
 type Params = { params: Promise<{ token: string }> };
 
@@ -33,35 +34,63 @@ export async function GET(req: NextRequest, { params }: Params) {
 }
 
 export async function POST(req: NextRequest, { params }: Params) {
+  const ip = getClientIp(req);
+  const rl = await checkRateLimit(`assinatura:${ip}`, 10, 60 * 60);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { message: 'Muitas tentativas. Tente novamente mais tarde.' },
+      { status: 429, headers: { 'Retry-After': String(rl.resetInSec) } },
+    );
+  }
+
   const { token } = await params;
-  const ip = req.headers.get('x-forwarded-for')?.split(',')[0] ?? req.headers.get('x-real-ip') ?? 'unknown';
 
   const body = await req.json().catch(() => ({})) as { confirmacao?: boolean; motivoRecusa?: string };
   const { confirmacao, motivoRecusa } = body;
 
   const assinatura = await prisma.assinaturaDocumento.findUnique({
     where: { tokenAssinatura: token },
+    include: {
+      documento: { select: { fileName: true } },
+    },
   });
 
   if (!assinatura || assinatura.status !== 'PENDENTE' || new Date() > assinatura.expiresAt) {
     return NextResponse.json({ message: 'Link inválido ou expirado' }, { status: 410 });
   }
 
-  if (!confirmacao) {
-    await prisma.assinaturaDocumento.update({
-      where: { id: assinatura.id },
-      data: {
-        status: 'RECUSADO',
-        motivoRecusa: motivoRecusa ?? 'Recusado pelo signatário',
-      },
-    });
-    return NextResponse.json({ message: 'Assinatura recusada' });
-  }
+  const novoStatus = confirmacao ? 'ASSINADO' : 'RECUSADO';
 
   await prisma.assinaturaDocumento.update({
     where: { id: assinatura.id },
-    data: { status: 'ASSINADO', assinadoAt: new Date(), ipAssinatura: ip },
+    data: {
+      status: novoStatus,
+      ...(confirmacao
+        ? { assinadoAt: new Date(), ipAssinatura: ip }
+        : { motivoRecusa: motivoRecusa ?? 'Recusado pelo signatário' }),
+    },
   });
 
-  return NextResponse.json({ message: 'Documento assinado com sucesso' });
+  // Notifica o solicitante por e-mail (fire-and-forget)
+  const solicitante = await prisma.usuarioContador.findUnique({
+    where: { id: assinatura.solicitanteId },
+    select: { email: true, name: true },
+  }).catch(() => null);
+
+  if (solicitante) {
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? '';
+    emailService.enviarStatusAssinatura({
+      emailSolicitante: solicitante.email,
+      nomeSolicitante:  solicitante.name,
+      nomeDocumento:    assinatura.documento.fileName,
+      nomeSignatario:   assinatura.signatarioNome,
+      status:           novoStatus as 'ASSINADO' | 'RECUSADO',
+      motivoRecusa:     confirmacao ? undefined : (motivoRecusa ?? 'Recusado pelo signatário'),
+      urlPortal:        `${appUrl}/lote`,
+    }).catch(() => {});
+  }
+
+  return NextResponse.json({
+    message: confirmacao ? 'Documento assinado com sucesso' : 'Assinatura recusada',
+  });
 }

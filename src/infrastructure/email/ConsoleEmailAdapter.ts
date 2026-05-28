@@ -5,6 +5,8 @@ import type {
   BoasVindasEmailParams,
   RecuperacaoSenhaEmailParams,
   ConviteClienteEmailParams,
+  SolicitacaoAssinaturaEmailParams,
+  StatusAssinaturaEmailParams,
 } from '../../domain/ports/IEmailService';
 import type { ILogger } from '../../domain/ports/ILogger';
 
@@ -167,6 +169,46 @@ export class ConsoleEmailAdapter implements IEmailService {
       assunto:      '[Portal Contábil] Convite para acessar seu portal',
       corpoHtml,
       corpoTexto:   `Olá, ${params.nome}! Ative sua conta em: ${params.link}`,
+    });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Template: Solicitação de Assinatura
+  // ---------------------------------------------------------------------------
+
+  async enviarSolicitacaoAssinatura(params: SolicitacaoAssinaturaEmailParams): Promise<void> {
+    await this.enviar({
+      destinatario: params.emailCliente,
+      assunto:      `Assinatura solicitada: ${params.nomeDocumento}`,
+      corpoHtml:    `<p>Olá, ${params.nomeCliente}! Assine o documento <strong>${params.nomeDocumento}</strong> em: <a href="${params.linkAssinatura}">${params.linkAssinatura}</a> (expira em ${params.expiracaoHoras}h)</p>`,
+      corpoTexto:   `Acesse ${params.linkAssinatura} para assinar o documento ${params.nomeDocumento} (expira em ${params.expiracaoHoras}h)`,
+    });
+
+    this.logger.debug('[ConsoleEmailAdapter] Template solicitacaoAssinatura renderizado.', {
+      destinatario:   params.emailCliente,
+      nomeDocumento:  params.nomeDocumento,
+      expiracaoHoras: params.expiracaoHoras,
+    });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Template: Status de Assinatura (para o solicitante)
+  // ---------------------------------------------------------------------------
+
+  async enviarStatusAssinatura(params: StatusAssinaturaEmailParams): Promise<void> {
+    const assinado = params.status === 'ASSINADO';
+
+    await this.enviar({
+      destinatario: params.emailSolicitante,
+      assunto:      `[Portal Contábil] Documento ${assinado ? 'assinado' : 'recusado'}: ${params.nomeDocumento}`,
+      corpoHtml:    `<p>Olá, ${params.nomeSolicitante}! O documento <strong>${params.nomeDocumento}</strong> foi ${assinado ? 'assinado' : 'recusado'} por <strong>${params.nomeSignatario}</strong>${params.motivoRecusa ? `. Motivo: ${params.motivoRecusa}` : ''}. <a href="${params.urlPortal}">Ver no portal</a></p>`,
+      corpoTexto:   `O documento ${params.nomeDocumento} foi ${assinado ? 'assinado' : 'recusado'} por ${params.nomeSignatario}. Acesse: ${params.urlPortal}`,
+    });
+
+    this.logger.debug('[ConsoleEmailAdapter] Template statusAssinatura renderizado.', {
+      destinatario:  params.emailSolicitante,
+      nomeDocumento: params.nomeDocumento,
+      status:        params.status,
     });
   }
 }

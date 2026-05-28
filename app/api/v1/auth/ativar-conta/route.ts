@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '../../../../../src/infrastructure/di/Container';
 import { logger } from '../../../../../src/utils/logger';
+import { checkRateLimit, getClientIp } from '../../../../../src/utils/rateLimiter';
 import { BcryptPasswordHasher } from '../../../../../src/infrastructure/auth/BcryptPasswordHasher';
 
 export const runtime = 'nodejs';
@@ -17,6 +18,15 @@ const hasher = new BcryptPasswordHasher();
 // =============================================================================
 
 export async function POST(req: NextRequest) {
+  const ip = getClientIp(req);
+  const rl = await checkRateLimit(`ativar-conta:${ip}`, 5, 15 * 60);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { message: 'Muitas tentativas. Tente novamente em alguns minutos.' },
+      { status: 429, headers: { 'Retry-After': String(rl.resetInSec) } },
+    );
+  }
+
   try {
     const body = await req.json();
     const { token, senha } = body as { token?: string; senha?: string };

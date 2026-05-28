@@ -37,8 +37,8 @@ export async function checkRateLimit(
       resetInSec: ttl > 0 ? ttl : windowSec,
     };
   } catch {
-    // Se o Redis estiver fora, libera a requisição (fail-open)
-    return { allowed: true, remaining: max, resetInSec: windowSec };
+    // Redis indisponível — nega por segurança (fail-closed)
+    return { allowed: false, remaining: 0, resetInSec: windowSec };
   }
 }
 

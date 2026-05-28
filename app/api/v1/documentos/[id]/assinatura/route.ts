@@ -1,11 +1,8 @@
 import { NextResponse } from 'next/server';
 import { withAuth } from '@/infrastructure/http/middlewares/withAuth';
-import { prisma } from '@/infrastructure/di/Container';
+import { prisma, emailService } from '@/infrastructure/di/Container';
 import { randomBytes } from 'crypto';
-import { Resend } from 'resend';
-import { solicitacaoAssinaturaHtml } from '@/infrastructure/email/templates/solicitacaoAssinatura';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
 const EXPIRACAO_HORAS = 72;
 
 export const POST = withAuth(async (req, ctx, auth) => {
@@ -50,17 +47,12 @@ export const POST = withAuth(async (req, ctx, auth) => {
 
   const linkAssinatura = `${appUrl}/assinar/${token}`;
 
-  await resend.emails.send({
-    from:    process.env.RESEND_FROM_EMAIL ?? 'noreply@konto.app',
-    to:      cliente.email,
-    subject: `Assinatura solicitada: ${documento.fileName}`,
-    html:    solicitacaoAssinaturaHtml({
-      nomeCliente:    cliente.name,
-      nomeContador:   'Seu escritório contábil',
-      nomeDocumento:  documento.fileName,
-      linkAssinatura,
-      expiracaoHoras: EXPIRACAO_HORAS,
-    }),
+  await emailService.enviarSolicitacaoAssinatura({
+    emailCliente:   cliente.email,
+    nomeCliente:    cliente.name,
+    nomeDocumento:  documento.fileName,
+    linkAssinatura,
+    expiracaoHoras: EXPIRACAO_HORAS,
   });
 
   return NextResponse.json({ assinaturaId: assinatura.id, expiresAt });

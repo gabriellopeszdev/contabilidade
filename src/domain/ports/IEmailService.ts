@@ -31,10 +31,30 @@ export interface ConviteClienteEmailParams {
   link:  string;
 }
 
+export interface SolicitacaoAssinaturaEmailParams {
+  emailCliente:   string;
+  nomeCliente:    string;
+  nomeDocumento:  string;
+  linkAssinatura: string;
+  expiracaoHoras: number;
+}
+
+export interface StatusAssinaturaEmailParams {
+  emailSolicitante: string;
+  nomeSolicitante:  string;
+  nomeDocumento:    string;
+  nomeSignatario:   string;
+  status:           'ASSINADO' | 'RECUSADO';
+  motivoRecusa?:    string;
+  urlPortal:        string;
+}
+
 export interface IEmailService {
   enviar(dto: EnviarEmailDTO): Promise<void>;
   enviarNovoDocumentoDisponivel(params: NovoDocumentoEmailParams): Promise<void>;
   enviarBoasVindas(params: BoasVindasEmailParams): Promise<void>;
   enviarRecuperacaoSenha(params: RecuperacaoSenhaEmailParams): Promise<void>;
   enviarConviteCliente(params: ConviteClienteEmailParams): Promise<void>;
+  enviarSolicitacaoAssinatura(params: SolicitacaoAssinaturaEmailParams): Promise<void>;
+  enviarStatusAssinatura(params: StatusAssinaturaEmailParams): Promise<void>;
 }

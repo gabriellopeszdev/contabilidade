@@ -6,8 +6,11 @@ import type {
   BoasVindasEmailParams,
   RecuperacaoSenhaEmailParams,
   ConviteClienteEmailParams,
+  SolicitacaoAssinaturaEmailParams,
+  StatusAssinaturaEmailParams,
 } from '../../domain/ports/IEmailService';
 import type { ILogger } from '../../domain/ports/ILogger';
+import { solicitacaoAssinaturaHtml } from './templates/solicitacaoAssinatura';
 import {
   emailWrapper,
   emailButton,
@@ -111,6 +114,48 @@ export class ResendEmailAdapter implements IEmailService {
       assunto:      `Bem-vindo ao Portal — ${params.nomeEscritorio}`,
       corpoHtml,
       corpoTexto:   `Bem-vindo, ${params.nomeCliente}! Acesse seu portal em: ${params.urlPortal}`,
+    });
+  }
+
+  async enviarSolicitacaoAssinatura(params: SolicitacaoAssinaturaEmailParams): Promise<void> {
+    const html = solicitacaoAssinaturaHtml({
+      nomeCliente:    params.nomeCliente,
+      nomeContador:   'Seu escritório contábil',
+      nomeDocumento:  params.nomeDocumento,
+      linkAssinatura: params.linkAssinatura,
+      expiracaoHoras: params.expiracaoHoras,
+    });
+
+    await this.enviar({
+      destinatario: params.emailCliente,
+      assunto:      `Assinatura solicitada: ${params.nomeDocumento}`,
+      corpoHtml:    html,
+      corpoTexto:   `Acesse ${params.linkAssinatura} para assinar o documento ${params.nomeDocumento} (expira em ${params.expiracaoHoras}h)`,
+    });
+  }
+
+  async enviarStatusAssinatura(params: StatusAssinaturaEmailParams): Promise<void> {
+    const assinado = params.status === 'ASSINADO';
+    const corpoHtml = emailWrapper(
+      emailHeading(`Documento ${assinado ? 'assinado' : 'recusado'}`) +
+      emailSubheading(assinado ? 'Assinatura confirmada' : 'Assinatura recusada') +
+      emailText(
+        `Olá, <strong>${params.nomeSolicitante}</strong>! ` +
+        (assinado
+          ? `O documento <strong>${params.nomeDocumento}</strong> foi assinado por <strong>${params.nomeSignatario}</strong>.`
+          : `O documento <strong>${params.nomeDocumento}</strong> teve a assinatura recusada por <strong>${params.nomeSignatario}</strong>.`)
+      ) +
+      (params.motivoRecusa ? emailWarningCallout(`Motivo: ${params.motivoRecusa}`) : '') +
+      emailButton('Ver no portal', params.urlPortal, assinado ? '#16a34a' : '#dc2626') +
+      emailDivider() +
+      emailCallout('Acesse o portal para mais detalhes sobre o documento.', assinado ? '✅' : '❌'),
+    );
+
+    await this.enviar({
+      destinatario: params.emailSolicitante,
+      assunto:      `[Portal Contábil] Documento ${assinado ? 'assinado' : 'recusado'}: ${params.nomeDocumento}`,
+      corpoHtml,
+      corpoTexto:   `O documento ${params.nomeDocumento} foi ${assinado ? 'assinado' : 'recusado'} por ${params.nomeSignatario}. Acesse: ${params.urlPortal}`,
     });
   }
 
