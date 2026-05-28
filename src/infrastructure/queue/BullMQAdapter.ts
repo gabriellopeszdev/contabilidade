@@ -7,6 +7,7 @@ import { emailWrapper, emailButton, emailHeading, emailSubheading, emailCallout,
 import { verificarLembretesJob } from './jobs/verificarLembretesJob';
 import { gerarObrigacoesRecorrentesJob } from './jobs/gerarObrigacoesRecorrentesJob';
 import { parsearXmlNfeJob } from './jobs/parsearXmlNfeJob';
+import { gerarRelatorioMensalJob } from './jobs/gerarRelatorioMensalJob';
 
 // =============================================================================
 // BullMQAdapter — Processamento Assíncrono em Background
@@ -286,11 +287,8 @@ export class BullMQAdapter {
 
       case 'GERAR_RELATORIO_MENSAL': {
         const { contadorId, mesAno } = job.data.payload;
-        this.logger.info('[BullMQAdapter] Gerando relatório mensal (simulado).', {
-          contadorId,
-          mesAno,
-        });
-        await new Promise((resolve) => setTimeout(resolve, 300));
+        this.logger.info('[BullMQAdapter] Gerando relatório mensal.', { contadorId, mesAno });
+        await gerarRelatorioMensalJob(contadorId, mesAno);
         break;
       }
 

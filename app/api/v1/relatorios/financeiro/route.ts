@@ -16,9 +16,19 @@ const COLUNAS: ExportColumn[] = [
 export const GET = withAuth(async (req, ctx, auth) => {
   const { searchParams } = req.nextUrl;
   const format = searchParams.get('format') ?? 'pdf';
+  const de     = searchParams.get('de');
+  const ate    = searchParams.get('ate');
 
   const boletos = await prisma.boletoHonorario.findMany({
-    where: { escritorioId: auth.sub },
+    where: {
+      escritorioId: auth.sub,
+      ...(de || ate ? {
+        createdAt: {
+          ...(de ? { gte: new Date(de) } : {}),
+          ...(ate ? { lte: new Date(ate + 'T23:59:59') } : {}),
+        }
+      } : {}),
+    },
     orderBy: { createdAt: 'desc' },
     take: 5000,
     select: { valor: true, vencimento: true, status: true, mesReferencia: true, createdAt: true, cliente: { select: { name: true } } },
@@ -32,6 +42,10 @@ export const GET = withAuth(async (req, ctx, auth) => {
     mesReferencia: b.mesReferencia,
     createdAt:     new Date(b.createdAt).toLocaleDateString('pt-BR'),
   }));
+
+  if (format === 'json') {
+    return NextResponse.json({ total: linhas.length, dados: linhas });
+  }
 
   if (format === 'excel') {
     const buffer = await gerarExcel({ titulo: 'Relatório Financeiro', planilha: 'Financeiro', colunas: COLUNAS, linhas });

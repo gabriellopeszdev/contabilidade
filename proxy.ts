@@ -20,7 +20,7 @@ import { jwtVerify } from 'jose';
 // =============================================================================
 
 const ROTAS_ADMIN    = ['/dashboard-admin', '/contadores', '/faturamento', '/admin-config', '/webhook-logs', '/admin-boletos', '/admin-clientes'];
-const ROTAS_CONTADOR = ['/dashboard', '/lote', '/clientes', '/configuracoes', '/calendario', '/equipe'];
+const ROTAS_CONTADOR = ['/dashboard', '/lote', '/clientes', '/configuracoes', '/calendario', '/equipe', '/busca', '/assinaturas'];
 const ROTAS_CLIENTE  = ['/documentos', '/enviar', '/ajuda'];
 const ROTAS_COMPARTILHADAS = ['/chat', '/financeiro'];
 
@@ -227,5 +227,7 @@ export const config = {
     '/ajuda/:path*',
     '/chat/:path*',
     '/financeiro/:path*',
+    '/busca/:path*',
+    '/assinaturas/:path*',
   ],
 };

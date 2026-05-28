@@ -16,9 +16,19 @@ const COLUNAS: ExportColumn[] = [
 export const GET = withAuth(async (req, ctx, auth) => {
   const { searchParams } = req.nextUrl;
   const format = searchParams.get('format') ?? 'pdf';
+  const de     = searchParams.get('de');
+  const ate    = searchParams.get('ate');
 
   const relacoes = await prisma.contadorCliente.findMany({
-    where: { contadorId: auth.sub },
+    where: {
+      contadorId: auth.sub,
+      ...(de || ate ? {
+        assignedAt: {
+          ...(de ? { gte: new Date(de) } : {}),
+          ...(ate ? { lte: new Date(ate + 'T23:59:59') } : {}),
+        }
+      } : {}),
+    },
     orderBy: { assignedAt: 'desc' },
     take: 5000,
     select: { assignedAt: true, cliente: { select: { name: true, cnpj: true, email: true, phone: true, isActive: true } } },
@@ -32,6 +42,10 @@ export const GET = withAuth(async (req, ctx, auth) => {
     ativo:      r.cliente.isActive ? 'Sim' : 'Não',
     assignedAt: new Date(r.assignedAt).toLocaleDateString('pt-BR'),
   }));
+
+  if (format === 'json') {
+    return NextResponse.json({ total: linhas.length, dados: linhas });
+  }
 
   if (format === 'excel') {
     const buffer = await gerarExcel({ titulo: 'Carteira de Clientes', planilha: 'Clientes', colunas: COLUNAS, linhas });
