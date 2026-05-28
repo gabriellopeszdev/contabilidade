@@ -69,20 +69,31 @@ html.dark {
     outline: none;
   }
 
-  /* Scrollbar sutil — compatível com WebKit (Chrome, Edge, Safari) */
+  /* Scrollbar customizada — WebKit (Chrome, Edge, Safari) */
   ::-webkit-scrollbar {
-    width:  6px;
-    height: 6px;
+    width:  5px;
+    height: 5px;
   }
   ::-webkit-scrollbar-track {
-    background: transparent;
+    background:    transparent;
+    margin-block:  4px;
   }
   ::-webkit-scrollbar-thumb {
-    background:    var(--color-border);
+    background:    linear-gradient(180deg, #2563eb, #7c3aed);
     border-radius: 9999px;
+    transition:    background 0.2s;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #cbd5e1; /* slate-300 */
+    background: linear-gradient(180deg, #3b82f6, #8b5cf6);
+  }
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  /* Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #2563eb transparent;
   }
 }
 
