@@ -1,5 +1,5 @@
 /**
- * server.ts — Servidor customizado do Sistema de Gestão Contábil
+ * server.ts — Servidor customizado do Sistema de FiscoHub
  *
  * RESPONSABILIDADES:
  *   1. Carrega as variáveis de ambiente (.env) antes de qualquer módulo

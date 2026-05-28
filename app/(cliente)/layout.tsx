@@ -171,7 +171,7 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
             <p className="text-sm font-bold text-gray-900 dark:text-gray-100 leading-tight">
               {nomeEscritorio || 'Portal do Cliente'}
             </p>
-            <p className="text-[10px] text-gray-400 dark:text-gray-500 leading-none">Gestão Contábil</p>
+            <p className="text-[10px] text-gray-400 dark:text-gray-500 leading-none">FiscoHub</p>
           </div>
           <button
             className="ml-auto lg:hidden p-1 rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"

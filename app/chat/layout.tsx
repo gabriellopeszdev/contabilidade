@@ -205,10 +205,10 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
           )}
           <div>
             <p className="text-sm font-bold text-gray-900 dark:text-gray-100 leading-tight">
-              {nomeEscritorio || (isVisaoCliente ? 'Portal do Cliente' : 'Gestão Contábil')}
+              {nomeEscritorio || (isVisaoCliente ? 'Portal do Cliente' : 'FiscoHub')}
             </p>
             <p className="text-[10px] text-gray-400 dark:text-gray-500 leading-none">
-              {isVisaoCliente ? 'Gestão Contábil' : 'Painel Administrativo'}
+              {isVisaoCliente ? 'FiscoHub' : 'Painel Administrativo'}
             </p>
           </div>
           <button

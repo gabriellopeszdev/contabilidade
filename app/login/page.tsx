@@ -2,7 +2,8 @@
 
 import { Suspense, useEffect, useState, type FormEvent } from 'react';
 import { useRouter, useSearchParams }           from 'next/navigation';
-import { Building2, Lock, Mail, Loader2, ShieldCheck, KeyRound } from 'lucide-react';
+import { Lock, Mail, Loader2, ShieldCheck, KeyRound } from 'lucide-react';
+import { FiscoHubLogo } from '../components/FiscoHubLogo';
 
 import { useAuth, Requer2FAError } from '../../src/presentation/hooks/useAuth';
 
@@ -241,11 +242,9 @@ function LoginContent() {
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900">
       <div className="w-full max-w-sm">
         <div className="flex flex-col items-center mb-8">
-          <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-600 shadow-lg mb-4">
-            <Building2 size={32} className="text-white" />
-          </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Gestão Contábil</h1>
-          <p className="text-slate-400 text-sm mt-1">Acesso restrito — faça login para continuar</p>
+          <FiscoHubLogo size="lg" className="mb-4 [&_span]:!text-white" />
+          <p className="text-slate-400 text-sm mt-1">Gestão fiscal inteligente para escritórios modernos</p>
+          <p className="text-slate-500 text-xs mt-0.5">Acesso restrito — faça login para continuar</p>
         </div>
 
         <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-8">

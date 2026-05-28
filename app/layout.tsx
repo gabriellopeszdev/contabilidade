@@ -7,18 +7,18 @@ import { LGPDConsentGuard } from './components/LGPDConsentGuard';
 // =============================================================================
 // Metadados globais da aplicação
 //
-// O template "%s | Gestão Contábil" é aplicado automaticamente a todas
+// O template "%s | FiscoHub" é aplicado automaticamente a todas
 // as páginas que exportam seu próprio `metadata.title` como string.
 // =============================================================================
 
 export const metadata: Metadata = {
   title: {
-    template: '%s | Gestão Contábil',
-    default:  'Gestão Contábil',
+    template: '%s | FiscoHub',
+    default:  'FiscoHub',
   },
   description:
-    'Sistema de gestão contábil self-hosted para escritórios contábeis. ' +
-    'Upload em lote, Kanban de tarefas e notificações em tempo real.',
+    'FiscoHub — Gestão fiscal inteligente para escritórios modernos. ' +
+    'Automação fiscal, assinatura eletrônica, chat em tempo real e integração bancária.',
   // Em produção: adicionar metadados Open Graph para compartilhamento
   // openGraph: { ... }
 };

@@ -80,7 +80,7 @@ export default function TermosPage() {
                 Termos de Uso
               </h1>
               <p className="text-blue-200 text-sm mt-1">
-                Gestão Contábil — Condições de Utilização
+                FiscoHub — Condições de Utilização
               </p>
             </div>
           </div>
@@ -114,7 +114,7 @@ export default function TermosPage() {
             <SectionHeader icon={<Handshake size={18} className="text-blue-600" />} numero="1" titulo="Aceitação dos Termos" />
             <InfoCard>
               <p>
-                Ao acessar e utilizar o sistema <strong>Gestão Contábil</strong>, você concorda com
+                Ao acessar e utilizar o sistema <strong>FiscoHub</strong>, você concorda com
                 estes Termos de Uso e com a nossa{' '}
                 <Link href="/privacidade" className="text-blue-600 hover:underline font-medium">
                   Política de Privacidade

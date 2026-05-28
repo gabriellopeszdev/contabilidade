@@ -170,7 +170,7 @@ export default function AjudaPage() {
 
       {/* Versão do sistema */}
       <p className="text-center text-[10px] text-gray-300 dark:text-gray-600 mt-6">
-        Gestão Contábil v0.1.0 — Self-hosted · LGPD Compliant
+        FiscoHub v0.1.0 — Self-hosted · LGPD Compliant
       </p>
     </div>
   );

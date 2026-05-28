@@ -4,7 +4,6 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
-  Building2,
   CalendarClock,
   Cloud,
   CreditCard,
@@ -19,6 +18,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { useAuth } from '../src/presentation/hooks/useAuth';
+import { FiscoHubLogo } from './components/FiscoHubLogo';
 
 const ROTA_DEFAULT: Record<string, string> = {
   Contador: '/dashboard',
@@ -103,12 +103,7 @@ export default function LandingPage() {
       {/* ================================================================ */}
       <header className="sticky top-0 z-50 bg-white/80 dark:bg-gray-950/80 backdrop-blur border-b border-gray-100 dark:border-gray-800">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center shrink-0">
-              <Building2 size={16} className="text-white" />
-            </div>
-            <span className="font-bold text-gray-900 dark:text-gray-100 text-sm">Gestão Contábil</span>
-          </div>
+          <FiscoHubLogo size="sm" />
 
           <nav className="hidden md:flex items-center gap-6 text-sm text-gray-600 dark:text-gray-400">
             <a href="#funcionalidades" className="hover:text-gray-900 dark:hover:text-gray-100 transition-colors">Funcionalidades</a>
@@ -145,14 +140,14 @@ export default function LandingPage() {
           </div>
 
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6 leading-tight">
-            Gestão contábil
+            Gestão fiscal inteligente
             <br />
-            <span className="text-blue-400">inteligente e colaborativa</span>
+            <span className="text-blue-400">para escritórios modernos</span>
           </h1>
 
           <p className="text-lg sm:text-xl text-slate-300 max-w-2xl mx-auto mb-10 leading-relaxed">
-            Automatize processos fiscais, colabore com clientes em tempo real e tenha tudo
-            na nuvem — seguro, acessível e pronto para o seu escritório.
+            Automatize obrigações fiscais, colabore com clientes em tempo real e gerencie
+            tudo na nuvem — seguro, acessível e pronto para o seu escritório.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -272,12 +267,10 @@ export default function LandingPage() {
       {/* ================================================================ */}
       <footer className="bg-gray-50 dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded bg-blue-600 flex items-center justify-center">
-              <Building2 size={12} className="text-white" />
-            </div>
+          <div className="flex items-center gap-3">
+            <FiscoHubLogo size="sm" />
             <span className="text-sm text-gray-500 dark:text-gray-400">
-              © {new Date().getFullYear()} Gestão Contábil — Sistema self-hosted · LGPD Compliant
+              © {new Date().getFullYear()} · Sistema self-hosted · LGPD Compliant
             </span>
           </div>
           <div className="flex items-center gap-4 text-xs text-gray-400 dark:text-gray-500">

@@ -183,7 +183,7 @@ export default function ContadorLayout({ children }: { children: React.ReactNode
           )}
           <div>
             <p className="text-sm font-bold text-gray-900 dark:text-gray-100 leading-tight">
-              {nomeEscritorio || 'Gestão Contábil'}
+              {nomeEscritorio || 'FiscoHub'}
             </p>
             <p className="text-[10px] text-gray-400 dark:text-gray-500 leading-none">Painel Administrativo</p>
           </div>

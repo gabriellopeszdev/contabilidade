@@ -69,7 +69,7 @@ export default function PrivacidadePage() {
                 Política de Privacidade
               </h1>
               <p className="text-violet-200 text-sm mt-1">
-                Gestão Contábil — Conformidade LGPD
+                FiscoHub — Conformidade LGPD
               </p>
             </div>
           </div>
@@ -103,7 +103,7 @@ export default function PrivacidadePage() {
             <SectionHeader icon={<Shield size={18} className="text-violet-600" />} numero="1" titulo="Introdução" />
             <InfoCard>
               <p>
-                Esta Política de Privacidade descreve como o sistema <strong>Gestão Contábil</strong>{' '}
+                Esta Política de Privacidade descreve como o sistema <strong>FiscoHub</strong>{' '}
                 coleta, utiliza, armazena e protege os dados pessoais dos seus usuários, em
                 conformidade com a <strong>Lei Geral de Proteção de Dados Pessoais (Lei nº 13.709/2018 — LGPD)</strong>.
               </p>
