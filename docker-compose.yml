@@ -205,25 +205,25 @@ services:
       - contabilidade_net
 
   # ---------------------------------------------------------------------------
-  # Nginx — Reverse proxy com HTTPS e suporte a WebSocket (Socket.IO)
+  # Nginx — desabilitado: o painel HestiaCP/Portainer já gerencia o proxy
+  # reverso e os certificados SSL nas portas 80/443.
+  # Para reabilitar (VPS sem painel), descomente o bloco abaixo.
   # ---------------------------------------------------------------------------
-  nginx:
-    image: nginx:alpine
-    container_name: contabilidade_nginx
-    restart: unless-stopped
-    depends_on:
-      - app
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
-      # Certificados SSL gerados pelo Certbot
-      - ${DATA_DIR:-./.data}/certbot/conf:/etc/letsencrypt:ro
-      # Pasta de validação ACME do Certbot
-      - ${DATA_DIR:-./.data}/certbot/www:/var/www/certbot:ro
-    networks:
-      - contabilidade_net
+  # nginx:
+  #   image: nginx:alpine
+  #   container_name: contabilidade_nginx
+  #   restart: unless-stopped
+  #   depends_on:
+  #     - app
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+  #     - ${DATA_DIR:-./.data}/certbot/conf:/etc/letsencrypt:ro
+  #     - ${DATA_DIR:-./.data}/certbot/www:/var/www/certbot:ro
+  #   networks:
+  #     - contabilidade_net
 
 # =============================================================================
 # Rede interna isolada — os serviços NÃO ficam acessíveis entre si via
