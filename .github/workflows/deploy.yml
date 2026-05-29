@@ -1,0 +1,36 @@
+name: Deploy FiscoHub
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:        # permite disparar manualmente pelo GitHub
+
+jobs:
+  deploy:
+    name: Deploy no VPS
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host:     ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key:      ${{ secrets.VPS_DEPLOY_KEY }}
+          script: |
+            set -e
+
+            echo ">>> Entrando na pasta do projeto..."
+            cd ~/contabilidade
+
+            echo ">>> Atualizando código..."
+            git pull origin master
+
+            echo ">>> Reconstruindo e reiniciando containers..."
+            docker compose up -d --build --remove-orphans
+
+            echo ">>> Removendo imagens antigas..."
+            docker image prune -f
+
+            echo ">>> Deploy concluído!"
+            docker compose ps
