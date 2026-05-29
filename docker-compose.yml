@@ -197,9 +197,10 @@ services:
       RESEND_FROM_EMAIL: ${RESEND_FROM_EMAIL:-}
       ASAAS_ENV: ${ASAAS_ENV:-sandbox}
       ASAAS_WEBHOOK_TOKEN: ${ASAAS_WEBHOOK_TOKEN}
+      PORT: ${APP_PORT:-4500}
       MAINTENANCE_MODE: ${MAINTENANCE_MODE:-false}
     ports:
-      - "${APP_PORT:-3000}:3000"
+      - "${APP_PORT:-4500}:4500"
     networks:
       - contabilidade_net
 

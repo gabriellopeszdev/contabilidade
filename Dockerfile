@@ -74,7 +74,7 @@ COPY --chown=nextjs:nodejs postcss.config.js   .
 
 USER nextjs
 
-EXPOSE 3000
+EXPOSE 4500
 
 # npm start → tsx server.ts (conforme package.json)
 CMD ["npm", "start"]
