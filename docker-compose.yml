@@ -198,9 +198,8 @@ services:
       ASAAS_ENV: ${ASAAS_ENV:-sandbox}
       ASAAS_WEBHOOK_TOKEN: ${ASAAS_WEBHOOK_TOKEN}
       MAINTENANCE_MODE: ${MAINTENANCE_MODE:-false}
-    # A porta 3000 NÃO é exposta ao host — só o nginx acessa o app internamente
-    expose:
-      - "3000"
+    ports:
+      - "${APP_PORT:-3000}:3000"
     networks:
       - contabilidade_net
 
