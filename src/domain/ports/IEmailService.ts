@@ -49,8 +49,16 @@ export interface StatusAssinaturaEmailParams {
   urlPortal:        string;
 }
 
+export interface OtpAssinaturaEmailParams {
+  emailCliente:  string;
+  nomeCliente:   string;
+  nomeDocumento: string;
+  codigo:        string;
+}
+
 export interface IEmailService {
   enviar(dto: EnviarEmailDTO): Promise<void>;
+  enviarOtpAssinatura(params: OtpAssinaturaEmailParams): Promise<void>;
   enviarNovoDocumentoDisponivel(params: NovoDocumentoEmailParams): Promise<void>;
   enviarBoasVindas(params: BoasVindasEmailParams): Promise<void>;
   enviarRecuperacaoSenha(params: RecuperacaoSenhaEmailParams): Promise<void>;

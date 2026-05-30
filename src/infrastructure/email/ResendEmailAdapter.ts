@@ -8,6 +8,7 @@ import type {
   ConviteClienteEmailParams,
   SolicitacaoAssinaturaEmailParams,
   StatusAssinaturaEmailParams,
+  OtpAssinaturaEmailParams,
 } from '../../domain/ports/IEmailService';
 import type { ILogger } from '../../domain/ports/ILogger';
 import { solicitacaoAssinaturaHtml } from './templates/solicitacaoAssinatura';
@@ -156,6 +157,28 @@ export class ResendEmailAdapter implements IEmailService {
       assunto:      `[Portal Contábil] Documento ${assinado ? 'assinado' : 'recusado'}: ${params.nomeDocumento}`,
       corpoHtml,
       corpoTexto:   `O documento ${params.nomeDocumento} foi ${assinado ? 'assinado' : 'recusado'} por ${params.nomeSignatario}. Acesse: ${params.urlPortal}`,
+    });
+  }
+
+  async enviarOtpAssinatura(params: OtpAssinaturaEmailParams): Promise<void> {
+    const corpoHtml = emailWrapper(
+      emailHeading('Código de verificação') +
+      emailSubheading(`Assinatura: ${params.nomeDocumento}`) +
+      emailText(`Olá, <strong>${params.nomeCliente}</strong>! Use o código abaixo para confirmar sua identidade e assinar o documento.`) +
+      `<div style="text-align:center;margin:32px 0;">
+        <div style="display:inline-block;background:#1e40af;color:#fff;font-size:36px;font-weight:800;
+                    letter-spacing:12px;padding:20px 36px;border-radius:12px;font-family:monospace;">
+          ${params.codigo}
+        </div>
+      </div>` +
+      emailWarningCallout('Este código é válido por <strong>15 minutos</strong> e só pode ser usado uma vez. Não compartilhe com ninguém.'),
+    );
+
+    await this.enviar({
+      destinatario: params.emailCliente,
+      assunto:      `${params.codigo} — Código de verificação FiscoHub`,
+      corpoHtml,
+      corpoTexto:   `Código de verificação: ${params.codigo} (válido por 15 minutos). Não compartilhe.`,
     });
   }
 

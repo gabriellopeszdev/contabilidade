@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { FileSignature, Loader2, Clock, CheckCircle2, XCircle, AlertCircle, RefreshCw, ExternalLink, Filter } from 'lucide-react';
+import { FileSignature, Loader2, Clock, CheckCircle2, XCircle, AlertCircle, RefreshCw, ExternalLink, Filter, Download } from 'lucide-react';
 import { useAuth } from '../../../src/presentation/hooks/useAuth';
 
 type StatusAssinatura = 'TODOS' | 'PENDENTE' | 'ASSINADO' | 'RECUSADO' | 'EXPIRADO';
@@ -19,6 +19,7 @@ interface Assinatura {
   documentoId:     string;
   documentoNome:   string;
   documentoTipo:   string;
+  temComprovante:  boolean;
 }
 
 const STATUS_CONFIG: Record<string, { label: string; cor: string; icon: React.ReactNode }> = {
@@ -67,6 +68,22 @@ export default function AssinaturasPage() {
   function abrirLinkAssinatura(token: string) {
     const appUrl = window.location.origin;
     window.open(`${appUrl}/assinar/${token}`, '_blank');
+  }
+
+  async function baixarComprovante(id: string, nomeDoc: string) {
+    const token = await getToken();
+    const res = await fetch(`/api/v1/assinaturas/${id}/comprovante`, {
+      headers: { Authorization: `Bearer ${token}` },
+      redirect: 'follow',
+    });
+    if (!res.ok) return;
+    const blob = await res.blob();
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = `${nomeDoc.replace(/\.pdf$/i, '')}_assinado.pdf`;
+    a.click();
+    URL.revokeObjectURL(url);
   }
 
   const counts = assinaturas.reduce((acc, a) => {
@@ -208,15 +225,26 @@ export default function AssinaturasPage() {
                         {a.assinadoAt ? new Date(a.assinadoAt).toLocaleDateString('pt-BR') : '—'}
                       </td>
                       <td className="px-4 py-3 text-right">
-                        {(a.status === 'PENDENTE' || a.status === 'EXPIRADO') && (
-                          <button
-                            onClick={() => abrirLinkAssinatura(a.tokenAssinatura)}
-                            className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
-                          >
-                            <ExternalLink size={12} />
-                            Ver link
-                          </button>
-                        )}
+                        <div className="flex items-center justify-end gap-2">
+                          {(a.status === 'PENDENTE' || a.status === 'EXPIRADO') && (
+                            <button
+                              onClick={() => abrirLinkAssinatura(a.tokenAssinatura)}
+                              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                            >
+                              <ExternalLink size={12} />
+                              Ver link
+                            </button>
+                          )}
+                          {a.status === 'ASSINADO' && a.temComprovante && (
+                            <button
+                              onClick={() => baixarComprovante(a.id, a.documentoNome)}
+                              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
+                            >
+                              <Download size={12} />
+                              Baixar assinado
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );

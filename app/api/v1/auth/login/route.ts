@@ -42,10 +42,10 @@ const hasher = new BcryptPasswordHasher();
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   // --------------------------------------------------------------------------
-  // 0. Rate limiting — 5 tentativas por IP a cada 15 minutos
+  // 0. Rate limiting — 20 tentativas por IP a cada 15 minutos
   // --------------------------------------------------------------------------
   const ip = getClientIp(request);
-  const rl = await checkRateLimit(`login:${ip}`, 5, 15 * 60);
+  const rl = await checkRateLimit(`login:${ip}`, 20, 15 * 60);
   if (!rl.allowed) {
     return NextResponse.json(
       { message: 'Muitas tentativas de login. Tente novamente em alguns minutos.' },

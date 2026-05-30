@@ -6,6 +6,7 @@ import { Lock, Mail, Loader2, ShieldCheck, KeyRound } from 'lucide-react';
 import { FiscoHubLogo } from '../components/FiscoHubLogo';
 
 import { useAuth, Requer2FAError } from '../../src/presentation/hooks/useAuth';
+import { validarEmail } from '../../src/utils/validators';
 
 /** Rota padrão pós-login por role */
 const ROTA_DEFAULT: Record<string, string> = {
@@ -57,8 +58,18 @@ function LoginContent() {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setEnviando(true);
     setErro('');
+
+    if (!validarEmail(email)) {
+      setErro('Informe um e-mail válido.');
+      return;
+    }
+    if (!senha) {
+      setErro('Informe a senha.');
+      return;
+    }
+
+    setEnviando(true);
 
     try {
       await login(email, senha);

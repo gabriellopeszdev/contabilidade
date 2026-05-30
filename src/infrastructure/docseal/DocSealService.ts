@@ -1,9 +1,12 @@
 // =============================================================================
 // DocSealService — cliente para a API REST do DocSeal (self-hosted)
 //
-// DocSeal é uma plataforma open-source de assinatura eletrônica.
-// Esta classe encapsula todas as chamadas à API; o resto do sistema
-// só interage com os tipos exportados aqui.
+// Fluxo community edition (2 etapas):
+//   1. POST /api/templates  (multipart/form-data) → cria template com o PDF
+//   2. POST /api/submissions → cria submission a partir do template
+//
+// Nota: os endpoints /api/templates/pdf e /api/submissions/pdf (JSON + base64)
+// são exclusivos da edição Pro paga. A community edition requer multipart.
 //
 // Configuração (via env):
 //   DOCSEAL_API_URL  — URL interna do container DocSeal, ex: http://docseal:3000
@@ -16,7 +19,7 @@ export interface DocSealSubmitter {
   email:     string;
   name:      string;
   status:    string;
-  embed_src: string;  // URL de assinatura para enviar ao signatário
+  embed_src: string;
   slug:      string;
 }
 
@@ -27,61 +30,81 @@ export interface DocSealSubmission {
   submitters: DocSealSubmitter[];
 }
 
+interface DocSealTemplate {
+  id:   number;
+  name: string;
+  slug: string;
+}
+
 export class DocSealService {
   constructor(
     private readonly baseUrl: string,
     private readonly apiKey:  string,
   ) {}
 
-  /** Retorna true se a integração com DocSeal está configurada. */
   isConfigured(): boolean {
     return Boolean(this.apiKey);
   }
 
-  /**
-   * Cria uma solicitação de assinatura no DocSeal com upload direto de PDF.
-   *
-   * @param fileName      Nome original do arquivo (ex: "DARF_Abril_2026.pdf")
-   * @param pdfBase64     Conteúdo do PDF codificado em base64
-   * @param signatarioNome  Nome completo do signatário
-   * @param signatarioEmail E-mail do signatário
-   * @returns Objeto com submissionId e o link de assinatura (embed_src)
-   */
   async criarSubmissao(
     fileName:        string,
     pdfBase64:       string,
     signatarioNome:  string,
     signatarioEmail: string,
   ): Promise<{ submissionId: number; linkAssinatura: string }> {
-    const res = await fetch(`${this.baseUrl}/api/submissions/pdf`, {
+    const templateId = await this.criarTemplate(fileName, pdfBase64);
+    return this.criarSubmissaoDeTemplate(templateId, signatarioNome, signatarioEmail);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Etapa 1: cria template via multipart (community edition)
+  // ---------------------------------------------------------------------------
+  private async criarTemplate(fileName: string, pdfBase64: string): Promise<number> {
+    const pdfBuffer = Buffer.from(pdfBase64, 'base64');
+    const blob      = new Blob([pdfBuffer], { type: 'application/pdf' });
+
+    const form = new FormData();
+    form.append('name', `Assinatura — ${fileName}`);
+    form.append('documents[][name]', fileName);
+    form.append('documents[][file]', blob, fileName);
+
+    const res = await fetch(`${this.baseUrl}/api/templates`, {
+      method:  'POST',
+      headers: { 'X-Auth-Token': this.apiKey },
+      body:    form,
+    });
+
+    if (!res.ok) {
+      const body = await res.text();
+      throw new Error(`DocSeal template error ${res.status}: ${body}`);
+    }
+
+    const data = (await res.json()) as DocSealTemplate;
+    return data.id;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Etapa 2: cria submission a partir do template
+  // ---------------------------------------------------------------------------
+  private async criarSubmissaoDeTemplate(
+    templateId:      number,
+    signatarioNome:  string,
+    signatarioEmail: string,
+  ): Promise<{ submissionId: number; linkAssinatura: string }> {
+    const res = await fetch(`${this.baseUrl}/api/submissions`, {
       method:  'POST',
       headers: {
         'X-Auth-Token': this.apiKey,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        name: `Assinatura — ${fileName}`,
-        documents: [
-          {
-            name: fileName,
-            file: pdfBase64,
-            fields: [
-              {
-                name:     'Assinatura',
-                role:     'Signatário',
-                type:     'signature',
-                required: true,
-                areas:    [{ x: 0.05, y: 0.80, w: 0.50, h: 0.10, page: -1 }],
-              },
-            ],
-          },
-        ],
+        template_id: templateId,
+        send_email:  false,
         submitters: [
           {
-            name:       signatarioNome,
-            email:      signatarioEmail,
-            role:       'Signatário',
-            send_email: false,  // e-mail gerenciado pelo sistema contábil
+            name:  signatarioNome,
+            email: signatarioEmail,
+            role:  'First Party',
           },
         ],
       }),
@@ -89,18 +112,19 @@ export class DocSealService {
 
     if (!res.ok) {
       const body = await res.text();
-      throw new Error(`DocSeal API error ${res.status}: ${body}`);
+      throw new Error(`DocSeal submission error ${res.status}: ${body}`);
     }
 
-    const data = (await res.json()) as DocSealSubmission;
-    const submitter = data.submitters[0];
+    const data      = (await res.json()) as DocSealSubmission[];
+    const submission = data[0];
+    const submitter  = submission?.submitters?.[0];
 
     if (!submitter?.embed_src) {
       throw new Error('DocSeal não retornou embed_src para o submitter');
     }
 
     return {
-      submissionId:   data.id,
+      submissionId:   submission.id,
       linkAssinatura: submitter.embed_src,
     };
   }

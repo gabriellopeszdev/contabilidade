@@ -11,7 +11,6 @@ import {
   Phone,
   Search,
   FileText,
-  Eye,
   EyeOff,
   Upload,
   Download,
@@ -20,6 +19,10 @@ import {
   AlertCircle,
   Filter,
   CheckCircle2,
+  PenLine,
+  Copy,
+  X,
+  ExternalLink,
 } from 'lucide-react';
 
 import { useAuth } from '../../../../src/presentation/hooks/useAuth';
@@ -154,6 +157,11 @@ function ClienteDetalhesPageDono() {
   // Download
   const [baixandoId, setBaixandoId] = useState<string | null>(null);
 
+  // Assinatura
+  const [assinandoId, setAssinandoId] = useState<string | null>(null);
+  const [modalAssinatura, setModalAssinatura] = useState<{ link: string; nomeDoc: string; expiresAt: string } | null>(null);
+  const [copiadoLink, setCopiadoLink] = useState(false);
+
   // Monta URL com query params
   const apiUrl = useMemo(() => {
     const base = `/api/v1/clientes/${clienteId}/documentos`;
@@ -227,6 +235,45 @@ function ClienteDetalhesPageDono() {
     } finally {
       setBaixandoId(null);
     }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Solicitar assinatura
+  // ---------------------------------------------------------------------------
+  async function handleSolicitarAssinatura(doc: DocumentoDTO) {
+    if (!token || !clienteId || assinandoId) return;
+    setAssinandoId(doc.id);
+
+    try {
+      const res = await fetch(`/api/v1/documentos/${doc.id}/assinatura`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ signatarioId: clienteId }),
+      });
+
+      const body = await res.json().catch(() => ({})) as { message?: string; linkAssinatura?: string; expiresAt?: string };
+
+      if (!res.ok) {
+        alert(body.message ?? `Erro ao solicitar assinatura: HTTP ${res.status}`);
+        return;
+      }
+
+      setModalAssinatura({
+        link: body.linkAssinatura ?? '',
+        nomeDoc: doc.fileName,
+        expiresAt: body.expiresAt ?? '',
+      });
+    } catch {
+      alert('Erro de conexão ao solicitar assinatura.');
+    } finally {
+      setAssinandoId(null);
+    }
+  }
+
+  async function copiarLink(link: string) {
+    await navigator.clipboard.writeText(link);
+    setCopiadoLink(true);
+    setTimeout(() => setCopiadoLink(false), 2000);
   }
 
   // ---------------------------------------------------------------------------
@@ -391,7 +438,7 @@ function ClienteDetalhesPageDono() {
       ) : (
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-700 shadow-sm overflow-hidden">
           {/* Header */}
-          <div className="hidden lg:grid lg:grid-cols-[1fr_100px_90px_100px_140px_150px_60px] gap-3 px-5 py-3
+          <div className="hidden lg:grid lg:grid-cols-[1fr_100px_90px_100px_140px_150px_96px] gap-3 px-5 py-3
             border-b border-slate-100 dark:border-gray-700 bg-slate-50 dark:bg-gray-800 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
             <span>Documento</span>
             <span>Setor</span>
@@ -411,7 +458,7 @@ function ClienteDetalhesPageDono() {
 
               return (
                 <li key={doc.id} className="group">
-                  <div className="lg:grid lg:grid-cols-[1fr_100px_90px_100px_140px_150px_60px] gap-3 items-center
+                  <div className="lg:grid lg:grid-cols-[1fr_100px_90px_100px_140px_150px_96px] gap-3 items-center
                     px-5 py-4 hover:bg-slate-50 dark:hover:bg-gray-800 transition-colors">
 
                     {/* Documento: ícone de origem + nome + data */}
@@ -486,11 +533,11 @@ function ClienteDetalhesPageDono() {
                       )}
                     </div>
 
-                    {/* Download */}
-                    <div className="mt-2 lg:mt-0 flex justify-center">
+                    {/* Ações: Download + Assinatura */}
+                    <div className="mt-2 lg:mt-0 flex items-center justify-center gap-1">
                       <button
                         onClick={() => handleDownload(doc)}
-                        disabled={baixandoId === doc.id}
+                        disabled={!!baixandoId || !!assinandoId}
                         title="Baixar arquivo"
                         className="p-2 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50
                           disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
@@ -501,6 +548,22 @@ function ClienteDetalhesPageDono() {
                           <Download size={16} />
                         )}
                       </button>
+
+                      {doc.fileType === 'PDF' && (
+                        <button
+                          onClick={() => handleSolicitarAssinatura(doc)}
+                          disabled={!!baixandoId || !!assinandoId}
+                          title="Solicitar assinatura"
+                          className="p-2 rounded-lg text-slate-400 hover:text-violet-600 hover:bg-violet-50
+                            disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                          {assinandoId === doc.id ? (
+                            <Loader2 size={16} className="animate-spin" />
+                          ) : (
+                            <PenLine size={16} />
+                          )}
+                        </button>
+                      )}
                     </div>
                   </div>
                 </li>
@@ -514,6 +577,94 @@ function ClienteDetalhesPageDono() {
               {docsFiltrados.length} documento{docsFiltrados.length !== 1 ? 's' : ''}
               {busca.trim() || filtroSetor || filtroLeitura || filtroOrigem ? ' (filtrado)' : ''}
             </span>
+          </div>
+        </div>
+      )}
+      {/* ------------------------------------------------------------------ */}
+      {/* Modal: link de assinatura gerado                                     */}
+      {/* ------------------------------------------------------------------ */}
+      {modalAssinatura && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+          onClick={() => setModalAssinatura(null)}
+        >
+          <div
+            className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg border border-slate-200 dark:border-gray-700"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-gray-700">
+              <div className="flex items-center gap-2">
+                <PenLine size={18} className="text-violet-600" />
+                <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">Assinatura Solicitada</h2>
+              </div>
+              <button
+                onClick={() => setModalAssinatura(null)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:hover:bg-gray-800 transition-colors"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="px-6 py-5 space-y-4">
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                O e-mail de assinatura foi enviado ao cliente. Você também pode copiar o link abaixo para compartilhar diretamente:
+              </p>
+
+              <div>
+                <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wide">Documento</p>
+                <p className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">{modalAssinatura.nomeDoc}</p>
+              </div>
+
+              {modalAssinatura.expiresAt && (
+                <div>
+                  <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wide">Expira em</p>
+                  <p className="text-sm text-slate-700 dark:text-slate-300">
+                    {new Date(modalAssinatura.expiresAt).toLocaleDateString('pt-BR', {
+                      day: '2-digit', month: '2-digit', year: 'numeric',
+                      hour: '2-digit', minute: '2-digit',
+                    })}
+                  </p>
+                </div>
+              )}
+
+              <div>
+                <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wide">Link de Assinatura</p>
+                <div className="flex items-center gap-2 bg-slate-50 dark:bg-gray-800 border border-slate-200 dark:border-gray-700 rounded-lg px-3 py-2">
+                  <p className="text-xs text-slate-700 dark:text-slate-300 flex-1 truncate font-mono">
+                    {modalAssinatura.link}
+                  </p>
+                  <button
+                    onClick={() => copiarLink(modalAssinatura.link)}
+                    className="shrink-0 p-1.5 rounded-md text-slate-500 hover:text-violet-600 hover:bg-violet-50 transition-colors"
+                    title="Copiar link"
+                  >
+                    {copiadoLink ? <CheckCircle2 size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                  </button>
+                  <a
+                    href={modalAssinatura.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="shrink-0 p-1.5 rounded-md text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                    title="Abrir link"
+                  >
+                    <ExternalLink size={14} />
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-slate-100 dark:border-gray-700 flex justify-end">
+              <button
+                onClick={() => setModalAssinatura(null)}
+                className="px-4 py-2 text-sm font-medium rounded-lg bg-slate-100 dark:bg-gray-800
+                  text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-gray-700 transition-colors"
+              >
+                Fechar
+              </button>
+            </div>
           </div>
         </div>
       )}

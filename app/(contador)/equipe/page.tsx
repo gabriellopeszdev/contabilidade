@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 
 import { useAuth } from '../../../src/presentation/hooks/useAuth';
+import { validarEmail, validarTelefone, mascararTelefone } from '../../../src/utils/validators';
 
 // =============================================================================
 // Tipos
@@ -143,7 +144,10 @@ export default function EquipePage() {
     if (!token) return;
     if (!nome.trim()) { setToast({ tipo: 'erro', msg: 'Nome é obrigatório.' }); return; }
     if (!editando && !email.trim()) { setToast({ tipo: 'erro', msg: 'E-mail é obrigatório.' }); return; }
+    if (!editando && email.trim() && !validarEmail(email)) { setToast({ tipo: 'erro', msg: 'E-mail inválido.' }); return; }
     if (!editando && !senha) { setToast({ tipo: 'erro', msg: 'Senha é obrigatória.' }); return; }
+    if (!editando && senha && senha.length < 8) { setToast({ tipo: 'erro', msg: 'A senha deve ter pelo menos 8 caracteres.' }); return; }
+    if (phone.trim() && !validarTelefone(phone)) { setToast({ tipo: 'erro', msg: 'Telefone inválido. Ex: (11) 91234-5678' }); return; }
     if (setores.length === 0) { setToast({ tipo: 'erro', msg: 'Selecione pelo menos um setor.' }); return; }
 
     setSalvando(true);
@@ -391,7 +395,8 @@ export default function EquipePage() {
                 <input
                   type="text"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={(e) => setPhone(mascararTelefone(e.target.value))}
+                  maxLength={15}
                   className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary focus:border-transparent"
                   placeholder="(11) 99999-0000"
                 />

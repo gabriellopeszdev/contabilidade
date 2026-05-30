@@ -7,6 +7,7 @@ import type {
   ConviteClienteEmailParams,
   SolicitacaoAssinaturaEmailParams,
   StatusAssinaturaEmailParams,
+  OtpAssinaturaEmailParams,
 } from '../../domain/ports/IEmailService';
 import type { ILogger } from '../../domain/ports/ILogger';
 
@@ -45,6 +46,20 @@ export class ConsoleEmailAdapter implements IEmailService {
       // Trunca o corpo para não poluir o log com HTML extenso
       corpoHtml:    dto.corpoHtml.slice(0, 200) + (dto.corpoHtml.length > 200 ? '...' : ''),
     });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Template: OTP de Assinatura
+  // ---------------------------------------------------------------------------
+
+  async enviarOtpAssinatura(params: OtpAssinaturaEmailParams): Promise<void> {
+    await this.enviar({
+      destinatario: params.emailCliente,
+      assunto:      `${params.codigo} — Código de verificação FiscoHub`,
+      corpoHtml:    `<p>Olá, ${params.nomeCliente}! Código: <strong>${params.codigo}</strong> (válido 15 min)</p>`,
+      corpoTexto:   `Código de verificação: ${params.codigo} (válido por 15 minutos)`,
+    });
+    this.logger.info('[ConsoleEmailAdapter] OTP de assinatura', { destinatario: params.emailCliente, codigo: params.codigo });
   }
 
   // ---------------------------------------------------------------------------

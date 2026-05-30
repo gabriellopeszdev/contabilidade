@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 
 import { useAuth } from '../../../src/presentation/hooks/useAuth';
+import { validarEmail, validarTelefone, mascararTelefone } from '../../../src/utils/validators';
 
 // =============================================================================
 // Tipos
@@ -266,6 +267,14 @@ function PerfilTab({
       onErro('Nome e e-mail são obrigatórios.');
       return;
     }
+    if (!validarEmail(form.email)) {
+      onErro('E-mail inválido.');
+      return;
+    }
+    if (form.phone.trim() && !validarTelefone(form.phone)) {
+      onErro('Telefone inválido. Ex: (11) 91234-5678');
+      return;
+    }
 
     setSalvando(true);
     try {
@@ -346,7 +355,8 @@ function PerfilTab({
               id="perfil-phone"
               type="tel"
               value={form.phone}
-              onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+              onChange={(e) => setForm((f) => ({ ...f, phone: mascararTelefone(e.target.value) }))}
+              maxLength={15}
               className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100
                          placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary
                          focus:border-transparent transition-shadow sm:max-w-xs"
@@ -831,6 +841,10 @@ function EscritorioTab({
       onErro('O CRC é obrigatório.');
       return;
     }
+    if (form.phone.trim() && !validarTelefone(form.phone)) {
+      onErro('Telefone inválido. Ex: (11) 3000-0000');
+      return;
+    }
 
     setSalvando(true);
     try {
@@ -893,7 +907,8 @@ function EscritorioTab({
               id="esc-phone"
               type="tel"
               value={form.phone}
-              onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+              onChange={(e) => setForm((f) => ({ ...f, phone: mascararTelefone(e.target.value) }))}
+              maxLength={15}
               className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100
                          placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary
                          focus:border-transparent transition-shadow"

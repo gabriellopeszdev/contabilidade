@@ -24,6 +24,7 @@ export const GET = withAuth(async (req: NextRequest, _ctx, auth) => {
       motivoRecusa:    true,
       createdAt:       true,
       tokenAssinatura: true,
+      comprovanteStoragePath: true,
       documento: {
         select: { id: true, fileName: true, fileType: true },
       },
@@ -45,9 +46,10 @@ export const GET = withAuth(async (req: NextRequest, _ctx, auth) => {
       motivoRecusa:    a.motivoRecusa ?? null,
       createdAt:       a.createdAt.toISOString(),
       tokenAssinatura: a.tokenAssinatura,
-      documentoId:     a.documento.id,
-      documentoNome:   a.documento.fileName,
-      documentoTipo:   a.documento.fileType,
+      documentoId:              a.documento.id,
+      documentoNome:            a.documento.fileName,
+      documentoTipo:            a.documento.fileType,
+      temComprovante:           Boolean(a.comprovanteStoragePath),
     })),
   });
 }, ['ACCOUNTANT', 'ADMIN']);
