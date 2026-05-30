@@ -1,5 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  webpack: (config) => {
+    // pdfjs-dist optionally imports 'canvas' (native Node.js binding) — alias
+    // it to false so webpack doesn't try to bundle it in the browser bundle.
+    config.resolve.alias.canvas = false;
+    return config;
+  },
   // ==========================================================================
   // Servidor customizado (server.ts)
   //

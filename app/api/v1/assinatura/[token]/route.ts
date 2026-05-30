@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
+import { PDFDocument, PDFImage, PDFPage, StandardFonts, rgb } from 'pdf-lib';
 import { prisma, emailService, storageService, redisPublisher } from '@/infrastructure/di/Container';
 import { checkRateLimit, getClientIp } from '@/utils/rateLimiter';
 
@@ -41,7 +41,7 @@ export async function GET(req: NextRequest, { params }: Params) {
   if (assinatura.documento.fileType === 'PDF') {
     const presigned = await storageService.gerarPresignedUrlDownload(
       assinatura.documento.storagePath,
-      1800, // 30 minutos — suficiente para ler e assinar
+      1800,
     );
     pdfUrl = presigned.url;
   }
@@ -69,9 +69,16 @@ export async function POST(req: NextRequest, { params }: Params) {
   const { token } = await params;
 
   const body = await req.json().catch(() => ({})) as {
-    confirmacao?:   boolean;
-    nomeAssinante?: string;
-    motivoRecusa?:  string;
+    confirmacao?:       boolean;
+    nomeAssinante?:     string;
+    motivoRecusa?:      string;
+    signatureDataUrl?:  string;   // base64 PNG drawn by the user
+    placement?: {                 // where to embed the signature image
+      page:     number;           // 0-indexed (999 = last page)
+      xPct:     number;           // 0-1 fraction from left
+      yPct:     number;           // 0-1 fraction from top
+      widthPct: number;           // 0-1 fraction of page width
+    } | null;
   };
   const { confirmacao, nomeAssinante, motivoRecusa } = body;
 
@@ -86,7 +93,6 @@ export async function POST(req: NextRequest, { params }: Params) {
     return NextResponse.json({ message: 'Link inválido ou expirado' }, { status: 410 });
   }
 
-  // Exige que o OTP tenha sido verificado previamente
   const otpVerificado = await redisPublisher.get(`otp:verified:${assinatura.id}`);
   if (!otpVerificado) {
     return NextResponse.json({ message: 'Verificação de identidade necessária', code: 'OTP_REQUIRED' }, { status: 403 });
@@ -101,30 +107,85 @@ export async function POST(req: NextRequest, { params }: Params) {
 
   let comprovanteStoragePath: string | undefined;
 
-  // ---------------------------------------------------------------------------
-  // Assinatura: embute bloco no PDF e salva comprovante no MinIO
-  // ---------------------------------------------------------------------------
   if (confirmacao && assinatura.documento.fileType === 'PDF') {
     try {
-      const pdfBuffer  = await storageService.getBuffer(assinatura.documento.storagePath);
-      const pdfDoc     = await PDFDocument.load(pdfBuffer);
-      const font       = await pdfDoc.embedFont(StandardFonts.Helvetica);
-      const fontBold   = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-      const pages      = pdfDoc.getPages();
-      const lastPage   = pages[pages.length - 1];
-      const { width }  = lastPage.getSize();
-
-      const margin  = 30;
-      const blockH  = 88;
-      const blockY  = margin;
-      const innerX  = margin + 10;
-      const lineH   = 13;
-      let   curY    = blockY + blockH - 18;
+      const pdfBuffer = await storageService.getBuffer(assinatura.documento.storagePath);
+      const pdfDoc    = await PDFDocument.load(pdfBuffer);
+      const font      = await pdfDoc.embedFont(StandardFonts.Helvetica);
+      const fontBold  = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+      const pdfPages  = pdfDoc.getPages();
 
       const dataFormatada = agora.toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
 
-      // Fundo + borda do bloco de assinatura
-      lastPage.drawRectangle({
+      // ── Decode drawn signature image ──────────────────────────────────────
+      let sigImg: PDFImage | undefined;
+      if (body.signatureDataUrl) {
+        try {
+          const base64 = body.signatureDataUrl.replace(/^data:image\/\w+;base64,/, '');
+          sigImg = await pdfDoc.embedPng(Buffer.from(base64, 'base64'));
+        } catch {
+          // Non-fatal: fall back to text-only block
+        }
+      }
+      const sigAspect = sigImg ? sigImg.width / sigImg.height : 700 / 220;
+
+      // ── Determine layout ──────────────────────────────────────────────────
+      let auditPage: PDFPage;
+
+      if (!body.placement && sigImg) {
+        // No placement chosen → add a dedicated signature page
+        const newPage = pdfDoc.addPage([595, 842]);
+        const { width: nW, height: nH } = newPage.getSize();
+
+        const imgW = nW * 0.55;
+        const imgH = imgW / sigAspect;
+
+        // Center signature image in the upper portion
+        newPage.drawImage(sigImg, {
+          x:      (nW - imgW) / 2,
+          y:      nH - 140 - imgH,
+          width:  imgW,
+          height: imgH,
+        });
+        // Signature underline
+        newPage.drawLine({
+          start:     { x: (nW - imgW) / 2,  y: nH - 148 - imgH },
+          end:       { x: (nW + imgW) / 2,  y: nH - 148 - imgH },
+          thickness: 0.5,
+          color:     rgb(0.55, 0.55, 0.55),
+        });
+
+        auditPage = pdfDoc.getPages()[pdfDoc.getPageCount() - 1];
+      } else {
+        // Placement chosen (or no drawn image) → embed image in-page
+        if (body.placement && sigImg) {
+          const { page: pageIdx, xPct, yPct, widthPct } = body.placement;
+          const pg = pdfPages[Math.max(0, Math.min(pageIdx, pdfPages.length - 1))];
+          const { width: pgW, height: pgH } = pg.getSize();
+
+          const imgW = Math.min(widthPct * pgW, pgW * 0.85);
+          const imgH = imgW / sigAspect;
+
+          // Convert from PDF.js top-left origin to pdf-lib bottom-left origin
+          const pdfX = Math.max(0, Math.min(xPct * pgW - imgW / 2, pgW - imgW));
+          const pdfY = Math.max(0, Math.min((1 - yPct) * pgH - imgH / 2, pgH - imgH));
+
+          pg.drawImage(sigImg, { x: pdfX, y: pdfY, width: imgW, height: imgH });
+        }
+
+        auditPage = pdfPages[pdfPages.length - 1];
+      }
+
+      // ── Audit block (legal trail) ─────────────────────────────────────────
+      const { width } = auditPage.getSize();
+      const margin = 30;
+      const blockH = 88;
+      const blockY = margin;
+      const innerX = margin + 10;
+      const lineH  = 13;
+      let curY     = blockY + blockH - 18;
+
+      auditPage.drawRectangle({
         x:           margin,
         y:           blockY,
         width:       width - 2 * margin,
@@ -134,14 +195,12 @@ export async function POST(req: NextRequest, { params }: Params) {
         borderWidth: 0.8,
       });
 
-      // Título
-      lastPage.drawText('Assinatura Eletrônica — FiscoHub', {
+      auditPage.drawText('Assinatura Eletrônica — FiscoHub', {
         x: innerX, y: curY, size: 8, font: fontBold, color: rgb(0.1, 0.25, 0.55),
       });
       curY -= lineH;
 
-      // Linha divisória
-      lastPage.drawLine({
+      auditPage.drawLine({
         start: { x: margin, y: curY + 4 },
         end:   { x: width - margin, y: curY + 4 },
         thickness: 0.4,
@@ -149,36 +208,34 @@ export async function POST(req: NextRequest, { params }: Params) {
       });
       curY -= 4;
 
-      lastPage.drawText(`Assinado por: ${nomeAssinante!.trim()}`, {
+      auditPage.drawText(`Assinado por: ${nomeAssinante!.trim()}`, {
         x: innerX, y: curY, size: 8, font: fontBold, color: rgb(0.1, 0.1, 0.1),
       });
       curY -= lineH;
 
-      lastPage.drawText(`Data/hora: ${dataFormatada}`, {
+      auditPage.drawText(`Data/hora: ${dataFormatada}`, {
         x: innerX, y: curY, size: 7.5, font, color: rgb(0.2, 0.2, 0.2),
       });
       curY -= lineH;
 
-      lastPage.drawText(`IP: ${ip}`, {
+      auditPage.drawText(`IP: ${ip}`, {
         x: innerX, y: curY, size: 7.5, font, color: rgb(0.2, 0.2, 0.2),
       });
       curY -= lineH;
 
-      lastPage.drawText(`Hash do documento original: ${assinatura.hashDocumento}`, {
+      auditPage.drawText(`Hash do documento original: ${assinatura.hashDocumento}`, {
         x: innerX, y: curY, size: 6, font, color: rgb(0.45, 0.45, 0.45),
       });
 
       const signedBytes = await pdfDoc.save();
       const signedPath  = `assinado/${assinatura.documento.id}/${token}.pdf`;
-
       await storageService.upload(signedPath, Buffer.from(signedBytes), 'application/pdf');
       comprovanteStoragePath = signedPath;
     } catch {
-      // Falha ao embutir assinatura no PDF não deve bloquear o registro
+      // Failure to embed signature does not block the record
     }
   }
 
-  // Invalida a flag de OTP verificado (uso único)
   await redisPublisher.del(`otp:verified:${assinatura.id}`);
 
   await prisma.assinaturaDocumento.update({
@@ -187,15 +244,14 @@ export async function POST(req: NextRequest, { params }: Params) {
       status: novoStatus,
       ...(confirmacao
         ? {
-            assinadoAt:             agora,
-            ipAssinatura:           ip,
+            assinadoAt:   agora,
+            ipAssinatura: ip,
             ...(comprovanteStoragePath && { comprovanteStoragePath }),
           }
         : { motivoRecusa: motivoRecusa ?? 'Recusado pelo signatário' }),
     },
   });
 
-  // Notifica o solicitante por e-mail (fire-and-forget)
   const solicitante = await prisma.usuarioContador.findUnique({
     where:  { id: assinatura.solicitanteId },
     select: { email: true, name: true },
