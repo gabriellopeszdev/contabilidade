@@ -266,11 +266,13 @@ function PdfPositioner({
   signatureDataUrl,
   onConfirm,
   onBack,
+  onPagesRendered,
 }: {
-  token:            string;
-  signatureDataUrl: string;
-  onConfirm:        (placement: Placement | null) => void;
-  onBack:           () => void;
+  token:             string;
+  signatureDataUrl:  string;
+  onConfirm:         (placement: Placement | null) => void;
+  onBack:            () => void;
+  onPagesRendered?:  (pages: RenderedPage[]) => void;
 }) {
   const [pages,        setPages]     = useState<RenderedPage[]>([]);
   const [loading,      setLoading]   = useState(true);
@@ -308,7 +310,10 @@ function PdfPositioner({
           rendered.push({ dataUrl: canvas.toDataURL('image/jpeg', 0.85) });
         }
 
-        if (!cancelled) setPages(rendered);
+        if (!cancelled) {
+          setPages(rendered);
+          onPagesRendered?.(rendered);
+        }
       } catch {
         if (!cancelled) setLoadError(true);
       } finally {
@@ -485,9 +490,10 @@ export default function AssinarPage() {
   const [cooldown,      setCooldown]  = useState(0);
   const otpRef = useRef<HTMLInputElement>(null);
 
-  // Signature drawing & placement
+  // Signature drawing, placement, and cached rendered pages
   const [signatureDataUrl, setSignatureDataUrl] = useState<string | null>(null);
   const [placement,        setPlacement]        = useState<Placement | null>(null);
+  const [renderedPages,    setRenderedPages]    = useState<RenderedPage[]>([]);
 
   // Signing form
   const [nomeAssinante, setNome]      = useState('');
@@ -772,6 +778,7 @@ export default function AssinarPage() {
       signatureDataUrl={signatureDataUrl!}
       onConfirm={handlePlacementConfirmed}
       onBack={() => setPasso('desenhar')}
+      onPagesRendered={setRenderedPages}
     />
   );
 
@@ -793,9 +800,45 @@ export default function AssinarPage() {
       </header>
 
       <div className="flex flex-1 flex-col lg:flex-row overflow-hidden" style={{ minHeight: 'calc(100vh - 57px)' }}>
-        {/* PDF viewer */}
-        <div className="flex-1 bg-slate-200 min-h-[55vw] lg:min-h-0 flex flex-col relative">
-          {info?.pdfUrl ? (
+        {/* PDF viewer / signature preview */}
+        <div className="flex-1 bg-slate-300 min-h-[55vw] lg:min-h-0 flex flex-col relative overflow-hidden">
+          {placement !== null && renderedPages.length > 0 ? (
+            /* Preview mode: page with signature placed at the chosen position */
+            <div className="absolute inset-0 overflow-auto flex flex-col items-center justify-start p-4 gap-3">
+              <div className="text-[11px] text-slate-500 font-medium bg-white/80 rounded-full px-3 py-1 shadow-sm mt-1">
+                Prévia — Página {Math.min(placement.page, renderedPages.length - 1) + 1} de {renderedPages.length}
+              </div>
+              <div className="relative shadow-xl max-w-full">
+                <img
+                  src={renderedPages[Math.min(placement.page, renderedPages.length - 1)].dataUrl}
+                  alt="Prévia"
+                  className="max-w-full block rounded-sm"
+                  draggable={false}
+                  style={{ maxHeight: 'calc(100vh - 180px)' }}
+                />
+                {signatureDataUrl && (
+                  <div
+                    className="absolute border-2 border-blue-400 rounded bg-white/20 shadow"
+                    style={{
+                      left:        `${placement.xPct * 100}%`,
+                      top:         `${placement.yPct * 100}%`,
+                      width:       `${placement.widthPct * 100}%`,
+                      aspectRatio: `${700 / 220}`,
+                      transform:   'translate(-50%, -50%)',
+                    }}
+                  >
+                    <img src={signatureDataUrl} alt="Assinatura" className="w-full h-full object-contain" />
+                  </div>
+                )}
+              </div>
+              <button
+                onClick={() => setPasso('posicionar')}
+                className="text-xs text-blue-600 bg-white/80 hover:bg-white rounded-full px-3 py-1 shadow-sm flex items-center gap-1 transition-colors"
+              >
+                <Move size={11} /> Alterar posição
+              </button>
+            </div>
+          ) : info?.pdfUrl ? (
             <iframe src={info.pdfUrl} className="absolute inset-0 w-full h-full border-0" title={info.nomeDocumento} />
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center gap-4 text-slate-400 p-8">
