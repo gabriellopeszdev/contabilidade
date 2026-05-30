@@ -28,6 +28,7 @@ import {
   PenLine,
   ChevronsLeft,
   ChevronsRight,
+  Lock,
 } from 'lucide-react';
 import { FiscoHubLogo } from '../components/FiscoHubLogo';
 
@@ -36,6 +37,7 @@ import { useNotificacoes, type StatusConexao } from '../../src/presentation/hook
 import { useTheme }         from '../../src/presentation/hooks/useTheme';
 import { useSessionTimer }  from '../../src/presentation/hooks/useSessionTimer';
 import { useDarkMode }      from '../../src/presentation/hooks/useDarkMode';
+import { usePlanoAtual }    from '../../src/presentation/hooks/usePlanoAtual';
 import { InstitutionalFooter } from '../../src/presentation/components/lgpd/InstitutionalFooter';
 import { OnboardingChecklist } from './components/OnboardingChecklist';
 import { NpsModal } from './components/NpsModal';
@@ -49,19 +51,20 @@ interface NavItem {
   label:     string;
   icon:      React.ReactNode;
   donoOnly?: boolean;
+  feature?:  string; // feature key from FEATURES constant — if set, show lock when plan lacks it
 }
 
 const NAV_ITEMS: NavItem[] = [
   { href: '/dashboard',     label: 'Dashboard',      icon: <LayoutDashboard size={18} /> },
   { href: '/lote',          label: 'Upload em Lote',  icon: <Upload size={18} /> },
   { href: '/clientes',      label: 'Meus Clientes',  icon: <Users size={18} /> },
-  { href: '/equipe',        label: 'Equipe',          icon: <UserCog size={18} />,      donoOnly: true },
-  { href: '/calendario',    label: 'Calendário',     icon: <CalendarDays size={18} /> },
-  { href: '/financeiro',    label: 'Financeiro',      icon: <DollarSign size={18} />,   donoOnly: true },
-  { href: '/relatorios',    label: 'Relatórios',      icon: <FileBarChart size={18} />, donoOnly: true },
-  { href: '/assinaturas',   label: 'Assinaturas',    icon: <PenLine size={18} />,      donoOnly: true },
+  { href: '/equipe',        label: 'Equipe',          icon: <UserCog size={18} />,      donoOnly: true, feature: 'equipe' },
+  { href: '/calendario',    label: 'Calendário',     icon: <CalendarDays size={18} />,              feature: 'calendario' },
+  { href: '/financeiro',    label: 'Financeiro',      icon: <DollarSign size={18} />,   donoOnly: true, feature: 'financeiro' },
+  { href: '/relatorios',    label: 'Relatórios',      icon: <FileBarChart size={18} />, donoOnly: true, feature: 'relatorios' },
+  { href: '/assinaturas',   label: 'Assinaturas',    icon: <PenLine size={18} />,      donoOnly: true, feature: 'assinatura_eletronica' },
   { href: '/busca',         label: 'Busca',          icon: <Search size={18} /> },
-  { href: '/chat',          label: 'Chat',           icon: <MessageSquare size={18} /> },
+  { href: '/chat',          label: 'Chat',           icon: <MessageSquare size={18} />,             feature: 'chat' },
   { href: '/configuracoes', label: 'Configurações',  icon: <Settings size={18} />,     donoOnly: true },
 ];
 
@@ -111,6 +114,7 @@ export default function ContadorLayout({ children }: { children: React.ReactNode
     useNotificacoes(wsToken);
 
   const { logoUrl, nomeEscritorio, loaded: themeLoaded } = useTheme(token);
+  const { plan: planoAtual } = usePlanoAtual(isDono ? token : null);
   const { formatado: tempoSessao, critico: sessaoCritica, urgente: sessaoUrgente } = useSessionTimer();
 
   const [userMenuAberto, setUserMenuAberto] = useState(false);
@@ -215,12 +219,42 @@ export default function ContadorLayout({ children }: { children: React.ReactNode
         <nav className={`flex-1 py-4 space-y-0.5 overflow-y-auto ${colapsada ? 'px-2' : 'px-3'}`}>
           {navItems.map((item) => {
             const ativo = pathname === item.href || pathname.startsWith(item.href + '/');
+            const bloqueado = isDono && item.feature && planoAtual
+              ? planoAtual.isRestricted || !planoAtual.features.includes(item.feature)
+              : false;
+
+            const title = colapsada
+              ? bloqueado ? `${item.label} — indisponível no plano ${planoAtual?.planoNome ?? 'atual'}` : item.label
+              : bloqueado ? `Indisponível no plano ${planoAtual?.planoNome ?? 'atual'} — faça upgrade` : undefined;
+
+            if (bloqueado) {
+              return (
+                <div
+                  key={item.href}
+                  title={title}
+                  className={`
+                    flex items-center rounded-lg text-sm font-medium cursor-not-allowed opacity-50
+                    ${colapsada ? 'justify-center py-2.5' : 'gap-3 px-3 py-2.5'}
+                    text-gray-400 dark:text-gray-600
+                  `}
+                >
+                  <span className="shrink-0 text-gray-300 dark:text-gray-600">{item.icon}</span>
+                  {!colapsada && (
+                    <>
+                      <span className="flex-1">{item.label}</span>
+                      <Lock size={12} className="shrink-0 text-gray-300 dark:text-gray-600" />
+                    </>
+                  )}
+                </div>
+              );
+            }
+
             return (
               <Link
                 key={item.href}
                 href={item.href}
                 onClick={() => setSidebarAberta(false)}
-                title={colapsada ? item.label : undefined}
+                title={title}
                 className={`
                   flex items-center rounded-lg text-sm font-medium transition-colors
                   ${colapsada ? 'justify-center py-2.5' : 'gap-3 px-3 py-2.5'}
@@ -252,6 +286,11 @@ export default function ContadorLayout({ children }: { children: React.ReactNode
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-semibold text-gray-900 dark:text-gray-100 truncate">{usuario.nome}</p>
                 <p className="text-[10px] text-gray-400 dark:text-gray-500 truncate">{usuario.role}</p>
+                {isDono && planoAtual && (
+                  <span className="inline-block mt-0.5 text-[9px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded bg-primary/10 text-primary dark:bg-primary/20">
+                    {planoAtual.planoNome}
+                  </span>
+                )}
               </div>
             )}
           </div>
