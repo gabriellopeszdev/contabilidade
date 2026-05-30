@@ -142,10 +142,23 @@ export class MinIOStorageAdapter implements IStorageService {
   async getBuffer(storagePath: string): Promise<Buffer> {
     const stream = await this.client.getObject(this.bucket, storagePath);
     const chunks: Buffer[] = [];
+
     return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        stream.destroy();
+        reject(new Error(`Timeout reading ${storagePath} from storage`));
+      }, 30_000);
+
       stream.on('data', (chunk: Buffer) => chunks.push(chunk));
-      stream.on('end', () => resolve(Buffer.concat(chunks)));
-      stream.on('error', reject);
+      stream.on('end', () => {
+        clearTimeout(timeout);
+        resolve(Buffer.concat(chunks));
+      });
+      stream.on('error', (err: Error) => {
+        clearTimeout(timeout);
+        stream.destroy();
+        reject(new Error(`Failed to read ${storagePath}: ${err.message}`));
+      });
     });
   }
 }
