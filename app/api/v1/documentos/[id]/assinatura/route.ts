@@ -79,7 +79,7 @@ export const POST = withAuth(async (req, ctx, auth) => {
       docsealSubmissionId = result.submissionId;
       linkAssinatura      = result.linkAssinatura;
     } catch (err) {
-      logger.error('[POST assinatura] Falha no DocSeal — usando fluxo INTERNO', err instanceof Error ? err : undefined);
+      logger.error('[POST assinatura] Falha no DocSeal — usando fluxo INTERNO', err instanceof Error ? err : new Error(String(err)));
       // fallback: continua com INTERNO (provider e linkAssinatura já têm os valores padrão)
     }
   }
