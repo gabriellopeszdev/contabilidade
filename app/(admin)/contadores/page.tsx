@@ -886,9 +886,9 @@ export default function ContadoresPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-xl font-bold text-white">Escritórios Cadastrados</h1>
+            <h1 className="text-xl font-bold text-white">Clientes</h1>
             <p className="text-xs text-slate-400 mt-0.5">
-              {carregando ? 'Carregando…' : `${contadores.length} escritório${contadores.length !== 1 ? 's' : ''} na plataforma`}
+              {carregando ? 'Carregando…' : `${contadores.length} escritório${contadores.length !== 1 ? 's' : ''} contratante${contadores.length !== 1 ? 's' : ''} na plataforma`}
             </p>
           </div>
           <button
