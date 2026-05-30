@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FileText, Download, Table, Loader2, FileBarChart, DollarSign, Users } from 'lucide-react';
 import { useAuth } from '../../../src/presentation/hooks/useAuth';
 
 type Formato = 'pdf' | 'excel';
 type AbaId   = 'documentos' | 'financeiro' | 'clientes';
+interface ClienteSimples { id: string; name: string }
 
 interface Coluna { label: string; key: string }
 
@@ -62,6 +63,8 @@ export default function RelatoriosPage() {
   const [abaAtiva, setAbaAtiva]           = useState<AbaId>('documentos');
   const [de, setDe]                       = useState('');
   const [ate, setAte]                     = useState('');
+  const [clienteId, setClienteId]         = useState('');
+  const [clientes, setClientes]           = useState<ClienteSimples[]>([]);
   const [dados, setDados]                 = useState<Record<string, string>[]>([]);
   const [total, setTotal]                 = useState(0);
   const [carregando, setCarregando]       = useState(false);
@@ -70,10 +73,25 @@ export default function RelatoriosPage() {
 
   const aba = ABAS.find((a) => a.id === abaAtiva)!;
 
+  useEffect(() => {
+    async function carregarClientes() {
+      const token = await getToken();
+      const res = await fetch('/api/v1/relatorios/clientes?format=json', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json() as { dados: ClienteSimples[] };
+        setClientes(data.dados ?? []);
+      }
+    }
+    void carregarClientes();
+  }, [getToken]);
+
   function buildUrl(formato: string) {
     const params = new URLSearchParams({ format: formato });
     if (de)  params.set('de', de);
     if (ate) params.set('ate', ate);
+    if (abaAtiva === 'documentos' && clienteId) params.set('clienteId', clienteId);
     return `${aba.endpoint}?${params}`;
   }
 
@@ -118,6 +136,7 @@ export default function RelatoriosPage() {
     setTotal(0);
     setVisualizando(false);
     setErro('');
+    setClienteId('');
   }
 
   const STATUS_CORES: Record<string, string> = {
@@ -164,6 +183,21 @@ export default function RelatoriosPage() {
         <p className="text-sm text-gray-600 dark:text-gray-400">{aba.descricao}</p>
 
         <div className="flex flex-wrap items-end gap-3">
+          {abaAtiva === 'documentos' && (
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-gray-600 dark:text-gray-400">Empresa</label>
+              <select
+                value={clienteId}
+                onChange={(e) => setClienteId(e.target.value)}
+                className="input text-sm"
+              >
+                <option value="">Todas as empresas</option>
+                {clientes.map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
           <div className="space-y-1">
             <label className="text-xs font-medium text-gray-600 dark:text-gray-400">De</label>
             <input

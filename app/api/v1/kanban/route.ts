@@ -41,9 +41,15 @@ export const GET = withAuth(async (req, _ctx, auth) => {
       );
     }
 
+    // Funcionários só veem tarefas atribuídas a eles (ou sem atribuição)
+    const funcionarioFilter = auth.role === 'EMPLOYEE'
+      ? { OR: [{ assignedToFuncionarioId: auth.sub }, { assignedToFuncionarioId: null }] }
+      : {};
+
     const tarefas = await prisma.tarefaKanban.findMany({
       where: {
         clientId: clienteId ? clienteId : { in: meusClienteIds },
+        ...funcionarioFilter,
       },
       orderBy: [
         { currentState: 'asc' },
@@ -66,6 +72,7 @@ export const GET = withAuth(async (req, _ctx, auth) => {
       clientId:     t.clientId,
       clienteNome:  clienteNomeMap.get(t.clientId) ?? null,
       assignedTo:   t.assignedTo,
+      assignedToFuncionarioId: t.assignedToFuncionarioId,
       documentId:   t.documentId,
       sector:       t.sector,
       title:        t.title,

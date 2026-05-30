@@ -88,18 +88,21 @@ export class RegistrarLeituraDocumentoUseCase {
     const eraLidoAntes = documento.readStatus;
     const readAtAnterior = documento.readAt;
 
-    // -------------------------------------------------------------------------
-    // Etapa 4: Invoca comportamento da Entidade Rica (não anêmica)
-    // → `registrarVisualizacao()` é idempotente: só muta e emite evento
-    //   na PRIMEIRA chamada (quando readStatus era false)
-    // -------------------------------------------------------------------------
-    documento.registrarVisualizacao();
+    // "Lido" só muda quando o CLIENTE acessa — o contador pode baixar
+    // o mesmo arquivo sem que o status seja alterado para o cliente.
+    const isClienteDownload = input.visualizadoPorRole === 'CLIENT';
 
     // -------------------------------------------------------------------------
-    // Etapa 5: Persiste a alteração de estado APENAS se houve mudança real
-    // Otimização: evita UPDATE desnecessário no banco em acessos repetidos
+    // Etapa 4: Marca como lido SOMENTE se for o cliente a baixar
     // -------------------------------------------------------------------------
-    if (!eraLidoAntes) {
+    if (isClienteDownload) {
+      documento.registrarVisualizacao();
+    }
+
+    // -------------------------------------------------------------------------
+    // Etapa 5: Persiste APENAS se o cliente baixou e era a primeira vez
+    // -------------------------------------------------------------------------
+    if (isClienteDownload && !eraLidoAntes) {
       await this.documentoRepository.atualizar(documento);
     }
 
@@ -130,14 +133,9 @@ export class RegistrarLeituraDocumentoUseCase {
     }
 
     // -------------------------------------------------------------------------
-    // Etapa 7: Publica evento de domínio SOMENTE na primeira leitura
-    // → O evento coletado pela entidade via pullDomainEvents() é do tipo
-    //   inline (Etapa 1). Aqui criamos o evento concreto com payload completo
-    //   para o dispatcher (inclui nomeArquivo, sector, contadorResponsavelId).
-    // → APÓS a persistência (nunca antes) — garante consistência
+    // Etapa 7: Publica evento SOMENTE na primeira leitura do CLIENTE
     // -------------------------------------------------------------------------
-    if (!eraLidoAntes) {
-      // Limpa os eventos internos da entidade (já tratados aqui)
+    if (isClienteDownload && !eraLidoAntes) {
       documento.pullDomainEvents();
 
       const evento = new DocumentoVisualizadoEvent({
@@ -158,7 +156,7 @@ export class RegistrarLeituraDocumentoUseCase {
     // -------------------------------------------------------------------------
     return {
       documentoId: input.documentoId,
-      primeiraLeitura: !eraLidoAntes,
+      primeiraLeitura: isClienteDownload && !eraLidoAntes,
       readAt: documento.readAt ?? readAtAnterior ?? new Date(),
       nomeArquivo: documento.fileName,
     };

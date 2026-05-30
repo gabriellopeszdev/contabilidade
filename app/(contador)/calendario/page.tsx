@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   ChevronLeft,
   ChevronRight,
@@ -38,6 +38,12 @@ interface Obrigacao {
   diaVencimento: number;
   cor: string;
   ativo: boolean;
+  assignedToFuncionarioId?: string | null;
+}
+
+interface FuncionarioSimples {
+  id: string;
+  name: string;
 }
 
 interface Toast {
@@ -99,10 +105,11 @@ export default function CalendarioPage() {
     mes: hoje.getMonth(),
   }));
 
-  const [eventos,    setEventos]    = useState<Evento[]>([]);
-  const [obrigacoes, setObrigacoes] = useState<Obrigacao[]>([]);
-  const [carregando, setCarregando] = useState(true);
-  const [toast,      setToast]      = useState<Toast | null>(null);
+  const [eventos,      setEventos]      = useState<Evento[]>([]);
+  const [obrigacoes,   setObrigacoes]   = useState<Obrigacao[]>([]);
+  const [funcionarios, setFuncionarios] = useState<FuncionarioSimples[]>([]);
+  const [carregando,   setCarregando]   = useState(true);
+  const [toast,        setToast]        = useState<Toast | null>(null);
 
   // Dia selecionado — começa em hoje
   const [diaSelecionado, setDiaSelecionado] = useState<number | null>(hoje.getDate());
@@ -110,9 +117,12 @@ export default function CalendarioPage() {
   // Modal de nova obrigação
   const [modalAberto,    setModalAberto]    = useState(false);
   const [novaObrigacao,  setNovaObrigacao]  = useState({
-    nome: '', descricao: '', diaVencimento: 15, cor: '#3b82f6',
+    nome: '', descricao: '', diaVencimento: 15, cor: '#3b82f6', assignedToFuncionarioId: '',
   });
   const [criando, setCriando] = useState(false);
+
+  // Atribuição de tarefa (kanban) a funcionário
+  const [atribuindoTarefaId, setAtribuindoTarefaId] = useState<string | null>(null);
 
   // Delete inline
   const [confirmandoDeleteId, setConfirmandoDeleteId] = useState<string | null>(null);
@@ -127,13 +137,14 @@ export default function CalendarioPage() {
     if (!token) return;
     setCarregando(true);
     try {
-      const [evRes, obRes] = await Promise.all([
+      const [evRes, obRes, equipeRes] = await Promise.all([
         fetch(`/api/v1/calendario/eventos?mes=${mesKey}`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
         fetch('/api/v1/calendario/obrigacoes', {
           headers: { Authorization: `Bearer ${token}` },
         }),
+        isDono ? fetch('/api/v1/equipe', { headers: { Authorization: `Bearer ${token}` } }) : Promise.resolve(null),
       ]);
 
       if (evRes.ok) {
@@ -144,12 +155,16 @@ export default function CalendarioPage() {
         const obData = await obRes.json();
         setObrigacoes(obData.obrigacoes);
       }
+      if (equipeRes?.ok) {
+        const eqData = await equipeRes.json();
+        setFuncionarios((eqData.funcionarios ?? []).filter((f: { isActive: boolean }) => f.isActive));
+      }
     } catch {
       setToast({ tipo: 'erro', msg: 'Erro ao carregar calendário.' });
     } finally {
       setCarregando(false);
     }
-  }, [token, mesKey]);
+  }, [token, mesKey, isDono]);
 
   useEffect(() => { carregarDados(); }, [carregarDados]);
 
@@ -220,10 +235,14 @@ export default function CalendarioPage() {
 
     setCriando(true);
     try {
+      const payload = {
+        ...novaObrigacao,
+        assignedToFuncionarioId: novaObrigacao.assignedToFuncionarioId || null,
+      };
       const res = await fetch('/api/v1/calendario/obrigacoes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify(novaObrigacao),
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -232,12 +251,34 @@ export default function CalendarioPage() {
       }
       setToast({ tipo: 'sucesso', msg: 'Obrigação cadastrada!' });
       setModalAberto(false);
-      setNovaObrigacao({ nome: '', descricao: '', diaVencimento: 15, cor: '#3b82f6' });
+      setNovaObrigacao({ nome: '', descricao: '', diaVencimento: 15, cor: '#3b82f6', assignedToFuncionarioId: '' });
       carregarDados();
     } catch {
       setToast({ tipo: 'erro', msg: 'Erro de conexão.' });
     } finally {
       setCriando(false);
+    }
+  };
+
+  // ---------------------------------------------------------------------------
+  // Atribuir tarefa kanban a funcionário
+  // ---------------------------------------------------------------------------
+  const handleAtribuirTarefa = async (tarefaId: string, funcionarioId: string | null) => {
+    if (!token) return;
+    try {
+      const res = await fetch(`/api/v1/kanban/${tarefaId}/responsavel`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ funcionarioId }),
+      });
+      if (!res.ok) {
+        setToast({ tipo: 'erro', msg: 'Erro ao atribuir tarefa.' });
+        return;
+      }
+      setToast({ tipo: 'sucesso', msg: funcionarioId ? 'Tarefa atribuída!' : 'Atribuição removida.' });
+      setAtribuindoTarefaId(null);
+    } catch {
+      setToast({ tipo: 'erro', msg: 'Erro de conexão.' });
     }
   };
 
@@ -439,27 +480,51 @@ export default function CalendarioPage() {
                     )}
 
                     {ev.tipo === 'tarefa' && (
-                      <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                        <span
-                          className={`text-[10px] font-medium ${
-                            ev.status === 'DONE'
-                              ? 'text-emerald-600'
-                              : ev.cor === '#ef4444'
-                              ? 'text-red-600'
-                              : 'text-primary'
-                          }`}
-                        >
-                          {ev.status === 'DONE'
-                            ? 'Concluída'
-                            : ev.status === 'PENDING'
-                            ? 'Pendente'
-                            : ev.status}
-                        </span>
-                        {ev.clienteNome && (
-                          <span className="text-[10px] text-gray-400 dark:text-gray-500">• {ev.clienteNome}</span>
-                        )}
-                        {ev.prioridade && (
-                          <span className="text-[10px] text-gray-400 dark:text-gray-500">• {ev.prioridade}</span>
+                      <div className="space-y-1 mt-0.5">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span
+                            className={`text-[10px] font-medium ${
+                              ev.status === 'DONE'
+                                ? 'text-emerald-600'
+                                : ev.cor === '#ef4444'
+                                ? 'text-red-600'
+                                : 'text-primary'
+                            }`}
+                          >
+                            {ev.status === 'DONE'
+                              ? 'Concluída'
+                              : ev.status === 'PENDING'
+                              ? 'Pendente'
+                              : ev.status}
+                          </span>
+                          {ev.clienteNome && (
+                            <span className="text-[10px] text-gray-400 dark:text-gray-500">• {ev.clienteNome}</span>
+                          )}
+                          {ev.prioridade && (
+                            <span className="text-[10px] text-gray-400 dark:text-gray-500">• {ev.prioridade}</span>
+                          )}
+                        </div>
+                        {isDono && funcionarios.length > 0 && (
+                          atribuindoTarefaId === ev.id ? (
+                            <select
+                              autoFocus
+                              className="w-full rounded border border-gray-300 dark:border-gray-600 px-2 py-1 text-[10px] bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200"
+                              onChange={(e) => handleAtribuirTarefa(ev.id, e.target.value || null)}
+                              onBlur={() => setAtribuindoTarefaId(null)}
+                            >
+                              <option value="">Sem responsável</option>
+                              {funcionarios.map((f) => (
+                                <option key={f.id} value={f.id}>{f.name}</option>
+                              ))}
+                            </select>
+                          ) : (
+                            <button
+                              onClick={() => setAtribuindoTarefaId(ev.id)}
+                              className="text-[10px] text-blue-500 hover:text-blue-700 underline"
+                            >
+                              Atribuir responsável
+                            </button>
+                          )
                         )}
                       </div>
                     )}
@@ -630,6 +695,22 @@ export default function CalendarioPage() {
                   </div>
                 </div>
               </div>
+
+              {funcionarios.length > 0 && (
+                <div className="space-y-1.5">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Responsável</label>
+                  <select
+                    value={novaObrigacao.assignedToFuncionarioId}
+                    onChange={(e) => setNovaObrigacao((o) => ({ ...o, assignedToFuncionarioId: e.target.value }))}
+                    className="w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-800"
+                  >
+                    <option value="">Todos os funcionários</option>
+                    {funcionarios.map((f) => (
+                      <option key={f.id} value={f.id}>{f.name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               <div className="flex justify-end gap-2 pt-2">
                 <button

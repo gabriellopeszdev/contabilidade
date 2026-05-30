@@ -31,10 +31,11 @@ export const GET = withAuth(async (req, ctx, auth) => {
     },
     orderBy: { assignedAt: 'desc' },
     take: 5000,
-    select: { assignedAt: true, cliente: { select: { name: true, cnpj: true, email: true, phone: true, isActive: true } } },
+    select: { assignedAt: true, clienteId: true, cliente: { select: { name: true, cnpj: true, email: true, phone: true, isActive: true } } },
   });
 
   const linhas = relacoes.map((r) => ({
+    id:         r.clienteId,
     name:       r.cliente.name,
     cnpj:       r.cliente.cnpj,
     email:      r.cliente.email,

@@ -349,6 +349,7 @@ model TarefaKanban {
   id           String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   clientId     String           @map("client_id") @db.Uuid
   assignedTo   String?          @map("assigned_to") @db.Uuid
+  assignedToFuncionarioId String? @map("assigned_to_funcionario_id") @db.Uuid
   // Referência opcional ao documento que originou a tarefa (upload do cliente)
   documentId   String?          @map("document_id") @db.Uuid
   // Setor do documento — permite filtrar/exibir no Kanban por área
@@ -372,6 +373,7 @@ model TarefaKanban {
   @@index([clientId, currentState])
   @@index([clientId, priority])
   @@index([assignedTo])
+  @@index([assignedToFuncionarioId])
   @@index([documentId])
   @@map("tarefa_kanban")
 }
@@ -514,6 +516,7 @@ model ObrigacaoFiscal {
   diaVencimento Int     @map("dia_vencimento")
   cor         String    @default("#3b82f6") @db.VarChar(9)
   ativo       Boolean   @default(true)
+  assignedToFuncionarioId String? @map("assigned_to_funcionario_id") @db.Uuid
   recorrencia          RecorrenciaTipo? // null = não recorrente
   lembreteAntecedencia Int              @default(3) @map("lembrete_antecedencia")
   lembreteEmail        Boolean          @default(true) @map("lembrete_email")
@@ -527,6 +530,7 @@ model ObrigacaoFiscal {
   instancias InstanciaObrigacao[]
 
   @@index([contadorId])
+  @@index([assignedToFuncionarioId])
   @@map("obrigacao_fiscal")
 }
 

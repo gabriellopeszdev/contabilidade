@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef } from 'react';
-import { Search, FileText, Users, CalendarCheck, Loader2, X } from 'lucide-react';
+import { Search, FileText, Users, CalendarCheck, Loader2, X, Download } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '../../../src/presentation/hooks/useAuth';
 
@@ -17,10 +17,26 @@ interface SearchResults {
 
 export default function BuscaPage() {
   const { getToken } = useAuth();
-  const [q, setQ]             = useState('');
-  const [results, setResults] = useState<SearchResults | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError]     = useState('');
+  const [q, setQ]                   = useState('');
+  const [results, setResults]       = useState<SearchResults | null>(null);
+  const [loading, setLoading]       = useState(false);
+  const [error, setError]           = useState('');
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+
+  async function handleDownloadDoc(id: string) {
+    setDownloadingId(id);
+    try {
+      const token = await getToken();
+      const res = await fetch(`/api/v1/documentos/${id}/download`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) return;
+      const { url } = await res.json() as { url: string };
+      window.open(url, '_blank', 'noopener,noreferrer');
+    } catch { /* silencioso */ } finally {
+      setDownloadingId(null);
+    }
+  }
   const debounceRef           = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const buscar = useCallback(async (texto: string) => {
@@ -115,15 +131,26 @@ export default function BuscaPage() {
               </h2>
               <div className="divide-y divide-gray-100 dark:divide-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden bg-white dark:bg-gray-900">
                 {results.documentos.map((d) => (
-                  <div key={d.id} className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                  <button
+                    key={d.id}
+                    onClick={() => handleDownloadDoc(d.id)}
+                    disabled={downloadingId === d.id}
+                    className="flex items-center justify-between w-full px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors text-left disabled:opacity-60"
+                  >
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">{d.fileName}</p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">{d.cliente} · {d.sector} · {d.createdAt}</p>
                     </div>
-                    <span className="ml-4 text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded font-mono shrink-0">
-                      {d.fileType}
-                    </span>
-                  </div>
+                    <div className="ml-4 flex items-center gap-2 shrink-0">
+                      <span className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded font-mono">
+                        {d.fileType}
+                      </span>
+                      {downloadingId === d.id
+                        ? <Loader2 size={13} className="animate-spin text-blue-500" />
+                        : <Download size={13} className="text-gray-400" />
+                      }
+                    </div>
+                  </button>
                 ))}
               </div>
             </section>

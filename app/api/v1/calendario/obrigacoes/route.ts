@@ -13,8 +13,13 @@ export const dynamic = 'force-dynamic';
 export const GET = withAuth(async (_req, _ctx, auth) => {
   try {
     const contadorId = auth.role === 'EMPLOYEE' ? auth.superiorId! : auth.sub;
+
+    const whereObrigacao = auth.role === 'EMPLOYEE'
+      ? { contadorId, ativo: true, OR: [{ assignedToFuncionarioId: auth.sub }, { assignedToFuncionarioId: null }] }
+      : { contadorId, ativo: true };
+
     const obrigacoes = await prisma.obrigacaoFiscal.findMany({
-      where: { contadorId, ativo: true },
+      where: whereObrigacao,
       orderBy: { diaVencimento: 'asc' },
     });
 
@@ -42,6 +47,7 @@ export const POST = withAuth(async (req, _ctx, auth) => {
       lembreteEmail,
       lembreteNotificacao,
       mesesAplicacao,
+      assignedToFuncionarioId,
     } = body as {
       nome: string;
       descricao?: string;
@@ -52,6 +58,7 @@ export const POST = withAuth(async (req, _ctx, auth) => {
       lembreteEmail?: boolean;
       lembreteNotificacao?: boolean;
       mesesAplicacao?: number[];
+      assignedToFuncionarioId?: string | null;
     };
 
     if (!nome || nome.length < 2 || nome.length > 100) {
@@ -74,6 +81,7 @@ export const POST = withAuth(async (req, _ctx, auth) => {
         ...(lembreteEmail !== undefined && { lembreteEmail }),
         ...(lembreteNotificacao !== undefined && { lembreteNotificacao }),
         ...(mesesAplicacao !== undefined && { mesesAplicacao }),
+        assignedToFuncionarioId: assignedToFuncionarioId ?? null,
       },
     });
 
