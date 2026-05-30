@@ -688,6 +688,11 @@ model Notificacao {
   @@map("notificacao")
 }
 
+enum ProviderAssinatura {
+  INTERNO
+  DOCSEAL
+}
+
 model AssinaturaDocumento {
   id                     String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   documentoId            String               @map("documento_id") @db.Uuid
@@ -703,6 +708,9 @@ model AssinaturaDocumento {
   hashDocumento          String               @map("hash_documento") @db.Char(64)
   comprovanteStoragePath String?              @map("comprovante_storage_path") @db.VarChar(1000)
   motivoRecusa           String?              @map("motivo_recusa") @db.VarChar(500)
+  provider               ProviderAssinatura   @default(INTERNO)
+  docsealSubmissionId    Int?                 @map("docseal_submission_id")
+  linkExterno            String?              @map("link_externo") @db.VarChar(1000)
   createdAt              DateTime             @default(now()) @map("created_at") @db.Timestamptz
   updatedAt              DateTime             @updatedAt @map("updated_at") @db.Timestamptz
 
