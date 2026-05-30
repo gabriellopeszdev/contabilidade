@@ -495,33 +495,60 @@ export class SocketServer {
         const uploadados = (event.uploadados as unknown[]) ?? [];
         const falhas     = (event.falhas     as unknown[]) ?? [];
         const contadorId = event.contadorId  as string | undefined;
+        const clienteId  = event.clienteId   as string | undefined;
 
         if (!contadorId) break;
 
         const total = uploadados.length + falhas.length;
-        let mensagem: string;
+        let mensagemContador: string;
 
         if (falhas.length === 0 && uploadados.length > 0) {
-          mensagem = `Upload concluído: ${uploadados.length} documento(s) enviado(s) com sucesso.`;
+          mensagemContador = `Upload concluído: ${uploadados.length} documento(s) enviado(s) com sucesso.`;
         } else if (uploadados.length > 0) {
-          mensagem = `Upload parcial: ${uploadados.length} de ${total} enviados. ${falhas.length} falha(s).`;
+          mensagemContador = `Upload parcial: ${uploadados.length} de ${total} enviados. ${falhas.length} falha(s).`;
         } else {
-          mensagem = `Upload falhou: nenhum documento foi salvo. ${falhas.length} erro(s).`;
+          mensagemContador = `Upload falhou: nenhum documento foi salvo. ${falhas.length} erro(s).`;
         }
 
         this.io.to(`user:${contadorId}`).emit('novoDocumentoUpload', {
           loteId:          (event.loteId   as string) ?? '',
-          clienteId:       (event.clienteId as string) ?? '',
+          clienteId:       clienteId ?? '',
           totalUploadados: uploadados.length,
           totalFalhas:     falhas.length,
-          mensagem,
+          mensagem:        mensagemContador,
         });
 
         void this.persistirEEmitir(contadorId, 'CONTADOR', {
           tipo:     'UPLOAD_DOCUMENTOS',
           titulo:   'Upload de documentos',
-          mensagem,
+          mensagem: mensagemContador,
         });
+
+        // Notifica o CLIENTE sobre os documentos recebidos
+        if (clienteId && uploadados.length > 0) {
+          const mensagemCliente = uploadados.length === 1
+            ? 'Seu escritório enviou 1 novo documento para você.'
+            : `Seu escritório enviou ${uploadados.length} novos documentos para você.`;
+
+          this.io.to(`user:${clienteId}`).emit('novoDocumentoUpload', {
+            loteId:          (event.loteId as string) ?? '',
+            clienteId,
+            totalUploadados: uploadados.length,
+            totalFalhas:     falhas.length,
+            mensagem:        mensagemCliente,
+          });
+
+          void this.persistirEEmitir(clienteId, 'CLIENTE', {
+            tipo:     'NOVO_DOCUMENTO_RECEBIDO',
+            titulo:   'Novos documentos recebidos',
+            mensagem: mensagemCliente,
+            metadados: {
+              loteId:          (event.loteId as string) ?? '',
+              totalDocumentos: uploadados.length,
+              sector:          (event.sector as string) ?? '',
+            },
+          });
+        }
         break;
       }
 
