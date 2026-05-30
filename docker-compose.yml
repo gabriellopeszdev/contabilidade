@@ -156,6 +156,32 @@ services:
       - contabilidade_net
 
   # ---------------------------------------------------------------------------
+  # DocSeal — Plataforma open-source de assinatura eletrônica
+  # Porta 3001 (host, localhost): painel admin para configuração inicial
+  # A app se comunica internamente via http://docseal:3000
+  #
+  # Setup inicial:
+  #   1. Acesse http://localhost:3001 via túnel SSH ou localmente
+  #   2. Crie a conta admin e obtenha a API Key em /api
+  #   3. Configure o webhook: URL = {NEXT_PUBLIC_APP_URL}/api/v1/webhooks/docseal
+  #   4. Copie o segredo do webhook para DOCSEAL_WEBHOOK_SECRET no .env
+  #   5. Defina DOCSEAL_API_KEY no .env e reinicie o container app
+  # ---------------------------------------------------------------------------
+  docseal:
+    image: docuseal/docuseal:latest
+    container_name: contabilidade_docseal
+    restart: unless-stopped
+    environment:
+      SECRET_KEY_BASE: ${DOCSEAL_SECRET_KEY_BASE}
+      FORCE_SSL: "false"
+    ports:
+      - "127.0.0.1:${DOCSEAL_PORT:-3001}:3000"
+    volumes:
+      - ${DATA_DIR:-./.data}/docseal:/data
+    networks:
+      - contabilidade_net
+
+  # ---------------------------------------------------------------------------
   # Aplicação Next.js — servidor customizado (Socket.IO + BullMQ)
   # ---------------------------------------------------------------------------
   app:
@@ -171,6 +197,8 @@ services:
         condition: service_healthy
       minio:
         condition: service_healthy
+      docseal:
+        condition: service_started
     environment:
       NODE_ENV: production
       # Sobrescreve os hosts para os nomes dos serviços internos do Docker
