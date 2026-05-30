@@ -1,16 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
-  Building2,
-  Users,
-  CreditCard,
   TrendingUp,
   Loader2,
   AlertCircle,
-  CheckCircle2,
-  XCircle,
-  KeyRound,
+  Search,
+  Pencil,
+  Plus,
+  X,
+  ChevronDown,
 } from 'lucide-react';
 
 import { useAuth } from '../../../src/presentation/hooks/useAuth';
@@ -19,52 +18,291 @@ import { useAuth } from '../../../src/presentation/hooks/useAuth';
 // Tipos
 // =============================================================================
 
-interface ContadorDTO {
+type StatusSaaS = 'TRIAL' | 'ATIVO' | 'INADIMPLENTE' | 'CANCELADO' | 'SUSPENSO';
+
+interface SubscricaoDTO {
   id:               string;
-  name:             string;
-  email:            string;
-  crc:              string;
+  status:           StatusSaaS;
+  escritorioId:     string;
+  escritorioNome:   string;
+  escritorioEmail:  string;
+  escritorioAtivo:  boolean;
+  planoId:          string;
+  planoNome:        string;
+  precoPlano:       number;
+  valorMensal:      number;
+  diaVencimento:    number;
+  dataInicio:       string;
+  dataRenovacao:    string;
+  observacoes:      string | null;
+}
+
+interface SemSubscricaoDTO {
+  id:       string;
+  nome:     string;
+  email:    string;
+  isActive: boolean;
+}
+
+interface PlanoDTO {
+  id:               string;
+  nome:             string;
+  preco:            number;
+  limiteClientes:   number;
+  limiteDocumentos: number;
   isActive:         boolean;
-  totalClientes:    number;
-  nomeEscritorio:   string | null;
-  asaasConfigurado: boolean;
-  createdAt:        string;
 }
 
-interface Metricas {
-  total:        number;
-  ativos:       number;
-  comAsaas:     number;
-  totalClientes: number;
+interface DadosFaturamento {
+  subscricoes:       SubscricaoDTO[];
+  semSubscricao:     SemSubscricaoDTO[];
+  mrr:               number;
+  totalAtivo:        number;
+  totalTrial:        number;
+  totalInadimplente: number;
+}
+
+interface FormSubscricao {
+  escritorioId:  string;
+  planoId:       string;
+  status:        StatusSaaS;
+  valorMensal:   string;
+  diaVencimento: string;
+  dataRenovacao: string;
+  observacoes:   string;
+}
+
+const FORM_VAZIO: FormSubscricao = {
+  escritorioId:  '',
+  planoId:       '',
+  status:        'TRIAL',
+  valorMensal:   '',
+  diaVencimento: '10',
+  dataRenovacao: '',
+  observacoes:   '',
+};
+
+// =============================================================================
+// Helpers
+// =============================================================================
+
+const STATUS_CONFIG: Record<StatusSaaS, { label: string; classes: string }> = {
+  TRIAL:        { label: 'Trial',        classes: 'text-amber-400 bg-amber-900/30 border-amber-700/40' },
+  ATIVO:        { label: 'Ativo',        classes: 'text-emerald-400 bg-emerald-900/30 border-emerald-700/40' },
+  INADIMPLENTE: { label: 'Inadimplente', classes: 'text-red-400 bg-red-900/30 border-red-700/40' },
+  CANCELADO:    { label: 'Cancelado',    classes: 'text-slate-400 bg-slate-800 border-slate-700' },
+  SUSPENSO:     { label: 'Suspenso',     classes: 'text-orange-400 bg-orange-900/30 border-orange-700/40' },
+};
+
+function StatusBadge({ status }: { status: StatusSaaS }) {
+  const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.CANCELADO;
+  return (
+    <span className={`inline-flex items-center text-[11px] font-medium border px-2 py-0.5 rounded-full ${cfg.classes}`}>
+      {cfg.label}
+    </span>
+  );
+}
+
+function formatBRL(val: number) {
+  return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString('pt-BR');
 }
 
 // =============================================================================
-// Componentes auxiliares
+// KPI Card
 // =============================================================================
 
-function CardMetrica({
+function KpiCard({
   label,
   valor,
   sub,
-  icon: Icon,
   cor,
 }: {
   label: string;
-  valor: number | string;
+  valor: string | number;
   sub?:  string;
-  icon:  React.ElementType;
   cor:   string;
 }) {
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-xs text-slate-400 font-medium">{label}</p>
-          <p className={`text-2xl font-bold mt-1 ${cor}`}>{valor}</p>
-          {sub && <p className="text-xs text-slate-500 mt-0.5">{sub}</p>}
+      <p className="text-xs text-slate-400 font-medium">{label}</p>
+      <p className={`text-2xl font-bold mt-1 ${cor}`}>{valor}</p>
+      {sub && <p className="text-xs text-slate-500 mt-0.5">{sub}</p>}
+    </div>
+  );
+}
+
+// =============================================================================
+// Modal de Assinatura
+// =============================================================================
+
+function ModalAssinatura({
+  planos,
+  form: formInicial,
+  escritorioNome,
+  onFechar,
+  onSalvar,
+  salvando,
+  erro,
+}: {
+  planos:        PlanoDTO[];
+  form:          FormSubscricao;
+  escritorioNome?: string;
+  onFechar:      () => void;
+  onSalvar:      (f: FormSubscricao) => void;
+  salvando:      boolean;
+  erro:          string | null;
+}) {
+  const [form, setForm] = useState<FormSubscricao>(formInicial);
+
+  function setField<K extends keyof FormSubscricao>(k: K, v: FormSubscricao[K]) {
+    setForm((f) => ({ ...f, [k]: v }));
+  }
+
+  // Preenche valorMensal quando plano muda
+  function handlePlanoChange(planoId: string) {
+    const plano = planos.find((p) => p.id === planoId);
+    setForm((f) => ({
+      ...f,
+      planoId,
+      valorMensal: plano ? String(plano.preco) : f.valorMensal,
+    }));
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/70" onClick={onFechar} />
+      <div className="relative bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
+        {/* Cabeçalho */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
+          <div>
+            <h2 className="text-base font-semibold text-white">Assinatura SaaS</h2>
+            {escritorioNome && (
+              <p className="text-xs text-slate-400 mt-0.5">{escritorioNome}</p>
+            )}
+          </div>
+          <button onClick={onFechar} className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">
+            <X size={16} />
+          </button>
         </div>
-        <div className={`p-2.5 rounded-lg ${cor.replace('text-', 'bg-').replace('-400', '-900/30').replace('-300', '-900/30')}`}>
-          <Icon size={18} className={cor} />
+
+        {/* Corpo */}
+        <div className="px-6 py-5 space-y-4">
+          {erro && (
+            <div className="flex items-center gap-2 bg-red-900/20 border border-red-700/40 text-red-400 rounded-lg px-4 py-3 text-sm">
+              <AlertCircle size={15} />
+              {erro}
+            </div>
+          )}
+
+          {/* Plano */}
+          <div>
+            <label className="block text-xs font-medium text-slate-400 mb-1.5">Plano *</label>
+            <div className="relative">
+              <select
+                value={form.planoId}
+                onChange={(e) => handlePlanoChange(e.target.value)}
+                className="w-full appearance-none bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 pr-8 text-sm text-white focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500/40"
+              >
+                <option value="">Selecione um plano...</option>
+                {planos.filter((p) => p.isActive).map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.nome} — {formatBRL(p.preco)}/mês
+                  </option>
+                ))}
+              </select>
+              <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+            </div>
+          </div>
+
+          {/* Status */}
+          <div>
+            <label className="block text-xs font-medium text-slate-400 mb-1.5">Status</label>
+            <div className="relative">
+              <select
+                value={form.status}
+                onChange={(e) => setField('status', e.target.value as StatusSaaS)}
+                className="w-full appearance-none bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 pr-8 text-sm text-white focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500/40"
+              >
+                <option value="TRIAL">Trial</option>
+                <option value="ATIVO">Ativo</option>
+                <option value="INADIMPLENTE">Inadimplente</option>
+                <option value="SUSPENSO">Suspenso</option>
+                <option value="CANCELADO">Cancelado</option>
+              </select>
+              <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+            </div>
+          </div>
+
+          {/* Valor mensal + Dia vencimento */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-slate-400 mb-1.5">Valor Mensal (R$)</label>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={form.valorMensal}
+                onChange={(e) => setField('valorMensal', e.target.value)}
+                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500/40"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-400 mb-1.5">Dia de Vencimento</label>
+              <input
+                type="number"
+                min="1"
+                max="31"
+                value={form.diaVencimento}
+                onChange={(e) => setField('diaVencimento', e.target.value)}
+                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500/40"
+              />
+            </div>
+          </div>
+
+          {/* Data renovação */}
+          <div>
+            <label className="block text-xs font-medium text-slate-400 mb-1.5">Próxima Renovação</label>
+            <input
+              type="date"
+              value={form.dataRenovacao}
+              onChange={(e) => setField('dataRenovacao', e.target.value)}
+              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500/40"
+            />
+          </div>
+
+          {/* Observações */}
+          <div>
+            <label className="block text-xs font-medium text-slate-400 mb-1.5">Observações</label>
+            <input
+              type="text"
+              value={form.observacoes}
+              onChange={(e) => setField('observacoes', e.target.value)}
+              placeholder="Notas internas..."
+              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500/40"
+            />
+          </div>
+        </div>
+
+        {/* Rodapé */}
+        <div className="px-6 py-4 border-t border-slate-800 flex gap-3 justify-end">
+          <button
+            onClick={onFechar}
+            className="px-4 py-2 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={() => onSalvar(form)}
+            disabled={salvando || !form.planoId}
+            className="flex items-center gap-2 px-5 py-2 bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {salvando && <Loader2 size={14} className="animate-spin" />}
+            Salvar
+          </button>
         </div>
       </div>
     </div>
@@ -72,188 +310,326 @@ function CardMetrica({
 }
 
 // =============================================================================
-// Página
+// Página principal
 // =============================================================================
 
 export default function FaturamentoPage() {
   const { token } = useAuth();
 
-  const [contadores, setContadores] = useState<ContadorDTO[]>([]);
+  const [dados,     setDados]     = useState<DadosFaturamento | null>(null);
+  const [planos,    setPlanos]    = useState<PlanoDTO[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [erro,       setErro]       = useState<string | null>(null);
 
-  useEffect(() => {
+  const [busca,       setBusca]       = useState('');
+  const [filtroStatus, setFiltroStatus] = useState('');
+
+  // Modal de assinatura (criar / editar)
+  const [modalForm,    setModalForm]    = useState<FormSubscricao | null>(null);
+  const [modalNome,    setModalNome]    = useState<string>('');
+  const [modalSubId,   setModalSubId]   = useState<string | null>(null); // null = criar, id = editar
+  const [salvando,     setSalvando]     = useState(false);
+  const [erroModal,    setErroModal]    = useState<string | null>(null);
+
+  const carregarDados = useCallback(async () => {
     if (!token) return;
+    setCarregando(true);
+    setErro(null);
+    try {
+      const params = new URLSearchParams();
+      if (filtroStatus) params.set('status', filtroStatus);
+      if (busca.trim()) params.set('search', busca.trim());
 
-    (async () => {
-      setCarregando(true);
-      try {
-        const res = await fetch('/api/v1/admin/contadores', {
-          headers: { 'Authorization': `Bearer ${token}` },
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json() as { items: ContadorDTO[] };
-        setContadores(data.items ?? []);
-      } catch (e) {
-        setErro(e instanceof Error ? e.message : 'Erro ao carregar dados.');
-      } finally {
-        setCarregando(false);
+      const [resSub, resPlanos] = await Promise.all([
+        fetch(`/api/v1/admin/subscricoes?${params.toString()}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        fetch('/api/v1/admin/planos', {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+      ]);
+
+      if (!resSub.ok)    throw new Error(`Subscricoes HTTP ${resSub.status}`);
+      if (!resPlanos.ok) throw new Error(`Planos HTTP ${resPlanos.status}`);
+
+      const [dataSub, dataPlanos] = await Promise.all([
+        resSub.json()    as Promise<DadosFaturamento>,
+        resPlanos.json() as Promise<PlanoDTO[]>,
+      ]);
+
+      setDados(dataSub);
+      setPlanos(dataPlanos);
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : 'Erro ao carregar dados.');
+    } finally {
+      setCarregando(false);
+    }
+  }, [token, filtroStatus, busca]);
+
+  useEffect(() => { carregarDados(); }, [carregarDados]);
+
+  // Abre modal para editar assinatura existente
+  function abrirEditar(sub: SubscricaoDTO) {
+    setModalSubId(sub.id);
+    setModalNome(sub.escritorioNome);
+    setErroModal(null);
+    setModalForm({
+      escritorioId:  sub.escritorioId,
+      planoId:       sub.planoId,
+      status:        sub.status,
+      valorMensal:   String(sub.valorMensal),
+      diaVencimento: String(sub.diaVencimento),
+      dataRenovacao: sub.dataRenovacao ? sub.dataRenovacao.slice(0, 10) : '',
+      observacoes:   sub.observacoes ?? '',
+    });
+  }
+
+  // Abre modal para atribuir plano a escritório sem assinatura
+  function abrirAtribuir(esc: SemSubscricaoDTO) {
+    setModalSubId(null);
+    setModalNome(esc.nome);
+    setErroModal(null);
+    setModalForm({ ...FORM_VAZIO, escritorioId: esc.id });
+  }
+
+  // Salva (criar ou editar)
+  async function salvarSubscricao(form: FormSubscricao) {
+    if (!token) return;
+    setSalvando(true);
+    setErroModal(null);
+    try {
+      const isEditar = !!modalSubId;
+      const url  = isEditar ? `/api/v1/admin/subscricoes/${modalSubId}` : '/api/v1/admin/subscricoes';
+      const method = isEditar ? 'PATCH' : 'POST';
+
+      const payload = {
+        escritorioId:  form.escritorioId,
+        planoId:       form.planoId,
+        status:        form.status,
+        valorMensal:   form.valorMensal   ? parseFloat(form.valorMensal)       : undefined,
+        diaVencimento: form.diaVencimento ? parseInt(form.diaVencimento, 10)   : undefined,
+        dataRenovacao: form.dataRenovacao || undefined,
+        observacoes:   form.observacoes   || undefined,
+      };
+
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const data = await res.json() as { message?: string };
+        throw new Error(data.message ?? `HTTP ${res.status}`);
       }
-    })();
-  }, [token]);
 
-  const metricas: Metricas = {
-    total:         contadores.length,
-    ativos:        contadores.filter((c) => c.isActive).length,
-    comAsaas:      contadores.filter((c) => c.asaasConfigurado).length,
-    totalClientes: contadores.reduce((s, c) => s + c.totalClientes, 0),
-  };
-
-  if (carregando) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 size={28} className="animate-spin text-violet-400" />
-      </div>
-    );
+      setModalForm(null);
+      await carregarDados();
+    } catch (e) {
+      setErroModal(e instanceof Error ? e.message : 'Erro ao salvar assinatura.');
+    } finally {
+      setSalvando(false);
+    }
   }
 
-  if (erro) {
-    return (
-      <div className="flex items-center gap-3 bg-red-900/20 border border-red-700/40 text-red-400 rounded-xl px-5 py-4">
-        <AlertCircle size={18} />
-        <span className="text-sm">{erro}</span>
-      </div>
-    );
-  }
+  // =========================================================================
+  // Render
+  // =========================================================================
 
   return (
     <div className="space-y-6">
 
       {/* Cabeçalho */}
-      <div>
-        <h1 className="text-xl font-bold text-white">Faturamento SaaS</h1>
-        <p className="text-sm text-slate-400 mt-0.5">
-          Visão geral dos escritórios contratantes da plataforma.
-        </p>
-      </div>
-
-      {/* KPIs */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <CardMetrica
-          label="Total de Escritórios"
-          valor={metricas.total}
-          icon={Building2}
-          cor="text-violet-400"
-        />
-        <CardMetrica
-          label="Escritórios Ativos"
-          valor={metricas.ativos}
-          sub={`${metricas.total > 0 ? Math.round((metricas.ativos / metricas.total) * 100) : 0}% do total`}
-          icon={CheckCircle2}
-          cor="text-emerald-400"
-        />
-        <CardMetrica
-          label="Integração Asaas"
-          valor={metricas.comAsaas}
-          sub={`${metricas.total > 0 ? Math.round((metricas.comAsaas / metricas.total) * 100) : 0}% configurado`}
-          icon={KeyRound}
-          cor="text-amber-400"
-        />
-        <CardMetrica
-          label="Total de Clientes"
-          valor={metricas.totalClientes}
-          sub="somados de todos os escritórios"
-          icon={Users}
-          cor="text-sky-400"
-        />
-      </div>
-
-      {/* Banner de planos futuros */}
-      <div className="bg-violet-900/20 border border-violet-700/30 rounded-xl px-5 py-4 flex items-start gap-4">
-        <div className="p-2 rounded-lg bg-violet-600/20 shrink-0">
-          <TrendingUp size={18} className="text-violet-400" />
-        </div>
+      <div className="flex items-center gap-3">
+        <TrendingUp size={20} className="text-violet-400" />
         <div>
-          <p className="text-sm font-semibold text-violet-300">Gestão de Planos — Em Breve</p>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Cobrança automática por escritório, gestão de planos (Básico / Pro / Enterprise)
-            e relatórios de MRR serão disponibilizados em uma próxima versão.
+          <h1 className="text-xl font-bold text-white">Faturamento SaaS</h1>
+          <p className="text-sm text-slate-400 mt-0.5">
+            MRR, assinaturas e gestão de planos por escritório.
           </p>
         </div>
       </div>
 
-      {/* Tabela */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
-        <div className="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-slate-100">Escritórios Cadastrados</h2>
-          <span className="text-xs text-slate-500">{metricas.total} registros</span>
+      {/* Carregando */}
+      {carregando && (
+        <div className="flex items-center justify-center h-48">
+          <Loader2 size={28} className="animate-spin text-violet-400" />
         </div>
+      )}
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-slate-800 text-left">
-                <th className="px-5 py-3 text-xs font-medium text-slate-400">Escritório / Contador</th>
-                <th className="px-5 py-3 text-xs font-medium text-slate-400">CRC</th>
-                <th className="px-5 py-3 text-xs font-medium text-slate-400 text-center">Status</th>
-                <th className="px-5 py-3 text-xs font-medium text-slate-400 text-center">Asaas</th>
-                <th className="px-5 py-3 text-xs font-medium text-slate-400 text-center">Clientes</th>
-                <th className="px-5 py-3 text-xs font-medium text-slate-400">Desde</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-800/60">
-              {contadores.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-5 py-10 text-center text-sm text-slate-500">
-                    Nenhum escritório cadastrado ainda.
-                  </td>
-                </tr>
-              ) : (
-                contadores.map((c) => (
-                  <tr key={c.id} className="hover:bg-slate-800/30 transition-colors">
-                    <td className="px-5 py-3.5">
-                      <p className="text-slate-100 font-medium truncate max-w-[220px]">
-                        {c.nomeEscritorio ?? c.name}
-                      </p>
-                      <p className="text-xs text-slate-500 truncate">{c.email}</p>
-                    </td>
-                    <td className="px-5 py-3.5 text-xs text-slate-400 font-mono">{c.crc}</td>
-                    <td className="px-5 py-3.5 text-center">
-                      {c.isActive ? (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-400 bg-emerald-900/30 border border-emerald-700/40 px-2 py-0.5 rounded-full">
-                          <CheckCircle2 size={10} />
-                          Ativo
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-medium text-red-400 bg-red-900/30 border border-red-700/40 px-2 py-0.5 rounded-full">
-                          <XCircle size={10} />
-                          Bloqueado
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-5 py-3.5 text-center">
-                      {c.asaasConfigurado ? (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-400 bg-amber-900/30 border border-amber-700/40 px-2 py-0.5 rounded-full">
-                          <CreditCard size={10} />
-                          Ativo
-                        </span>
-                      ) : (
-                        <span className="text-[11px] text-slate-600">—</span>
-                      )}
-                    </td>
-                    <td className="px-5 py-3.5 text-center text-slate-300 font-medium">
-                      {c.totalClientes}
-                    </td>
-                    <td className="px-5 py-3.5 text-xs text-slate-500">
-                      {new Date(c.createdAt).toLocaleDateString('pt-BR')}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+      {/* Erro */}
+      {!carregando && erro && (
+        <div className="flex items-center gap-3 bg-red-900/20 border border-red-700/40 text-red-400 rounded-xl px-5 py-4">
+          <AlertCircle size={18} />
+          <span className="text-sm">{erro}</span>
         </div>
-      </div>
+      )}
+
+      {/* Conteúdo principal */}
+      {!carregando && !erro && dados && (
+        <>
+          {/* KPIs */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <KpiCard
+              label="MRR"
+              valor={formatBRL(dados.mrr)}
+              sub="Receita mensal recorrente"
+              cor="text-violet-400"
+            />
+            <KpiCard
+              label="Assinaturas Ativas"
+              valor={dados.totalAtivo}
+              cor="text-emerald-400"
+            />
+            <KpiCard
+              label="Em Trial"
+              valor={dados.totalTrial}
+              cor="text-amber-400"
+            />
+            <KpiCard
+              label="Inadimplentes"
+              valor={dados.totalInadimplente}
+              cor="text-red-400"
+            />
+          </div>
+
+          {/* Filtros */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+              <input
+                type="text"
+                placeholder="Buscar por escritório ou e-mail..."
+                value={busca}
+                onChange={(e) => setBusca(e.target.value)}
+                className="w-full bg-slate-900 border border-slate-800 rounded-lg pl-9 pr-4 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500/40"
+              />
+            </div>
+            <div className="relative">
+              <select
+                value={filtroStatus}
+                onChange={(e) => setFiltroStatus(e.target.value)}
+                className="appearance-none bg-slate-900 border border-slate-800 rounded-lg px-4 py-2 pr-8 text-sm text-white focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500/40"
+              >
+                <option value="">Todos os status</option>
+                <option value="TRIAL">Trial</option>
+                <option value="ATIVO">Ativo</option>
+                <option value="INADIMPLENTE">Inadimplente</option>
+                <option value="SUSPENSO">Suspenso</option>
+                <option value="CANCELADO">Cancelado</option>
+              </select>
+              <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+            </div>
+          </div>
+
+          {/* Tabela de assinaturas */}
+          <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+            <div className="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-slate-100">Assinaturas</h2>
+              <span className="text-xs text-slate-500">{dados.subscricoes.length} registro(s)</span>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-slate-800 text-left">
+                    <th className="px-5 py-3 text-xs font-medium text-slate-400">Escritório</th>
+                    <th className="px-5 py-3 text-xs font-medium text-slate-400">Plano</th>
+                    <th className="px-5 py-3 text-xs font-medium text-slate-400 text-center">Status</th>
+                    <th className="px-5 py-3 text-xs font-medium text-slate-400 text-right">Valor/mês</th>
+                    <th className="px-5 py-3 text-xs font-medium text-slate-400">Próx. Renovação</th>
+                    <th className="px-5 py-3 text-xs font-medium text-slate-400 text-right">Ações</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800/60">
+                  {dados.subscricoes.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="px-5 py-10 text-center text-sm text-slate-500">
+                        Nenhuma assinatura encontrada.
+                      </td>
+                    </tr>
+                  ) : (
+                    dados.subscricoes.map((sub) => (
+                      <tr key={sub.id} className="hover:bg-slate-800/30 transition-colors">
+                        <td className="px-5 py-3.5">
+                          <p className="text-slate-100 font-medium truncate max-w-[200px]">
+                            {sub.escritorioNome}
+                          </p>
+                          <p className="text-xs text-slate-500 truncate">{sub.escritorioEmail}</p>
+                        </td>
+                        <td className="px-5 py-3.5 text-slate-300">{sub.planoNome}</td>
+                        <td className="px-5 py-3.5 text-center">
+                          <StatusBadge status={sub.status} />
+                        </td>
+                        <td className="px-5 py-3.5 text-right text-slate-200 font-medium">
+                          {formatBRL(sub.valorMensal)}
+                        </td>
+                        <td className="px-5 py-3.5 text-xs text-slate-400">
+                          {formatDate(sub.dataRenovacao)}
+                        </td>
+                        <td className="px-5 py-3.5 text-right">
+                          <button
+                            onClick={() => abrirEditar(sub)}
+                            className="flex items-center gap-1.5 ml-auto px-3 py-1.5 text-xs text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+                          >
+                            <Pencil size={12} />
+                            Editar
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Escritórios sem plano */}
+          {dados.semSubscricao.length > 0 && (
+            <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+              <div className="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
+                <div>
+                  <h2 className="text-sm font-semibold text-slate-100">Escritórios sem Plano</h2>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    {dados.semSubscricao.length} escritório(s) ainda sem assinatura.
+                  </p>
+                </div>
+              </div>
+
+              <div className="divide-y divide-slate-800/60">
+                {dados.semSubscricao.map((esc) => (
+                  <div key={esc.id} className="flex items-center justify-between px-5 py-3.5 hover:bg-slate-800/30 transition-colors">
+                    <div>
+                      <p className="text-slate-200 text-sm font-medium">{esc.nome}</p>
+                      <p className="text-xs text-slate-500">{esc.email}</p>
+                    </div>
+                    <button
+                      onClick={() => abrirAtribuir(esc)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-violet-400 hover:text-white bg-violet-600/10 hover:bg-violet-600 border border-violet-600/30 hover:border-violet-600 rounded-lg transition-colors"
+                    >
+                      <Plus size={12} />
+                      Atribuir Plano
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Modal */}
+      {modalForm && (
+        <ModalAssinatura
+          planos={planos}
+          form={modalForm}
+          escritorioNome={modalNome || undefined}
+          onFechar={() => setModalForm(null)}
+          onSalvar={salvarSubscricao}
+          salvando={salvando}
+          erro={erroModal}
+        />
+      )}
     </div>
   );
 }

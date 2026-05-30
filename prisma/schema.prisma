@@ -183,6 +183,7 @@ model UsuarioContador {
   funcionarios  Funcionario[] @relation("FuncionarioContador")
   boletosEmitidos BoletoHonorario[]
   assinaturas   AssinaturaHonorario[]
+  assinaturaSaaS AssinaturaSaaS?
 
   @@index([email])
   @@index([deletedAt])
@@ -734,4 +735,58 @@ model NpsResponse {
   @@index([userId])
   @@index([createdAt])
   @@map("nps_response")
+}
+
+enum StatusAssinaturaSaaS {
+  TRIAL
+  ATIVO
+  INADIMPLENTE
+  CANCELADO
+  SUSPENSO
+}
+
+// =============================================================================
+// PlanoSaaS — Planos de assinatura disponíveis no SaaS
+// =============================================================================
+
+model PlanoSaaS {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  nome             String   @db.VarChar(100)
+  descricao        String?  @db.VarChar(500)
+  preco            Decimal  @db.Decimal(10, 2)
+  limiteClientes   Int      @map("limite_clientes")
+  limiteDocumentos Int      @map("limite_documentos")
+  features         String[]
+  isActive         Boolean  @default(true) @map("is_active")
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt        DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  assinaturas AssinaturaSaaS[]
+
+  @@map("plano_saas")
+}
+
+// =============================================================================
+// AssinaturaSaaS — Uma assinatura por escritório
+// =============================================================================
+
+model AssinaturaSaaS {
+  id            String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  escritorioId  String               @unique @map("escritorio_id") @db.Uuid
+  planoId       String               @map("plano_id") @db.Uuid
+  status        StatusAssinaturaSaaS @default(TRIAL)
+  dataInicio    DateTime             @default(now()) @map("data_inicio") @db.Timestamptz
+  dataRenovacao DateTime             @map("data_renovacao") @db.Timestamptz
+  diaVencimento Int                  @default(10) @map("dia_vencimento")
+  valorMensal   Decimal              @map("valor_mensal") @db.Decimal(10, 2)
+  observacoes   String?              @db.VarChar(500)
+  createdAt     DateTime             @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime             @updatedAt @map("updated_at") @db.Timestamptz
+
+  escritorio UsuarioContador @relation(fields: [escritorioId], references: [id], onDelete: Cascade)
+  plano      PlanoSaaS       @relation(fields: [planoId], references: [id])
+
+  @@index([planoId])
+  @@index([status])
+  @@map("assinatura_saas")
 }

@@ -16,6 +16,7 @@ import {
   Users,
   Receipt,
   Activity,
+  Package,
 } from 'lucide-react';
 
 import { useAuth } from '../../src/presentation/hooks/useAuth';
@@ -34,6 +35,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/dashboard-admin', label: 'Dashboard',        icon: <LayoutDashboard size={18} /> },
   { href: '/contadores',      label: 'Clientes',         icon: <Users           size={18} /> },
   { href: '/admin-boletos',   label: 'Boletos',          icon: <Receipt         size={18} /> },
+  { href: '/planos',          label: 'Planos',           icon: <Package         size={18} /> },
   { href: '/faturamento',     label: 'Faturamento SaaS', icon: <CreditCard      size={18} /> },
   { href: '/webhook-logs',    label: 'Log de Webhooks',  icon: <Activity        size={18} /> },
   { href: '/admin-config',    label: 'Configurações',    icon: <Settings        size={18} /> },
