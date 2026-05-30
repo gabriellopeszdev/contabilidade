@@ -134,6 +134,20 @@ export class MinIOStorageAdapter implements IStorageService {
       cond,
     );
   }
+
+  // ---------------------------------------------------------------------------
+  // getBuffer — download de arquivo como Buffer para processamento interno
+  // ---------------------------------------------------------------------------
+
+  async getBuffer(storagePath: string): Promise<Buffer> {
+    const stream = await this.client.getObject(this.bucket, storagePath);
+    const chunks: Buffer[] = [];
+    return new Promise((resolve, reject) => {
+      stream.on('data', (chunk: Buffer) => chunks.push(chunk));
+      stream.on('end', () => resolve(Buffer.concat(chunks)));
+      stream.on('error', reject);
+    });
+  }
 }
 
 // ---------------------------------------------------------------------------

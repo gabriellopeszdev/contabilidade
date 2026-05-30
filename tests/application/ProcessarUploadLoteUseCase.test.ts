@@ -26,6 +26,7 @@ function criarMocks() {
     gerarPresignedUrlDownload: vi.fn(),
     verificarExistencia: vi.fn(),
     copiar: vi.fn(),
+    getBuffer: vi.fn(),
   };
   const auditLogRepository: IAuditLogRepository = {
     salvar: vi.fn().mockResolvedValue(undefined),

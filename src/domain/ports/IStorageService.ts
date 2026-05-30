@@ -101,4 +101,13 @@ export interface IStorageService {
    * Usado no offboarding para mover arquivos para path dedicado.
    */
   copiar(fromPath: string, toPath: string): Promise<void>;
+
+  /**
+   * Baixa um arquivo do storage e retorna seu conteúdo como Buffer.
+   * Usado para operações internas que precisam processar o binário
+   * (ex: enviar PDF ao DocSeal para assinatura eletrônica).
+   *
+   * @param storagePath Caminho completo do arquivo no bucket.
+   */
+  getBuffer(storagePath: string): Promise<Buffer>;
 }
