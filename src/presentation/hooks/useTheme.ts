@@ -33,14 +33,20 @@ function tint(hex: string, amount: number): string {
 export interface ThemeBrand {
   logoUrl: string | null;
   nomeEscritorio: string;
+  /** true after the config fetch completes (success or failure). */
+  loaded: boolean;
 }
 
 export function useTheme(token: string | null | undefined): ThemeBrand {
-  const [brand, setBrand] = useState<ThemeBrand>({ logoUrl: null, nomeEscritorio: '' });
+  const [brand, setBrand] = useState<ThemeBrand>({ logoUrl: null, nomeEscritorio: '', loaded: false });
 
   useEffect(() => {
-    if (!token) return;
+    if (!token) {
+      setBrand((prev) => ({ ...prev, loaded: true }));
+      return;
+    }
 
+    setBrand((prev) => ({ ...prev, loaded: false }));
     let cancelled = false;
 
     (async () => {
@@ -48,7 +54,10 @@ export function useTheme(token: string | null | undefined): ThemeBrand {
         const res = await fetch('/api/v1/escritorio/config', {
           headers: { Authorization: `Bearer ${token}` },
         });
-        if (!res.ok || cancelled) return;
+        if (!res.ok || cancelled) {
+          if (!cancelled) setBrand((prev) => ({ ...prev, loaded: true }));
+          return;
+        }
         const data = await res.json();
         const { corPrimaria, corSecundaria, logoUrl, nomeEscritorio } = data.config ?? {};
 
@@ -69,10 +78,11 @@ export function useTheme(token: string | null | undefined): ThemeBrand {
           setBrand({
             logoUrl: logoUrl ?? null,
             nomeEscritorio: nomeEscritorio ?? '',
+            loaded: true,
           });
         }
       } catch {
-        // Silently ignore — fallback CSS vars remain
+        if (!cancelled) setBrand((prev) => ({ ...prev, loaded: true }));
       }
     })();
 

@@ -85,7 +85,7 @@ export default function ContadorLayout({ children }: { children: React.ReactNode
   const pathname = usePathname();
   const router   = useRouter();
 
-  const { usuario, token, carregando, logout, getToken, isDono } = useAuth();
+  const { usuario, token, carregando, logout, getToken, isDono, isContador } = useAuth();
   const { dark, toggle: toggleDark, mounted: darkMounted } = useDarkMode();
 
   const [sidebarAberta,  setSidebarAberta]  = useState(false);
@@ -110,7 +110,7 @@ export default function ContadorLayout({ children }: { children: React.ReactNode
   const { status, notificacoes, naoLidas, marcarComoLida, marcarTodasLidas, limpar } =
     useNotificacoes(wsToken);
 
-  const { logoUrl, nomeEscritorio } = useTheme(token);
+  const { logoUrl, nomeEscritorio, loaded: themeLoaded } = useTheme(token);
   const { formatado: tempoSessao, critico: sessaoCritica, urgente: sessaoUrgente } = useSessionTimer();
 
   const [userMenuAberto, setUserMenuAberto] = useState(false);
@@ -143,6 +143,12 @@ export default function ContadorLayout({ children }: { children: React.ReactNode
   useEffect(() => {
     if (!carregando && !usuario) router.push('/login');
   }, [carregando, usuario, router]);
+
+  // Redirect first-time Contadores to the onboarding wizard
+  useEffect(() => {
+    if (!themeLoaded || carregando || !usuario || !isContador) return;
+    if (!nomeEscritorio) router.push('/onboarding');
+  }, [themeLoaded, nomeEscritorio, carregando, usuario, isContador, router]);
 
   if (carregando) {
     return (
