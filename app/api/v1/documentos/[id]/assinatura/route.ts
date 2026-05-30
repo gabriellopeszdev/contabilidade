@@ -3,6 +3,7 @@ import { withAuth, type ResolvedRouteContext } from '@/infrastructure/http/middl
 import { prisma, emailService, storageService, docSealService } from '@/infrastructure/di/Container';
 import { logger } from '@/utils/logger';
 import { randomBytes } from 'crypto';
+import { getPlanInfo, hasFeature, FEATURES } from '@/utils/planLimits';
 
 const EXPIRACAO_HORAS = 72;
 
@@ -25,6 +26,14 @@ export const dynamic = 'force-dynamic';
 // =============================================================================
 
 export const POST = withAuth(async (req, ctx, auth) => {
+  const plan = await getPlanInfo(auth.sub);
+  if (!hasFeature(plan, FEATURES.ASSINATURA_ELETRONICA)) {
+    return NextResponse.json(
+      { message: 'Assinatura eletrônica não está disponível no seu plano. Faça upgrade para o Plano Pro ou superior.' },
+      { status: 403 },
+    );
+  }
+
   const { id: documentoId } = (ctx as ResolvedRouteContext).params;
 
   const body = await req.json().catch(() => ({})) as { signatarioId?: string };

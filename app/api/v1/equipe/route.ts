@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { withAuth } from '../../../../src/infrastructure/http/middlewares/withAuth';
 import { prisma }   from '../../../../src/infrastructure/di/Container';
 import { logger }   from '../../../../src/utils/logger';
+import { getPlanInfo, hasFeature, FEATURES } from '../../../../src/utils/planLimits';
 import { BcryptPasswordHasher } from '../../../../src/infrastructure/auth/BcryptPasswordHasher';
 import { SenhaHash } from '../../../../src/domain/value-objects/SenhaHash';
 
@@ -49,6 +50,14 @@ export const GET = withAuth(async (_req, _ctx, auth) => {
 
 export const POST = withAuth(async (req, _ctx, auth) => {
   try {
+    const plan = await getPlanInfo(auth.sub);
+    if (!hasFeature(plan, FEATURES.EQUIPE)) {
+      return NextResponse.json(
+        { message: 'O recurso de Equipe não está disponível no seu plano. Faça upgrade para o Plano Pro ou superior.' },
+        { status: 403 },
+      );
+    }
+
     const body = await req.json();
     const { name, email, senha, phone, setores } = body as {
       name?: string;

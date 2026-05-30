@@ -5,6 +5,7 @@ import { randomBytes } from 'node:crypto';
 import { withAuth }     from '../../../../src/infrastructure/http/middlewares/withAuth';
 import { prisma, emailService } from '../../../../src/infrastructure/di/Container';
 import { logger }        from '../../../../src/utils/logger';
+import { checkClienteLimit } from '../../../../src/utils/planLimits';
 
 // =============================================================================
 // Configuração do runtime
@@ -193,6 +194,15 @@ export const POST = withAuth(async (req, _ctx, auth) => {
   const { nome, email, cnpj, phone } = parsed.data;
 
   try {
+    // Verifica limite de clientes do plano
+    const limite = await checkClienteLimit(auth.sub);
+    if (!limite.allowed) {
+      return NextResponse.json(
+        { message: `Limite de clientes atingido (${limite.current}/${limite.limit}). Faça upgrade do seu plano para adicionar mais clientes.` },
+        { status: 403 },
+      );
+    }
+
     // Verifica duplicidade de e-mail ou CNPJ
     const existente = await prisma.usuarioCliente.findFirst({
       where: {

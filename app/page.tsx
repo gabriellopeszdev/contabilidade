@@ -97,6 +97,60 @@ const STEPS = [
   },
 ];
 
+const PLANOS_LANDING = [
+  {
+    nome: 'Básico',
+    preco: '89',
+    descricao: 'Para escritórios pequenos que estão começando.',
+    destaque: false,
+    features: [
+      { label: 'Até 20 clientes',           incluido: true  },
+      { label: '1.000 documentos/mês',       incluido: true  },
+      { label: 'Portal do cliente',          incluido: true  },
+      { label: 'Chat em tempo real',         incluido: true  },
+      { label: 'Calendário fiscal',          incluido: true  },
+      { label: 'Cobranças via Asaas',        incluido: true  },
+      { label: 'Assinatura eletrônica',      incluido: false },
+      { label: 'Relatórios e exportação',    incluido: false },
+      { label: 'Gestão de equipe',           incluido: false },
+    ],
+  },
+  {
+    nome: 'Pro',
+    preco: '189',
+    descricao: 'Para escritórios em crescimento com mais recursos.',
+    destaque: true,
+    features: [
+      { label: 'Até 100 clientes',           incluido: true  },
+      { label: '5.000 documentos/mês',       incluido: true  },
+      { label: 'Portal do cliente',          incluido: true  },
+      { label: 'Chat em tempo real',         incluido: true  },
+      { label: 'Calendário fiscal',          incluido: true  },
+      { label: 'Cobranças via Asaas',        incluido: true  },
+      { label: 'Assinatura eletrônica',      incluido: true  },
+      { label: 'Relatórios e exportação',    incluido: true  },
+      { label: 'Gestão de equipe',           incluido: true  },
+    ],
+  },
+  {
+    nome: 'Enterprise',
+    preco: '389',
+    descricao: 'Clientes e documentos ilimitados. Todos os recursos.',
+    destaque: false,
+    features: [
+      { label: 'Clientes ilimitados',        incluido: true  },
+      { label: 'Documentos ilimitados',      incluido: true  },
+      { label: 'Portal do cliente',          incluido: true  },
+      { label: 'Chat em tempo real',         incluido: true  },
+      { label: 'Calendário fiscal',          incluido: true  },
+      { label: 'Cobranças via Asaas',        incluido: true  },
+      { label: 'Assinatura eletrônica',      incluido: true  },
+      { label: 'Relatórios e exportação',    incluido: true  },
+      { label: 'Gestão de equipe ilimitada', incluido: true  },
+    ],
+  },
+];
+
 const TRUST = [
   { icon: ShieldCheck, titulo: 'LGPD Compliant',  descricao: 'Dados armazenados em servidor próprio. Sem compartilhamento com terceiros.' },
   { icon: Lock,        titulo: '2FA com TOTP',    descricao: 'Autenticação em dois fatores com app autenticador (Google, Authy, etc.).' },
@@ -151,6 +205,7 @@ export default function LandingPage() {
           <nav className="hidden md:flex items-center gap-8 text-sm text-slate-400">
             <a href="#funcionalidades" className="hover:text-white transition-colors">Funcionalidades</a>
             <a href="#como-funciona"   className="hover:text-white transition-colors">Como funciona</a>
+            <a href="#planos"          className="hover:text-white transition-colors">Planos</a>
             <a href="#seguranca"       className="hover:text-white transition-colors">Segurança</a>
           </nav>
 
@@ -409,6 +464,85 @@ export default function LandingPage() {
                 </div>
               );
             })}
+          </div>
+        </div>
+      </section>
+
+      {/* ================================================================ */}
+      {/* PLANOS                                                             */}
+      {/* ================================================================ */}
+      <section id="planos" className="py-24 sm:py-32 border-t border-white/5 relative overflow-hidden">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[200px] bg-violet-600/8 blur-[80px] pointer-events-none" />
+
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-16" data-reveal>
+            <p className="text-violet-400 text-sm font-semibold uppercase tracking-widest mb-3">Planos</p>
+            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
+              Escolha o plano ideal para o seu escritório
+            </h2>
+            <p className="text-slate-400 text-lg max-w-xl mx-auto">
+              Sem taxa de adesão. Cancele quando quiser. Suporte incluso.
+            </p>
+          </div>
+
+          <div className="grid sm:grid-cols-3 gap-5 items-start">
+            {PLANOS_LANDING.map((plano, i) => (
+              <div
+                key={plano.nome}
+                data-reveal
+                data-delay={String(i + 1)}
+                className={`relative rounded-2xl border p-7 flex flex-col gap-5 transition-all duration-300 ${
+                  plano.destaque
+                    ? 'border-violet-500/40 bg-violet-500/5 hover:border-violet-500/60 hover:bg-violet-500/10 scale-[1.02]'
+                    : 'border-white/8 bg-white/[0.03] hover:border-white/15 hover:bg-white/[0.06]'
+                }`}
+              >
+                {plano.destaque && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                    <span className="bg-violet-600 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                      Mais popular
+                    </span>
+                  </div>
+                )}
+
+                <div>
+                  <h3 className="font-bold text-white text-lg mb-1">{plano.nome}</h3>
+                  <p className="text-slate-400 text-sm">{plano.descricao}</p>
+                </div>
+
+                <div>
+                  <span className="text-4xl font-bold text-white">R$ {plano.preco}</span>
+                  <span className="text-slate-400 text-sm">/mês</span>
+                </div>
+
+                <ul className="space-y-2.5 flex-1">
+                  {plano.features.map((f) => (
+                    <li key={f.label} className="flex items-start gap-2 text-sm">
+                      {f.incluido ? (
+                        <CheckCircle2 size={15} className="text-emerald-400 mt-0.5 shrink-0" />
+                      ) : (
+                        <span className="w-[15px] h-[15px] mt-0.5 shrink-0 rounded-full border border-slate-600 inline-flex items-center justify-center">
+                          <span className="w-1.5 h-px bg-slate-600 block" />
+                        </span>
+                      )}
+                      <span className={f.incluido ? 'text-slate-300' : 'text-slate-600'}>{f.label}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <Link
+                  href={`/cadastro?plano=${encodeURIComponent(plano.nome)}`}
+                  className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm transition-all hover:scale-[1.02] active:scale-95 ${
+                    plano.destaque
+                      ? 'bg-violet-600 hover:bg-violet-500 text-white shadow-lg shadow-violet-600/30'
+                      : 'border border-white/15 text-slate-300 hover:bg-white/10 hover:text-white'
+                  }`}
+                >
+                  Contratar
+                  <ChevronRight size={14} />
+                </Link>
+              </div>
+            ))}
           </div>
         </div>
       </section>

@@ -3,6 +3,7 @@ import { withAuth } from '@/infrastructure/http/middlewares/withAuth';
 import { prisma } from '@/infrastructure/di/Container';
 import { gerarPDF, ExportColumn } from '@/lib/exporters/pdfExporter';
 import { gerarExcel } from '@/lib/exporters/excelExporter';
+import { getPlanInfo, hasFeature, FEATURES } from '@/utils/planLimits';
 
 const COLUNAS: ExportColumn[] = [
   { header: 'Cliente',       key: 'cliente',       width: 0.30 },
@@ -14,6 +15,14 @@ const COLUNAS: ExportColumn[] = [
 ];
 
 export const GET = withAuth(async (req, ctx, auth) => {
+  const plan = await getPlanInfo(auth.sub);
+  if (!hasFeature(plan, FEATURES.RELATORIOS)) {
+    return NextResponse.json(
+      { message: 'Relatórios não estão disponíveis no seu plano. Faça upgrade para o Plano Pro ou superior.' },
+      { status: 403 },
+    );
+  }
+
   const { searchParams } = req.nextUrl;
   const format = searchParams.get('format') ?? 'pdf';
   const de     = searchParams.get('de');

@@ -262,6 +262,62 @@ async function main() {
   console.log(`✅ Func. gerente:     ${funcGer.email} (setores: TODOS)\n`);
 
   // -------------------------------------------------------------------------
+  // 6. Planos SaaS
+  // -------------------------------------------------------------------------
+  const [planoBasico, planoPro, planoEnterprise] = await Promise.all([
+    prisma.planoSaaS.create({
+      data: {
+        nome:             'Básico',
+        descricao:        'Ideal para escritórios pequenos que estão começando.',
+        preco:            89,
+        limiteClientes:   20,
+        limiteDocumentos: 1000,
+        features:         ['chat', 'calendario', 'financeiro'],
+        isActive:         true,
+      },
+    }),
+    prisma.planoSaaS.create({
+      data: {
+        nome:             'Pro',
+        descricao:        'Para escritórios em crescimento que precisam de mais recursos.',
+        preco:            189,
+        limiteClientes:   100,
+        limiteDocumentos: 5000,
+        features:         ['chat', 'calendario', 'financeiro', 'assinatura_eletronica', 'relatorios', 'equipe'],
+        isActive:         true,
+      },
+    }),
+    prisma.planoSaaS.create({
+      data: {
+        nome:             'Enterprise',
+        descricao:        'Clientes e documentos ilimitados. Todos os recursos.',
+        preco:            389,
+        limiteClientes:   -1,
+        limiteDocumentos: -1,
+        features:         ['chat', 'calendario', 'financeiro', 'assinatura_eletronica', 'relatorios', 'equipe', 'integracao_cora'],
+        isActive:         true,
+      },
+    }),
+  ]);
+  console.log(`✅ Planos criados: Básico (R$89), Pro (R$189), Enterprise (R$389)`);
+
+  // Assign Pro plan to the seed contador as TRIAL
+  await prisma.assinaturaSaaS.create({
+    data: {
+      escritorioId:  contador.id,
+      planoId:       planoPro.id,
+      status:        'TRIAL',
+      dataRenovacao: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      valorMensal:   planoPro.preco,
+    },
+  });
+  console.log(`✅ Plano Pro (TRIAL) atribuído ao contador de exemplo\n`);
+
+  // suppress unused variable warnings
+  void planoBasico;
+  void planoEnterprise;
+
+  // -------------------------------------------------------------------------
   // Resumo
   // -------------------------------------------------------------------------
   console.log('─'.repeat(54));
@@ -286,7 +342,11 @@ async function main() {
   console.log('  Func. Gerente (EMPLOYEE) → /dashboard');
   console.log(`    E-mail: ${FUNC_GERENTE.email}`);
   console.log(`    Senha:  ${FUNC_GERENTE.senha}`);
-  console.log(`    Setores: TODOS (acesso total)`);
+  console.log(`    Setores: TODOS (acesso total)\n`);
+  console.log('  Planos SaaS criados:');
+  console.log('    Básico      → R$89/mês  · 20 clientes  · 1.000 docs');
+  console.log('    Pro (TRIAL) → R$189/mês · 100 clientes · 5.000 docs (atribuído ao contador)');
+  console.log('    Enterprise  → R$389/mês · ilimitado');
   console.log('─'.repeat(54));
   console.log('\n⚠️  ATENÇÃO: credenciais apenas para desenvolvimento.\n');
 }
