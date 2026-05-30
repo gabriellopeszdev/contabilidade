@@ -9,7 +9,15 @@ export async function GET(req: NextRequest, { params }: Params) {
 
   const assinatura = await prisma.assinaturaDocumento.findUnique({
     where: { tokenAssinatura: token },
-    include: { documento: { select: { fileName: true, fileType: true } } },
+    select: {
+      id:             true,
+      status:         true,
+      expiresAt:      true,
+      signatarioNome: true,
+      provider:       true,
+      linkExterno:    true,
+      documento: { select: { fileName: true, fileType: true } },
+    },
   });
 
   if (!assinatura) return NextResponse.json({ message: 'Link inválido' }, { status: 404 });
@@ -30,6 +38,8 @@ export async function GET(req: NextRequest, { params }: Params) {
     nomeDocumento:  assinatura.documento.fileName,
     signatarioNome: assinatura.signatarioNome,
     expiresAt:      assinatura.expiresAt,
+    provider:       assinatura.provider,
+    linkExterno:    assinatura.linkExterno ?? null,
   });
 }
 
