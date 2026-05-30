@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { Building2, Mail, Loader2, CheckCircle2 } from 'lucide-react';
+import { validarEmail } from '../../../src/utils/validators';
 
 export default function RecuperarSenhaPage() {
   const [email,    setEmail]    = useState('');
@@ -12,8 +13,14 @@ export default function RecuperarSenhaPage() {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setEnviando(true);
     setErro('');
+
+    if (!validarEmail(email)) {
+      setErro('Informe um e-mail válido.');
+      return;
+    }
+
+    setEnviando(true);
 
     try {
       await fetch('/api/v1/auth/forgot-password', {
