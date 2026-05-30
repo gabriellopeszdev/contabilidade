@@ -15,6 +15,7 @@ import { PinoLogger } from '../logger/PinoLogger';
 import { ConsoleEmailAdapter } from '../email/ConsoleEmailAdapter';
 import { ResendEmailAdapter }  from '../email/ResendEmailAdapter';
 import type { IEmailService }  from '../../domain/ports/IEmailService';
+import { DocSealService } from '../docseal/DocSealService';
 
 // =============================================================================
 // Composition Root — Container de Injeção de Dependências
@@ -225,6 +226,11 @@ export const registrarLeituraDocumentoUseCase = new RegistrarLeituraDocumentoUse
 );
 
 export const emailService: IEmailService = buildEmailService();
+
+export const docSealService = new DocSealService(
+  process.env.DOCSEAL_API_URL ?? 'http://docseal:3000',
+  process.env.DOCSEAL_API_KEY ?? '',
+);
 
 // ---------------------------------------------------------------------------
 // Exportações de infraestrutura bruta
