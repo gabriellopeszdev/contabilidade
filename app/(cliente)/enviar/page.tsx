@@ -1,99 +1,209 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
-import { useDropzone }                       from 'react-dropzone';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import {
+  FileCode2,
+  Landmark,
+  Receipt,
+  Calculator,
+  Users,
+  ClipboardList,
+  FolderOpen,
+  BadgeCheck,
   CloudUpload,
   CheckCircle2,
   AlertCircle,
   X,
   Clock,
   FileText,
-  FileCode2,
-  Receipt,
-  Users,
-  BarChart3,
+  ChevronRight,
 } from 'lucide-react';
 
 import { useAuth }        from '../../../src/presentation/hooks/useAuth';
 import { EnvioLoteModal } from '../../../src/presentation/components/cliente/EnvioLoteModal';
 
 // =============================================================================
-// Tipos e constantes
+// Categorias de documento
 // =============================================================================
 
 type SetorTipo = 'FISCAL' | 'PESSOAL' | 'CONTABIL';
 
-const MAX_SIZE_BYTES = 10 * 1024 * 1024;
-
-const SETORES: {
-  value:    SetorTipo;
+interface Categoria {
+  id:       string;
   label:    string;
-  desc:     string;
+  descricao: string;
   exemplos: string;
-  Icon:     React.ElementType;
-  styles: {
-    idle:    string;
-    active:  string;
-    icon:    string;
-    bgIcon:  string;
-    txtIcon: string;
+  icon:     React.ElementType;
+  accept:   string;
+  setor:    SetorTipo;
+  cor: {
+    gradient: string;
+    iconBg:   string;
+    iconTxt:  string;
+    cardBg:   string;
+    cardBorder: string;
+    cardHover:  string;
+    badge:    string;
   };
-}[] = [
+}
+
+const CATEGORIAS: Categoria[] = [
   {
-    value:    'FISCAL',
-    label:    'Fiscal',
-    desc:     'Notas fiscais e obrigações tributárias',
-    exemplos: 'NF-e, DANFE, DARF, DAS, GPS, GNRE',
-    Icon:     Receipt,
-    styles: {
-      idle:    'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:border-indigo-300 hover:bg-indigo-50/40',
-      active:  'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 ring-2 ring-indigo-200 dark:ring-indigo-800',
-      icon:    'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400',
-      bgIcon:  'bg-indigo-100 dark:bg-indigo-900/40',
-      txtIcon: 'text-indigo-600 dark:text-indigo-400',
+    id:       'xml',
+    label:    'Arquivos XML',
+    descricao: 'Notas fiscais emitidas ou recebidas',
+    exemplos: 'NF-e · NFS-e · CT-e',
+    icon:     FileCode2,
+    accept:   '.xml',
+    setor:    'FISCAL',
+    cor: {
+      gradient:    'from-blue-500 to-blue-600',
+      iconBg:      'bg-blue-100 dark:bg-blue-900/40',
+      iconTxt:     'text-blue-600 dark:text-blue-400',
+      cardBg:      'bg-white dark:bg-gray-900',
+      cardBorder:  'border-blue-100 dark:border-blue-900/50',
+      cardHover:   'hover:border-blue-400 hover:shadow-blue-100 dark:hover:border-blue-600',
+      badge:       'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
     },
   },
   {
-    value:    'PESSOAL',
-    label:    'Dep. Pessoal',
-    desc:     'Documentos de funcionários e RH',
-    exemplos: 'Admissão, demissão, férias, holerite, FGTS',
-    Icon:     Users,
-    styles: {
-      idle:    'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:border-violet-300 hover:bg-violet-50/40',
-      active:  'border-violet-500 bg-violet-50 dark:bg-violet-900/30 ring-2 ring-violet-200 dark:ring-violet-800',
-      icon:    'bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400',
-      bgIcon:  'bg-violet-100 dark:bg-violet-900/40',
-      txtIcon: 'text-violet-600 dark:text-violet-400',
+    id:       'extratos',
+    label:    'Extratos Bancários',
+    descricao: 'Movimentação da sua conta bancária',
+    exemplos: 'PDF · OFX · CSV',
+    icon:     Landmark,
+    accept:   '.pdf,.ofx,.csv',
+    setor:    'CONTABIL',
+    cor: {
+      gradient:    'from-emerald-500 to-emerald-600',
+      iconBg:      'bg-emerald-100 dark:bg-emerald-900/40',
+      iconTxt:     'text-emerald-600 dark:text-emerald-400',
+      cardBg:      'bg-white dark:bg-gray-900',
+      cardBorder:  'border-emerald-100 dark:border-emerald-900/50',
+      cardHover:   'hover:border-emerald-400 hover:shadow-emerald-100 dark:hover:border-emerald-600',
+      badge:       'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
     },
   },
   {
-    value:    'CONTABIL',
-    label:    'Contábil',
-    desc:     'Demonstrativos e conciliações',
-    exemplos: 'Balanço, DRE, extrato bancário, conciliação',
-    Icon:     BarChart3,
-    styles: {
-      idle:    'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:border-teal-300 hover:bg-teal-50/40',
-      active:  'border-teal-500 bg-teal-50 dark:bg-teal-900/30 ring-2 ring-teal-200 dark:ring-teal-800',
-      icon:    'bg-teal-100 dark:bg-teal-900/40 text-teal-600 dark:text-teal-400',
-      bgIcon:  'bg-teal-100 dark:bg-teal-900/40',
-      txtIcon: 'text-teal-600 dark:text-teal-400',
+    id:       'despesas',
+    label:    'Despesas',
+    descricao: 'Comprovantes de pagamentos e gastos',
+    exemplos: 'Recibos · Boletos pagos · PDFs',
+    icon:     Receipt,
+    accept:   '.pdf,.jpg,.jpeg,.png',
+    setor:    'CONTABIL',
+    cor: {
+      gradient:    'from-orange-500 to-orange-600',
+      iconBg:      'bg-orange-100 dark:bg-orange-900/40',
+      iconTxt:     'text-orange-600 dark:text-orange-400',
+      cardBg:      'bg-white dark:bg-gray-900',
+      cardBorder:  'border-orange-100 dark:border-orange-900/50',
+      cardHover:   'hover:border-orange-400 hover:shadow-orange-100 dark:hover:border-orange-600',
+      badge:       'bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
+    },
+  },
+  {
+    id:       'impostos',
+    label:    'Impostos',
+    descricao: 'Guias e comprovantes de tributos',
+    exemplos: 'DARF · DAS · GPS · GNRE',
+    icon:     Calculator,
+    accept:   '.pdf,.xml',
+    setor:    'FISCAL',
+    cor: {
+      gradient:    'from-red-500 to-red-600',
+      iconBg:      'bg-red-100 dark:bg-red-900/40',
+      iconTxt:     'text-red-600 dark:text-red-400',
+      cardBg:      'bg-white dark:bg-gray-900',
+      cardBorder:  'border-red-100 dark:border-red-900/50',
+      cardHover:   'hover:border-red-400 hover:shadow-red-100 dark:hover:border-red-600',
+      badge:       'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+    },
+  },
+  {
+    id:       'folha',
+    label:    'Folha de Pagamento',
+    descricao: 'Documentos de funcionários e RH',
+    exemplos: 'Holerites · FGTS · Admissão',
+    icon:     Users,
+    accept:   '.pdf,.xls,.xlsx',
+    setor:    'PESSOAL',
+    cor: {
+      gradient:    'from-violet-500 to-violet-600',
+      iconBg:      'bg-violet-100 dark:bg-violet-900/40',
+      iconTxt:     'text-violet-600 dark:text-violet-400',
+      cardBg:      'bg-white dark:bg-gray-900',
+      cardBorder:  'border-violet-100 dark:border-violet-900/50',
+      cardHover:   'hover:border-violet-400 hover:shadow-violet-100 dark:hover:border-violet-600',
+      badge:       'bg-violet-50 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400',
+    },
+  },
+  {
+    id:       'solicitacoes',
+    label:    'Solicitações',
+    descricao: 'Pedidos e documentos gerais',
+    exemplos: 'PDF · Word · Imagens',
+    icon:     ClipboardList,
+    accept:   '.pdf,.doc,.docx,.jpg,.jpeg,.png',
+    setor:    'PESSOAL',
+    cor: {
+      gradient:    'from-sky-500 to-sky-600',
+      iconBg:      'bg-sky-100 dark:bg-sky-900/40',
+      iconTxt:     'text-sky-600 dark:text-sky-400',
+      cardBg:      'bg-white dark:bg-gray-900',
+      cardBorder:  'border-sky-100 dark:border-sky-900/50',
+      cardHover:   'hover:border-sky-400 hover:shadow-sky-100 dark:hover:border-sky-600',
+      badge:       'bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400',
+    },
+  },
+  {
+    id:       'diversos',
+    label:    'Documentos Diversos',
+    descricao: 'Outros documentos do seu negócio',
+    exemplos: 'Contratos · Alvarás · Qualquer PDF',
+    icon:     FolderOpen,
+    accept:   '.pdf,.doc,.docx,.jpg,.jpeg,.png,.xml',
+    setor:    'CONTABIL',
+    cor: {
+      gradient:    'from-slate-500 to-slate-600',
+      iconBg:      'bg-slate-100 dark:bg-slate-800',
+      iconTxt:     'text-slate-600 dark:text-slate-400',
+      cardBg:      'bg-white dark:bg-gray-900',
+      cardBorder:  'border-slate-200 dark:border-slate-700',
+      cardHover:   'hover:border-slate-400 hover:shadow-slate-100 dark:hover:border-slate-500',
+      badge:       'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400',
+    },
+  },
+  {
+    id:       'certidoes',
+    label:    'Certidões',
+    descricao: 'Certidões negativas e regularidade',
+    exemplos: 'CND · FGTS · Estadual · Municipal',
+    icon:     BadgeCheck,
+    accept:   '.pdf',
+    setor:    'FISCAL',
+    cor: {
+      gradient:    'from-teal-500 to-teal-600',
+      iconBg:      'bg-teal-100 dark:bg-teal-900/40',
+      iconTxt:     'text-teal-600 dark:text-teal-400',
+      cardBg:      'bg-white dark:bg-gray-900',
+      cardBorder:  'border-teal-100 dark:border-teal-900/50',
+      cardHover:   'hover:border-teal-400 hover:shadow-teal-100 dark:hover:border-teal-600',
+      badge:       'bg-teal-50 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400',
     },
   },
 ];
-
-const SETOR_COR: Record<string, string> = {
-  FISCAL:   'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 ring-1 ring-indigo-200 dark:ring-indigo-800',
-  PESSOAL:  'bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400 ring-1 ring-violet-200 dark:ring-violet-800',
-  CONTABIL: 'bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400 ring-1 ring-teal-200 dark:ring-teal-800',
-};
 
 const SETOR_LABEL: Record<string, string> = {
   FISCAL:   'Fiscal',
   PESSOAL:  'Dep. Pessoal',
   CONTABIL: 'Contábil',
+};
+
+const SETOR_COR: Record<string, string> = {
+  FISCAL:   'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400',
+  PESSOAL:  'bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400',
+  CONTABIL: 'bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400',
 };
 
 interface EnvioRecente {
@@ -104,31 +214,25 @@ interface EnvioRecente {
 }
 
 // =============================================================================
-// EnviarPage
+// Page
 // =============================================================================
 
 export default function EnviarPage() {
   const { token } = useAuth();
 
-  // ── Setor pré-selecionado ────────────────────────────────────────────────────
-  const [setorSelecionado, setSetorSelecionado] = useState<SetorTipo>('FISCAL');
-
-  // ── Modal ────────────────────────────────────────────────────────────────────
-  const [arquivosModal, setArquivosModal] = useState<File[]>([]);
-  const modalAberto = arquivosModal.length > 0;
-
-  // ── Rejeições ────────────────────────────────────────────────────────────────
-  const [rejeicoes, setRejeicoes] = useState<{ name: string; motivo: string }[]>([]);
-
-  // ── Histórico de envios ──────────────────────────────────────────────────────
-  const [enviosRecentes,  setEnviosRecentes]  = useState<EnvioRecente[]>([]);
+  const inputRef         = useRef<HTMLInputElement>(null);
+  const [catAtiva, setCatAtiva] = useState<Categoria | null>(null);
+  const [arquivosModal,  setArquivosModal]  = useState<File[]>([]);
+  const [setorModal,     setSetorModal]     = useState<SetorTipo>('FISCAL');
+  const [toast,          setToast]          = useState<{ tipo: 'sucesso' | 'erro'; msg: string } | null>(null);
+  const [enviosRecentes, setEnviosRecentes] = useState<EnvioRecente[]>([]);
   const [loadingHistorico, setLoadingHistorico] = useState(true);
 
   const carregarEnvios = useCallback(async () => {
     if (!token) return;
     setLoadingHistorico(true);
     try {
-      const res  = await fetch('/api/v1/documentos?page=1&perPage=10', {
+      const res  = await fetch('/api/v1/documentos?page=1&perPage=8', {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error();
@@ -142,7 +246,7 @@ export default function EnviarPage() {
         })),
       );
     } catch {
-      // silencia — não é crítico
+      // silencia
     } finally {
       setLoadingHistorico(false);
     }
@@ -150,226 +254,142 @@ export default function EnviarPage() {
 
   useEffect(() => { carregarEnvios(); }, [carregarEnvios]);
 
-  // ── Toast ────────────────────────────────────────────────────────────────────
-  const [toast, setToast] = useState<{ tipo: 'sucesso' | 'erro'; msg: string } | null>(null);
+  // Clique no card — abre o file picker com o accept correto
+  const handleCardClick = (cat: Categoria) => {
+    setCatAtiva(cat);
+    if (inputRef.current) {
+      inputRef.current.accept = cat.accept;
+      inputRef.current.value  = '';
+      inputRef.current.click();
+    }
+  };
 
-  // ── react-dropzone ───────────────────────────────────────────────────────────
-  const onDrop = useCallback((accepted: File[], rejected: any[]) => {
-    const novasRejeicoes = rejected.map((r) => ({
-      name:   r.file.name as string,
-      motivo: r.errors[0]?.code === 'file-too-large'
-        ? 'Arquivo excede 10 MB'
-        : r.errors[0]?.code === 'file-invalid-type'
-          ? 'Formato não suportado (apenas PDF/XML)'
-          : r.errors[0]?.message ?? 'Arquivo inválido',
-    }));
-    setRejeicoes(novasRejeicoes);
-    if (accepted.length > 0) setArquivosModal(accepted);
-  }, []);
+  // Arquivos escolhidos no file picker
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    if (files.length > 0 && catAtiva) {
+      setSetorModal(catAtiva.setor);
+      setArquivosModal(files);
+    }
+  };
 
-  const { getRootProps, getInputProps, isDragActive, isDragReject } = useDropzone({
-    onDrop,
-    accept: {
-      'application/pdf': ['.pdf'],
-      'application/xml': ['.xml'],
-      'text/xml':        ['.xml'],
-    },
-    maxSize:  MAX_SIZE_BYTES,
-    multiple: true,
-  });
+  const fecharModal = () => setArquivosModal([]);
 
-  const fecharModal       = useCallback(() => setArquivosModal([]), []);
-  const aoEnviarComSucesso = useCallback(() => {
+  const aoEnviarComSucesso = () => {
     fecharModal();
     setToast({ tipo: 'sucesso', msg: 'Documentos enviados! Seu contador já foi notificado.' });
     carregarEnvios();
-  }, [fecharModal, carregarEnvios]);
-
-  // ── Estilo do Dropzone ───────────────────────────────────────────────────────
-  const setorAtual = SETORES.find((s) => s.value === setorSelecionado)!;
-
-  const dropzoneClasses = [
-    'relative rounded-2xl border-2 border-dashed cursor-pointer select-none',
-    'transition-all duration-200 flex flex-col items-center justify-center',
-    'p-12 sm:p-16 text-center min-h-[260px]',
-    isDragReject
-      ? 'border-red-400 bg-red-50 dark:bg-red-900/20'
-      : isDragActive
-        ? 'border-sky-400 bg-sky-50 dark:bg-sky-900/20 scale-[1.01] shadow-lg'
-        : `border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 hover:shadow-md ${
-            setorSelecionado === 'FISCAL'   ? 'hover:border-indigo-400 hover:bg-indigo-50/30' :
-            setorSelecionado === 'PESSOAL'  ? 'hover:border-violet-400 hover:bg-violet-50/30' :
-                                              'hover:border-teal-400 hover:bg-teal-50/30'
-          }`,
-  ].join(' ');
+  };
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-3xl mx-auto space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto space-y-8">
 
       {/* Header */}
       <div>
-        <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">Enviar Arquivo</h2>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          Selecione o setor, depois arraste ou escolha os documentos.
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+          O que você precisa enviar?
+        </h2>
+        <p className="text-gray-500 dark:text-gray-400 mt-1">
+          Toque na categoria certa e escolha o arquivo — é só isso.
         </p>
       </div>
 
-      {/* ── Passo 1: Seleção de Setor ──────────────────────────────────────────── */}
-      <div className="space-y-2">
-        <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">
-          1. Para qual setor é este envio?
-        </p>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {SETORES.map(({ value, label, desc, exemplos, Icon, styles }) => {
-            const ativo = setorSelecionado === value;
-            return (
-              <button
-                key={value}
-                type="button"
-                onClick={() => setSetorSelecionado(value)}
-                className={`
-                  relative text-left rounded-2xl border-2 p-4 transition-all
-                  focus-visible:outline-none
-                  ${ativo ? styles.active : styles.idle}
-                `}
-              >
-                {/* Ícone */}
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${styles.icon}`}>
-                  <Icon size={20} />
-                </div>
+      {/* Input file oculto — reutilizado por todos os cards */}
+      <input
+        ref={inputRef}
+        type="file"
+        multiple
+        className="hidden"
+        onChange={handleFileChange}
+      />
 
-                {/* Texto */}
-                <p className="text-sm font-bold text-gray-900 dark:text-gray-100 leading-tight">{label}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 leading-tight">{desc}</p>
-                <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-2 leading-relaxed">{exemplos}</p>
+      {/* Grid de categorias */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+        {CATEGORIAS.map((cat) => {
+          const Icon = cat.icon;
+          return (
+            <button
+              key={cat.id}
+              type="button"
+              onClick={() => handleCardClick(cat)}
+              className={`
+                group relative flex flex-col items-center text-center
+                rounded-2xl border-2 p-5 sm:p-6
+                transition-all duration-200 cursor-pointer
+                hover:shadow-lg hover:-translate-y-0.5 active:scale-95
+                ${cat.cor.cardBg} ${cat.cor.cardBorder} ${cat.cor.cardHover}
+              `}
+            >
+              {/* Ícone com gradiente */}
+              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-4 transition-transform duration-200 group-hover:scale-110 bg-gradient-to-br ${cat.cor.gradient}`}>
+                <Icon size={26} className="text-white" />
+              </div>
 
-                {/* Indicador de seleção */}
-                {ativo && (
-                  <CheckCircle2
-                    size={16}
-                    className="absolute top-3 right-3 text-current opacity-70"
-                  />
-                )}
-              </button>
-            );
-          })}
-        </div>
+              {/* Título */}
+              <p className="text-sm font-bold text-gray-900 dark:text-gray-100 leading-tight mb-1">
+                {cat.label}
+              </p>
+
+              {/* Descrição */}
+              <p className="text-xs text-gray-500 dark:text-gray-400 leading-snug mb-3">
+                {cat.descricao}
+              </p>
+
+              {/* Exemplos */}
+              <p className="text-[10px] text-gray-400 dark:text-gray-500 leading-relaxed">
+                {cat.exemplos}
+              </p>
+
+              {/* CTA */}
+              <div className="mt-4 flex items-center gap-1 text-xs font-semibold text-gray-400 dark:text-gray-500 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors">
+                <CloudUpload size={13} />
+                Enviar
+                <ChevronRight size={12} className="group-hover:translate-x-0.5 transition-transform" />
+              </div>
+            </button>
+          );
+        })}
       </div>
 
-      {/* ── Passo 2: Dropzone ─────────────────────────────────────────────────── */}
-      <div className="space-y-2">
-        <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">
-          2. Arraste os arquivos ou clique para selecionar
+      {/* Aviso informativo */}
+      <div className="flex items-start gap-3 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/50 px-4 py-3">
+        <CheckCircle2 size={16} className="text-blue-500 shrink-0 mt-0.5" />
+        <p className="text-sm text-blue-700 dark:text-blue-300">
+          Após enviar, seu contador recebe uma notificação automática. Você não precisa ligar nem mandar mensagem.
         </p>
-
-        <div {...getRootProps()} className={dropzoneClasses}>
-          <input {...getInputProps()} />
-
-          {/* Ícone central */}
-          <div className={`w-20 h-20 rounded-2xl flex items-center justify-center mb-5 transition-colors
-            ${isDragReject
-              ? 'bg-red-100 dark:bg-red-900/30'
-              : isDragActive
-                ? 'bg-sky-100 dark:bg-sky-900/30'
-                : setorAtual.styles.bgIcon
-            }`}
-          >
-            <CloudUpload
-              size={40}
-              className={
-                isDragReject ? 'text-red-500 dark:text-red-400' :
-                isDragActive ? 'text-sky-500 dark:text-sky-400' :
-                setorAtual.styles.txtIcon
-              }
-            />
-          </div>
-
-          {isDragReject ? (
-            <>
-              <p className="text-base font-semibold text-red-700 dark:text-red-400">Formato não suportado</p>
-              <p className="text-sm text-red-500 dark:text-red-400 mt-1">Apenas arquivos PDF e XML são aceitos.</p>
-            </>
-          ) : isDragActive ? (
-            <>
-              <p className="text-base font-semibold text-sky-700 dark:text-sky-400">
-                Solte para enviar para {setorAtual.label}!
-              </p>
-              <p className="text-sm text-sky-500 dark:text-sky-400 mt-1">Todos os arquivos serão adicionados.</p>
-            </>
-          ) : (
-            <>
-              <p className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-                Arraste seus documentos de{' '}
-                <span className={
-                  setorSelecionado === 'FISCAL'  ? 'text-indigo-600' :
-                  setorSelecionado === 'PESSOAL' ? 'text-violet-600' :
-                  'text-teal-600'
-                }>
-                  {setorAtual.label}
-                </span>{' '}aqui
-              </p>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1.5">
-                ou{' '}
-                <span className="text-sky-600 underline underline-offset-2 font-medium">
-                  clique para procurar no computador
-                </span>
-              </p>
-              <p className="text-xs text-gray-400 dark:text-gray-500 mt-3">
-                PDF ou XML · Máximo 10 MB por arquivo · Múltiplos arquivos aceitos
-              </p>
-            </>
-          )}
-        </div>
       </div>
 
-      {/* Avisos de rejeição */}
-      {rejeicoes.length > 0 && (
-        <div className="rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-4 py-3 space-y-1.5">
-          <p className="text-xs font-semibold text-red-700 flex items-center gap-1.5">
-            <AlertCircle size={13} />
-            {rejeicoes.length} arquivo{rejeicoes.length > 1 ? 's' : ''} rejeitado{rejeicoes.length > 1 ? 's' : ''}:
-          </p>
-          {rejeicoes.map((r, i) => (
-            <p key={i} className="text-xs text-red-600">
-              <span className="font-medium">{r.name}</span> — {r.motivo}
-            </p>
-          ))}
-        </div>
-      )}
-
-      {/* ── Histórico de envios ───────────────────────────────────────────────── */}
+      {/* Histórico */}
       <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
         <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800 flex items-center gap-2">
           <Clock size={15} className="text-gray-400 dark:text-gray-500" />
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Enviados por mim</h3>
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Seus envios recentes</h3>
         </div>
 
         {loadingHistorico ? (
           <div className="py-10 flex justify-center">
-            <div className="w-5 h-5 border-2 border-sky-500 border-t-transparent rounded-full animate-spin" />
+            <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
           </div>
         ) : enviosRecentes.length === 0 ? (
-          <div className="py-10 text-center">
-            <CloudUpload size={28} className="mx-auto text-gray-300 dark:text-gray-600 mb-2" />
-            <p className="text-sm text-gray-500 dark:text-gray-400">Nenhum documento enviado ainda.</p>
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-              Use a área acima para enviar seu primeiro documento.
+          <div className="py-12 text-center">
+            <CloudUpload size={32} className="mx-auto text-gray-300 dark:text-gray-600 mb-3" />
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Nenhum documento enviado ainda</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+              Toque em uma das categorias acima para enviar seu primeiro documento.
             </p>
           </div>
         ) : (
           <ul className="divide-y divide-gray-50 dark:divide-gray-800">
             {enviosRecentes.map((envio) => {
-              const isPDF = envio.fileName.toLowerCase().endsWith('.pdf');
+              const cat = CATEGORIAS.find((c) => c.setor === envio.sector);
+              const Icon = cat?.icon ?? FileText;
               return (
                 <li
                   key={envio.id}
-                  className="px-4 py-3 flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                  className="px-4 py-3 flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center shrink-0">
-                    {isPDF
-                      ? <FileText  size={14} className="text-red-400" />
-                      : <FileCode2 size={14} className="text-sky-400" />
-                    }
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 bg-gradient-to-br ${cat?.cor.gradient ?? 'from-gray-400 to-gray-500'}`}>
+                    <Icon size={15} className="text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{envio.fileName}</p>
@@ -380,8 +400,7 @@ export default function EnviarPage() {
                       })}
                     </p>
                   </div>
-                  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0
-                    ${SETOR_COR[envio.sector] ?? 'bg-gray-100 text-gray-600'}`}>
+                  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${SETOR_COR[envio.sector] ?? 'bg-gray-100 text-gray-600'}`}>
                     {SETOR_LABEL[envio.sector] ?? envio.sector}
                   </span>
                 </li>
@@ -391,11 +410,11 @@ export default function EnviarPage() {
         )}
       </div>
 
-      {/* Modal de categorização — setor já pré-selecionado */}
-      {modalAberto && (
+      {/* Modal de envio */}
+      {arquivosModal.length > 0 && (
         <EnvioLoteModal
           arquivos={arquivosModal}
-          setorInicial={setorSelecionado}
+          setorInicial={setorModal}
           onFechar={fecharModal}
           onSucesso={aoEnviarComSucesso}
         />
@@ -403,20 +422,16 @@ export default function EnviarPage() {
 
       {/* Toast */}
       {toast && (
-        <div className="fixed bottom-6 right-6 z-50 max-w-sm animate-in slide-in-from-bottom-4 duration-300">
-          <div className={`flex items-start gap-3 rounded-xl shadow-lg border p-4 pr-3
-            ${toast.tipo === 'sucesso' ? 'bg-white dark:bg-gray-900 border-emerald-200 dark:border-emerald-800' : 'bg-white dark:bg-gray-900 border-red-200 dark:border-red-800'}`}
+        <div className="fixed bottom-6 right-6 z-50 max-w-sm" style={{ animation: 'fadeInUp 0.3s ease both' }}>
+          <div className={`flex items-start gap-3 rounded-xl shadow-xl border p-4 pr-3 bg-white dark:bg-gray-900
+            ${toast.tipo === 'sucesso' ? 'border-emerald-200 dark:border-emerald-800' : 'border-red-200 dark:border-red-800'}`}
           >
             {toast.tipo === 'sucesso'
               ? <CheckCircle2 size={18} className="text-emerald-500 shrink-0 mt-0.5" />
               : <AlertCircle  size={18} className="text-red-500 shrink-0 mt-0.5" />
             }
             <p className="text-sm text-gray-700 dark:text-gray-300 flex-1">{toast.msg}</p>
-            <button
-              type="button"
-              onClick={() => setToast(null)}
-              className="p-1 rounded-lg text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
-            >
+            <button type="button" onClick={() => setToast(null)} className="p-1 rounded-lg text-gray-400 hover:text-gray-600">
               <X size={14} />
             </button>
           </div>
