@@ -296,7 +296,7 @@ function ModalCriarContador({ onClose, onCriado, token }: ModalCriarContadorProp
                 >
                   {planos.map((p) => (
                     <option key={p.id} value={p.id}>
-                      {p.nome} — R$ {p.preco.toFixed(2).replace('.', ',')}
+                      {p.nome} — R$ {Number(p.preco).toFixed(2).replace('.', ',')}
                     </option>
                   ))}
                 </select>
@@ -890,7 +890,7 @@ function ModalPlano({ contador, onClose, onSalvo, token }: ModalPlanoProps) {
                         <p className="text-sm font-medium text-white">{p.nome}</p>
                       </div>
                       <span className="text-xs font-mono text-slate-300">
-                        R$ {p.preco.toFixed(2).replace('.', ',')}
+                        R$ {Number(p.preco).toFixed(2).replace('.', ',')}
                       </span>
                     </label>
                   ))}
