@@ -19,7 +19,19 @@ import {
   Star,
 } from 'lucide-react';
 import { FiscoHubLogo } from './components/FiscoHubLogo';
+import { useAuth } from '../src/presentation/hooks/useAuth';
 
+const ROTA_DASHBOARD: Record<string, string> = {
+  Contador: '/dashboard',
+  Cliente:  '/inicio',
+  Admin:    '/dashboard-admin',
+};
+
+const LABEL_DASHBOARD: Record<string, string> = {
+  Contador: 'Ir para o painel',
+  Cliente:  'Ir para o meu portal',
+  Admin:    'Ir para o admin',
+};
 
 const FEATURES = [
   {
@@ -172,6 +184,9 @@ function useRevealOnScroll() {
 }
 
 export default function LandingPage() {
+  const { usuario, role } = useAuth();
+  const dashHref  = role ? (ROTA_DASHBOARD[role]  ?? '/dashboard') : '/login';
+  const dashLabel = role ? (LABEL_DASHBOARD[role] ?? 'Ir para o painel') : null;
   useRevealOnScroll();
 
   return (
@@ -195,10 +210,10 @@ export default function LandingPage() {
           </nav>
 
           <Link
-            href="/login"
+            href={usuario ? dashHref : '/login'}
             className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium transition-all hover:scale-105 active:scale-95"
           >
-            Acessar
+            {dashLabel ?? 'Acessar'}
             <ChevronRight size={14} />
           </Link>
         </div>
@@ -268,11 +283,11 @@ export default function LandingPage() {
             style={{ animation: 'fadeInUp 0.7s 0.5s ease both' }}
           >
             <Link
-              href="/login"
+              href={usuario ? dashHref : '/login'}
               className="group flex items-center gap-2 px-7 py-3.5 rounded-xl font-semibold text-white transition-all hover:scale-105 active:scale-95 shadow-lg shadow-blue-600/30 hover:shadow-blue-600/50"
               style={{ background: 'linear-gradient(135deg, #2563eb, #4f46e5)' }}
             >
-              Acessar o sistema
+              {dashLabel ?? 'Acessar o sistema'}
               <ArrowRight size={17} className="group-hover:translate-x-1 transition-transform" />
             </Link>
             <a
@@ -592,11 +607,11 @@ export default function LandingPage() {
           </p>
 
           <Link
-            href="/login"
+            href={usuario ? dashHref : '/login'}
             className="group inline-flex items-center gap-2.5 px-8 py-4 rounded-xl font-bold text-white text-lg transition-all hover:scale-105 active:scale-95 shadow-2xl shadow-blue-600/30 hover:shadow-blue-600/50"
             style={{ background: 'linear-gradient(135deg, #2563eb, #4f46e5)' }}
           >
-            Entrar na plataforma
+            {dashLabel ?? 'Entrar na plataforma'}
             <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
           </Link>
 
