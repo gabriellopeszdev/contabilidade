@@ -14,6 +14,7 @@ import {
   KeyRound,
   CheckCircle2,
   Pencil,
+  CreditCard,
 } from 'lucide-react';
 
 import { useAuth } from '../../../src/presentation/hooks/useAuth';
@@ -34,6 +35,16 @@ interface ContadorDTO {
   asaasConfigurado: boolean;
   coraConfigurado:  boolean;
   createdAt:        string;
+  planoId:          string | null;
+  planoNome:        string | null;
+  statusAssinatura: string | null;
+  dataRenovacao:    string | null;
+}
+
+interface PlanoDTO {
+  id:    string;
+  nome:  string;
+  preco: number;
 }
 
 interface NovoContadorForm {
@@ -43,6 +54,7 @@ interface NovoContadorForm {
   senhaProvisoria: string;
   nomeEscritorio:  string;
   cnpjEscritorio:  string;
+  planoId:         string;
 }
 
 const FORM_INICIAL: NovoContadorForm = {
@@ -52,6 +64,7 @@ const FORM_INICIAL: NovoContadorForm = {
   senhaProvisoria: '',
   nomeEscritorio:  '',
   cnpjEscritorio:  '',
+  planoId:         '',
 };
 
 // =============================================================================
@@ -86,6 +99,18 @@ function ModalCriarContador({ onClose, onCriado, token }: ModalCriarContadorProp
   const [form,     setForm]     = useState<NovoContadorForm>(FORM_INICIAL);
   const [erros,    setErros]    = useState<string[]>([]);
   const [enviando, setEnviando] = useState(false);
+  const [planos,   setPlanos]   = useState<PlanoDTO[]>([]);
+
+  useEffect(() => {
+    fetch('/api/v1/planos')
+      .then((r) => r.json())
+      .then((d) => {
+        const lista: PlanoDTO[] = d.planos ?? [];
+        setPlanos(lista);
+        if (lista.length > 0) setForm((f) => ({ ...f, planoId: lista[0].id }));
+      })
+      .catch(() => {});
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
@@ -118,6 +143,7 @@ function ModalCriarContador({ onClose, onCriado, token }: ModalCriarContadorProp
           senhaProvisoria: form.senhaProvisoria,
           nomeEscritorio:  form.nomeEscritorio.trim(),
           cnpjEscritorio:  form.cnpjEscritorio.trim() || undefined,
+          planoId:         form.planoId || undefined,
         }),
       });
 
@@ -256,6 +282,26 @@ function ModalCriarContador({ onClose, onCriado, token }: ModalCriarContadorProp
                 className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-violet-500"
               />
             </div>
+
+            {planos.length > 0 && (
+              <div className="col-span-2">
+                <label className="block text-[11px] font-medium text-slate-400 mb-1">
+                  Plano de trial <span className="text-slate-500">(7 dias gratuitos)</span>
+                </label>
+                <select
+                  name="planoId"
+                  value={form.planoId}
+                  onChange={(e) => setForm((f) => ({ ...f, planoId: e.target.value }))}
+                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-violet-500"
+                >
+                  {planos.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.nome} — R$ {p.preco.toFixed(2).replace('.', ',')}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
 
           {/* Footer */}
@@ -738,6 +784,152 @@ function ModalCora({ contador, onClose, onSalvo, token }: ModalCoraProps) {
 }
 
 // =============================================================================
+// Modal Plano — altera o plano SaaS de um contador
+// =============================================================================
+
+const STATUS_OPTS = ['TRIAL', 'ATIVO', 'INADIMPLENTE', 'SUSPENSO', 'CANCELADO'] as const;
+const STATUS_CORES: Record<string, string> = {
+  TRIAL:        'text-blue-400',
+  ATIVO:        'text-emerald-400',
+  INADIMPLENTE: 'text-orange-400',
+  SUSPENSO:     'text-yellow-400',
+  CANCELADO:    'text-red-400',
+};
+
+interface ModalPlanoProps {
+  contador: ContadorDTO;
+  onClose:  () => void;
+  onSalvo:  (planoNome: string, status: string, planoId: string) => void;
+  token:    string;
+}
+
+function ModalPlano({ contador, onClose, onSalvo, token }: ModalPlanoProps) {
+  const [planos,      setPlanos]      = useState<PlanoDTO[]>([]);
+  const [planoId,     setPlanoId]     = useState(contador.planoId ?? '');
+  const [status,      setStatus]      = useState(contador.statusAssinatura ?? 'TRIAL');
+  const [carregando,  setCarregando]  = useState(true);
+  const [salvando,    setSalvando]    = useState(false);
+  const [erro,        setErro]        = useState('');
+  const [sucesso,     setSucesso]     = useState('');
+
+  useEffect(() => {
+    fetch('/api/v1/planos')
+      .then((r) => r.json())
+      .then((d) => { setPlanos(d.planos ?? []); setCarregando(false); })
+      .catch(() => setCarregando(false));
+  }, []);
+
+  const handleSalvar = async () => {
+    if (!planoId) { setErro('Selecione um plano.'); return; }
+    setErro('');
+    setSalvando(true);
+    try {
+      const res = await fetch(`/api/v1/admin/contadores/${contador.id}/plano`, {
+        method:  'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body:    JSON.stringify({ planoId, status }),
+      });
+      const data = await res.json() as { ok?: boolean; message?: string; planoNome?: string };
+      if (!res.ok) { setErro(data.message ?? 'Erro ao salvar.'); return; }
+      setSucesso(`Plano atualizado para ${data.planoNome} (${status}).`);
+      onSalvo(data.planoNome ?? '', status, planoId);
+      setTimeout(onClose, 1200);
+    } catch {
+      setErro('Erro de rede. Tente novamente.');
+    } finally {
+      setSalvando(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
+      <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
+
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
+          <div>
+            <h2 className="text-sm font-bold text-white">Alterar Plano</h2>
+            <p className="text-xs text-slate-400 mt-0.5">{contador.name}</p>
+          </div>
+          <button onClick={onClose} className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800">
+            <X size={16} />
+          </button>
+        </div>
+
+        <div className="px-6 py-5 space-y-4">
+          {erro && (
+            <div className="flex items-start gap-2 bg-red-900/30 border border-red-700/50 rounded-lg px-3 py-2.5">
+              <AlertCircle size={13} className="text-red-400 shrink-0 mt-0.5" />
+              <p className="text-xs text-red-300">{erro}</p>
+            </div>
+          )}
+          {sucesso && (
+            <div className="flex items-center gap-2 bg-emerald-900/30 border border-emerald-700/50 rounded-lg px-3 py-2.5">
+              <CheckCircle2 size={13} className="text-emerald-400 shrink-0" />
+              <p className="text-xs text-emerald-300">{sucesso}</p>
+            </div>
+          )}
+
+          {carregando ? (
+            <div className="flex justify-center py-8"><Loader2 size={24} className="animate-spin text-violet-400" /></div>
+          ) : (
+            <>
+              <div>
+                <label className="block text-[11px] font-medium text-slate-400 mb-2">Plano</label>
+                <div className="space-y-2">
+                  {planos.map((p) => (
+                    <label key={p.id} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${planoId === p.id ? 'border-violet-500 bg-violet-900/20' : 'border-slate-700 bg-slate-800 hover:border-slate-600'}`}>
+                      <input
+                        type="radio"
+                        name="plano"
+                        value={p.id}
+                        checked={planoId === p.id}
+                        onChange={() => setPlanoId(p.id)}
+                        className="accent-violet-500"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-white">{p.nome}</p>
+                      </div>
+                      <span className="text-xs font-mono text-slate-300">
+                        R$ {p.preco.toFixed(2).replace('.', ',')}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-medium text-slate-400 mb-2">Status da assinatura</label>
+                <select
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
+                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-violet-500"
+                >
+                  {STATUS_OPTS.map((s) => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+              </div>
+            </>
+          )}
+
+          <div className="flex gap-3 pt-1">
+            <button type="button" onClick={onClose}
+              className="flex-1 px-4 py-2 text-sm font-medium text-slate-300 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors">
+              Fechar
+            </button>
+            <button type="button" onClick={handleSalvar} disabled={salvando || carregando || !planoId}
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-violet-600 hover:bg-violet-500 disabled:opacity-50 rounded-lg transition-colors">
+              {salvando ? <Loader2 size={14} className="animate-spin" /> : <CreditCard size={14} />}
+              {salvando ? 'Salvando…' : 'Salvar plano'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// =============================================================================
 // Página principal
 // =============================================================================
 
@@ -753,6 +945,7 @@ export default function ContadoresPage() {
   const [modalAsaas,    setModalAsaas]    = useState<ContadorDTO | null>(null);
   const [modalCora,     setModalCora]     = useState<ContadorDTO | null>(null);
   const [modalEditar,   setModalEditar]   = useState<ContadorDTO | null>(null);
+  const [modalPlano,    setModalPlano]    = useState<ContadorDTO | null>(null);
 
   // Carrega lista
   const carregar = useCallback(async () => {
@@ -880,6 +1073,20 @@ export default function ContadoresPage() {
         />
       )}
 
+      {/* Modal: Plano */}
+      {modalPlano && (
+        <ModalPlano
+          contador={modalPlano}
+          token={token ?? ''}
+          onClose={() => setModalPlano(null)}
+          onSalvo={(planoNome, statusAssinatura, planoId) => {
+            setContadores((prev) =>
+              prev.map((c) => c.id === modalPlano.id ? { ...c, planoNome, statusAssinatura, planoId } : c),
+            );
+          }}
+        />
+      )}
+
       {/* Conteúdo */}
       <div className="max-w-7xl mx-auto space-y-6">
 
@@ -985,6 +1192,11 @@ export default function ContadoresPage() {
                             {c.nomeEscritorio && (
                               <p className="text-[11px] text-violet-400/80 truncate">{c.nomeEscritorio}</p>
                             )}
+                            {c.planoNome && (
+                              <p className={`text-[10px] font-medium truncate ${STATUS_CORES[c.statusAssinatura ?? ''] ?? 'text-slate-500'}`}>
+                                {c.planoNome} · {c.statusAssinatura}
+                              </p>
+                            )}
                           </div>
                         </div>
                       </td>
@@ -1044,6 +1256,20 @@ export default function ContadoresPage() {
                           >
                             <Pencil size={12} />
                             Editar
+                          </button>
+
+                          {/* Plano */}
+                          <button
+                            onClick={() => setModalPlano(c)}
+                            title="Alterar plano"
+                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border ${
+                              c.planoNome
+                                ? 'text-violet-400 bg-violet-900/20 hover:bg-violet-900/40 border-violet-800/40'
+                                : 'text-slate-400 bg-slate-800 hover:bg-slate-700 border-slate-700'
+                            }`}
+                          >
+                            <CreditCard size={12} />
+                            Plano
                           </button>
 
                           {/* Asaas */}

@@ -39,6 +39,9 @@ export const GET = withAuth(async (_req: NextRequest, _ctx: RouteContext) => {
         configuracao: {
           select: { nomeEscritorio: true, cnpjEscritorio: true, asaasApiKey: true, coraClientId: true },
         },
+        assinaturaSaaS: {
+          select: { status: true, dataRenovacao: true, plano: { select: { id: true, nome: true } } },
+        },
       },
     });
 
@@ -54,6 +57,10 @@ export const GET = withAuth(async (_req: NextRequest, _ctx: RouteContext) => {
       asaasConfigurado:  Boolean(c.configuracao?.asaasApiKey),
       coraConfigurado:   Boolean(c.configuracao?.coraClientId),
       createdAt:         c.createdAt.toISOString(),
+      planoId:           c.assinaturaSaaS?.plano.id ?? null,
+      planoNome:         c.assinaturaSaaS?.plano.nome ?? null,
+      statusAssinatura:  c.assinaturaSaaS?.status ?? null,
+      dataRenovacao:     c.assinaturaSaaS?.dataRenovacao?.toISOString() ?? null,
     }));
 
     return NextResponse.json({ items, total: items.length });
@@ -84,6 +91,7 @@ const CriarContadorSchema = z.object({
   senhaProvisoria: z.string().min(8, 'Senha deve ter ao menos 8 caracteres.'),
   nomeEscritorio:  z.string().min(2, 'Nome do escritório deve ter ao menos 2 caracteres.').max(255),
   cnpjEscritorio:  z.string().length(14, 'CNPJ deve ter 14 dígitos.').optional(),
+  planoId:         z.string().uuid().optional(),
 });
 
 const hasher = new BcryptPasswordHasher();
@@ -105,7 +113,7 @@ export const POST = withAuth(async (req: NextRequest, _ctx: RouteContext) => {
     return NextResponse.json({ message: 'Dados inválidos.', erros }, { status: 422 });
   }
 
-  const { name, email, crc, senhaProvisoria, nomeEscritorio, cnpjEscritorio } = parse.data;
+  const { name, email, crc, senhaProvisoria, nomeEscritorio, cnpjEscritorio, planoId } = parse.data;
 
   // --------------------------------------------------------------------------
   // 2. Verificar unicidade de e-mail e CRC
@@ -155,6 +163,22 @@ export const POST = withAuth(async (req: NextRequest, _ctx: RouteContext) => {
           cnpjEscritorio: cnpjEscritorio ?? null,
         },
       });
+
+      // Cria assinatura TRIAL de 7 dias no plano escolhido (ou mais barato se não informado)
+      const planoTrial = planoId
+        ? await tx.planoSaaS.findUnique({ where: { id: planoId } })
+        : await tx.planoSaaS.findFirst({ orderBy: { preco: 'asc' } });
+      if (planoTrial) {
+        await tx.assinaturaSaaS.create({
+          data: {
+            escritorioId:  novoContador.id,
+            planoId:       planoTrial.id,
+            status:        'TRIAL',
+            dataRenovacao: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+            valorMensal:   planoTrial.preco,
+          },
+        });
+      }
 
       return novoContador;
     });

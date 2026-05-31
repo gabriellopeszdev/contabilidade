@@ -25,6 +25,10 @@ import {
   Palette,
   Upload,
   Image as ImageIcon,
+  CreditCard,
+  XCircle,
+  Check,
+  Lock,
 } from 'lucide-react';
 
 import { useAuth } from '../../../src/presentation/hooks/useAuth';
@@ -34,7 +38,7 @@ import { validarEmail, validarTelefone, mascararTelefone } from '../../../src/ut
 // Tipos
 // =============================================================================
 
-type Aba = 'perfil' | 'seguranca' | 'escritorio' | 'white-label' | 'privacidade';
+type Aba = 'perfil' | 'seguranca' | 'escritorio' | 'white-label' | 'privacidade' | 'assinatura';
 
 interface PerfilForm {
   nome:  string;
@@ -79,6 +83,7 @@ const ABAS: { id: Aba; label: string; icon: React.ReactNode }[] = [
   { id: 'escritorio',  label: 'Escritório',  icon: <Building2   size={18} /> },
   { id: 'white-label', label: 'White Label', icon: <Palette     size={18} /> },
   { id: 'privacidade', label: 'Privacidade', icon: <ShieldCheck size={18} /> },
+  { id: 'assinatura',  label: 'Assinatura',  icon: <CreditCard  size={18} /> },
 ];
 
 // =============================================================================
@@ -202,6 +207,13 @@ export default function ConfiguracoesPage() {
           )}
           {abaAtiva === 'privacidade' && (
             <PrivacidadeTab
+              token={token}
+              onSucesso={(msg) => mostrarToast('sucesso', msg)}
+              onErro={(msg) => mostrarToast('erro', msg)}
+            />
+          )}
+          {abaAtiva === 'assinatura' && (
+            <AssinaturaTab
               token={token}
               onSucesso={(msg) => mostrarToast('sucesso', msg)}
               onErro={(msg) => mostrarToast('erro', msg)}
@@ -1484,6 +1496,251 @@ function PrivacidadeTab({
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+// =============================================================================
+// Tab: Assinatura
+// =============================================================================
+
+interface PlanInfo {
+  planoNome:        string;
+  limiteClientes:   number;
+  limiteDocumentos: number;
+  features:         string[];
+  status:           string;
+  isRestricted:     boolean;
+}
+
+const STATUS_LABELS: Record<string, { label: string; cor: string }> = {
+  TRIAL:        { label: 'Trial',        cor: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400' },
+  ATIVO:        { label: 'Ativo',        cor: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' },
+  INADIMPLENTE: { label: 'Inadimplente', cor: 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400' },
+  SUSPENSO:     { label: 'Suspenso',     cor: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' },
+  CANCELADO:    { label: 'Cancelado',    cor: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' },
+  SEM_PLANO:    { label: 'Sem plano',    cor: 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400' },
+};
+
+const FEATURE_LABELS: Record<string, string> = {
+  chat:                  'Chat com clientes',
+  calendario:            'Calendário de obrigações',
+  financeiro:            'Módulo financeiro',
+  assinatura_eletronica: 'Assinatura eletrônica',
+  relatorios:            'Relatórios avançados',
+  equipe:                'Gestão de equipe',
+  integracao_cora:       'Integração Cora',
+};
+
+function AssinaturaTab({
+  token,
+  onSucesso,
+  onErro,
+}: {
+  token:     string | null | undefined;
+  onSucesso: (msg: string) => void;
+  onErro:    (msg: string) => void;
+}) {
+  const [plano, setPlano]               = useState<PlanInfo | null>(null);
+  const [carregando, setCarregando]     = useState(true);
+  const [confirmando, setConfirmando]   = useState(false);
+  const [textoConfirm, setTextoConfirm] = useState('');
+  const [cancelando, setCancelando]     = useState(false);
+
+  const carregarPlano = useCallback(async () => {
+    if (!token) return;
+    setCarregando(true);
+    try {
+      const res = await fetch('/api/v1/plano/atual', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      setPlano(data.plan);
+    } catch {
+      onErro('Não foi possível carregar as informações do plano.');
+    } finally {
+      setCarregando(false);
+    }
+  }, [token, onErro]);
+
+  useEffect(() => { carregarPlano(); }, [carregarPlano]);
+
+  const handleCancelar = async () => {
+    if (!token) return;
+    setCancelando(true);
+    try {
+      const res = await fetch('/api/v1/plano/cancelar', {
+        method:  'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (!res.ok) { onErro(data.message ?? 'Erro ao cancelar assinatura.'); return; }
+      onSucesso('Assinatura cancelada. Seus dados permanecem no plano gratuito.');
+      setConfirmando(false);
+      setTextoConfirm('');
+      carregarPlano();
+    } catch {
+      onErro('Erro ao cancelar assinatura.');
+    } finally {
+      setCancelando(false);
+    }
+  };
+
+  if (carregando) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="animate-spin text-primary" size={32} />
+      </div>
+    );
+  }
+
+  const statusInfo   = plano ? (STATUS_LABELS[plano.status] ?? STATUS_LABELS['SEM_PLANO']) : STATUS_LABELS['SEM_PLANO'];
+  const podeCancelar = plano && !plano.isRestricted && plano.status !== 'SEM_PLANO' && plano.status !== 'CANCELADO';
+
+  return (
+    <div className="space-y-6">
+
+      {/* Plano atual */}
+      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-6 space-y-5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <CreditCard size={18} className="text-primary" />
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Plano Atual</h2>
+          </div>
+          {plano && (
+            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${statusInfo.cor}`}>
+              {statusInfo.label}
+            </span>
+          )}
+        </div>
+
+        {!plano || plano.status === 'SEM_PLANO' ? (
+          <div className="text-center py-8 space-y-3">
+            <p className="text-sm text-gray-500 dark:text-gray-400">Você não possui uma assinatura ativa.</p>
+            <a
+              href="/cadastro"
+              className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
+            >
+              Ver planos disponíveis
+            </a>
+          </div>
+        ) : (
+          <>
+            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{plano.planoNome}</p>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Clientes</p>
+                <p className="text-xl font-bold text-gray-900 dark:text-gray-100">
+                  {plano.limiteClientes === -1 ? 'Ilimitado' : plano.limiteClientes}
+                </p>
+              </div>
+              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Documentos</p>
+                <p className="text-xl font-bold text-gray-900 dark:text-gray-100">
+                  {plano.limiteDocumentos === -1 ? 'Ilimitado' : plano.limiteDocumentos.toLocaleString('pt-BR')}
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Recursos incluídos</p>
+              <ul className="space-y-2">
+                {Object.entries(FEATURE_LABELS).map(([key, label]) => {
+                  const incluso = plano.features.includes(key);
+                  return (
+                    <li key={key} className="flex items-center gap-2 text-sm">
+                      {incluso
+                        ? <Check size={15} className="text-emerald-500 shrink-0" />
+                        : <Lock  size={15} className="text-gray-300 dark:text-gray-600 shrink-0" />
+                      }
+                      <span className={incluso ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}>
+                        {label}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Cancelamento */}
+      {podeCancelar && (
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-red-200 dark:border-red-900/40 p-6 space-y-4">
+          <div className="flex items-center gap-2">
+            <XCircle size={18} className="text-red-500" />
+            <h2 className="text-lg font-semibold text-red-900 dark:text-red-400">Cancelar Assinatura</h2>
+          </div>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Ao cancelar, você perde acesso aos recursos do plano <strong>{plano?.planoNome}</strong> imediatamente.
+            Seus dados permanecem disponíveis no plano gratuito (5 clientes, 100 documentos).
+          </p>
+
+          {!confirmando ? (
+            <button
+              onClick={() => setConfirmando(true)}
+              className="inline-flex items-center gap-2 rounded-lg border border-red-300 dark:border-red-800 px-4 py-2
+                         text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+            >
+              <XCircle size={14} />
+              Cancelar Assinatura
+            </button>
+          ) : (
+            <div className="space-y-3 bg-red-50/50 dark:bg-red-900/10 rounded-lg p-4 border border-red-100 dark:border-red-900/40">
+              <p className="text-sm text-red-700 dark:text-red-400 font-medium">
+                Para confirmar, digite{' '}
+                <code className="bg-red-100 dark:bg-red-900/30 px-1.5 py-0.5 rounded text-xs">CANCELAR ASSINATURA</code>{' '}
+                abaixo:
+              </p>
+              <input
+                type="text"
+                value={textoConfirm}
+                onChange={(e) => setTextoConfirm(e.target.value)}
+                className="w-full max-w-sm rounded-lg border border-red-300 dark:border-red-800 bg-white dark:bg-gray-800 px-3 py-2
+                           text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500
+                           focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-shadow"
+                placeholder="CANCELAR ASSINATURA"
+                autoComplete="off"
+              />
+              <div className="flex gap-2">
+                <button
+                  onClick={handleCancelar}
+                  disabled={cancelando || textoConfirm !== 'CANCELAR ASSINATURA'}
+                  className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white
+                             shadow-sm hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  {cancelando ? <Loader2 size={14} className="animate-spin" /> : <XCircle size={14} />}
+                  {cancelando ? 'Cancelando…' : 'Confirmar Cancelamento'}
+                </button>
+                <button
+                  onClick={() => { setConfirmando(false); setTextoConfirm(''); }}
+                  className="rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium
+                             text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                >
+                  Voltar
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {plano?.status === 'CANCELADO' && (
+        <div className="bg-red-50 dark:bg-red-900/10 rounded-xl border border-red-200 dark:border-red-900/40 p-5 space-y-3">
+          <p className="text-sm text-red-700 dark:text-red-400 font-medium">
+            Sua assinatura foi cancelada. Para reativar, contrate um novo plano.
+          </p>
+          <a
+            href="/cadastro"
+            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
+          >
+            Ver planos disponíveis
+          </a>
+        </div>
+      )}
     </div>
   );
 }
