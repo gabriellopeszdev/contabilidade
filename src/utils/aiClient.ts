@@ -66,7 +66,7 @@ export async function chatCompletion(
     case 'google': {
       const client = new GoogleGenAI({ apiKey: config.apiKey });
       const resp = await client.models.generateContent({
-        model:    'gemini-2.0-flash',
+        model:    'gemini-2.5-flash',
         contents: `${systemPrompt}\n\n${userMessage}`,
       });
       return resp.text ?? '';

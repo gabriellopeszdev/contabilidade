@@ -219,11 +219,23 @@ Rules:
       status === 429 || status === 529 ||
       /quota|rate.?limit|resource_exhausted|too many requests/i.test(message);
 
+    const isModelNotFound =
+      status === 404 ||
+      /no longer available|model.*not found|not_found/i.test(message);
+
     if (isQuota) {
       logger.warn('[POST /obrigacoes-ia] Quota/rate-limit da IA', { status });
       return NextResponse.json(
         { message: 'Limite de uso da IA atingido. Aguarde alguns minutos e tente novamente, ou troque o provedor em Configurações.' },
         { status: 429 },
+      );
+    }
+
+    if (isModelNotFound) {
+      logger.warn('[POST /obrigacoes-ia] Modelo da IA indisponível', { status, message: message.slice(0, 200) });
+      return NextResponse.json(
+        { message: 'Modelo de IA indisponível. O administrador precisa atualizar a configuração em Configurações → IA.' },
+        { status: 503 },
       );
     }
 
