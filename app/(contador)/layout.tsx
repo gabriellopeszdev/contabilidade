@@ -21,6 +21,7 @@ import {
   UserCog,
   DollarSign,
   FileBarChart,
+  FileText,
   Clock,
   Sun,
   Moon,
@@ -57,6 +58,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { href: '/dashboard',     label: 'Dashboard',      icon: <LayoutDashboard size={18} /> },
   { href: '/lote',          label: 'Upload em Lote',  icon: <Upload size={18} /> },
+  { href: '/nfe',           label: 'Importar NF-e',  icon: <FileText size={18} />, donoOnly: true },
   { href: '/clientes',      label: 'Meus Clientes',  icon: <Users size={18} /> },
   { href: '/equipe',        label: 'Equipe',          icon: <UserCog size={18} />,      donoOnly: true, feature: 'equipe' },
   { href: '/calendario',    label: 'Calendário',     icon: <CalendarDays size={18} />,              feature: 'calendario' },

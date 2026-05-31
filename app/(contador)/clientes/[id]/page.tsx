@@ -23,6 +23,8 @@ import {
   Copy,
   X,
   ExternalLink,
+  Sparkles,
+  Info,
 } from 'lucide-react';
 
 import { useAuth } from '../../../../src/presentation/hooks/useAuth';
@@ -36,11 +38,23 @@ type SetorTipo   = 'FISCAL' | 'PESSOAL' | 'CONTABIL';
 type Origem      = 'UPLOAD_CLIENTE' | 'UPLOAD_CONTADOR';
 
 interface ClienteInfo {
-  id:    string;
-  nome:  string;
-  email: string;
-  cnpj:  string;
-  phone: string | null;
+  id:               string;
+  nome:             string;
+  email:            string;
+  cnpj:             string;
+  phone:            string | null;
+  cnae?:            string | null;
+  regimeTributario?: string | null;
+}
+
+interface ObrigacaoSugerida {
+  nome:             string;
+  descricao?:       string;
+  diaVencimento:    number;
+  cor?:             string;
+  recorrencia?:     string;
+  mesesAplicacao:   number[];
+  fundamentoLegal?: string;
 }
 
 interface Resumo {
@@ -159,6 +173,13 @@ function ClienteDetalhesPageDono() {
 
   // Assinatura
   const [assinandoId, setAssinandoId] = useState<string | null>(null);
+
+  // IA Fiscal
+  const [iaCarregando, setIaCarregando] = useState(false);
+  const [iaErro, setIaErro] = useState<string | null>(null);
+  const [obrigacoesIa, setObrigacoesIa] = useState<ObrigacaoSugerida[] | null>(null);
+  const [obrigacoesSelecionadas, setObrigacoesSelecionadas] = useState<Set<number>>(new Set());
+  const [iaCriando, setIaCriando] = useState(false);
   const [modalAssinatura, setModalAssinatura] = useState<{ link: string; nomeDoc: string; expiresAt: string } | null>(null);
   const [copiadoLink, setCopiadoLink] = useState(false);
 
@@ -277,6 +298,86 @@ function ClienteDetalhesPageDono() {
   }
 
   // ---------------------------------------------------------------------------
+  // IA Fiscal handlers
+  // ---------------------------------------------------------------------------
+  async function handleGerarObrigacoesIA() {
+    if (!token) return;
+    setIaCarregando(true);
+    setIaErro(null);
+    setObrigacoesIa(null);
+    setObrigacoesSelecionadas(new Set());
+
+    try {
+      const res = await fetch(`/api/v1/clientes/${clienteId}/obrigacoes-ia`, {
+        method:  'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body:    JSON.stringify({}),
+      });
+
+      const body = await res.json() as { obrigacoes?: ObrigacaoSugerida[]; message?: string };
+
+      if (!res.ok) {
+        setIaErro(body.message ?? `Erro HTTP ${res.status}`);
+        return;
+      }
+
+      const lista = body.obrigacoes ?? [];
+      setObrigacoesIa(lista);
+      // Seleciona todas por padrão
+      setObrigacoesSelecionadas(new Set(lista.map((_, i) => i)));
+    } catch {
+      setIaErro('Erro de conexão ao gerar obrigações. Tente novamente.');
+    } finally {
+      setIaCarregando(false);
+    }
+  }
+
+  async function handleAdicionarAoCalendario() {
+    if (!token || !obrigacoesIa) return;
+    setIaCriando(true);
+    setIaErro(null);
+
+    const selecionadas = obrigacoesIa.filter((_, i) => obrigacoesSelecionadas.has(i));
+
+    try {
+      const res = await fetch(`/api/v1/clientes/${clienteId}/obrigacoes-ia`, {
+        method:  'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ criar: true, obrigacoesSelecionadas: selecionadas }),
+      });
+
+      const body = await res.json() as { message?: string };
+
+      if (!res.ok) {
+        setIaErro(body.message ?? `Erro HTTP ${res.status}`);
+        return;
+      }
+
+      // Reset após sucesso
+      setObrigacoesIa(null);
+      setObrigacoesSelecionadas(new Set());
+      // Toast via alert simples (toast não importado nesta página)
+      alert(`${selecionadas.length} obrigação(ões) adicionada(s) ao calendário fiscal com sucesso!`);
+    } catch {
+      setIaErro('Erro ao adicionar obrigações. Tente novamente.');
+    } finally {
+      setIaCriando(false);
+    }
+  }
+
+  function toggleObrigacao(index: number) {
+    setObrigacoesSelecionadas((prev) => {
+      const novo = new Set(prev);
+      if (novo.has(index)) {
+        novo.delete(index);
+      } else {
+        novo.add(index);
+      }
+      return novo;
+    });
+  }
+
+  // ---------------------------------------------------------------------------
   // Render
   // ---------------------------------------------------------------------------
   return (
@@ -355,6 +456,153 @@ function ClienteDetalhesPageDono() {
             </div>
           </div>
         ) : null}
+      </div>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* Seção: Gerar Obrigações com IA                                       */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-700 shadow-sm p-5 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-1">
+              <Sparkles size={16} className="text-violet-500" />
+              <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                Calendário Fiscal com IA
+              </h2>
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Gere sugestões de obrigações fiscais para este cliente com base no regime tributário e CNAE.
+            </p>
+            {/* Aviso se CNAE/regime não preenchido */}
+            {cliente && (!cliente.cnae || !cliente.regimeTributario) && (
+              <div className="mt-2 flex items-start gap-1.5 text-amber-700 dark:text-amber-400">
+                <Info size={13} className="shrink-0 mt-0.5" />
+                <p className="text-xs">
+                  Preencha o CNAE e Regime Tributário do cliente para gerar obrigações mais precisas.
+                </p>
+              </div>
+            )}
+          </div>
+
+          <button
+            type="button"
+            onClick={handleGerarObrigacoesIA}
+            disabled={iaCarregando || iaCriando}
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white
+              bg-violet-600 hover:bg-violet-700 disabled:opacity-60 disabled:cursor-not-allowed
+              rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+          >
+            {iaCarregando
+              ? <Loader2 size={15} className="animate-spin" />
+              : <Sparkles size={15} />
+            }
+            {iaCarregando ? 'Gerando…' : 'Gerar com IA'}
+          </button>
+        </div>
+
+        {/* Erro da IA */}
+        {iaErro && (
+          <div className="mt-4 flex items-start gap-2 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+            <AlertCircle size={15} className="text-red-500 mt-0.5 shrink-0" />
+            <p className="text-sm text-red-700 dark:text-red-400">{iaErro}</p>
+          </div>
+        )}
+
+        {/* Resultados da IA */}
+        {obrigacoesIa && obrigacoesIa.length > 0 && (
+          <div className="mt-5">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide">
+                {obrigacoesIa.length} obrigação(ões) sugerida(s)
+              </p>
+              <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                <button
+                  type="button"
+                  onClick={() => setObrigacoesSelecionadas(new Set(obrigacoesIa.map((_, i) => i)))}
+                  className="hover:text-violet-600 transition-colors"
+                >
+                  Selecionar todas
+                </button>
+                <span>·</span>
+                <button
+                  type="button"
+                  onClick={() => setObrigacoesSelecionadas(new Set())}
+                  className="hover:text-red-500 transition-colors"
+                >
+                  Limpar
+                </button>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              {obrigacoesIa.map((ob, idx) => (
+                <label
+                  key={idx}
+                  className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-colors
+                    ${obrigacoesSelecionadas.has(idx)
+                      ? 'border-violet-200 dark:border-violet-800 bg-violet-50 dark:bg-violet-900/20'
+                      : 'border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-slate-50 dark:hover:bg-gray-750'
+                    }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={obrigacoesSelecionadas.has(idx)}
+                    onChange={() => toggleObrigacao(idx)}
+                    className="mt-0.5 accent-violet-600"
+                  />
+                  {/* Cor dot */}
+                  <span
+                    className="shrink-0 mt-1 w-3 h-3 rounded-full"
+                    style={{ backgroundColor: ob.cor ?? '#6366f1' }}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                        {ob.nome}
+                      </span>
+                      {ob.recorrencia && (
+                        <span className="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide
+                          bg-slate-100 dark:bg-gray-700 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-gray-600">
+                          {ob.recorrencia}
+                        </span>
+                      )}
+                      <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold
+                        bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
+                        Dia {ob.diaVencimento}
+                      </span>
+                    </div>
+                    {ob.descricao && (
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{ob.descricao}</p>
+                    )}
+                    {ob.fundamentoLegal && (
+                      <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 italic">
+                        {ob.fundamentoLegal}
+                      </p>
+                    )}
+                  </div>
+                </label>
+              ))}
+            </div>
+
+            {/* Botão Adicionar ao Calendário */}
+            <div className="mt-4 flex items-center justify-between gap-4">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                {obrigacoesSelecionadas.size} de {obrigacoesIa.length} selecionada(s)
+              </p>
+              <button
+                type="button"
+                onClick={handleAdicionarAoCalendario}
+                disabled={obrigacoesSelecionadas.size === 0 || iaCriando}
+                className="inline-flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white
+                  bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed
+                  rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+              >
+                {iaCriando && <Loader2 size={14} className="animate-spin" />}
+                {iaCriando ? 'Adicionando…' : 'Adicionar ao Calendário'}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ------------------------------------------------------------------ */}

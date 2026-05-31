@@ -105,9 +105,11 @@ model UsuarioCliente {
   email        String    @unique @db.VarChar(255)
   passwordHash String?   @map("password_hash") @db.VarChar(255)
   // CNPJ: 14 dígitos sem formatação (validação feita na entidade de domínio)
-  cnpj         String    @unique @db.Char(14)
-  phone        String?   @db.VarChar(20)
-  avatarUrl    String?   @map("avatar_url") @db.VarChar(500)
+  cnpj             String    @unique @db.Char(14)
+  phone            String?   @db.VarChar(20)
+  avatarUrl        String?   @map("avatar_url") @db.VarChar(500)
+  cnae             String?   @db.VarChar(10)
+  regimeTributario String?   @map("regime_tributario") @db.VarChar(50)
   lastLoginAt  DateTime? @map("last_login_at") @db.Timestamptz
   isActive     Boolean   @default(true) @map("is_active")
   consentVersion    String?   @map("consent_version") @db.VarChar(20)
@@ -493,6 +495,10 @@ model ConfiguracaoEscritorio {
   coraClientId       String? @map("cora_client_id")       @db.VarChar(200)
   coraCertificatePem String? @map("cora_certificate_pem") @db.Text
   coraPrivateKeyPem  String? @map("cora_private_key_pem") @db.Text
+
+  // Integração IA — provider escolhido e chave da API
+  iaProvider String? @map("ia_provider") @db.VarChar(20) // anthropic | openai | google | deepseek
+  iaApiKey   String? @map("ia_api_key")  @db.VarChar(500)
 
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz

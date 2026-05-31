@@ -47,14 +47,16 @@ function cnpjValido(digitos: string): boolean {
 // =============================================================================
 
 const criarClienteSchema = z.object({
-  nome:  z.string().min(2, 'Nome deve ter ao menos 2 caracteres.').max(255),
-  email: z.string().email('E-mail inválido.').max(255),
-  cnpj:  z
+  nome:             z.string().min(2, 'Nome deve ter ao menos 2 caracteres.').max(255),
+  email:            z.string().email('E-mail inválido.').max(255),
+  cnpj:             z
     .string()
     .transform((v) => v.replace(/\D/g, ''))
     .refine((v) => v.length === 14, 'CNPJ deve conter 14 dígitos.')
     .refine(cnpjValido, 'CNPJ com dígitos verificadores inválidos.'),
-  phone: z.string().max(20).optional(),
+  phone:            z.string().max(20).optional(),
+  cnae:             z.string().max(10).optional(),
+  regimeTributario: z.string().max(50).optional(),
 });
 
 // =============================================================================
@@ -107,16 +109,18 @@ export const GET = withAuth(async (req, _ctx, auth) => {
           assignedAt: true,
           cliente: {
             select: {
-              id:          true,
-              name:        true,
-              email:       true,
-              cnpj:        true,
-              phone:       true,
-              avatarUrl:   true,
-              isActive:    true,
-              activatedAt: true,
-              inviteToken: true,
-              createdAt:   true,
+              id:               true,
+              name:             true,
+              email:            true,
+              cnpj:             true,
+              phone:            true,
+              avatarUrl:        true,
+              isActive:         true,
+              activatedAt:      true,
+              inviteToken:      true,
+              createdAt:        true,
+              cnae:             true,
+              regimeTributario: true,
             },
           },
         },
@@ -128,17 +132,19 @@ export const GET = withAuth(async (req, _ctx, auth) => {
     const totalPages = all ? 1 : Math.ceil(total / perPage) || 1;
 
     const clientes = relacoes.map((r) => ({
-      id:              r.cliente.id,
-      nome:            r.cliente.name,
-      email:           r.cliente.email,
-      cnpj:            r.cliente.cnpj,
-      phone:           r.cliente.phone,
-      avatarUrl:       r.cliente.avatarUrl,
-      isActive:        r.cliente.isActive,
-      activatedAt:     r.cliente.activatedAt?.toISOString() ?? null,
-      convitePendente: !r.cliente.isActive && !!r.cliente.inviteToken,
-      assignedAt:      r.assignedAt.toISOString(),
-      createdAt:       r.cliente.createdAt.toISOString(),
+      id:               r.cliente.id,
+      nome:             r.cliente.name,
+      email:            r.cliente.email,
+      cnpj:             r.cliente.cnpj,
+      phone:            r.cliente.phone,
+      avatarUrl:        r.cliente.avatarUrl,
+      isActive:         r.cliente.isActive,
+      activatedAt:      r.cliente.activatedAt?.toISOString() ?? null,
+      convitePendente:  !r.cliente.isActive && !!r.cliente.inviteToken,
+      assignedAt:       r.assignedAt.toISOString(),
+      createdAt:        r.cliente.createdAt.toISOString(),
+      cnae:             r.cliente.cnae,
+      regimeTributario: r.cliente.regimeTributario,
     }));
 
     return NextResponse.json({
@@ -191,7 +197,7 @@ export const POST = withAuth(async (req, _ctx, auth) => {
     return NextResponse.json({ message: 'Validação falhou.', erros }, { status: 400 });
   }
 
-  const { nome, email, cnpj, phone } = parsed.data;
+  const { nome, email, cnpj, phone, cnae, regimeTributario } = parsed.data;
 
   try {
     // Verifica limite de clientes do plano
@@ -231,10 +237,12 @@ export const POST = withAuth(async (req, _ctx, auth) => {
     const cliente = await prisma.$transaction(async (tx) => {
       const novoCliente = await tx.usuarioCliente.create({
         data: {
-          name:         nome,
-          email:        email.toLowerCase(),
+          name:             nome,
+          email:            email.toLowerCase(),
           cnpj,
-          phone:        phone ?? null,
+          phone:            phone ?? null,
+          cnae:             cnae ?? null,
+          regimeTributario: regimeTributario ?? null,
           inviteToken,
           inviteExpiresAt,
         },

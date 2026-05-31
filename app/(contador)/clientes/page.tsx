@@ -32,16 +32,18 @@ import { ClientesReadOnly } from '../../../src/presentation/components/cliente/C
 // =============================================================================
 
 interface ClienteDTO {
-  id:          string;
-  nome:        string;
-  email:       string;
-  cnpj:        string;
-  phone:       string | null;
-  avatarUrl:   string | null;
-  isActive:    boolean;
-  assignedAt:  string;
-  createdAt:   string;
-  activatedAt: string | null;
+  id:               string;
+  nome:             string;
+  email:            string;
+  cnpj:             string;
+  phone:            string | null;
+  avatarUrl:        string | null;
+  isActive:         boolean;
+  assignedAt:       string;
+  createdAt:        string;
+  activatedAt:      string | null;
+  cnae:             string | null;
+  regimeTributario: string | null;
 }
 
 // =============================================================================
@@ -135,11 +137,13 @@ function ClientesPageDono({ token }: { token: string | null }) {
 
   const abrirEditar = useCallback((c: ClienteDTO) => {
     setClienteEditando({
-      id:    c.id,
-      nome:  c.nome,
-      email: c.email,
-      cnpj:  c.cnpj,
-      phone: c.phone ?? '',
+      id:               c.id,
+      nome:             c.nome,
+      email:            c.email,
+      cnpj:             c.cnpj,
+      phone:            c.phone ?? '',
+      cnae:             c.cnae ?? '',
+      regimeTributario: c.regimeTributario ?? '',
     });
     setModalAberto(true);
   }, []);

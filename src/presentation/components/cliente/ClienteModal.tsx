@@ -8,11 +8,13 @@ import { X, Loader2, AlertCircle } from 'lucide-react';
 // =============================================================================
 
 export interface ClienteFormData {
-  id?:   string;
-  nome:  string;
-  email: string;
-  cnpj:  string;
-  phone: string;
+  id?:              string;
+  nome:             string;
+  email:            string;
+  cnpj:             string;
+  phone:            string;
+  cnae?:            string;
+  regimeTributario?: string;
 }
 
 interface ClienteModalProps {
@@ -120,10 +122,12 @@ export function ClienteModal({
   const modoEdicao = !!dadosIniciais?.id;
 
   const [form, setForm] = useState<ClienteFormData>({
-    nome:  '',
-    email: '',
-    cnpj:  '',
-    phone: '',
+    nome:             '',
+    email:            '',
+    cnpj:             '',
+    phone:            '',
+    cnae:             '',
+    regimeTributario: '',
   });
 
   const [erros, setErros]       = useState<Erros>({});
@@ -137,14 +141,16 @@ export function ClienteModal({
     if (aberto) {
       if (dadosIniciais) {
         setForm({
-          id:    dadosIniciais.id,
-          nome:  dadosIniciais.nome,
-          email: dadosIniciais.email,
-          cnpj:  mascaraCNPJ(dadosIniciais.cnpj),
-          phone: dadosIniciais.phone ? mascaraTelefone(dadosIniciais.phone) : '',
+          id:               dadosIniciais.id,
+          nome:             dadosIniciais.nome,
+          email:            dadosIniciais.email,
+          cnpj:             mascaraCNPJ(dadosIniciais.cnpj),
+          phone:            dadosIniciais.phone ? mascaraTelefone(dadosIniciais.phone) : '',
+          cnae:             dadosIniciais.cnae ?? '',
+          regimeTributario: dadosIniciais.regimeTributario ?? '',
         });
       } else {
-        setForm({ nome: '', email: '', cnpj: '', phone: '' });
+        setForm({ nome: '', email: '', cnpj: '', phone: '', cnae: '', regimeTributario: '' });
       }
       setErros({});
       setErroApi(null);
@@ -165,7 +171,7 @@ export function ClienteModal({
   }, [aberto, onFechar]);
 
   const handleChange = useCallback(
-    (campo: keyof ClienteFormData) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    (campo: keyof ClienteFormData) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
       let valor = e.target.value;
       if (campo === 'cnpj')  valor = mascaraCNPJ(valor);
       if (campo === 'phone') valor = mascaraTelefone(valor);
@@ -191,10 +197,12 @@ export function ClienteModal({
       setErroApi(null);
 
       const payload = {
-        nome:  form.nome.trim(),
-        email: form.email.trim().toLowerCase(),
-        cnpj:  form.cnpj.replace(/\D/g, ''),
-        phone: form.phone.replace(/\D/g, '') || undefined,
+        nome:             form.nome.trim(),
+        email:            form.email.trim().toLowerCase(),
+        cnpj:             form.cnpj.replace(/\D/g, ''),
+        phone:            form.phone.replace(/\D/g, '') || undefined,
+        cnae:             form.cnae?.trim() || undefined,
+        regimeTributario: form.regimeTributario?.trim() || undefined,
       };
 
       try {
@@ -341,6 +349,44 @@ export function ClienteModal({
               className="w-full rounded-lg border border-slate-300 dark:border-gray-600 px-3 py-2 text-sm text-slate-900 dark:text-gray-100
                 bg-white dark:bg-gray-800 placeholder:text-slate-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
             />
+          </div>
+
+          {/* CNAE */}
+          <div>
+            <label htmlFor="cliente-cnae" className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-1">
+              CNAE
+            </label>
+            <input
+              id="cliente-cnae"
+              type="text"
+              value={form.cnae ?? ''}
+              onChange={handleChange('cnae')}
+              placeholder="Ex: 6201-5/01"
+              maxLength={10}
+              className="w-full rounded-lg border border-slate-300 dark:border-gray-600 px-3 py-2 text-sm text-slate-900 dark:text-gray-100
+                bg-white dark:bg-gray-800 placeholder:text-slate-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+            />
+          </div>
+
+          {/* Regime Tributário */}
+          <div>
+            <label htmlFor="cliente-regime" className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-1">
+              Regime Tributário
+            </label>
+            <select
+              id="cliente-regime"
+              value={form.regimeTributario ?? ''}
+              onChange={handleChange('regimeTributario')}
+              className="w-full rounded-lg border border-slate-300 dark:border-gray-600 px-3 py-2 text-sm text-slate-900 dark:text-gray-100
+                bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors dark:[color-scheme:dark]"
+            >
+              <option value="">Não informado</option>
+              <option value="MEI">MEI</option>
+              <option value="SIMPLES_NACIONAL">Simples Nacional</option>
+              <option value="LUCRO_PRESUMIDO">Lucro Presumido</option>
+              <option value="LUCRO_REAL">Lucro Real</option>
+              <option value="ISENTO">Isento</option>
+            </select>
           </div>
 
           {/* Nota sobre senha padrão (apenas Criação) */}

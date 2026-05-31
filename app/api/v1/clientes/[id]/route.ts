@@ -39,15 +39,17 @@ function cnpjValido(digitos: string): boolean {
 // =============================================================================
 
 const atualizarClienteSchema = z.object({
-  nome:  z.string().min(2, 'Nome deve ter ao menos 2 caracteres.').max(255).optional(),
-  email: z.string().email('E-mail inválido.').max(255).optional(),
-  cnpj:  z
+  nome:             z.string().min(2, 'Nome deve ter ao menos 2 caracteres.').max(255).optional(),
+  email:            z.string().email('E-mail inválido.').max(255).optional(),
+  cnpj:             z
     .string()
     .transform((v) => v.replace(/\D/g, ''))
     .refine((v) => v.length === 14, 'CNPJ deve conter 14 dígitos.')
     .refine(cnpjValido, 'CNPJ com dígitos verificadores inválidos.')
     .optional(),
-  phone: z.string().max(20).optional(),
+  phone:            z.string().max(20).optional(),
+  cnae:             z.string().max(10).optional(),
+  regimeTributario: z.string().max(50).optional(),
 });
 
 // =============================================================================
@@ -102,10 +104,10 @@ export const PUT = withAuth(async (req, ctx, auth) => {
     return NextResponse.json({ message: 'Validação falhou.', erros }, { status: 400 });
   }
 
-  const { nome, email, cnpj, phone } = parsed.data;
+  const { nome, email, cnpj, phone, cnae, regimeTributario } = parsed.data;
 
   // Verifica se ao menos um campo foi enviado
-  if (!nome && !email && !cnpj && phone === undefined) {
+  if (!nome && !email && !cnpj && phone === undefined && cnae === undefined && regimeTributario === undefined) {
     return NextResponse.json(
       { message: 'Nenhum campo para atualizar foi enviado.' },
       { status: 400 },
@@ -162,10 +164,12 @@ export const PUT = withAuth(async (req, ctx, auth) => {
     const atualizado = await prisma.usuarioCliente.update({
       where: { id },
       data: {
-        ...(nome  ? { name: nome } : {}),
-        ...(email ? { email: email.toLowerCase() } : {}),
-        ...(cnpj  ? { cnpj } : {}),
-        ...(phone !== undefined ? { phone: phone || null } : {}),
+        ...(nome             ? { name: nome }                           : {}),
+        ...(email            ? { email: email.toLowerCase() }           : {}),
+        ...(cnpj             ? { cnpj }                                 : {}),
+        ...(phone !== undefined ? { phone: phone || null }              : {}),
+        ...(cnae !== undefined  ? { cnae: cnae || null }                : {}),
+        ...(regimeTributario !== undefined ? { regimeTributario: regimeTributario || null } : {}),
       },
     });
 

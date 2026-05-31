@@ -167,6 +167,10 @@ function ModalCriarContador({ onClose, onCriado, token }: ModalCriarContadorProp
         asaasConfigurado: false,
         coraConfigurado:  false,
         createdAt:        new Date().toISOString(),
+        planoId:          form.planoId || null,
+        planoNome:        null,
+        statusAssinatura: 'TRIAL',
+        dataRenovacao:    new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
       });
     } catch {
       setErros(['Erro de rede. Verifique sua conexão e tente novamente.']);
