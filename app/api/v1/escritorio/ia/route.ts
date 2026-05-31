@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import { withAuth } from '../../../../../src/infrastructure/http/middlewares/withAuth';
 import { prisma }   from '../../../../../src/infrastructure/di/Container';
 import { logger }   from '../../../../../src/utils/logger';
-import { IA_PROVIDERS, type IaProvider } from '../../../../../src/utils/aiClient';
+import { IA_PROVIDERS, type IaProvider } from '../../../../../src/utils/aiProviders';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';

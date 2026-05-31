@@ -32,7 +32,7 @@ import {
   Bot,
 } from 'lucide-react';
 
-import { IA_PROVIDERS, type IaProvider } from '../../../src/utils/aiClient';
+import { IA_PROVIDERS, type IaProvider } from '../../../src/utils/aiProviders';
 
 import { useAuth } from '../../../src/presentation/hooks/useAuth';
 import { validarEmail, validarTelefone, mascararTelefone } from '../../../src/utils/validators';
