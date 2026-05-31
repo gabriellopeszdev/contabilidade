@@ -68,9 +68,13 @@ export const POST = withAuth(async (req, ctx, auth) => {
     // Verificação IDOR: cliente pertence ao contador?
     const contadorId = auth.sub;
 
-    const [vinculo, configSistema] = await Promise.all([
+    const [vinculo, configEscritorio, configSistema] = await Promise.all([
       prisma.contadorCliente.findUnique({
         where: { contadorId_clienteId: { contadorId, clienteId } },
+      }),
+      prisma.configuracaoEscritorio.findUnique({
+        where:  { contadorId },
+        select: { iaProvider: true, iaApiKey: true },
       }),
       prisma.configuracaoSistema.findUnique({
         where:  { id: 'system' },
@@ -85,9 +89,17 @@ export const POST = withAuth(async (req, ctx, auth) => {
       );
     }
 
-    // Usa a config do sistema definida pelo superadmin; fallback para env var
-    const provider = (configSistema?.iaProvider as IaProvider | null) ?? 'anthropic';
-    const apiKey   = configSistema?.iaApiKey ?? process.env.ANTHROPIC_API_KEY ?? '';
+    // Ordem de prioridade: config do contador → config do sistema → env var
+    const provider = (
+      (configEscritorio?.iaApiKey ? configEscritorio.iaProvider : null) ??
+      configSistema?.iaProvider ??
+      'anthropic'
+    ) as IaProvider;
+    const apiKey   =
+      configEscritorio?.iaApiKey ??
+      configSistema?.iaApiKey ??
+      process.env.ANTHROPIC_API_KEY ??
+      '';
 
     if (!apiKey) {
       return NextResponse.json(

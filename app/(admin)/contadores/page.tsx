@@ -15,7 +15,12 @@ import {
   CheckCircle2,
   Pencil,
   CreditCard,
+  Bot,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
+
+import { IA_PROVIDERS, type IaProvider } from '../../../src/utils/aiProviders';
 
 import { useAuth } from '../../../src/presentation/hooks/useAuth';
 
@@ -34,6 +39,8 @@ interface ContadorDTO {
   cnpjEscritorio:   string | null;
   asaasConfigurado: boolean;
   coraConfigurado:  boolean;
+  iaPersonalizada:  boolean;
+  iaProvider:       string | null;
   createdAt:        string;
   planoId:          string | null;
   planoNome:        string | null;
@@ -171,6 +178,8 @@ function ModalCriarContador({ onClose, onCriado, token }: ModalCriarContadorProp
         planoNome:        null,
         statusAssinatura: 'TRIAL',
         dataRenovacao:    new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+        iaPersonalizada:  false,
+        iaProvider:       null,
       });
     } catch {
       setErros(['Erro de rede. Verifique sua conexão e tente novamente.']);
@@ -788,6 +797,236 @@ function ModalCora({ contador, onClose, onSalvo, token }: ModalCoraProps) {
 }
 
 // =============================================================================
+// Modal IA — configura provider/chave de IA por contador
+// =============================================================================
+
+interface ModalIaProps {
+  contador: ContadorDTO;
+  onClose:  () => void;
+  onSalvo:  (iaPersonalizada: boolean, iaProvider: string | null) => void;
+  token:    string;
+}
+
+function ModalIa({ contador, onClose, onSalvo, token }: ModalIaProps) {
+  const [usarPadrao,  setUsarPadrao]  = useState(!contador.iaPersonalizada);
+  const [provider,    setProvider]    = useState<IaProvider>((contador.iaProvider as IaProvider) ?? 'anthropic');
+  const [apiKey,      setApiKey]      = useState('');
+  const [mostrarKey,  setMostrarKey]  = useState(false);
+  const [salvando,    setSalvando]    = useState(false);
+  const [removendo,   setRemovendo]   = useState(false);
+  const [erro,        setErro]        = useState('');
+  const [sucesso,     setSucesso]     = useState('');
+
+  const KEY_LINKS: Record<IaProvider, string> = {
+    anthropic: 'console.anthropic.com',
+    openai:    'platform.openai.com/api-keys',
+    google:    'aistudio.google.com/app/apikey',
+    deepseek:  'platform.deepseek.com',
+  };
+
+  const handleSalvar = async () => {
+    setErro(''); setSucesso('');
+    if (!usarPadrao && !apiKey && !contador.iaPersonalizada) {
+      setErro('Informe a chave de API.'); return;
+    }
+    setSalvando(true);
+    try {
+      const body = usarPadrao
+        ? { clear: true }
+        : { iaProvider: provider, iaApiKey: apiKey.trim() || undefined };
+      const res = await fetch(`/api/v1/admin/contadores/${contador.id}/ia`, {
+        method:  'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body:    JSON.stringify(body),
+      });
+      const data = await res.json() as { ok?: boolean; message?: string; iaPersonalizada?: boolean };
+      if (!res.ok) { setErro(data.message ?? 'Erro ao salvar.'); return; }
+      setSucesso(usarPadrao ? 'Revertido para o padrão do sistema.' : `IA personalizada: ${provider}`);
+      onSalvo(data.iaPersonalizada ?? false, usarPadrao ? null : provider);
+      setTimeout(onClose, 1100);
+    } catch {
+      setErro('Erro de rede.');
+    } finally {
+      setSalvando(false);
+    }
+  };
+
+  const handleRemover = async () => {
+    setErro(''); setSucesso('');
+    setRemovendo(true);
+    try {
+      const res = await fetch(`/api/v1/admin/contadores/${contador.id}/ia`, {
+        method:  'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body:    JSON.stringify({ clear: true }),
+      });
+      if (!res.ok) { const d = await res.json(); setErro(d.message ?? 'Erro.'); return; }
+      setSucesso('Personalização removida — usando padrão do sistema.');
+      onSalvo(false, null);
+      setTimeout(onClose, 1100);
+    } catch {
+      setErro('Erro de rede.');
+    } finally {
+      setRemovendo(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
+      <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
+
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
+          <div>
+            <h2 className="text-sm font-bold text-white">IA do Calendário Fiscal</h2>
+            <p className="text-xs text-slate-400 mt-0.5">{contador.name}</p>
+          </div>
+          <button onClick={onClose} className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800">
+            <X size={16} />
+          </button>
+        </div>
+
+        <div className="px-6 py-5 space-y-4">
+          {/* Status */}
+          <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs border ${
+            contador.iaPersonalizada
+              ? 'bg-violet-900/20 text-violet-300 border-violet-700/40'
+              : 'bg-slate-800 text-slate-400 border-slate-700'
+          }`}>
+            <Bot size={13} className={contador.iaPersonalizada ? 'text-violet-400' : 'text-slate-500'} />
+            {contador.iaPersonalizada
+              ? `IA personalizada: ${contador.iaProvider ?? 'configurada'}`
+              : 'Usando padrão do sistema (configurado em admin-config)'}
+          </div>
+
+          {erro && (
+            <div className="flex items-start gap-2 bg-red-900/30 border border-red-700/50 rounded-lg px-3 py-2.5">
+              <AlertCircle size={13} className="text-red-400 shrink-0 mt-0.5" />
+              <p className="text-xs text-red-300">{erro}</p>
+            </div>
+          )}
+          {sucesso && (
+            <div className="flex items-center gap-2 bg-emerald-900/30 border border-emerald-700/50 rounded-lg px-3 py-2.5">
+              <CheckCircle2 size={13} className="text-emerald-400 shrink-0" />
+              <p className="text-xs text-emerald-300">{sucesso}</p>
+            </div>
+          )}
+
+          {/* Escolha: padrão ou personalizado */}
+          <div className="space-y-2">
+            <label className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${usarPadrao ? 'border-slate-600 bg-slate-800' : 'border-slate-700 bg-slate-800/50 hover:border-slate-600'}`}>
+              <input
+                type="radio"
+                checked={usarPadrao}
+                onChange={() => setUsarPadrao(true)}
+                className="accent-violet-500"
+              />
+              <div>
+                <p className="text-sm font-medium text-white">Padrão do sistema</p>
+                <p className="text-[11px] text-slate-400">Usa a IA configurada em Configurações do admin</p>
+              </div>
+            </label>
+            <label className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${!usarPadrao ? 'border-violet-500 bg-violet-900/20' : 'border-slate-700 bg-slate-800/50 hover:border-slate-600'}`}>
+              <input
+                type="radio"
+                checked={!usarPadrao}
+                onChange={() => setUsarPadrao(false)}
+                className="accent-violet-500"
+              />
+              <div>
+                <p className="text-sm font-medium text-white">IA personalizada</p>
+                <p className="text-[11px] text-slate-400">Provider e chave exclusivos para este cliente</p>
+              </div>
+            </label>
+          </div>
+
+          {/* Config personalizada */}
+          {!usarPadrao && (
+            <>
+              <div className="space-y-2">
+                <p className="text-[11px] font-medium text-slate-400">Provedor</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {IA_PROVIDERS.map((p) => (
+                    <label key={p.id} className={`flex items-start gap-2 p-2.5 rounded-lg border cursor-pointer transition-colors ${provider === p.id ? 'border-violet-500 bg-violet-900/20' : 'border-slate-700 bg-slate-800 hover:border-slate-600'}`}>
+                      <input
+                        type="radio"
+                        name="iaProvider"
+                        value={p.id}
+                        checked={provider === p.id}
+                        onChange={() => setProvider(p.id)}
+                        className="mt-0.5 accent-violet-500"
+                      />
+                      <div>
+                        <p className="text-xs font-medium text-white">{p.label}</p>
+                        <p className="text-[10px] text-slate-500">{p.modelLabel}</p>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="block text-[11px] font-medium text-slate-400">
+                  Chave de API
+                  {contador.iaPersonalizada && <span className="text-slate-500 font-normal ml-1">(deixe em branco para manter)</span>}
+                </label>
+                <div className="relative">
+                  <input
+                    type={mostrarKey ? 'text' : 'password'}
+                    value={apiKey}
+                    onChange={(e) => setApiKey(e.target.value)}
+                    placeholder={contador.iaPersonalizada ? '••••••••••••••••' : 'sk-ant-... / sk-... / AIza...'}
+                    autoComplete="off"
+                    className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 pr-10 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-violet-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setMostrarKey((v) => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
+                    tabIndex={-1}
+                  >
+                    {mostrarKey ? <EyeOff size={14} /> : <Eye size={14} />}
+                  </button>
+                </div>
+                <p className="text-[10px] text-slate-500">
+                  Obtenha em: <span className="text-violet-400">{KEY_LINKS[provider]}</span>
+                </p>
+              </div>
+            </>
+          )}
+        </div>
+
+        <div className="flex gap-3 px-6 pb-5">
+          {contador.iaPersonalizada && (
+            <button
+              type="button"
+              onClick={handleRemover}
+              disabled={removendo || salvando}
+              className="px-4 py-2 text-xs font-medium text-red-400 bg-red-900/20 hover:bg-red-900/40 border border-red-800/40 rounded-lg transition-colors disabled:opacity-50"
+            >
+              {removendo ? <Loader2 size={12} className="animate-spin inline mr-1" /> : null}
+              Remover
+            </button>
+          )}
+          <button type="button" onClick={onClose}
+            className="flex-1 px-4 py-2 text-sm font-medium text-slate-300 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors">
+            Fechar
+          </button>
+          <button
+            type="button"
+            onClick={handleSalvar}
+            disabled={salvando || removendo}
+            className="flex-1 flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-violet-600 hover:bg-violet-500 disabled:opacity-50 rounded-lg transition-colors"
+          >
+            {salvando ? <Loader2 size={14} className="animate-spin" /> : <Bot size={14} />}
+            {salvando ? 'Salvando…' : 'Salvar'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// =============================================================================
 // Modal Plano — altera o plano SaaS de um contador
 // =============================================================================
 
@@ -970,6 +1209,7 @@ export default function ContadoresPage() {
   const [modalCora,     setModalCora]     = useState<ContadorDTO | null>(null);
   const [modalEditar,   setModalEditar]   = useState<ContadorDTO | null>(null);
   const [modalPlano,    setModalPlano]    = useState<ContadorDTO | null>(null);
+  const [modalIa,       setModalIa]       = useState<ContadorDTO | null>(null);
 
   // Carrega lista
   const carregar = useCallback(async () => {
@@ -1106,6 +1346,20 @@ export default function ContadoresPage() {
           onSalvo={(planoNome, statusAssinatura, planoId) => {
             setContadores((prev) =>
               prev.map((c) => c.id === modalPlano.id ? { ...c, planoNome, statusAssinatura, planoId } : c),
+            );
+          }}
+        />
+      )}
+
+      {/* Modal: IA */}
+      {modalIa && (
+        <ModalIa
+          contador={modalIa}
+          token={token ?? ''}
+          onClose={() => setModalIa(null)}
+          onSalvo={(iaPersonalizada, iaProvider) => {
+            setContadores((prev) =>
+              prev.map((c) => c.id === modalIa.id ? { ...c, iaPersonalizada, iaProvider } : c),
             );
           }}
         />
@@ -1297,6 +1551,20 @@ export default function ContadoresPage() {
                           >
                             <CreditCard size={12} />
                             Plano
+                          </button>
+
+                          {/* IA */}
+                          <button
+                            onClick={() => setModalIa(c)}
+                            title="Configurar IA do calendário fiscal"
+                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border ${
+                              c.iaPersonalizada
+                                ? 'text-fuchsia-400 bg-fuchsia-900/20 hover:bg-fuchsia-900/40 border-fuchsia-800/40'
+                                : 'text-slate-400 bg-slate-800 hover:bg-slate-700 border-slate-700'
+                            }`}
+                          >
+                            <Bot size={12} />
+                            IA
                           </button>
 
                           {/* Asaas */}
