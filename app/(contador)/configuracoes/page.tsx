@@ -1132,7 +1132,7 @@ function WhiteLabelTab({
             <input
               id="wl-nome"
               type="text"
-              value={config.nomeEscritorio}
+              value={config.nomeEscritorio ?? ''}
               onChange={(e) => setConfig((c) => ({ ...c, nomeEscritorio: e.target.value }))}
               className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow"
               placeholder="Meu Escritório Contábil"
@@ -1144,7 +1144,7 @@ function WhiteLabelTab({
             <input
               id="wl-cnpj"
               type="text"
-              value={config.cnpjEscritorio}
+              value={config.cnpjEscritorio ?? ''}
               onChange={(e) => setConfig((c) => ({ ...c, cnpjEscritorio: e.target.value }))}
               className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow"
               placeholder="00.000.000/0000-00"
@@ -1165,13 +1165,13 @@ function WhiteLabelTab({
             <div className="flex items-center gap-3">
               <input
                 type="color"
-                value={config.corPrimaria}
+                value={config.corPrimaria ?? '#000000'}
                 onChange={(e) => setConfig((c) => ({ ...c, corPrimaria: e.target.value }))}
                 className="w-10 h-10 rounded-lg border border-gray-300 dark:border-gray-600 cursor-pointer"
               />
               <input
                 type="text"
-                value={config.corPrimaria}
+                value={config.corPrimaria ?? ''}
                 onChange={(e) => setConfig((c) => ({ ...c, corPrimaria: e.target.value }))}
                 className="w-28 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 font-mono focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               />
@@ -1195,13 +1195,13 @@ function WhiteLabelTab({
             <div className="flex items-center gap-3">
               <input
                 type="color"
-                value={config.corSecundaria}
+                value={config.corSecundaria ?? '#000000'}
                 onChange={(e) => setConfig((c) => ({ ...c, corSecundaria: e.target.value }))}
                 className="w-10 h-10 rounded-lg border border-gray-300 dark:border-gray-600 cursor-pointer"
               />
               <input
                 type="text"
-                value={config.corSecundaria}
+                value={config.corSecundaria ?? ''}
                 onChange={(e) => setConfig((c) => ({ ...c, corSecundaria: e.target.value }))}
                 className="w-28 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 font-mono focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               />
