@@ -212,6 +212,21 @@ Rules:
 
     return NextResponse.json({ obrigacoes, criadas: false });
   } catch (err) {
+    // Quota / rate-limit de qualquer provider (Google 429, OpenAI 429, Anthropic 529)
+    const status  = (err as { status?: number }).status;
+    const message = err instanceof Error ? err.message : '';
+    const isQuota =
+      status === 429 || status === 529 ||
+      /quota|rate.?limit|resource_exhausted|too many requests/i.test(message);
+
+    if (isQuota) {
+      logger.warn('[POST /obrigacoes-ia] Quota/rate-limit da IA', { status });
+      return NextResponse.json(
+        { message: 'Limite de uso da IA atingido. Aguarde alguns minutos e tente novamente, ou troque o provedor em Configurações.' },
+        { status: 429 },
+      );
+    }
+
     logger.error('[POST /obrigacoes-ia] Erro', err instanceof Error ? err : undefined);
     return NextResponse.json(
       { message: 'Erro interno do servidor.' },
