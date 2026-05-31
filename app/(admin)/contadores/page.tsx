@@ -803,10 +803,15 @@ interface ModalPlanoProps {
   token:    string;
 }
 
+const DATA_PERMANENTE = '2099-12-31T00:00:00.000Z';
+const isPermanente = (dataRenovacao: string | null) =>
+  dataRenovacao ? new Date(dataRenovacao).getFullYear() >= 2090 : false;
+
 function ModalPlano({ contador, onClose, onSalvo, token }: ModalPlanoProps) {
   const [planos,      setPlanos]      = useState<PlanoDTO[]>([]);
   const [planoId,     setPlanoId]     = useState(contador.planoId ?? '');
   const [status,      setStatus]      = useState(contador.statusAssinatura ?? 'TRIAL');
+  const [permanente,  setPermanente]  = useState(() => isPermanente(contador.dataRenovacao));
   const [carregando,  setCarregando]  = useState(true);
   const [salvando,    setSalvando]    = useState(false);
   const [erro,        setErro]        = useState('');
@@ -824,14 +829,16 @@ function ModalPlano({ contador, onClose, onSalvo, token }: ModalPlanoProps) {
     setErro('');
     setSalvando(true);
     try {
+      const body: Record<string, string> = { planoId, status };
+      if (permanente) body.dataRenovacao = DATA_PERMANENTE;
       const res = await fetch(`/api/v1/admin/contadores/${contador.id}/plano`, {
         method:  'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body:    JSON.stringify({ planoId, status }),
+        body:    JSON.stringify(body),
       });
       const data = await res.json() as { ok?: boolean; message?: string; planoNome?: string };
       if (!res.ok) { setErro(data.message ?? 'Erro ao salvar.'); return; }
-      setSucesso(`Plano atualizado para ${data.planoNome} (${status}).`);
+      setSucesso(`Plano atualizado para ${data.planoNome} (${status}${permanente ? ' · Permanente' : ''}).`);
       onSalvo(data.planoNome ?? '', status, planoId);
       setTimeout(onClose, 1200);
     } catch {
@@ -909,6 +916,19 @@ function ModalPlano({ contador, onClose, onSalvo, token }: ModalPlanoProps) {
                   ))}
                 </select>
               </div>
+
+              <label className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${permanente ? 'border-emerald-500 bg-emerald-900/20' : 'border-slate-700 bg-slate-800 hover:border-slate-600'}`}>
+                <input
+                  type="checkbox"
+                  checked={permanente}
+                  onChange={(e) => setPermanente(e.target.checked)}
+                  className="accent-emerald-500 w-4 h-4"
+                />
+                <div>
+                  <p className="text-sm font-medium text-white">Acesso permanente</p>
+                  <p className="text-[11px] text-slate-400">Sem vencimento — usa o plano gratuitamente para sempre</p>
+                </div>
+              </label>
             </>
           )}
 
@@ -1195,6 +1215,9 @@ export default function ContadoresPage() {
                             {c.planoNome && (
                               <p className={`text-[10px] font-medium truncate ${STATUS_CORES[c.statusAssinatura ?? ''] ?? 'text-slate-500'}`}>
                                 {c.planoNome} · {c.statusAssinatura}
+                                {isPermanente(c.dataRenovacao) && (
+                                  <span className="ml-1 text-emerald-400">· Permanente</span>
+                                )}
                               </p>
                             )}
                           </div>
