@@ -68,12 +68,12 @@ export const POST = withAuth(async (req, ctx, auth) => {
     // Verificação IDOR: cliente pertence ao contador?
     const contadorId = auth.sub;
 
-    const [vinculo, configEscritorio] = await Promise.all([
+    const [vinculo, configSistema] = await Promise.all([
       prisma.contadorCliente.findUnique({
         where: { contadorId_clienteId: { contadorId, clienteId } },
       }),
-      prisma.configuracaoEscritorio.findUnique({
-        where: { contadorId },
+      prisma.configuracaoSistema.findUnique({
+        where:  { id: 'system' },
         select: { iaProvider: true, iaApiKey: true },
       }),
     ]);
@@ -85,13 +85,13 @@ export const POST = withAuth(async (req, ctx, auth) => {
       );
     }
 
-    // Resolve qual provider/chave usar (configuração do escritório ou env de fallback)
-    const provider   = (configEscritorio?.iaProvider as IaProvider | null) ?? 'anthropic';
-    const apiKey     = configEscritorio?.iaApiKey ?? process.env.ANTHROPIC_API_KEY ?? '';
+    // Usa a config do sistema definida pelo superadmin; fallback para env var
+    const provider = (configSistema?.iaProvider as IaProvider | null) ?? 'anthropic';
+    const apiKey   = configSistema?.iaApiKey ?? process.env.ANTHROPIC_API_KEY ?? '';
 
     if (!apiKey) {
       return NextResponse.json(
-        { message: 'IA não configurada. Acesse Configurações → Inteligência Artificial para definir sua chave de API.' },
+        { message: 'IA do sistema não configurada. O administrador precisa definir a chave de API em Configurações.' },
         { status: 503 },
       );
     }

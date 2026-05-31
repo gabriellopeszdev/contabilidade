@@ -796,3 +796,16 @@ model AssinaturaSaaS {
   @@index([status])
   @@map("assinatura_saas")
 }
+
+// =============================================================================
+// ConfiguracaoSistema — Configurações globais do SaaS (singleton id='system')
+// =============================================================================
+
+model ConfiguracaoSistema {
+  id         String   @id @default("system")
+  iaProvider String?  @map("ia_provider") @db.VarChar(20)
+  iaApiKey   String?  @map("ia_api_key")  @db.VarChar(500)
+  updatedAt  DateTime @updatedAt          @map("updated_at") @db.Timestamptz
+
+  @@map("configuracao_sistema")
+}

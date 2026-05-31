@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Globe,
   Webhook,
@@ -11,7 +11,17 @@ import {
   Info,
   Zap,
   Database,
+  Bot,
+  Eye,
+  EyeOff,
+  Save,
+  Loader2,
+  CheckCircle2,
+  AlertCircle,
 } from 'lucide-react';
+
+import { useAuth } from '../../../src/presentation/hooks/useAuth';
+import { IA_PROVIDERS, type IaProvider } from '../../../src/utils/aiProviders';
 
 // =============================================================================
 // Componentes auxiliares
@@ -96,6 +106,13 @@ export default function AdminConfigPage() {
   const appUrl      = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
   const webhookUrl  = `${appUrl}/api/v1/webhooks/asaas`;
   const asaasEnv    = process.env.NEXT_PUBLIC_ASAAS_ENV ?? 'sandbox';
+
+  const [toast, setToast] = useState<{ tipo: 'sucesso' | 'erro'; mensagem: string } | null>(null);
+
+  const mostrarToast = (tipo: 'sucesso' | 'erro', mensagem: string) => {
+    setToast({ tipo, mensagem });
+    setTimeout(() => setToast(null), 4000);
+  };
 
   return (
     <div className="space-y-6 max-w-3xl">
@@ -229,6 +246,205 @@ export default function AdminConfigPage() {
         </div>
       </SectionCard>
 
+      {/* Inteligência Artificial */}
+      <IaAdminSection onSucesso={(m) => mostrarToast('sucesso', m)} onErro={(m) => mostrarToast('erro', m)} />
+
+      {/* Toast */}
+      {toast && (
+        <div className="fixed bottom-6 right-6 z-50">
+          <div className={`flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border
+            ${toast.tipo === 'sucesso'
+              ? 'bg-emerald-950 border-emerald-700 text-emerald-300'
+              : 'bg-red-950 border-red-700 text-red-300'
+            }`}
+          >
+            {toast.tipo === 'sucesso'
+              ? <CheckCircle2 size={16} className="text-emerald-400 shrink-0" />
+              : <AlertCircle  size={16} className="text-red-400 shrink-0" />
+            }
+            <span className="text-sm font-medium">{toast.mensagem}</span>
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+}
+
+// =============================================================================
+// Seção interativa: Configuração de IA do Sistema
+// =============================================================================
+
+function IaAdminSection({
+  onSucesso,
+  onErro,
+}: {
+  onSucesso: (msg: string) => void;
+  onErro:    (msg: string) => void;
+}) {
+  const { token } = useAuth();
+
+  const [provider,   setProvider]   = useState<IaProvider>('anthropic');
+  const [apiKey,     setApiKey]     = useState('');
+  const [keySet,     setKeySet]     = useState(false);
+  const [mostrarKey, setMostrarKey] = useState(false);
+  const [carregando, setCarregando] = useState(true);
+  const [salvando,   setSalvando]   = useState(false);
+
+  useEffect(() => {
+    if (!token) return;
+    (async () => {
+      try {
+        const res = await fetch('/api/v1/admin/sistema/ia', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const data = await res.json() as { iaProvider: IaProvider | null; iaKeySet: boolean };
+          if (data.iaProvider) setProvider(data.iaProvider);
+          setKeySet(data.iaKeySet);
+        }
+      } catch { /* ignore */ } finally {
+        setCarregando(false);
+      }
+    })();
+  }, [token]);
+
+  const handleSalvar = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!token) return;
+    if (!apiKey && !keySet) { onErro('Informe a chave de API.'); return; }
+    setSalvando(true);
+    try {
+      const body: { iaProvider: IaProvider; iaApiKey?: string } = { iaProvider: provider };
+      if (apiKey.trim()) body.iaApiKey = apiKey.trim();
+      const res = await fetch('/api/v1/admin/sistema/ia', {
+        method:  'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body:    JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!res.ok) { onErro(data.message ?? 'Erro ao salvar.'); return; }
+      setKeySet(true);
+      setApiKey('');
+      onSucesso('Configuração de IA salva com sucesso!');
+    } catch {
+      onErro('Erro de conexão.');
+    } finally {
+      setSalvando(false);
+    }
+  };
+
+  const KEY_LINKS: Record<IaProvider, string> = {
+    anthropic: 'console.anthropic.com',
+    openai:    'platform.openai.com/api-keys',
+    google:    'aistudio.google.com/app/apikey',
+    deepseek:  'platform.deepseek.com',
+  };
+
+  return (
+    <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+      <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-800">
+        <div className="p-1.5 rounded-lg bg-violet-600/15">
+          <Bot size={16} className="text-violet-400" />
+        </div>
+        <h2 className="text-sm font-semibold text-slate-100">Inteligência Artificial</h2>
+        {keySet && (
+          <span className="ml-auto text-[10px] font-medium text-emerald-400 bg-emerald-900/30 border border-emerald-700/40 px-2 py-0.5 rounded-full">
+            configurada
+          </span>
+        )}
+      </div>
+
+      <form onSubmit={handleSalvar} className="px-5 py-4 space-y-5">
+        <p className="text-xs text-slate-400 leading-relaxed">
+          Chave de IA centralizada — todos os contadores usam este provider para gerar o calendário fiscal dos clientes.
+          A chave nunca é exibida após salva.
+        </p>
+
+        {carregando ? (
+          <div className="flex items-center gap-2 py-2 text-slate-500 text-xs">
+            <Loader2 size={14} className="animate-spin" />
+            Carregando…
+          </div>
+        ) : (
+          <>
+            {/* Provider */}
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-slate-300">Provedor</p>
+              <div className="grid grid-cols-2 gap-2">
+                {IA_PROVIDERS.map((p) => (
+                  <label
+                    key={p.id}
+                    className={`flex items-start gap-2.5 rounded-lg border p-3 cursor-pointer transition-colors
+                      ${provider === p.id
+                        ? 'border-violet-500/60 bg-violet-600/10'
+                        : 'border-slate-700 hover:border-slate-600'
+                      }`}
+                  >
+                    <input
+                      type="radio"
+                      name="iaProvider"
+                      value={p.id}
+                      checked={provider === p.id}
+                      onChange={() => setProvider(p.id)}
+                      className="mt-0.5 accent-violet-500"
+                    />
+                    <div>
+                      <p className="text-xs font-medium text-slate-200">{p.label}</p>
+                      <p className="text-[10px] text-slate-500 mt-0.5">{p.modelLabel}</p>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Chave de API */}
+            <div className="space-y-1.5">
+              <label htmlFor="admin-ia-key" className="block text-xs font-medium text-slate-300">
+                Chave de API{' '}
+                {keySet && <span className="text-slate-500 font-normal">(deixe em branco para manter a atual)</span>}
+              </label>
+              <div className="relative">
+                <input
+                  id="admin-ia-key"
+                  type={mostrarKey ? 'text' : 'password'}
+                  value={apiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
+                  placeholder={keySet ? '••••••••••••••••' : 'sk-ant-... / sk-... / AIza...'}
+                  autoComplete="off"
+                  className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 pr-10
+                             text-xs text-slate-100 placeholder:text-slate-600
+                             focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 transition"
+                />
+                <button
+                  type="button"
+                  onClick={() => setMostrarKey((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600 hover:text-slate-300"
+                  tabIndex={-1}
+                >
+                  {mostrarKey ? <EyeOff size={14} /> : <Eye size={14} />}
+                </button>
+              </div>
+              <p className="text-[10px] text-slate-500">
+                Obtenha em: <span className="text-violet-400">{KEY_LINKS[provider]}</span>
+              </p>
+            </div>
+
+            <div className="flex justify-end">
+              <button
+                type="submit"
+                disabled={salvando}
+                className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-4 py-2 text-xs
+                           font-semibold text-white hover:bg-violet-500 disabled:opacity-50
+                           disabled:cursor-not-allowed transition-colors"
+              >
+                {salvando ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
+                {salvando ? 'Salvando…' : 'Salvar'}
+              </button>
+            </div>
+          </>
+        )}
+      </form>
     </div>
   );
 }

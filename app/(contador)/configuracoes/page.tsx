@@ -29,10 +29,7 @@ import {
   XCircle,
   Check,
   Lock,
-  Bot,
 } from 'lucide-react';
-
-import { IA_PROVIDERS, type IaProvider } from '../../../src/utils/aiProviders';
 
 import { useAuth } from '../../../src/presentation/hooks/useAuth';
 import { validarEmail, validarTelefone, mascararTelefone } from '../../../src/utils/validators';
@@ -41,7 +38,7 @@ import { validarEmail, validarTelefone, mascararTelefone } from '../../../src/ut
 // Tipos
 // =============================================================================
 
-type Aba = 'perfil' | 'seguranca' | 'escritorio' | 'white-label' | 'privacidade' | 'assinatura' | 'ia';
+type Aba = 'perfil' | 'seguranca' | 'escritorio' | 'white-label' | 'privacidade' | 'assinatura';
 
 interface PerfilForm {
   nome:  string;
@@ -87,7 +84,6 @@ const ABAS: { id: Aba; label: string; icon: React.ReactNode }[] = [
   { id: 'white-label', label: 'White Label', icon: <Palette     size={18} /> },
   { id: 'privacidade', label: 'Privacidade', icon: <ShieldCheck size={18} /> },
   { id: 'assinatura',  label: 'Assinatura',  icon: <CreditCard  size={18} /> },
-  { id: 'ia',          label: 'IA',          icon: <Bot         size={18} /> },
 ];
 
 // =============================================================================
@@ -218,13 +214,6 @@ export default function ConfiguracoesPage() {
           )}
           {abaAtiva === 'assinatura' && (
             <AssinaturaTab
-              token={token}
-              onSucesso={(msg) => mostrarToast('sucesso', msg)}
-              onErro={(msg) => mostrarToast('erro', msg)}
-            />
-          )}
-          {abaAtiva === 'ia' && (
-            <IaTab
               token={token}
               onSucesso={(msg) => mostrarToast('sucesso', msg)}
               onErro={(msg) => mostrarToast('erro', msg)}
@@ -1756,173 +1745,3 @@ function AssinaturaTab({
   );
 }
 
-// =============================================================================
-// Tab: Inteligência Artificial
-// =============================================================================
-
-function IaTab({
-  token,
-  onSucesso,
-  onErro,
-}: {
-  token:     string | null;
-  onSucesso: (msg: string) => void;
-  onErro:    (msg: string) => void;
-}) {
-  const [provider,  setProvider]  = useState<IaProvider>('anthropic');
-  const [apiKey,    setApiKey]    = useState('');
-  const [keySet,    setKeySet]    = useState(false);
-  const [mostrarKey, setMostrarKey] = useState(false);
-  const [carregando, setCarregando] = useState(true);
-  const [salvando,  setSalvando]  = useState(false);
-
-  useEffect(() => {
-    if (!token) return;
-    (async () => {
-      try {
-        const res = await fetch('/api/v1/escritorio/ia', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (res.ok) {
-          const data = await res.json() as { iaProvider: IaProvider | null; iaKeySet: boolean };
-          if (data.iaProvider) setProvider(data.iaProvider);
-          setKeySet(data.iaKeySet);
-        }
-      } catch { /* ignore */ } finally {
-        setCarregando(false);
-      }
-    })();
-  }, [token]);
-
-  const handleSalvar = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!token) return;
-    if (!apiKey && !keySet) { onErro('Informe a chave de API.'); return; }
-    setSalvando(true);
-    try {
-      const body: { iaProvider: IaProvider; iaApiKey?: string } = { iaProvider: provider };
-      if (apiKey.trim()) body.iaApiKey = apiKey.trim();
-      const res = await fetch('/api/v1/escritorio/ia', {
-        method:  'PUT',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body:    JSON.stringify(body),
-      });
-      const data = await res.json();
-      if (!res.ok) { onErro(data.message ?? 'Erro ao salvar.'); return; }
-      setKeySet(true);
-      setApiKey('');
-      onSucesso('Configuração de IA salva com sucesso!');
-    } catch {
-      onErro('Erro de conexão.');
-    } finally {
-      setSalvando(false);
-    }
-  };
-
-  if (carregando) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="animate-spin text-primary" size={32} />
-      </div>
-    );
-  }
-
-  return (
-    <form onSubmit={handleSalvar} className="space-y-6">
-      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-6 space-y-6">
-        <div className="flex items-center gap-2">
-          <Bot size={18} className="text-primary" />
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Inteligência Artificial</h2>
-        </div>
-
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          Escolha o provedor de IA utilizado para gerar o calendário fiscal dos seus clientes automaticamente.
-          A chave de API é armazenada de forma criptografada e nunca exibida após salva.
-        </p>
-
-        {/* Seleção de provider */}
-        <div className="space-y-3">
-          <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Provedor</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {IA_PROVIDERS.map((p) => (
-              <label
-                key={p.id}
-                className={`flex items-start gap-3 rounded-lg border p-4 cursor-pointer transition-colors
-                  ${provider === p.id
-                    ? 'border-primary bg-primary/5 dark:bg-primary/10'
-                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
-                  }`}
-              >
-                <input
-                  type="radio"
-                  name="iaProvider"
-                  value={p.id}
-                  checked={provider === p.id}
-                  onChange={() => setProvider(p.id)}
-                  className="mt-0.5 accent-primary"
-                />
-                <div>
-                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{p.label}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Modelo: {p.modelLabel}</p>
-                </div>
-              </label>
-            ))}
-          </div>
-        </div>
-
-        {/* Chave de API */}
-        <div className="space-y-1.5">
-          <label htmlFor="ia-key" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Chave de API
-            {keySet && (
-              <span className="ml-2 text-xs font-normal text-emerald-600 dark:text-emerald-400">
-                (configurada — deixe em branco para manter)
-              </span>
-            )}
-          </label>
-          <div className="relative">
-            <input
-              id="ia-key"
-              type={mostrarKey ? 'text' : 'password'}
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              placeholder={keySet ? '••••••••••••••••' : 'sk-...'}
-              autoComplete="off"
-              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 pr-10
-                         text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500
-                         focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow"
-            />
-            <button
-              type="button"
-              onClick={() => setMostrarKey((v) => !v)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-              tabIndex={-1}
-            >
-              {mostrarKey ? <EyeOff size={16} /> : <Eye size={16} />}
-            </button>
-          </div>
-          <p className="text-xs text-gray-500 dark:text-gray-400">
-            {provider === 'anthropic' && 'Obtenha sua chave em console.anthropic.com'}
-            {provider === 'openai'    && 'Obtenha sua chave em platform.openai.com/api-keys'}
-            {provider === 'google'    && 'Obtenha sua chave em aistudio.google.com/app/apikey'}
-            {provider === 'deepseek'  && 'Obtenha sua chave em platform.deepseek.com'}
-          </p>
-        </div>
-      </div>
-
-      <div className="flex justify-end">
-        <button
-          type="submit"
-          disabled={salvando}
-          className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm
-                     font-semibold text-white shadow-sm hover:brightness-90 disabled:opacity-50
-                     disabled:cursor-not-allowed transition-colors focus-visible:outline-none
-                     focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-        >
-          {salvando ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-          {salvando ? 'Salvando…' : 'Salvar configuração de IA'}
-        </button>
-      </div>
-    </form>
-  );
-}
