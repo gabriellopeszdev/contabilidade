@@ -1,7 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRef } from 'react';
 import Link from 'next/link';
 import {
   ArrowRight,
@@ -19,14 +18,8 @@ import {
   ChevronRight,
   Star,
 } from 'lucide-react';
-import { useAuth } from '../src/presentation/hooks/useAuth';
 import { FiscoHubLogo } from './components/FiscoHubLogo';
 
-const ROTA_DEFAULT: Record<string, string> = {
-  Contador: '/dashboard',
-  Cliente:  '/inicio',
-  Admin:    '/dashboard-admin',
-};
 
 const FEATURES = [
   {
@@ -179,15 +172,7 @@ function useRevealOnScroll() {
 }
 
 export default function LandingPage() {
-  const router = useRouter();
-  const { usuario, carregando, role } = useAuth();
   useRevealOnScroll();
-
-  useEffect(() => {
-    if (!carregando && usuario && role) {
-      router.replace(ROTA_DEFAULT[role] ?? '/dashboard');
-    }
-  }, [carregando, usuario, role, router]);
 
   return (
     <div className="min-h-screen bg-[#0a0f1e] text-white antialiased overflow-x-hidden">
