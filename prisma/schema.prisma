@@ -758,7 +758,7 @@ enum StatusAssinaturaSaaS {
 
 model PlanoSaaS {
   id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  nome             String   @db.VarChar(100)
+  nome             String   @unique @db.VarChar(100)
   descricao        String?  @db.VarChar(500)
   preco            Decimal  @db.Decimal(10, 2)
   limiteClientes   Int      @map("limite_clientes")
