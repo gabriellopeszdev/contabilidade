@@ -82,22 +82,32 @@ const FUNC_GERENTE    = { id: FUNC_GERENTE_ID,    name: 'Ana Gerente',   email: 
 async function upsertContador(data: {
   id: string; name: string; email: string; senha: string; crc: string; isAdmin: boolean;
 }) {
+  const existe = await prisma.usuarioContador.findUnique({ where: { email: data.email }, select: { id: true } });
+  if (existe) {
+    return prisma.usuarioContador.update({
+      where:  { email: data.email },
+      data:   { name: data.name, crc: data.crc, isActive: true, isAdmin: data.isAdmin },
+    });
+  }
   const hash = await SenhaHash.criarDeTextoPlano(data.senha, hasher);
-  return prisma.usuarioContador.upsert({
-    where:  { email: data.email },
-    update: { name: data.name, crc: data.crc, isActive: true, isAdmin: data.isAdmin },
-    create: { id: data.id, name: data.name, email: data.email, passwordHash: hash.hash, crc: data.crc, isActive: true, isAdmin: data.isAdmin },
+  return prisma.usuarioContador.create({
+    data: { id: data.id, name: data.name, email: data.email, passwordHash: hash.hash, crc: data.crc, isActive: true, isAdmin: data.isAdmin },
   });
 }
 
 async function upsertCliente(data: {
   id: string; name: string; email: string; senha: string; cnpj: string;
 }) {
+  const existe = await prisma.usuarioCliente.findUnique({ where: { email: data.email }, select: { id: true } });
+  if (existe) {
+    return prisma.usuarioCliente.update({
+      where: { email: data.email },
+      data:  { name: data.name, isActive: true },
+    });
+  }
   const hash = await SenhaHash.criarDeTextoPlano(data.senha, hasher);
-  return prisma.usuarioCliente.upsert({
-    where:  { email: data.email },
-    update: { name: data.name, isActive: true },
-    create: { id: data.id, name: data.name, email: data.email, passwordHash: hash.hash, cnpj: data.cnpj, isActive: true },
+  return prisma.usuarioCliente.create({
+    data: { id: data.id, name: data.name, email: data.email, passwordHash: hash.hash, cnpj: data.cnpj, isActive: true },
   });
 }
 
@@ -105,11 +115,16 @@ async function upsertFuncionario(data: {
   id: string; name: string; email: string; senha: string;
   vinculo: 'ESCRITORIO' | 'CLIENTE'; contadorId?: string; clienteId?: string; setores: SetorTipo[];
 }) {
+  const existe = await prisma.funcionario.findUnique({ where: { email: data.email }, select: { id: true } });
+  if (existe) {
+    return prisma.funcionario.update({
+      where: { email: data.email },
+      data:  { name: data.name, vinculo: data.vinculo, contadorId: data.contadorId, clienteId: data.clienteId, setores: data.setores, isActive: true },
+    });
+  }
   const hash = await SenhaHash.criarDeTextoPlano(data.senha, hasher);
-  return prisma.funcionario.upsert({
-    where:  { email: data.email },
-    update: { name: data.name, vinculo: data.vinculo, contadorId: data.contadorId, clienteId: data.clienteId, setores: data.setores, isActive: true },
-    create: { id: data.id, name: data.name, email: data.email, passwordHash: hash.hash, vinculo: data.vinculo, contadorId: data.contadorId, clienteId: data.clienteId, setores: data.setores, isActive: true },
+  return prisma.funcionario.create({
+    data: { id: data.id, name: data.name, email: data.email, passwordHash: hash.hash, vinculo: data.vinculo, contadorId: data.contadorId, clienteId: data.clienteId, setores: data.setores, isActive: true },
   });
 }
 
