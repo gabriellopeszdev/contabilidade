@@ -53,23 +53,56 @@ interface NavItem {
   label:     string;
   icon:      React.ReactNode;
   donoOnly?: boolean;
-  feature?:  string; // feature key from FEATURES constant — if set, show lock when plan lacks it
+  feature?:  string;
 }
 
-const NAV_ITEMS: NavItem[] = [
-  { href: '/dashboard',     label: 'Dashboard',      icon: <LayoutDashboard size={18} /> },
-  { href: '/lote',          label: 'Upload em Lote',  icon: <Upload size={18} /> },
-  { href: '/nfe',           label: 'Importar NF-e',  icon: <FileText size={18} />, donoOnly: true },
-  { href: '/chat-ia',       label: 'Chat IA',        icon: <Bot size={18} />,     donoOnly: true, feature: 'ia' },
-  { href: '/clientes',      label: 'Meus Clientes',  icon: <Users size={18} /> },
-  { href: '/equipe',        label: 'Equipe',          icon: <UserCog size={18} />,      donoOnly: true, feature: 'equipe' },
-  { href: '/calendario',    label: 'Calendário',     icon: <CalendarDays size={18} />,              feature: 'calendario' },
-  { href: '/financeiro',    label: 'Financeiro',      icon: <DollarSign size={18} />,   donoOnly: true, feature: 'financeiro' },
-  { href: '/relatorios',    label: 'Relatórios',      icon: <FileBarChart size={18} />, donoOnly: true, feature: 'relatorios' },
-  { href: '/assinaturas',   label: 'Assinaturas',    icon: <PenLine size={18} />,      donoOnly: true, feature: 'assinatura_eletronica' },
-  { href: '/busca',         label: 'Busca',          icon: <Search size={18} /> },
-  { href: '/chat',          label: 'Chat',           icon: <MessageSquare size={18} />,             feature: 'chat' },
-  { href: '/configuracoes', label: 'Configurações',  icon: <Settings size={18} />,     donoOnly: true },
+interface NavGroup {
+  label?: string;
+  items:  NavItem[];
+}
+
+const NAV_GROUPS: NavGroup[] = [
+  {
+    items: [
+      { href: '/dashboard', label: 'Dashboard', icon: <LayoutDashboard size={18} /> },
+    ],
+  },
+  {
+    label: 'Documentos',
+    items: [
+      { href: '/nfe',  label: 'Importar NF-e',  icon: <FileText size={18} />, donoOnly: true },
+      { href: '/lote', label: 'Upload em Lote', icon: <Upload   size={18} /> },
+    ],
+  },
+  {
+    label: 'Clientes',
+    items: [
+      { href: '/clientes', label: 'Meus Clientes', icon: <Users   size={18} /> },
+      { href: '/equipe',   label: 'Equipe',         icon: <UserCog size={18} />, donoOnly: true, feature: 'equipe' },
+    ],
+  },
+  {
+    label: 'Gestão',
+    items: [
+      { href: '/calendario',  label: 'Calendário',  icon: <CalendarDays size={18} />,              feature: 'calendario' },
+      { href: '/financeiro',  label: 'Financeiro',  icon: <DollarSign   size={18} />, donoOnly: true, feature: 'financeiro' },
+      { href: '/relatorios',  label: 'Relatórios',  icon: <FileBarChart size={18} />, donoOnly: true, feature: 'relatorios' },
+      { href: '/assinaturas', label: 'Assinaturas', icon: <PenLine      size={18} />, donoOnly: true, feature: 'assinatura_eletronica' },
+    ],
+  },
+  {
+    label: 'Comunicação',
+    items: [
+      { href: '/chat',    label: 'Chat',    icon: <MessageSquare size={18} />,            feature: 'chat' },
+      { href: '/chat-ia', label: 'Chat IA', icon: <Bot           size={18} />, donoOnly: true, feature: 'ia' },
+    ],
+  },
+  {
+    items: [
+      { href: '/busca',         label: 'Busca',         icon: <Search   size={18} /> },
+      { href: '/configuracoes', label: 'Configurações', icon: <Settings size={18} />, donoOnly: true },
+    ],
+  },
 ];
 
 // =============================================================================
@@ -168,7 +201,12 @@ export default function ContadorLayout({ children }: { children: React.ReactNode
 
   if (!usuario) return null;
 
-  const navItems = NAV_ITEMS.filter((item) => !item.donoOnly || isDono);
+  const navGroups = NAV_GROUPS.map((g) => ({
+    ...g,
+    items: g.items.filter((item) => !item.donoOnly || isDono),
+  })).filter((g) => g.items.length > 0);
+
+  const navItems = navGroups.flatMap((g) => g.items);
 
   const iniciais = usuario.nome
     .split(' ')
@@ -220,59 +258,76 @@ export default function ContadorLayout({ children }: { children: React.ReactNode
         </div>
 
         {/* Navegação */}
-        <nav className={`flex-1 py-4 space-y-0.5 overflow-y-auto ${colapsada ? 'px-2' : 'px-3'}`}>
-          {navItems.map((item) => {
-            const ativo = pathname === item.href || pathname.startsWith(item.href + '/');
-            const bloqueado = isDono && item.feature && planoAtual
-              ? planoAtual.isRestricted || !planoAtual.features.includes(item.feature)
-              : false;
+        <nav className={`flex-1 py-3 overflow-y-auto ${colapsada ? 'px-2' : 'px-3'}`}>
+          {navGroups.map((group, gi) => (
+            <div key={gi} className={gi > 0 ? 'mt-1' : ''}>
+              {/* Separador + label do grupo */}
+              {gi > 0 && (
+                colapsada
+                  ? <div className="my-2 border-t border-gray-100 dark:border-gray-800" />
+                  : group.label && (
+                    <p className="mt-3 mb-1 px-3 text-[10px] font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-600 select-none">
+                      {group.label}
+                    </p>
+                  )
+              )}
 
-            const title = colapsada
-              ? bloqueado ? `${item.label} — indisponível no plano ${planoAtual?.planoNome ?? 'atual'}` : item.label
-              : bloqueado ? `Indisponível no plano ${planoAtual?.planoNome ?? 'atual'} — faça upgrade` : undefined;
+              <div className="space-y-0.5">
+                {group.items.map((item) => {
+                  const ativo = pathname === item.href || pathname.startsWith(item.href + '/');
+                  const bloqueado = isDono && item.feature && planoAtual
+                    ? planoAtual.isRestricted || !planoAtual.features.includes(item.feature)
+                    : false;
 
-            if (bloqueado) {
-              return (
-                <div
-                  key={item.href}
-                  title={title}
-                  className={`
-                    flex items-center rounded-lg text-sm font-medium cursor-not-allowed opacity-50
-                    ${colapsada ? 'justify-center py-2.5' : 'gap-3 px-3 py-2.5'}
-                    text-gray-400 dark:text-gray-600
-                  `}
-                >
-                  <span className="shrink-0 text-gray-300 dark:text-gray-600">{item.icon}</span>
-                  {!colapsada && (
-                    <>
-                      <span className="flex-1">{item.label}</span>
-                      <Lock size={12} className="shrink-0 text-gray-300 dark:text-gray-600" />
-                    </>
-                  )}
-                </div>
-              );
-            }
+                  const title = colapsada
+                    ? bloqueado ? `${item.label} — indisponível no plano ${planoAtual?.planoNome ?? 'atual'}` : item.label
+                    : bloqueado ? `Indisponível no plano ${planoAtual?.planoNome ?? 'atual'} — faça upgrade` : undefined;
 
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setSidebarAberta(false)}
-                title={title}
-                className={`
-                  flex items-center rounded-lg text-sm font-medium transition-colors
-                  ${colapsada ? 'justify-center py-2.5' : 'gap-3 px-3 py-2.5'}
-                  ${ativo
-                    ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
-                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
+                  if (bloqueado) {
+                    return (
+                      <div
+                        key={item.href}
+                        title={title}
+                        className={`
+                          flex items-center rounded-lg text-sm font-medium cursor-not-allowed opacity-50
+                          ${colapsada ? 'justify-center py-2.5' : 'gap-3 px-3 py-2.5'}
+                          text-gray-400 dark:text-gray-600
+                        `}
+                      >
+                        <span className="shrink-0 text-gray-300 dark:text-gray-600">{item.icon}</span>
+                        {!colapsada && (
+                          <>
+                            <span className="flex-1">{item.label}</span>
+                            <Lock size={12} className="shrink-0 text-gray-300 dark:text-gray-600" />
+                          </>
+                        )}
+                      </div>
+                    );
                   }
-                `}
-              >
-                <span className={`shrink-0 ${ativo ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'}`}>{item.icon}</span>
-                {!colapsada && item.label}
-              </Link>
-            );
-          })}
+
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setSidebarAberta(false)}
+                      title={title}
+                      className={`
+                        flex items-center rounded-lg text-sm font-medium transition-colors
+                        ${colapsada ? 'justify-center py-2.5' : 'gap-3 px-3 py-2.5'}
+                        ${ativo
+                          ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
+                          : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
+                        }
+                      `}
+                    >
+                      <span className={`shrink-0 ${ativo ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'}`}>{item.icon}</span>
+                      {!colapsada && item.label}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </nav>
 
         {/* Status WS + Perfil */}
