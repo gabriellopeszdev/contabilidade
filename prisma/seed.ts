@@ -20,6 +20,7 @@ import { Pool }        from 'pg';
 
 import { SenhaHash }            from '../src/domain/value-objects/SenhaHash';
 import { BcryptPasswordHasher } from '../src/infrastructure/auth/BcryptPasswordHasher';
+import { SetorTipo }            from '@prisma/client';
 
 // ---------------------------------------------------------------------------
 // Bootstrap do Prisma Client com Driver Adapter (Prisma 7)
@@ -102,7 +103,7 @@ async function upsertCliente(data: {
 
 async function upsertFuncionario(data: {
   id: string; name: string; email: string; senha: string;
-  vinculo: 'ESCRITORIO' | 'CLIENTE'; contadorId?: string; clienteId?: string; setores: string[];
+  vinculo: 'ESCRITORIO' | 'CLIENTE'; contadorId?: string; clienteId?: string; setores: SetorTipo[];
 }) {
   const hash = await SenhaHash.criarDeTextoPlano(data.senha, hasher);
   return prisma.funcionario.upsert({
@@ -153,13 +154,13 @@ async function main() {
   // -------------------------------------------------------------------------
   // 4. Funcionários
   // -------------------------------------------------------------------------
-  const funcEsc = await upsertFuncionario({ ...FUNC_ESCRITORIO, vinculo: 'ESCRITORIO', contadorId: contador.id, setores: ['FISCAL', 'CONTABIL'] });
+  const funcEsc = await upsertFuncionario({ ...FUNC_ESCRITORIO, vinculo: 'ESCRITORIO', contadorId: contador.id, setores: [SetorTipo.FISCAL, SetorTipo.CONTABIL] });
   console.log(`✅ Func. escritório:  ${funcEsc.email} (setores: FISCAL, CONTABIL)`);
 
-  const funcCli = await upsertFuncionario({ ...FUNC_CLIENTE, vinculo: 'CLIENTE', clienteId: cliente.id, setores: ['PESSOAL'] });
+  const funcCli = await upsertFuncionario({ ...FUNC_CLIENTE, vinculo: 'CLIENTE', clienteId: cliente.id, setores: [SetorTipo.PESSOAL] });
   console.log(`✅ Func. cliente:     ${funcCli.email} (setores: PESSOAL)`);
 
-  const funcGer = await upsertFuncionario({ ...FUNC_GERENTE, vinculo: 'ESCRITORIO', contadorId: contador.id, setores: ['TODOS'] });
+  const funcGer = await upsertFuncionario({ ...FUNC_GERENTE, vinculo: 'ESCRITORIO', contadorId: contador.id, setores: [SetorTipo.TODOS] });
   console.log(`✅ Func. gerente:     ${funcGer.email} (setores: TODOS)\n`);
 
   // -------------------------------------------------------------------------
