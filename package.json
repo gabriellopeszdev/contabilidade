@@ -3,10 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "postinstall": "prisma generate",
     "predev": "docker compose up -d postgres redis minio minio_init",
     "dev": "tsx watch server.ts",
     "build": "next build",
     "start": "tsx server.ts",
+    "db:setup": "prisma migrate deploy && prisma db seed",
     "db:migrate": "prisma migrate dev",
     "db:generate": "prisma generate",
     "db:seed": "tsx prisma/seed.ts",
