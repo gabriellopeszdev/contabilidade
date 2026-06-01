@@ -1530,6 +1530,7 @@ const FEATURE_LABELS: Record<string, string> = {
   relatorios:            'Relatórios avançados',
   equipe:                'Gestão de equipe',
   integracao_cora:       'Integração Cora',
+  ia:                    'Assistente IA',
 };
 
 function AssinaturaTab({

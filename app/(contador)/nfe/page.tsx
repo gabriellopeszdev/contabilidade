@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef, DragEvent, ChangeEvent } from 'react';
-import { Upload, FileText, AlertTriangle, CheckCircle2, Loader2, X } from 'lucide-react';
+import { Upload, FileText, AlertTriangle, CheckCircle2, Loader2, X, Sparkles, Lock } from 'lucide-react';
 
 import { useAuth } from '../../../src/presentation/hooks/useAuth';
 import type { NFeParseResult } from '../../../src/utils/nfeParser';
@@ -167,6 +167,19 @@ export default function NfePage() {
   const [resultados,   setResultados]   = useState<ResultadoArquivo[] | null>(null);
   const [erroGlobal,   setErroGlobal]   = useState<string | null>(null);
 
+  const [analiseIa, setAnaliseIa]             = useState<{
+    resumo:              string;
+    totalEntradas:       number;
+    totalSaidas:         number;
+    valorTotalEntradas:  number;
+    valorTotalSaidas:    number;
+    alertas:             { tipo: 'warning' | 'info' | 'error'; mensagem: string }[];
+    observacoes:         string[];
+  } | null>(null);
+  const [analiseCarregando, setAnaliseCarregando] = useState(false);
+  const [analiseErro, setAnaliseErro]             = useState<string | null>(null);
+  const [analiseBloqueado, setAnaliseBloqueado]   = useState(false);
+
   // ---------------------------------------------------------------------------
   // Upload e parse
   // ---------------------------------------------------------------------------
@@ -211,6 +224,59 @@ export default function NfePage() {
       setCarregando(false);
     }
   }, [getToken]);
+
+  // ---------------------------------------------------------------------------
+  // Análise com IA
+  // ---------------------------------------------------------------------------
+
+  const analisarComIA = useCallback(async () => {
+    if (!resultados) return;
+    const nfes = resultados
+      .filter((r) => r.ok && r.dados)
+      .map((r) => ({
+        numero:       r.dados!.numero,
+        dataEmissao:  r.dados!.dataEmissao,
+        emitente:     r.dados!.emitente,
+        destinatario: r.dados!.destinatario,
+        valorTotal:   r.dados!.valorTotal,
+        impostos:     r.dados!.impostos,
+        tipo:         r.dados!.tipo,
+      }));
+
+    if (nfes.length === 0) return;
+
+    setAnaliseCarregando(true);
+    setAnaliseErro(null);
+    setAnaliseIa(null);
+
+    let token: string;
+    try {
+      token = await getToken();
+    } catch {
+      setAnaliseErro('Sessão expirada. Faça login novamente.');
+      setAnaliseCarregando(false);
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/v1/nfe/analisar', {
+        method:  'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ nfes }),
+      });
+      const body = await res.json() as { analise?: typeof analiseIa; message?: string };
+      if (res.status === 403 && body.message?.includes('Enterprise')) {
+        setAnaliseBloqueado(true);
+        return;
+      }
+      if (!res.ok) { setAnaliseErro(body.message ?? `Erro HTTP ${res.status}`); return; }
+      setAnaliseIa(body.analise ?? null);
+    } catch {
+      setAnaliseErro('Erro de conexão. Tente novamente.');
+    } finally {
+      setAnaliseCarregando(false);
+    }
+  }, [resultados, getToken]);
 
   // ---------------------------------------------------------------------------
   // Estatísticas dos resultados
@@ -363,6 +429,93 @@ export default function NfePage() {
               </tbody>
             </table>
           </div>
+        </div>
+      )}
+
+      {/* ------------------------------------------------------------------ */}
+      {/* Análise Fiscal com IA                                               */}
+      {/* ------------------------------------------------------------------ */}
+      {resultados && totalOk > 0 && (
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <Sparkles size={16} className="text-violet-500" />
+                <h2 className="text-sm font-bold text-gray-900 dark:text-gray-100">Análise Fiscal com IA</h2>
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Analise {totalOk} NF-e(s) importada(s) com inteligência artificial para identificar inconsistências e oportunidades.
+              </p>
+            </div>
+            <button
+              onClick={analisarComIA}
+              disabled={analiseCarregando}
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-violet-600 hover:bg-violet-700 disabled:opacity-60 disabled:cursor-not-allowed rounded-lg transition-colors"
+            >
+              {analiseCarregando ? <Loader2 size={15} className="animate-spin" /> : <Sparkles size={15} />}
+              {analiseCarregando ? 'Analisando…' : 'Analisar com IA'}
+            </button>
+          </div>
+
+          {/* Upgrade/locked */}
+          {analiseBloqueado && (
+            <div className="mt-4 flex items-center gap-3 p-4 rounded-xl bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800">
+              <Lock size={18} className="text-purple-500 shrink-0" />
+              <div>
+                <p className="text-sm font-semibold text-purple-800 dark:text-purple-300">Plano Enterprise necessário</p>
+                <p className="text-xs text-purple-600 dark:text-purple-400">A Análise IA de NF-e está disponível apenas no plano Enterprise.</p>
+              </div>
+            </div>
+          )}
+
+          {/* Erro */}
+          {analiseErro && (
+            <div className="mt-4 flex items-start gap-2 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+              <AlertTriangle size={15} className="text-red-500 mt-0.5 shrink-0" />
+              <p className="text-sm text-red-700 dark:text-red-400">{analiseErro}</p>
+            </div>
+          )}
+
+          {/* Resultado */}
+          {analiseIa && (
+            <div className="mt-4 space-y-4">
+              <p className="text-sm text-gray-700 dark:text-gray-300">{analiseIa.resumo}</p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
+                  <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Entradas</p>
+                  <p className="text-lg font-bold text-emerald-700 dark:text-emerald-300">{analiseIa.totalEntradas}</p>
+                  <p className="text-xs text-emerald-600 dark:text-emerald-400">{analiseIa.valorTotalEntradas.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
+                </div>
+                <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+                  <p className="text-xs text-blue-600 dark:text-blue-400 font-medium">Saídas</p>
+                  <p className="text-lg font-bold text-blue-700 dark:text-blue-300">{analiseIa.totalSaidas}</p>
+                  <p className="text-xs text-blue-600 dark:text-blue-400">{analiseIa.valorTotalSaidas.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
+                </div>
+              </div>
+              {analiseIa.alertas.length > 0 && (
+                <div className="space-y-2">
+                  {analiseIa.alertas.map((a, i) => (
+                    <div key={i} className={`flex items-start gap-2 p-3 rounded-lg text-sm
+                      ${a.tipo === 'error' ? 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400'
+                      : a.tipo === 'warning' ? 'bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-400'
+                      : 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-400'}`}>
+                      <AlertTriangle size={14} className="shrink-0 mt-0.5" />
+                      {a.mensagem}
+                    </div>
+                  ))}
+                </div>
+              )}
+              {analiseIa.observacoes.length > 0 && (
+                <ul className="space-y-1">
+                  {analiseIa.observacoes.map((obs, i) => (
+                    <li key={i} className="text-xs text-gray-600 dark:text-gray-400 flex items-start gap-1.5">
+                      <span className="text-violet-400 mt-0.5">•</span> {obs}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
         </div>
       )}
 

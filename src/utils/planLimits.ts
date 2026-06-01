@@ -8,6 +8,7 @@ export const FEATURES = {
   RELATORIOS:            'relatorios',
   EQUIPE:                'equipe',
   INTEGRACAO_CORA:       'integracao_cora',
+  IA:                    'ia',
 } as const;
 
 export type PlanFeature = typeof FEATURES[keyof typeof FEATURES];

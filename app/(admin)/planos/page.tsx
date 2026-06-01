@@ -17,6 +17,18 @@ import {
 
 import { useAuth } from '../../../src/presentation/hooks/useAuth';
 
+// Mapa de features disponíveis no sistema
+const FEATURES_DISPONIVEIS: { id: string; label: string; descricao: string }[] = [
+  { id: 'chat',                  label: 'Chat com Clientes',       descricao: 'Mensagens em tempo real entre contador e cliente' },
+  { id: 'calendario',            label: 'Calendário de Obrigações', descricao: 'Calendário fiscal com alertas de vencimentos' },
+  { id: 'financeiro',            label: 'Módulo Financeiro',        descricao: 'Controle de contas a pagar/receber e fluxo de caixa' },
+  { id: 'assinatura_eletronica', label: 'Assinatura Eletrônica',    descricao: 'Assinar documentos digitalmente via DocSeal' },
+  { id: 'relatorios',            label: 'Relatórios Avançados',     descricao: 'Relatórios exportáveis e dashboards detalhados' },
+  { id: 'equipe',                label: 'Gestão de Equipe',         descricao: 'Convidar e gerenciar funcionários do escritório' },
+  { id: 'integracao_cora',       label: 'Integração Cora',          descricao: 'Cobranças automáticas via banco digital Cora' },
+  { id: 'ia',                    label: 'Assistente IA (Enterprise)', descricao: 'Chat IA, análise de NF-e, sugestão de regime e mais' },
+];
+
 // =============================================================================
 // Tipos
 // =============================================================================
@@ -73,26 +85,10 @@ function ModalPlano({
   salvando:  boolean;
   erro:      string | null;
 }) {
-  const [form, setForm]           = useState<PlanoForm>(plano);
-  const [tagInput, setTagInput]   = useState('');
+  const [form, setForm] = useState<PlanoForm>(plano);
 
   function setField<K extends keyof PlanoForm>(key: K, value: PlanoForm[K]) {
     setForm((f) => ({ ...f, [key]: value }));
-  }
-
-  function adicionarFeature(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      const val = tagInput.trim();
-      if (val && !form.features.includes(val)) {
-        setField('features', [...form.features, val]);
-      }
-      setTagInput('');
-    }
-  }
-
-  function removerFeature(f: string) {
-    setField('features', form.features.filter((x) => x !== f));
   }
 
   return (
@@ -184,35 +180,35 @@ function ModalPlano({
 
           {/* Features */}
           <div>
-            <label className="block text-xs font-medium text-slate-400 mb-1.5">
-              Funcionalidades <span className="text-slate-600">(Enter para adicionar)</span>
-            </label>
-            <div className="bg-slate-800 border border-slate-700 rounded-lg p-2 min-h-[60px]">
-              <div className="flex flex-wrap gap-1.5 mb-2">
-                {form.features.map((f) => (
-                  <span
-                    key={f}
-                    className="inline-flex items-center gap-1 bg-violet-600/20 border border-violet-600/40 text-violet-300 text-xs px-2 py-0.5 rounded-full"
+            <label className="block text-xs font-medium text-slate-400 mb-2">Funcionalidades incluídas</label>
+            <div className="grid grid-cols-2 gap-1.5">
+              {FEATURES_DISPONIVEIS.map((feat) => {
+                const ativa = form.features.includes(feat.id);
+                return (
+                  <label
+                    key={feat.id}
+                    title={feat.descricao}
+                    className={`flex items-center gap-2 px-2.5 py-2 rounded-lg border cursor-pointer transition-colors
+                      ${ativa
+                        ? 'border-violet-600/50 bg-violet-600/10'
+                        : 'border-slate-700 bg-slate-800/50 hover:border-slate-600'
+                      }`}
                   >
-                    {f}
-                    <button
-                      type="button"
-                      onClick={() => removerFeature(f)}
-                      className="hover:text-white transition-colors"
-                    >
-                      <X size={10} />
-                    </button>
-                  </span>
-                ))}
-              </div>
-              <input
-                type="text"
-                value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
-                onKeyDown={adicionarFeature}
-                placeholder="Digite e pressione Enter..."
-                className="w-full bg-transparent text-sm text-white placeholder-slate-500 focus:outline-none"
-              />
+                    <input
+                      type="checkbox"
+                      checked={ativa}
+                      onChange={() =>
+                        setField('features', ativa
+                          ? form.features.filter((x) => x !== feat.id)
+                          : [...form.features, feat.id],
+                        )
+                      }
+                      className="accent-violet-500 shrink-0"
+                    />
+                    <span className="text-xs font-medium text-white leading-tight truncate">{feat.label}</span>
+                  </label>
+                );
+              })}
             </div>
           </div>
 
@@ -319,14 +315,25 @@ function CardPlano({
 
       {/* Features */}
       {plano.features.length > 0 && (
-        <ul className="space-y-1">
-          {plano.features.map((f) => (
-            <li key={f} className="flex items-center gap-2 text-xs text-slate-400">
-              <span className="w-1 h-1 rounded-full bg-violet-500 shrink-0" />
-              {f}
-            </li>
-          ))}
-        </ul>
+        <div className="flex flex-wrap gap-1">
+          {plano.features.slice(0, 4).map((f) => {
+            const meta = FEATURES_DISPONIVEIS.find((x) => x.id === f);
+            return (
+              <span
+                key={f}
+                title={meta?.descricao}
+                className="inline-block px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-800 border border-slate-700 text-slate-300 truncate max-w-[120px]"
+              >
+                {meta ? meta.label : f}
+              </span>
+            );
+          })}
+          {plano.features.length > 4 && (
+            <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-medium bg-violet-600/20 border border-violet-600/40 text-violet-400">
+              +{plano.features.length - 4} mais
+            </span>
+          )}
+        </div>
       )}
 
       {/* Rodapé */}

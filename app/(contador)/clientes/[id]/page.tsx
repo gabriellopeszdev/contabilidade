@@ -25,6 +25,11 @@ import {
   ExternalLink,
   Sparkles,
   Info,
+  Bot,
+  MessageSquare,
+  Send,
+  Lock,
+  TrendingUp,
 } from 'lucide-react';
 
 import { useAuth } from '../../../../src/presentation/hooks/useAuth';
@@ -182,6 +187,25 @@ function ClienteDetalhesPageDono() {
   const [iaCriando, setIaCriando] = useState(false);
   const [modalAssinatura, setModalAssinatura] = useState<{ link: string; nomeDoc: string; expiresAt: string } | null>(null);
   const [copiadoLink, setCopiadoLink] = useState(false);
+
+  // Chat por cliente
+  const [chatMessages, setChatMessages] = useState<{ role: 'user' | 'assistant'; content: string }[]>([]);
+  const [chatInput, setChatInput] = useState('');
+  const [chatCarregando, setChatCarregando] = useState(false);
+  const [chatErro, setChatErro] = useState<string | null>(null);
+  const [chatBloqueado, setChatBloqueado] = useState(false);
+
+  // Regime IA
+  const [regimeIa, setRegimeIa] = useState<{
+    regimeRecomendado: string;
+    justificativa: string;
+    vantagens: string[];
+    desvantagens: string[];
+    alertas: string[];
+  } | null>(null);
+  const [regimeCarregando, setRegimeCarregando] = useState(false);
+  const [regimeErro, setRegimeErro] = useState<string | null>(null);
+  const [regimeBloqueado, setRegimeBloqueado] = useState(false);
 
   // Monta URL com query params
   const apiUrl = useMemo(() => {
@@ -375,6 +399,60 @@ function ClienteDetalhesPageDono() {
       }
       return novo;
     });
+  }
+
+  async function handleChatEnviar() {
+    if (!token || !chatInput.trim() || chatCarregando) return;
+    const userMsg = { role: 'user' as const, content: chatInput.trim() };
+    const novasMensagens = [...chatMessages, userMsg];
+    setChatMessages(novasMensagens);
+    setChatInput('');
+    setChatCarregando(true);
+    setChatErro(null);
+
+    try {
+      const res = await fetch(`/api/v1/clientes/${clienteId}/chat`, {
+        method:  'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ messages: novasMensagens }),
+      });
+      const body = await res.json() as { reply?: string; message?: string };
+      if (res.status === 403 && body.message?.includes('Enterprise')) {
+        setChatBloqueado(true);
+        return;
+      }
+      if (!res.ok) { setChatErro(body.message ?? `Erro HTTP ${res.status}`); return; }
+      setChatMessages((prev) => [...prev, { role: 'assistant', content: body.reply ?? '' }]);
+    } catch {
+      setChatErro('Erro de conexão. Tente novamente.');
+    } finally {
+      setChatCarregando(false);
+    }
+  }
+
+  async function handleAnalisarRegime() {
+    if (!token) return;
+    setRegimeCarregando(true);
+    setRegimeErro(null);
+    setRegimeIa(null);
+
+    try {
+      const res = await fetch(`/api/v1/clientes/${clienteId}/regime-ia`, {
+        method:  'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      });
+      const body = await res.json() as { regime?: typeof regimeIa; message?: string };
+      if (res.status === 403 && body.message?.includes('Enterprise')) {
+        setRegimeBloqueado(true);
+        return;
+      }
+      if (!res.ok) { setRegimeErro(body.message ?? `Erro HTTP ${res.status}`); return; }
+      setRegimeIa(body.regime ?? null);
+    } catch {
+      setRegimeErro('Erro de conexão. Tente novamente.');
+    } finally {
+      setRegimeCarregando(false);
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -601,6 +679,265 @@ function ClienteDetalhesPageDono() {
                 {iaCriando ? 'Adicionando…' : 'Adicionar ao Calendário'}
               </button>
             </div>
+          </div>
+        )}
+      </div>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* Seção: Chat por Cliente                                              */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-700 shadow-sm p-5 sm:p-6">
+        {/* Header */}
+        <div className="flex items-center gap-2 mb-1">
+          <MessageSquare size={16} className="text-blue-500" />
+          <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">
+            Chat por Cliente
+          </h2>
+          <Bot size={14} className="text-slate-400" />
+        </div>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+          Converse com a IA sobre a situação fiscal deste cliente. O contexto do cliente é incluído automaticamente.
+        </p>
+
+        {chatBloqueado ? (
+          /* Upgrade card */
+          <div className="flex flex-col items-center gap-3 py-8 px-4 rounded-xl bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 text-center">
+            <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-800 flex items-center justify-center">
+              <Lock size={18} className="text-purple-600 dark:text-purple-300" />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-purple-900 dark:text-purple-100">Recurso exclusivo Enterprise</p>
+              <p className="text-xs text-purple-700 dark:text-purple-300 mt-1 max-w-xs mx-auto">
+                O Chat por Cliente está disponível apenas no plano Enterprise. Faça upgrade para conversar com a IA sobre seus clientes.
+              </p>
+            </div>
+            <a
+              href="/configuracoes/planos"
+              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white
+                bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors"
+            >
+              <Sparkles size={13} />
+              Ver planos
+            </a>
+          </div>
+        ) : (
+          /* Mini chat UI */
+          <div className="flex flex-col gap-3">
+            {/* Message list */}
+            <div className="max-h-64 overflow-y-auto flex flex-col gap-2 px-1">
+              {chatMessages.length === 0 && (
+                <p className="text-xs text-slate-400 dark:text-slate-500 text-center py-6">
+                  Faça uma pergunta sobre este cliente para começar.
+                </p>
+              )}
+              {chatMessages.map((msg, idx) => (
+                <div
+                  key={idx}
+                  className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div
+                    className={`max-w-[80%] px-3 py-2 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap
+                      ${msg.role === 'user'
+                        ? 'bg-blue-600 text-white rounded-br-sm'
+                        : 'bg-slate-100 dark:bg-gray-700 text-slate-900 dark:text-slate-100 rounded-bl-sm'
+                      }`}
+                  >
+                    {msg.content}
+                  </div>
+                </div>
+              ))}
+              {chatCarregando && (
+                <div className="flex justify-start">
+                  <div className="flex items-center gap-1.5 px-3 py-2 rounded-2xl rounded-bl-sm bg-slate-100 dark:bg-gray-700">
+                    <Loader2 size={13} className="animate-spin text-slate-400" />
+                    <span className="text-xs text-slate-500 dark:text-slate-400">Digitando…</span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Error */}
+            {chatErro && (
+              <div className="flex items-start gap-2 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+                <AlertCircle size={14} className="text-red-500 mt-0.5 shrink-0" />
+                <p className="text-xs text-red-700 dark:text-red-400">{chatErro}</p>
+              </div>
+            )}
+
+            {/* Input row */}
+            <div className="flex items-end gap-2">
+              <textarea
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    void handleChatEnviar();
+                  }
+                }}
+                placeholder="Pergunte algo sobre este cliente… (Enter para enviar)"
+                rows={2}
+                className="flex-1 px-3 py-2 text-sm rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-gray-800
+                  text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500
+                  focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none transition-colors"
+              />
+              <button
+                type="button"
+                onClick={() => void handleChatEnviar()}
+                disabled={!chatInput.trim() || chatCarregando}
+                className="shrink-0 p-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white
+                  disabled:opacity-50 disabled:cursor-not-allowed transition-colors
+                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                title="Enviar mensagem"
+              >
+                {chatCarregando
+                  ? <Loader2 size={16} className="animate-spin" />
+                  : <Send size={16} />
+                }
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* Seção: Sugestão de Regime Tributário                                 */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-700 shadow-sm p-5 sm:p-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-1">
+              <TrendingUp size={16} className="text-emerald-500" />
+              <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                Sugestão de Regime Tributário
+              </h2>
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              A IA analisa o perfil do cliente e recomenda o regime tributário mais adequado com vantagens, desvantagens e alertas.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => void handleAnalisarRegime()}
+            disabled={regimeCarregando}
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white
+              bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 disabled:cursor-not-allowed
+              rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+          >
+            {regimeCarregando
+              ? <Loader2 size={15} className="animate-spin" />
+              : <TrendingUp size={15} />
+            }
+            {regimeCarregando ? 'Analisando…' : 'Analisar Regime com IA'}
+          </button>
+        </div>
+
+        {/* Upgrade card */}
+        {regimeBloqueado && (
+          <div className="mt-4 flex flex-col items-center gap-3 py-8 px-4 rounded-xl bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 text-center">
+            <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-800 flex items-center justify-center">
+              <Lock size={18} className="text-purple-600 dark:text-purple-300" />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-purple-900 dark:text-purple-100">Recurso exclusivo Enterprise</p>
+              <p className="text-xs text-purple-700 dark:text-purple-300 mt-1 max-w-xs mx-auto">
+                A Sugestão de Regime Tributário está disponível apenas no plano Enterprise. Faça upgrade para acessar análises fiscais avançadas.
+              </p>
+            </div>
+            <a
+              href="/configuracoes/planos"
+              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white
+                bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors"
+            >
+              <Sparkles size={13} />
+              Ver planos
+            </a>
+          </div>
+        )}
+
+        {/* Erro */}
+        {regimeErro && (
+          <div className="mt-4 flex items-start gap-2 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+            <AlertCircle size={15} className="text-red-500 mt-0.5 shrink-0" />
+            <p className="text-sm text-red-700 dark:text-red-400">{regimeErro}</p>
+          </div>
+        )}
+
+        {/* Resultado */}
+        {regimeIa && (
+          <div className="mt-5 space-y-4">
+            {/* Regime recomendado */}
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+                Regime Recomendado
+              </span>
+              <span className="px-3 py-1 rounded-full text-sm font-bold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700">
+                {regimeIa.regimeRecomendado}
+              </span>
+            </div>
+
+            {/* Justificativa */}
+            <div>
+              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">
+                Justificativa
+              </p>
+              <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
+                {regimeIa.justificativa}
+              </p>
+            </div>
+
+            {/* Vantagens */}
+            {regimeIa.vantagens.length > 0 && (
+              <div>
+                <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">
+                  Vantagens
+                </p>
+                <ul className="space-y-1.5">
+                  {regimeIa.vantagens.map((v, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-300">
+                      <CheckCircle2 size={14} className="text-emerald-500 shrink-0 mt-0.5" />
+                      <span>{v}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Desvantagens */}
+            {regimeIa.desvantagens.length > 0 && (
+              <div>
+                <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">
+                  Desvantagens
+                </p>
+                <ul className="space-y-1.5">
+                  {regimeIa.desvantagens.map((d, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-300">
+                      <AlertCircle size={14} className="text-amber-500 shrink-0 mt-0.5" />
+                      <span>{d}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Alertas */}
+            {regimeIa.alertas.length > 0 && (
+              <div>
+                <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">
+                  Alertas
+                </p>
+                <ul className="space-y-1.5">
+                  {regimeIa.alertas.map((a, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm text-red-700 dark:text-red-400">
+                      <AlertCircle size={14} className="text-red-500 shrink-0 mt-0.5" />
+                      <span>{a}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         )}
       </div>

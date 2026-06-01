@@ -185,7 +185,8 @@ model UsuarioContador {
   funcionarios  Funcionario[] @relation("FuncionarioContador")
   boletosEmitidos BoletoHonorario[]
   assinaturas   AssinaturaHonorario[]
-  assinaturaSaaS AssinaturaSaaS?
+  assinaturaSaaS  AssinaturaSaaS?
+  chatIaMensagens ChatIaMensagem[]
 
   @@index([email])
   @@index([deletedAt])
@@ -808,4 +809,21 @@ model ConfiguracaoSistema {
   updatedAt  DateTime @updatedAt          @map("updated_at") @db.Timestamptz
 
   @@map("configuracao_sistema")
+}
+
+// =============================================================================
+// ChatIaMensagem — Histórico persistente do chat com a IA por contador
+// =============================================================================
+
+model ChatIaMensagem {
+  id         String   @id @default(cuid())
+  contadorId String   @map("contador_id") @db.Uuid
+  role       String   @db.VarChar(10)   // 'user' | 'assistant'
+  content    String
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  contador UsuarioContador @relation(fields: [contadorId], references: [id], onDelete: Cascade)
+
+  @@index([contadorId, createdAt])
+  @@map("chat_ia_mensagem")
 }
