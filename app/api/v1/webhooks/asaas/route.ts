@@ -31,12 +31,14 @@ export async function POST(req: NextRequest) {
     // 1. Validação do token
     // -------------------------------------------------------------------------
     const webhookToken = process.env.ASAAS_WEBHOOK_TOKEN;
-    if (webhookToken) {
-      const tokenRecebido = req.headers.get('asaas-access-token') ?? '';
-      if (tokenRecebido !== webhookToken) {
-        logger.warn('[Webhook Asaas] Token inválido recebido.');
-        return NextResponse.json({ message: 'Não autorizado.' }, { status: 401 });
-      }
+    if (!webhookToken) {
+      logger.warn('[Webhook Asaas] ASAAS_WEBHOOK_TOKEN não configurado — endpoint desprotegido.');
+      return NextResponse.json({ message: 'Webhook não configurado.' }, { status: 503 });
+    }
+    const tokenRecebido = req.headers.get('asaas-access-token') ?? '';
+    if (tokenRecebido !== webhookToken) {
+      logger.warn('[Webhook Asaas] Token inválido recebido.');
+      return NextResponse.json({ message: 'Não autorizado.' }, { status: 401 });
     }
 
     // -------------------------------------------------------------------------

@@ -28,5 +28,5 @@ export const GET = withAuth(async (req, ctx, auth) => {
     await prisma.usuarioCliente.update({ where: { id: userId }, data: { twoFactorSecret: encryptedSecret } });
   }
 
-  return NextResponse.json({ qrCode: qrCodeDataUrl, secret });
+  return NextResponse.json({ qrCode: qrCodeDataUrl });
 }, ['ACCOUNTANT', 'CLIENT', 'ADMIN']);

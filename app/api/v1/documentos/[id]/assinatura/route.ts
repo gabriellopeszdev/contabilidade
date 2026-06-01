@@ -43,7 +43,7 @@ export const POST = withAuth(async (req, ctx, auth) => {
     return NextResponse.json({ message: 'signatarioId é obrigatório' }, { status: 400 });
   }
 
-  const [documento, cliente] = await Promise.all([
+  const [documento, cliente, vinculo] = await Promise.all([
     prisma.documentoFiscal.findUnique({
       where:  { id: documentoId, deletedAt: null },
       select: { fileName: true, fileHash: true, clientId: true, storagePath: true, fileType: true },
@@ -52,10 +52,18 @@ export const POST = withAuth(async (req, ctx, auth) => {
       where:  { id: signatarioId },
       select: { name: true, email: true },
     }),
+    prisma.contadorCliente.findFirst({
+      where: { contadorId: auth.sub, clienteId: signatarioId },
+    }),
   ]);
 
   if (!documento) return NextResponse.json({ message: 'Documento não encontrado' }, { status: 404 });
   if (!cliente)   return NextResponse.json({ message: 'Cliente não encontrado' }, { status: 404 });
+  if (!vinculo)   return NextResponse.json({ message: 'Acesso negado.' }, { status: 403 });
+
+  if (documento.clientId !== signatarioId) {
+    return NextResponse.json({ message: 'Documento não pertence a este cliente.' }, { status: 403 });
+  }
 
   if (documento.fileType !== 'PDF') {
     return NextResponse.json({ message: 'Apenas documentos PDF podem ser assinados.' }, { status: 400 });

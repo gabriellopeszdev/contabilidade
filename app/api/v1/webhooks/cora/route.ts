@@ -32,18 +32,20 @@ export async function POST(req: NextRequest) {
     // 1. Validação do token
     // -------------------------------------------------------------------------
     const webhookToken = process.env.CORA_WEBHOOK_TOKEN;
-    if (webhookToken) {
-      // Cora pode enviar via Authorization: Bearer ou via header customizado
-      const authHeader = req.headers.get('authorization') ?? '';
-      const customToken = req.headers.get('cora-webhook-token') ?? '';
-      const tokenRecebido = authHeader.startsWith('Bearer ')
-        ? authHeader.slice(7)
-        : customToken;
+    if (!webhookToken) {
+      logger.warn('[Webhook Cora] CORA_WEBHOOK_TOKEN não configurado — endpoint desprotegido.');
+      return NextResponse.json({ message: 'Webhook não configurado.' }, { status: 503 });
+    }
+    // Cora pode enviar via Authorization: Bearer ou via header customizado
+    const authHeader = req.headers.get('authorization') ?? '';
+    const customToken = req.headers.get('cora-webhook-token') ?? '';
+    const tokenRecebido = authHeader.startsWith('Bearer ')
+      ? authHeader.slice(7)
+      : customToken;
 
-      if (tokenRecebido !== webhookToken) {
-        logger.warn('[Webhook Cora] Token inválido.');
-        return NextResponse.json({ message: 'Não autorizado.' }, { status: 401 });
-      }
+    if (tokenRecebido !== webhookToken) {
+      logger.warn('[Webhook Cora] Token inválido.');
+      return NextResponse.json({ message: 'Não autorizado.' }, { status: 401 });
     }
 
     // -------------------------------------------------------------------------
