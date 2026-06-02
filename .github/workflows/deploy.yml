@@ -8,32 +8,28 @@ on:
 jobs:
   deploy:
     name: Deploy no VPS
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host:     ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key:      ${{ secrets.VPS_DEPLOY_KEY }}
-          script: |
-            set -e
+      - name: Atualizar código
+        run: |
+          cd ~/contabilidade
+          git pull origin master
 
-            echo ">>> Entrando na pasta do projeto..."
-            cd ~/contabilidade
+      - name: Reconstruir e reiniciar containers
+        run: |
+          cd ~/contabilidade
+          docker compose up -d --build --remove-orphans
 
-            echo ">>> Atualizando código..."
-            git pull origin master
+      - name: Rodar migrations
+        run: |
+          cd ~/contabilidade
+          docker compose exec -T app npx prisma migrate deploy
 
-            echo ">>> Reconstruindo e reiniciando containers..."
-            docker compose up -d --build --remove-orphans
+      - name: Limpar imagens antigas
+        run: docker image prune -f
 
-            echo ">>> Rodando migrations do banco..."
-            docker compose exec -T app npx prisma migrate deploy
-
-            echo ">>> Removendo imagens antigas..."
-            docker image prune -f
-
-            echo ">>> Deploy concluído!"
-            docker compose ps
+      - name: Status dos containers
+        run: |
+          cd ~/contabilidade
+          docker compose ps
