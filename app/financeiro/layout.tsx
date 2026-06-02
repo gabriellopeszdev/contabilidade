@@ -8,7 +8,7 @@ import {
   LogOut, Menu, X, Loader2, Bell, ChevronDown, Building2,
   MessageSquare, CalendarDays, UserCog, DollarSign, Home,
   Sun, Moon, FileBarChart, PenLine, Search, ChevronsLeft, ChevronsRight,
-  Bot, Lock,
+  Bot, Lock, ClipboardList,
 } from 'lucide-react';
 import { FiscoHubLogo } from '../components/FiscoHubLogo';
 
@@ -60,6 +60,7 @@ const NAV_GRUPOS_CONTADOR: NavGroup[] = [
   {
     label: 'Gestão',
     items: [
+      { href: '/kanban',      label: 'Kanban',      icon: <ClipboardList size={18} /> },
       { href: '/calendario',  label: 'Calendário',  icon: <CalendarDays size={18} />,              feature: 'calendario' },
       { href: '/financeiro',  label: 'Financeiro',  icon: <DollarSign   size={18} />, donoOnly: true, feature: 'financeiro' },
       { href: '/relatorios',  label: 'Relatórios',  icon: <FileBarChart size={18} />, donoOnly: true, feature: 'relatorios' },
@@ -70,7 +71,7 @@ const NAV_GRUPOS_CONTADOR: NavGroup[] = [
     label: 'Comunicação',
     items: [
       { href: '/chat',    label: 'Chat',    icon: <MessageSquare size={18} />,            feature: 'chat' },
-      { href: '/chat-ia', label: 'Financeiro', icon: <Bot           size={18} />, donoOnly: true, feature: 'ia' },
+      { href: '/chat-ia', label: 'Chat IA', icon: <Bot           size={18} />, donoOnly: true, feature: 'ia' },
     ],
   },
   {
