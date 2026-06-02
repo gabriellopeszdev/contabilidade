@@ -11,25 +11,20 @@ jobs:
     runs-on: self-hosted
 
     steps:
-      - name: Atualizar código
-        run: |
-          cd ~/contabilidade
-          git pull origin master
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Copiar .env de produção
+        run: cp /home/github-runner/.env $GITHUB_WORKSPACE/.env
 
       - name: Reconstruir e reiniciar containers
-        run: |
-          cd ~/contabilidade
-          docker compose up -d --build --remove-orphans
+        run: docker compose up -d --build --remove-orphans
 
       - name: Rodar migrations
-        run: |
-          cd ~/contabilidade
-          docker compose exec -T app npx prisma migrate deploy
+        run: docker compose exec -T app npx prisma migrate deploy
 
       - name: Limpar imagens antigas
         run: docker image prune -f
 
       - name: Status dos containers
-        run: |
-          cd ~/contabilidade
-          docker compose ps
+        run: docker compose ps
