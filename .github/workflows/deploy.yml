@@ -29,6 +29,9 @@ jobs:
             echo ">>> Reconstruindo e reiniciando containers..."
             docker compose up -d --build --remove-orphans
 
+            echo ">>> Rodando migrations do banco..."
+            docker compose exec -T app npx prisma migrate deploy
+
             echo ">>> Removendo imagens antigas..."
             docker image prune -f
 
