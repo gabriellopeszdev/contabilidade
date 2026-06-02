@@ -21,8 +21,8 @@ import {
   QrCode,
 } from 'lucide-react';
 
-import { useAuth } from '../../src/presentation/hooks/useAuth';
-import { FiltroClienteCombobox } from '../../src/presentation/components/financeiro/FiltroClienteCombobox';
+import { useAuth } from '../../../src/presentation/hooks/useAuth';
+import { FiltroClienteCombobox } from '../../../src/presentation/components/financeiro/FiltroClienteCombobox';
 
 // =============================================================================
 // Tipos

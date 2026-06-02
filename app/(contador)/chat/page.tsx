@@ -4,11 +4,11 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 
-import { useAuth }                from '../../src/presentation/hooks/useAuth';
-import { useChat }                from '../../src/presentation/hooks/useChat';
-import { ChatSidebar }            from '../../src/presentation/components/chat/ChatSidebar';
-import { ChatWindow, type ChatWindowHandle } from '../../src/presentation/components/chat/ChatWindow';
-import { ClienteChatContatos }    from '../../src/presentation/components/chat/ClienteChatContatos';
+import { useAuth }                from '../../../src/presentation/hooks/useAuth';
+import { useChat }                from '../../../src/presentation/hooks/useChat';
+import { ChatSidebar }            from '../../../src/presentation/components/chat/ChatSidebar';
+import { ChatWindow, type ChatWindowHandle } from '../../../src/presentation/components/chat/ChatWindow';
+import { ClienteChatContatos }    from '../../../src/presentation/components/chat/ClienteChatContatos';
 
 // =============================================================================
 // /chat — Página de Chat unificada (Contador e Cliente)

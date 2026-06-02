@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useCallback, useRef, DragEvent, ChangeEvent } from 'react';
-import { Upload, FileText, AlertTriangle, CheckCircle2, Loader2, X, Sparkles, Lock } from 'lucide-react';
+import { useState, useCallback, useRef, useEffect, DragEvent, ChangeEvent } from 'react';
+import { Upload, FileText, AlertTriangle, CheckCircle2, Loader2, X, Sparkles, Lock, Trash2, ChevronRight, Building2, Package } from 'lucide-react';
 
 import { useAuth } from '../../../src/presentation/hooks/useAuth';
 import type { NFeParseResult } from '../../../src/utils/nfeParser';
@@ -157,15 +157,189 @@ function TipoBadge({ tipo }: { tipo: 'entrada' | 'saida' }) {
 }
 
 // =============================================================================
+// Modal de detalhes da NF-e
+// =============================================================================
+
+function ModalDetalheNFe({ resultado, onFechar }: { resultado: ResultadoArquivo; onFechar: () => void }) {
+  const d = resultado.dados!;
+
+  // Fecha com Escape
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onFechar(); };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [onFechar]);
+
+  const valorTotal = d.valorTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+      onClick={(e) => { if (e.target === e.currentTarget) onFechar(); }}
+    >
+      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+
+        {/* Header */}
+        <div className="flex items-start justify-between p-5 border-b border-gray-100 dark:border-gray-800 shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+              <FileText size={18} className="text-blue-600 dark:text-blue-400" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-base font-bold text-gray-900 dark:text-gray-100">
+                  NF-e {d.numero}{d.serie ? ` / ${d.serie}` : ''}
+                </h2>
+                <TipoBadge tipo={d.tipo} />
+              </div>
+              <p className="text-xs text-gray-400 dark:text-gray-500">{resultado.nomeArquivo}</p>
+            </div>
+          </div>
+          <button onClick={onFechar} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* Corpo com scroll */}
+        <div className="overflow-y-auto p-5 space-y-5 flex-1">
+
+          {/* Chave de acesso + natureza */}
+          <div className="space-y-2">
+            {d.chaveAcesso && (
+              <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                <p className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-0.5">Chave de Acesso</p>
+                <p className="text-xs font-mono text-gray-700 dark:text-gray-300 break-all">{d.chaveAcesso}</p>
+              </div>
+            )}
+            <div className="grid grid-cols-2 gap-2">
+              <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-0.5">Data de Emissão</p>
+                <p className="text-sm text-gray-800 dark:text-gray-200">{formatarData(d.dataEmissao)}</p>
+              </div>
+              <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-0.5">Natureza da Operação</p>
+                <p className="text-sm text-gray-800 dark:text-gray-200">{d.naturezaOp || '—'}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Emitente / Destinatário */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="p-4 rounded-xl border border-gray-200 dark:border-gray-700">
+              <div className="flex items-center gap-2 mb-3">
+                <Building2 size={14} className="text-blue-500" />
+                <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Emitente</p>
+              </div>
+              <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{d.emitente.nome || '—'}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{d.emitente.cnpj ? formatarCNPJ(d.emitente.cnpj) : ''}</p>
+              {(d.emitente.municipio || d.emitente.uf) && (
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                  {[d.emitente.municipio, d.emitente.uf].filter(Boolean).join(' · ')}
+                </p>
+              )}
+            </div>
+            <div className="p-4 rounded-xl border border-gray-200 dark:border-gray-700">
+              <div className="flex items-center gap-2 mb-3">
+                <Building2 size={14} className="text-emerald-500" />
+                <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Destinatário</p>
+              </div>
+              <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{d.destinatario.nome || '—'}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                {d.destinatario.cnpjOuCpf ? formatarCNPJ(d.destinatario.cnpjOuCpf) : ''}
+              </p>
+            </div>
+          </div>
+
+          {/* Valores e Impostos */}
+          <div>
+            <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Valores e Impostos</p>
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+              {[
+                { label: 'Total NF',  value: d.valorTotal,         highlight: true },
+                { label: 'ICMS',      value: d.impostos.icms },
+                { label: 'PIS',       value: d.impostos.pis },
+                { label: 'COFINS',    value: d.impostos.cofins },
+                { label: 'IPI',       value: d.impostos.ipi },
+                { label: 'Desconto',  value: d.impostos.desconto,  red: true },
+              ].map(({ label, value, highlight, red }) => (
+                <div key={label} className={`p-3 rounded-lg border text-center ${
+                  highlight
+                    ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
+                    : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700'
+                }`}>
+                  <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">{label}</p>
+                  <p className={`text-xs font-bold mt-0.5 ${
+                    highlight ? 'text-blue-700 dark:text-blue-300'
+                    : red && value > 0 ? 'text-red-600 dark:text-red-400'
+                    : 'text-gray-800 dark:text-gray-200'
+                  }`}>
+                    {value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Itens */}
+          {d.itens.length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <Package size={14} className="text-violet-500" />
+                <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                  Itens ({d.itens.length})
+                </p>
+              </div>
+              <div className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-gray-50 dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
+                      <th className="text-left px-4 py-2.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Descrição</th>
+                      <th className="text-right px-4 py-2.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Qtd</th>
+                      <th className="text-right px-4 py-2.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Vl. Unit.</th>
+                      <th className="text-right px-4 py-2.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
+                    {d.itens.map((item, i) => (
+                      <tr key={i} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                        <td className="px-4 py-2.5 text-gray-800 dark:text-gray-200">{item.descricao || '—'}</td>
+                        <td className="px-4 py-2.5 text-right text-gray-600 dark:text-gray-400">{item.quantidade}</td>
+                        <td className="px-4 py-2.5 text-right text-gray-600 dark:text-gray-400">
+                          {item.valorUnitario.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                        </td>
+                        <td className="px-4 py-2.5 text-right font-semibold text-gray-900 dark:text-gray-100">
+                          {(item.quantidade * item.valorUnitario).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-between px-5 py-3 border-t border-gray-100 dark:border-gray-800 shrink-0">
+          <span className="text-xs text-gray-400">Valor total da nota</span>
+          <span className="text-lg font-bold text-gray-900 dark:text-gray-100">{valorTotal}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// =============================================================================
 // Página principal: /nfe — Importar NF-e
 // =============================================================================
 
 export default function NfePage() {
   const { getToken } = useAuth();
 
-  const [carregando,   setCarregando]   = useState(false);
-  const [resultados,   setResultados]   = useState<ResultadoArquivo[] | null>(null);
-  const [erroGlobal,   setErroGlobal]   = useState<string | null>(null);
+  const [carregando,     setCarregando]     = useState(false);
+  const [resultados,     setResultados]     = useState<ResultadoArquivo[]>([]);
+  const [erroGlobal,     setErroGlobal]     = useState<string | null>(null);
+  const [nfeSelecionada, setNfeSelecionada] = useState<ResultadoArquivo | null>(null);
 
   const [analiseIa, setAnaliseIa]             = useState<{
     resumo:              string;
@@ -187,7 +361,6 @@ export default function NfePage() {
   const processarArquivos = useCallback(async (arquivos: File[]) => {
     setCarregando(true);
     setErroGlobal(null);
-    setResultados(null);
 
     let token: string;
     try {
@@ -217,7 +390,8 @@ export default function NfePage() {
       }
 
       const data = await res.json() as { resultados: ResultadoArquivo[] };
-      setResultados(data.resultados);
+      // Acumula novos resultados sem apagar os anteriores
+      setResultados((prev) => [...prev, ...data.resultados]);
     } catch (err) {
       setErroGlobal(err instanceof Error ? err.message : 'Erro de rede ao enviar os arquivos.');
     } finally {
@@ -230,7 +404,7 @@ export default function NfePage() {
   // ---------------------------------------------------------------------------
 
   const analisarComIA = useCallback(async () => {
-    if (!resultados) return;
+    if (resultados.length === 0) return;
     const nfes = resultados
       .filter((r) => r.ok && r.dados)
       .map((r) => ({
@@ -281,8 +455,16 @@ export default function NfePage() {
   // ---------------------------------------------------------------------------
   // Estatísticas dos resultados
   // ---------------------------------------------------------------------------
-  const totalOk     = resultados?.filter((r) => r.ok).length  ?? 0;
-  const totalErro   = resultados?.filter((r) => !r.ok).length ?? 0;
+  const totalOk     = resultados.filter((r) => r.ok).length;
+  const totalErro   = resultados.filter((r) => !r.ok).length;
+
+  const limparTudo = useCallback(() => {
+    setResultados([]);
+    setAnaliseIa(null);
+    setAnaliseErro(null);
+    setAnaliseBloqueado(false);
+    setErroGlobal(null);
+  }, []);
 
   // ---------------------------------------------------------------------------
   // Render
@@ -330,7 +512,7 @@ export default function NfePage() {
       {/* ------------------------------------------------------------------ */}
       {/* Resumo dos resultados                                                */}
       {/* ------------------------------------------------------------------ */}
-      {resultados && (
+      {resultados.length > 0 && (
         <div className="flex items-center gap-4 flex-wrap">
           <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
             <span className="font-semibold text-gray-900 dark:text-gray-100">{resultados.length}</span> arquivo(s) processado(s)
@@ -347,13 +529,20 @@ export default function NfePage() {
               {totalErro} com erro
             </span>
           )}
+          <button
+            onClick={limparTudo}
+            className="ml-auto flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 border border-gray-200 dark:border-gray-700 rounded-lg transition-colors"
+          >
+            <Trash2 size={12} />
+            Limpar tudo
+          </button>
         </div>
       )}
 
       {/* ------------------------------------------------------------------ */}
       {/* Tabela de resultados                                                 */}
       {/* ------------------------------------------------------------------ */}
-      {resultados && resultados.length > 0 && (
+      {resultados.length > 0 && (
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -371,11 +560,16 @@ export default function NfePage() {
               <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
                 {resultados.map((resultado, idx) => (
                   resultado.ok && resultado.dados ? (
-                    <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                    <tr
+                      key={idx}
+                      onClick={() => setNfeSelecionada(resultado)}
+                      className="hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-colors cursor-pointer group"
+                    >
                       <td className="px-4 py-3">
-                        <div className="font-medium text-gray-900 dark:text-gray-100">
+                        <div className="font-medium text-gray-900 dark:text-gray-100 flex items-center gap-1">
                           {resultado.dados.numero || '—'}
                           {resultado.dados.serie ? <span className="text-gray-400"> / {resultado.dados.serie}</span> : null}
+                          <ChevronRight size={12} className="text-gray-300 dark:text-gray-600 group-hover:text-blue-400 transition-colors ml-0.5" />
                         </div>
                         <div className="text-xs text-gray-400 dark:text-gray-500 truncate max-w-[200px]" title={resultado.nomeArquivo}>
                           {resultado.nomeArquivo}
@@ -435,7 +629,7 @@ export default function NfePage() {
       {/* ------------------------------------------------------------------ */}
       {/* Análise Fiscal com IA                                               */}
       {/* ------------------------------------------------------------------ */}
-      {resultados && totalOk > 0 && (
+      {totalOk > 0 && (
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div>
@@ -522,12 +716,20 @@ export default function NfePage() {
       {/* ------------------------------------------------------------------ */}
       {/* Estado vazio (antes de fazer upload)                                */}
       {/* ------------------------------------------------------------------ */}
-      {!resultados && !carregando && !erroGlobal && (
+      {resultados.length === 0 && !carregando && !erroGlobal && (
         <div className="text-center py-12 text-gray-400 dark:text-gray-600">
           <FileText size={40} className="mx-auto mb-3 opacity-40" />
           <p className="text-sm">Nenhum arquivo processado ainda.</p>
           <p className="text-xs mt-1">Arraste XMLs de NF-e para a área acima ou clique para selecionar.</p>
         </div>
+      )}
+
+      {/* Modal de detalhes */}
+      {nfeSelecionada && nfeSelecionada.dados && (
+        <ModalDetalheNFe
+          resultado={nfeSelecionada}
+          onFechar={() => setNfeSelecionada(null)}
+        />
       )}
     </div>
   );
