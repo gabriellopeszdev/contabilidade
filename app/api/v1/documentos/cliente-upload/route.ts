@@ -16,9 +16,6 @@ export const dynamic = 'force-dynamic';
 // Constantes de validação
 // =============================================================================
 
-const SETORES_VALIDOS = ['FISCAL', 'PESSOAL', 'CONTABIL'] as const;
-type SetorTipo = (typeof SETORES_VALIDOS)[number];
-
 const TIPOS_ACEITOS: Record<string, string> = {
   'application/pdf': 'PDF',
   'application/xml': 'XML',
@@ -32,18 +29,17 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 //
 // Upload de documento avulso feito pelo CLIENTE.
 //
-// O cliente seleciona um arquivo e o setor de destino (Fiscal, Pessoal,
-// Contábil). O sistema:
-//   1. Valida o arquivo (tipo, tamanho) e o setor
+// O cliente seleciona um arquivo — o setor é definido pelo contador depois.
+// O sistema:
+//   1. Valida o arquivo (tipo, tamanho)
 //   2. Calcula SHA-256 para deduplicação
 //   3. Salva o binário no MinIO
-//   4. Cria o registro DocumentoFiscal
+//   4. Cria o registro DocumentoFiscal (sector = null, a categorizar)
 //   5. Cria uma TarefaKanban (PENDING) direcionada ao contador responsável
 //   6. Registra AuditLog
 //
 // FormData esperado:
 //   arquivo  → File (PDF ou XML, máx 10 MB)
-//   setor    → 'FISCAL' | 'PESSOAL' | 'CONTABIL'
 //
 // Respostas:
 //   201 → { documento, tarefa }
@@ -59,18 +55,10 @@ export const POST = withAuth(async (req, _ctx, auth) => {
     // ------------------------------------------------------------------
     const formData = await req.formData();
     const arquivo  = formData.get('arquivo') as File | null;
-    const setor    = (formData.get('setor') as string)?.toUpperCase() as SetorTipo;
 
     if (!arquivo || !(arquivo instanceof File) || arquivo.size === 0) {
       return NextResponse.json(
         { message: 'O campo "arquivo" é obrigatório e deve conter um arquivo válido.' },
-        { status: 400 },
-      );
-    }
-
-    if (!setor || !SETORES_VALIDOS.includes(setor)) {
-      return NextResponse.json(
-        { message: `Setor inválido. Valores aceitos: ${SETORES_VALIDOS.join(', ')}.` },
         { status: 400 },
       );
     }
@@ -124,7 +112,7 @@ export const POST = withAuth(async (req, _ctx, auth) => {
     // ------------------------------------------------------------------
     const timestamp   = Date.now();
     const safeName    = arquivo.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-    const storagePath = `clientes/${auth.sub}/${setor.toLowerCase()}/${timestamp}_${safeName}`;
+    const storagePath = `clientes/${auth.sub}/pendente/${timestamp}_${safeName}`;
 
     await storageService.upload(storagePath, buffer, arquivo.type);
 
@@ -144,7 +132,6 @@ export const POST = withAuth(async (req, _ctx, auth) => {
         data: {
           clientId:      auth.sub,
           uploadedById:  auth.sub,
-          sector:        setor,
           fileName:      arquivo.name,
           storagePath,
           fileType:      fileType as 'PDF' | 'XML',
@@ -153,20 +140,13 @@ export const POST = withAuth(async (req, _ctx, auth) => {
         },
       });
 
-      const SETOR_LABELS: Record<string, string> = {
-        FISCAL:   'Fiscal',
-        PESSOAL:  'Pessoal',
-        CONTABIL: 'Contábil',
-      };
-
       const tarefa = await tx.tarefaKanban.create({
         data: {
           clientId:     auth.sub,
           assignedTo:   vinculo?.contadorId ?? null,
           documentId:   documento.id,
-          sector:       setor,
-          title:        `[${SETOR_LABELS[setor]}] ${arquivo.name}`,
-          description:  `Documento enviado pelo cliente — Setor ${SETOR_LABELS[setor]}`,
+          title:        arquivo.name,
+          description:  'Documento enviado pelo cliente — aguardando categorização',
           currentState: 'PENDING',
           priority:     'MEDIUM',
           position:     0,
@@ -182,7 +162,6 @@ export const POST = withAuth(async (req, _ctx, auth) => {
           resourceType: 'DOCUMENT',
           detailsJson: {
             fileName:    arquivo.name,
-            sector:      setor,
             fileType,
             fileSizeBytes: arquivo.size,
             origin:      'CLIENT_UPLOAD',

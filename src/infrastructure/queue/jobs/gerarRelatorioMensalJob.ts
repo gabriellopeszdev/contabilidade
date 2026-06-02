@@ -40,7 +40,8 @@ export async function gerarRelatorioMensalJob(contadorId: string, mesAno: string
   const docsNaoLidos = totalDocs - docsLidos;
   const porSetor: Record<string, number> = {};
   for (const d of documentos) {
-    porSetor[d.sector] = (porSetor[d.sector] ?? 0) + 1;
+    const setor = d.sector ?? 'A_CATEGORIZAR';
+    porSetor[setor] = (porSetor[setor] ?? 0) + 1;
   }
 
   // 4. Boletos this month

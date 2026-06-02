@@ -17,12 +17,11 @@ import { useAuth } from '../../hooks/useAuth';
 // =============================================================================
 // EnvioLoteModal
 //
-// Exibe a lista de arquivos selecionados no Dropzone e pede ao cliente que
-// escolha o setor de destino antes de confirmar o envio.
+// Exibe a lista de arquivos selecionados no Dropzone e confirma o envio.
 // Envia os arquivos sequencialmente e exibe o progresso por arquivo.
+// O setor é definido pelo contador após o envio.
 // =============================================================================
 
-type SetorTipo = 'FISCAL' | 'PESSOAL' | 'CONTABIL';
 type EstadoArquivo = 'aguardando' | 'enviando' | 'sucesso' | 'erro';
 
 interface ArquivoItem {
@@ -32,59 +31,19 @@ interface ArquivoItem {
 }
 
 interface Props {
-  arquivos:      File[];
-  onFechar:      () => void;
-  onSucesso:     () => void;
-  setorInicial?: SetorTipo;
+  arquivos:  File[];
+  onFechar:  () => void;
+  onSucesso: () => void;
 }
-
-const SETORES: {
-  value:  SetorTipo;
-  label:  string;
-  desc:   string;
-  styles: { idle: string; active: string; dot: string };
-}[] = [
-  {
-    value:   'FISCAL',
-    label:   'Fiscal',
-    desc:    'Notas fiscais, DANFE, DARF, DAS, GPS',
-    styles: {
-      idle:   'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-indigo-300 hover:bg-indigo-50/40 dark:hover:border-indigo-700 dark:hover:bg-indigo-900/20',
-      active: 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 ring-2 ring-indigo-200 dark:ring-indigo-800',
-      dot:    'bg-indigo-500',
-    },
-  },
-  {
-    value:   'PESSOAL',
-    label:   'Pessoal',
-    desc:    'RG, CPF, comprovantes de residência',
-    styles: {
-      idle:   'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-violet-300 hover:bg-violet-50/40 dark:hover:border-violet-700 dark:hover:bg-violet-900/20',
-      active: 'border-violet-500 bg-violet-50 dark:bg-violet-900/30 ring-2 ring-violet-200 dark:ring-violet-800',
-      dot:    'bg-violet-500',
-    },
-  },
-  {
-    value:   'CONTABIL',
-    label:   'Contábil',
-    desc:    'Balanços, DRE, extratos bancários',
-    styles: {
-      idle:   'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-teal-300 hover:bg-teal-50/40 dark:hover:border-teal-700 dark:hover:bg-teal-900/20',
-      active: 'border-teal-500 bg-teal-50 dark:bg-teal-900/30 ring-2 ring-teal-200 dark:ring-teal-800',
-      dot:    'bg-teal-500',
-    },
-  },
-];
 
 function formatarTamanho(bytes: number): string {
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export function EnvioLoteModal({ arquivos, onFechar, onSucesso, setorInicial }: Props) {
+export function EnvioLoteModal({ arquivos, onFechar, onSucesso }: Props) {
   const { token } = useAuth();
 
-  const [setor,    setSetor]    = useState<SetorTipo>(setorInicial ?? 'FISCAL');
   const [itens,    setItens]    = useState<ArquivoItem[]>(
     () => arquivos.map((file) => ({ file, estado: 'aguardando' })),
   );
@@ -115,7 +74,6 @@ export function EnvioLoteModal({ arquivos, onFechar, onSucesso, setorInicial }: 
       try {
         const form = new FormData();
         form.append('arquivo', itens[i].file);
-        form.append('setor',   setor);
 
         const res  = await fetch('/api/v1/documentos/cliente-upload', {
           method:  'POST',
@@ -136,9 +94,7 @@ export function EnvioLoteModal({ arquivos, onFechar, onSucesso, setorInicial }: 
 
     setEnviando(false);
     setConcluido(true);
-  }, [itens, setor, token]);
-
-  const setorAtual = SETORES.find((s) => s.value === setor)!;
+  }, [itens, token]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
@@ -172,39 +128,6 @@ export function EnvioLoteModal({ arquivos, onFechar, onSucesso, setorInicial }: 
 
         {/* Corpo rolável */}
         <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
-
-          {/* Seletor de setor — Radio Cards */}
-          {!concluido && (
-            <div className="space-y-2">
-              <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-widest">
-                A qual setor pertencem estes documentos?
-              </p>
-              <div className="grid grid-cols-3 gap-2">
-                {SETORES.map((s) => {
-                  const ativo = setor === s.value;
-                  return (
-                    <button
-                      key={s.value}
-                      type="button"
-                      disabled={enviando}
-                      onClick={() => setSetor(s.value)}
-                      className={`
-                        relative rounded-xl border-2 px-3 py-3.5 text-left
-                        transition-all focus-visible:outline-none disabled:opacity-50
-                        ${ativo ? s.styles.active : s.styles.idle}
-                      `}
-                    >
-                      {ativo && (
-                        <span className={`absolute top-2 right-2 w-2 h-2 rounded-full ${s.styles.dot}`} />
-                      )}
-                      <p className="text-sm font-bold text-gray-900 leading-tight">{s.label}</p>
-                      <p className="text-[10px] text-gray-400 mt-0.5 leading-tight">{s.desc}</p>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
 
           {/* Lista de arquivos */}
           <div className="space-y-1.5">
@@ -317,7 +240,7 @@ export function EnvioLoteModal({ arquivos, onFechar, onSucesso, setorInicial }: 
               >
                 {enviando
                   ? <><Loader2 size={15} className="animate-spin" /> Enviando…</>
-                  : <><Upload size={15} /> Enviar para {setorAtual.label}</>
+                  : <><Upload size={15} /> Enviar</>
                 }
               </button>
             </>

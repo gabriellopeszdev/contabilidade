@@ -24,14 +24,25 @@ import { BannerBoletosCliente } from '../financeiro/BannerBoletosCliente';
 // Helpers
 // =============================================================================
 
-type SetorTipo = 'FISCAL' | 'PESSOAL' | 'CONTABIL';
+type SetorTipo = 'FISCAL' | 'PESSOAL' | 'CONTABIL' | 'TODOS';
+type SetorDocumento = SetorTipo | null;
 type Origem    = 'UPLOAD_CLIENTE' | 'UPLOAD_CONTADOR';
 
 const SETOR_CONFIG: Record<SetorTipo, { label: string; classes: string }> = {
   FISCAL:   { label: 'Fiscal',   classes: 'bg-indigo-100 text-indigo-700 border-indigo-200' },
   PESSOAL:  { label: 'Pessoal',  classes: 'bg-pink-100   text-pink-700   border-pink-200' },
   CONTABIL: { label: 'Contábil', classes: 'bg-teal-100   text-teal-700   border-teal-200' },
+  TODOS:    { label: 'Todos',    classes: 'bg-slate-100 text-slate-700 border-slate-200' },
 };
+
+const SETOR_DEFAULT_CONFIG = {
+  label: 'A categorizar',
+  classes: 'bg-amber-100 text-amber-700 border-amber-200',
+};
+
+function getSetorConfig(setor: SetorDocumento) {
+  return setor ? SETOR_CONFIG[setor] : SETOR_DEFAULT_CONFIG;
+}
 
 const ORIGEM_CONFIG: Record<Origem, { label: string; icone: typeof Upload; classes: string }> = {
   UPLOAD_CLIENTE:  { label: 'Enviado pela empresa',     icone: Upload,   classes: 'text-blue-600   bg-blue-50' },
@@ -246,7 +257,7 @@ export default function DashboardClienteFuncionario() {
           <ul role="list" className="divide-y divide-slate-100 dark:divide-gray-800">
             {docsFiltrados.map((doc) => {
               const origemCfg  = ORIGEM_CONFIG[doc.origem as Origem] ?? ORIGEM_CONFIG.UPLOAD_CONTADOR;
-              const setorCfg   = SETOR_CONFIG[doc.sector as SetorTipo];
+              const setorCfg   = getSetorConfig((doc.sector as SetorDocumento) ?? null);
               const OrigemIcone = origemCfg.icone;
               const isBaixando = baixandoIds.has(doc.id);
 
@@ -281,12 +292,10 @@ export default function DashboardClienteFuncionario() {
                     </div>
 
                     <div className="mt-2 lg:mt-0">
-                      {setorCfg && (
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px]
-                          font-bold uppercase tracking-wide border ${setorCfg.classes}`}>
-                          {setorCfg.label}
-                        </span>
-                      )}
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px]
+                        font-bold uppercase tracking-wide border ${setorCfg.classes}`}>
+                        {setorCfg.label}
+                      </span>
                     </div>
 
                     <div className="mt-1 lg:mt-0">

@@ -26,8 +26,6 @@ import { EnvioLoteModal } from '../../../src/presentation/components/cliente/Env
 // Categorias de documento
 // =============================================================================
 
-type SetorTipo = 'FISCAL' | 'PESSOAL' | 'CONTABIL';
-
 interface Categoria {
   id:       string;
   label:    string;
@@ -35,7 +33,6 @@ interface Categoria {
   exemplos: string;
   icon:     React.ElementType;
   accept:   string;
-  setor:    SetorTipo;
   cor: {
     gradient: string;
     iconBg:   string;
@@ -43,7 +40,6 @@ interface Categoria {
     cardBg:   string;
     cardBorder: string;
     cardHover:  string;
-    badge:    string;
   };
 }
 
@@ -55,7 +51,6 @@ const CATEGORIAS: Categoria[] = [
     exemplos: 'NF-e · NFS-e · CT-e',
     icon:     FileCode2,
     accept:   '.xml',
-    setor:    'FISCAL',
     cor: {
       gradient:    'from-blue-500 to-blue-600',
       iconBg:      'bg-blue-100 dark:bg-blue-900/40',
@@ -63,7 +58,6 @@ const CATEGORIAS: Categoria[] = [
       cardBg:      'bg-white dark:bg-gray-900',
       cardBorder:  'border-blue-100 dark:border-blue-900/50',
       cardHover:   'hover:border-blue-400 hover:shadow-blue-100 dark:hover:border-blue-600',
-      badge:       'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
     },
   },
   {
@@ -73,7 +67,6 @@ const CATEGORIAS: Categoria[] = [
     exemplos: 'PDF · OFX · CSV',
     icon:     Landmark,
     accept:   '.pdf,.ofx,.csv',
-    setor:    'CONTABIL',
     cor: {
       gradient:    'from-emerald-500 to-emerald-600',
       iconBg:      'bg-emerald-100 dark:bg-emerald-900/40',
@@ -81,7 +74,6 @@ const CATEGORIAS: Categoria[] = [
       cardBg:      'bg-white dark:bg-gray-900',
       cardBorder:  'border-emerald-100 dark:border-emerald-900/50',
       cardHover:   'hover:border-emerald-400 hover:shadow-emerald-100 dark:hover:border-emerald-600',
-      badge:       'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
     },
   },
   {
@@ -91,7 +83,6 @@ const CATEGORIAS: Categoria[] = [
     exemplos: 'Recibos · Boletos pagos · PDFs',
     icon:     Receipt,
     accept:   '.pdf,.jpg,.jpeg,.png',
-    setor:    'CONTABIL',
     cor: {
       gradient:    'from-orange-500 to-orange-600',
       iconBg:      'bg-orange-100 dark:bg-orange-900/40',
@@ -99,7 +90,6 @@ const CATEGORIAS: Categoria[] = [
       cardBg:      'bg-white dark:bg-gray-900',
       cardBorder:  'border-orange-100 dark:border-orange-900/50',
       cardHover:   'hover:border-orange-400 hover:shadow-orange-100 dark:hover:border-orange-600',
-      badge:       'bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
     },
   },
   {
@@ -109,7 +99,6 @@ const CATEGORIAS: Categoria[] = [
     exemplos: 'DARF · DAS · GPS · GNRE',
     icon:     Calculator,
     accept:   '.pdf,.xml',
-    setor:    'FISCAL',
     cor: {
       gradient:    'from-red-500 to-red-600',
       iconBg:      'bg-red-100 dark:bg-red-900/40',
@@ -117,7 +106,6 @@ const CATEGORIAS: Categoria[] = [
       cardBg:      'bg-white dark:bg-gray-900',
       cardBorder:  'border-red-100 dark:border-red-900/50',
       cardHover:   'hover:border-red-400 hover:shadow-red-100 dark:hover:border-red-600',
-      badge:       'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400',
     },
   },
   {
@@ -127,7 +115,6 @@ const CATEGORIAS: Categoria[] = [
     exemplos: 'Holerites · FGTS · Admissão',
     icon:     Users,
     accept:   '.pdf,.xls,.xlsx',
-    setor:    'PESSOAL',
     cor: {
       gradient:    'from-violet-500 to-violet-600',
       iconBg:      'bg-violet-100 dark:bg-violet-900/40',
@@ -135,7 +122,6 @@ const CATEGORIAS: Categoria[] = [
       cardBg:      'bg-white dark:bg-gray-900',
       cardBorder:  'border-violet-100 dark:border-violet-900/50',
       cardHover:   'hover:border-violet-400 hover:shadow-violet-100 dark:hover:border-violet-600',
-      badge:       'bg-violet-50 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400',
     },
   },
   {
@@ -145,7 +131,6 @@ const CATEGORIAS: Categoria[] = [
     exemplos: 'PDF · Word · Imagens',
     icon:     ClipboardList,
     accept:   '.pdf,.doc,.docx,.jpg,.jpeg,.png',
-    setor:    'PESSOAL',
     cor: {
       gradient:    'from-sky-500 to-sky-600',
       iconBg:      'bg-sky-100 dark:bg-sky-900/40',
@@ -153,7 +138,6 @@ const CATEGORIAS: Categoria[] = [
       cardBg:      'bg-white dark:bg-gray-900',
       cardBorder:  'border-sky-100 dark:border-sky-900/50',
       cardHover:   'hover:border-sky-400 hover:shadow-sky-100 dark:hover:border-sky-600',
-      badge:       'bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400',
     },
   },
   {
@@ -163,7 +147,6 @@ const CATEGORIAS: Categoria[] = [
     exemplos: 'Contratos · Alvarás · Qualquer PDF',
     icon:     FolderOpen,
     accept:   '.pdf,.doc,.docx,.jpg,.jpeg,.png,.xml',
-    setor:    'CONTABIL',
     cor: {
       gradient:    'from-slate-500 to-slate-600',
       iconBg:      'bg-slate-100 dark:bg-slate-800',
@@ -171,7 +154,6 @@ const CATEGORIAS: Categoria[] = [
       cardBg:      'bg-white dark:bg-gray-900',
       cardBorder:  'border-slate-200 dark:border-slate-700',
       cardHover:   'hover:border-slate-400 hover:shadow-slate-100 dark:hover:border-slate-500',
-      badge:       'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400',
     },
   },
   {
@@ -181,7 +163,6 @@ const CATEGORIAS: Categoria[] = [
     exemplos: 'CND · FGTS · Estadual · Municipal',
     icon:     BadgeCheck,
     accept:   '.pdf',
-    setor:    'FISCAL',
     cor: {
       gradient:    'from-teal-500 to-teal-600',
       iconBg:      'bg-teal-100 dark:bg-teal-900/40',
@@ -189,27 +170,14 @@ const CATEGORIAS: Categoria[] = [
       cardBg:      'bg-white dark:bg-gray-900',
       cardBorder:  'border-teal-100 dark:border-teal-900/50',
       cardHover:   'hover:border-teal-400 hover:shadow-teal-100 dark:hover:border-teal-600',
-      badge:       'bg-teal-50 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400',
     },
   },
 ];
 
-const SETOR_LABEL: Record<string, string> = {
-  FISCAL:   'Fiscal',
-  PESSOAL:  'Dep. Pessoal',
-  CONTABIL: 'Contábil',
-};
-
-const SETOR_COR: Record<string, string> = {
-  FISCAL:   'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400',
-  PESSOAL:  'bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400',
-  CONTABIL: 'bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400',
-};
-
 interface EnvioRecente {
   id:       string;
   fileName: string;
-  sector:   string;
+  fileType: string;
   date:     string;
 }
 
@@ -223,7 +191,6 @@ export default function EnviarPage() {
   const inputRef         = useRef<HTMLInputElement>(null);
   const [catAtiva, setCatAtiva] = useState<Categoria | null>(null);
   const [arquivosModal,  setArquivosModal]  = useState<File[]>([]);
-  const [setorModal,     setSetorModal]     = useState<SetorTipo>('FISCAL');
   const [toast,          setToast]          = useState<{ tipo: 'sucesso' | 'erro'; msg: string } | null>(null);
   const [enviosRecentes, setEnviosRecentes] = useState<EnvioRecente[]>([]);
   const [loadingHistorico, setLoadingHistorico] = useState(true);
@@ -241,7 +208,7 @@ export default function EnviarPage() {
         (data.items ?? []).map((d: any) => ({
           id:       d.id,
           fileName: d.fileName,
-          sector:   d.sector,
+          fileType: d.fileType,
           date:     d.createdAt,
         })),
       );
@@ -268,7 +235,6 @@ export default function EnviarPage() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
     if (files.length > 0 && catAtiva) {
-      setSetorModal(catAtiva.setor);
       setArquivosModal(files);
     }
   };
@@ -381,14 +347,15 @@ export default function EnviarPage() {
         ) : (
           <ul className="divide-y divide-gray-50 dark:divide-gray-800">
             {enviosRecentes.map((envio) => {
-              const cat = CATEGORIAS.find((c) => c.setor === envio.sector);
-              const Icon = cat?.icon ?? FileText;
+              const isXML = envio.fileType === 'XML' || envio.fileName.toLowerCase().endsWith('.xml');
+              const Icon  = isXML ? FileCode2 : FileText;
+              const cor   = isXML ? 'from-sky-500 to-sky-600' : 'from-red-500 to-red-600';
               return (
                 <li
                   key={envio.id}
                   className="px-4 py-3 flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors"
                 >
-                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 bg-gradient-to-br ${cat?.cor.gradient ?? 'from-gray-400 to-gray-500'}`}>
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 bg-gradient-to-br ${cor}`}>
                     <Icon size={15} className="text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -400,8 +367,8 @@ export default function EnviarPage() {
                       })}
                     </p>
                   </div>
-                  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${SETOR_COR[envio.sector] ?? 'bg-gray-100 text-gray-600'}`}>
-                    {SETOR_LABEL[envio.sector] ?? envio.sector}
+                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+                    A categorizar
                   </span>
                 </li>
               );
@@ -414,7 +381,6 @@ export default function EnviarPage() {
       {arquivosModal.length > 0 && (
         <EnvioLoteModal
           arquivos={arquivosModal}
-          setorInicial={setorModal}
           onFechar={fecharModal}
           onSucesso={aoEnviarComSucesso}
         />

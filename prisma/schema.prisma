@@ -278,7 +278,7 @@ model DocumentoFiscal {
   id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   clientId      String    @map("client_id") @db.Uuid
   uploadedById  String    @map("uploaded_by_id") @db.Uuid
-  sector        SetorTipo
+  sector        SetorTipo?
   fileName      String    @map("file_name") @db.VarChar(500)
   storagePath   String    @map("storage_path") @db.VarChar(1000)
   fileType      FileType  @map("file_type")

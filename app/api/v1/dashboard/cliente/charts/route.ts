@@ -73,9 +73,9 @@ export const GET = withAuth(async (_req, _ctx, auth) => {
     };
 
     const documentosPorSetor = setorAgg.map((g) => ({
-      nome: SETOR_LABELS[g.sector] ?? g.sector,
+      nome: g.sector ? (SETOR_LABELS[g.sector] ?? g.sector) : 'A categorizar',
       valor: g._count.id,
-      cor: SETOR_CORES[g.sector] ?? '#6b7280',
+      cor: g.sector ? (SETOR_CORES[g.sector] ?? '#6b7280') : '#9ca3af',
     }));
 
     return NextResponse.json({ documentosPorMes, documentosPorSetor });

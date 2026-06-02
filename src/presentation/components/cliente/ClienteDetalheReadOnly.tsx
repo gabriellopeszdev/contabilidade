@@ -29,7 +29,8 @@ import { useAuth } from '../../hooks/useAuth';
 // Tipos
 // =============================================================================
 
-type SetorTipo   = 'FISCAL' | 'PESSOAL' | 'CONTABIL';
+type SetorTipo   = 'FISCAL' | 'PESSOAL' | 'CONTABIL' | 'TODOS';
+type SetorDocumento = SetorTipo | null;
 type Origem      = 'UPLOAD_CLIENTE' | 'UPLOAD_CONTADOR';
 
 interface ClienteInfo {
@@ -50,7 +51,7 @@ interface DocumentoDTO {
   id:            string;
   fileName:      string;
   fileType:      'XML' | 'PDF';
-  sector:        SetorTipo;
+  sector:        SetorDocumento;
   fileSizeBytes: number;
   readStatus:    boolean;
   readAt:        string | null;
@@ -112,7 +113,17 @@ const SETOR_CONFIG: Record<SetorTipo, { label: string; classes: string }> = {
   FISCAL:   { label: 'Fiscal',   classes: 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800' },
   PESSOAL:  { label: 'Pessoal',  classes: 'bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-400 border-pink-200 dark:border-pink-800' },
   CONTABIL: { label: 'Contábil', classes: 'bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400 border-teal-200 dark:border-teal-800' },
+  TODOS:    { label: 'Todos',    classes: 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700' },
 };
+
+const SETOR_DEFAULT_CONFIG = {
+  label: 'A categorizar',
+  classes: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800',
+};
+
+function getSetorConfig(setor: SetorDocumento) {
+  return setor ? SETOR_CONFIG[setor] : SETOR_DEFAULT_CONFIG;
+}
 
 const ORIGEM_CONFIG: Record<Origem, { label: string; icone: typeof Upload; classes: string }> = {
   UPLOAD_CLIENTE:  { label: 'Enviado pelo cliente',    icone: Upload,   classes: 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30' },
@@ -371,7 +382,7 @@ export function ClienteDetalheReadOnly() {
           <ul role="list" className="divide-y divide-slate-100 dark:divide-gray-700">
             {docsFiltrados.map((doc) => {
               const origemCfg = ORIGEM_CONFIG[doc.origem];
-              const setorCfg  = SETOR_CONFIG[doc.sector];
+              const setorCfg  = getSetorConfig(doc.sector);
               const OrigemIcone = origemCfg.icone;
 
               return (

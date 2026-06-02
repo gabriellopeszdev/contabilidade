@@ -6,7 +6,7 @@ import Link          from 'next/link';
 import {
   CloudUpload, FileText, Download, CheckCircle, CheckCircle2,
   Loader2, AlertTriangle, DollarSign, MessageSquare, History,
-  ChevronRight, Upload, Receipt, Users, BarChart3,
+  ChevronRight, Upload,
   FileCode2, Bell, Send, CalendarClock,
 } from 'lucide-react';
 
@@ -118,7 +118,6 @@ export default function InicioPagina() {
   }, [documentos, agora]);
 
   // ── Drag & Drop ─────────────────────────────────────────────────────────────
-  const [setorDropzone,      setSetorDropzone]      = useState<'FISCAL' | 'PESSOAL' | 'CONTABIL'>('FISCAL');
   const [dragAtivo,          setDragAtivo]          = useState(false);
   const [arquivoSelecionado, setArquivoSelecionado] = useState<File | null>(null);
   const [erroArquivo,        setErroArquivo]        = useState<string | null>(null);
@@ -455,32 +454,13 @@ export default function InicioPagina() {
         {/* ============================================================== */}
         <aside className="space-y-4">
 
-          {/* Upload com pré-seleção de setor */}
+          {/* Upload sem seleção de setor */}
           <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-4 space-y-3">
             <h3 className="text-sm font-bold text-gray-800 dark:text-gray-200">Enviar Documento</h3>
 
-            {/* Chips de setor */}
-            <div className="grid grid-cols-3 gap-1.5">
-              {(
-                [
-                  { value: 'FISCAL',   label: 'Fiscal',   Icon: Receipt,   active: 'bg-indigo-600 text-white border-indigo-600', idle: 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-indigo-300 hover:text-indigo-600' },
-                  { value: 'PESSOAL',  label: 'Pessoal',  Icon: Users,     active: 'bg-violet-600 text-white border-violet-600', idle: 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-violet-300 hover:text-violet-600' },
-                  { value: 'CONTABIL', label: 'Contábil', Icon: BarChart3, active: 'bg-teal-600   text-white border-teal-600',   idle: 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-teal-300   hover:text-teal-600'   },
-                ] as const
-              ).map(({ value, label, Icon, active, idle }) => (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => setSetorDropzone(value)}
-                  className={`flex flex-col items-center gap-1 py-2 px-1 rounded-xl border
-                    text-[10px] font-bold transition-all leading-tight focus-visible:outline-none
-                    ${setorDropzone === value ? active : idle}`}
-                >
-                  <Icon size={14} />
-                  {label}
-                </button>
-              ))}
-            </div>
+            <p className="text-[11px] text-gray-500 dark:text-gray-400">
+              A classificação do documento será feita pelo seu contador após o envio.
+            </p>
 
             {/* Dropzone */}
             <div
@@ -494,11 +474,7 @@ export default function InicioPagina() {
                 gap-2 py-7 text-center
                 ${dragAtivo
                   ? 'border-sky-400 bg-sky-50 dark:bg-sky-900/20 scale-[1.02]'
-                  : setorDropzone === 'FISCAL'
-                    ? 'border-indigo-200 dark:border-indigo-800 bg-indigo-50/40 dark:bg-indigo-900/10 hover:border-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20'
-                    : setorDropzone === 'PESSOAL'
-                      ? 'border-violet-200 dark:border-violet-800 bg-violet-50/40 dark:bg-violet-900/10 hover:border-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/20'
-                      : 'border-teal-200 dark:border-teal-800 bg-teal-50/40 dark:bg-teal-900/10 hover:border-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/20'
+                  : 'border-sky-200 dark:border-sky-800 bg-sky-50/40 dark:bg-sky-900/10 hover:border-sky-400 hover:bg-sky-50 dark:hover:bg-sky-900/20'
                 }
               `}
             >
@@ -510,13 +486,8 @@ export default function InicioPagina() {
                 onChange={e => { const f = e.target.files?.[0]; if (f) abrirModal(f); }}
               />
               <div className={`w-10 h-10 rounded-xl flex items-center justify-center
-                ${dragAtivo ? 'bg-sky-100 dark:bg-sky-900/30' : setorDropzone === 'FISCAL' ? 'bg-indigo-100 dark:bg-indigo-900/40' : setorDropzone === 'PESSOAL' ? 'bg-violet-100 dark:bg-violet-900/40' : 'bg-teal-100 dark:bg-teal-900/40'}`}>
-                <CloudUpload size={20} className={
-                  dragAtivo ? 'text-sky-500' :
-                  setorDropzone === 'FISCAL'   ? 'text-indigo-500' :
-                  setorDropzone === 'PESSOAL'  ? 'text-violet-500' :
-                  'text-teal-500'
-                } />
+                ${dragAtivo ? 'bg-sky-100 dark:bg-sky-900/30' : 'bg-sky-100 dark:bg-sky-900/40'}`}>
+                <CloudUpload size={20} className="text-sky-500" />
               </div>
               <div>
                 <p className="text-xs font-semibold text-gray-700 dark:text-gray-300">
@@ -595,7 +566,6 @@ export default function InicioPagina() {
       {arquivoSelecionado && (
         <SectorSelectModal
           arquivo={arquivoSelecionado}
-          setorInicial={setorDropzone}
           onFechar={fecharModal}
           onSucesso={aoEnviarComSucesso}
         />

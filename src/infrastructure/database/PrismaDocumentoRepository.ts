@@ -213,7 +213,7 @@ export class PrismaDocumentoRepository implements IDocumentoRepository {
       clientId:      row.clientId,
       uploadedById:  row.uploadedById,
       // VO rico com metadados de retenção legal, descrição, etc.
-      sector:        Setor.fromString(row.sector),
+      sector:        Setor.fromString(row.sector ?? 'TODOS'),
       fileName:      row.fileName,
       storagePath:   row.storagePath,
       // O enum Prisma é string-compatível com o union type do domínio

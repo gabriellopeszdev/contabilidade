@@ -48,7 +48,7 @@ export const GET = withAuth(async (req, ctx, auth) => {
   const linhas = documentos.map((d) => ({
     fileName:    d.fileName,
     fileType:    d.fileType,
-    sector:      d.sector,
+    sector:      d.sector ?? 'A categorizar',
     competencia: d.competencia ? new Date(d.competencia).toLocaleDateString('pt-BR', { month: '2-digit', year: 'numeric' }) : '-',
     lido:        d.readStatus ? 'Sim' : 'Não',
     createdAt:   new Date(d.createdAt).toLocaleDateString('pt-BR'),

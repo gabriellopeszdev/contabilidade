@@ -40,7 +40,9 @@ import { ClienteDetalheReadOnly } from '../../../../src/presentation/components/
 // Tipos
 // =============================================================================
 
-type SetorTipo   = 'FISCAL' | 'PESSOAL' | 'CONTABIL';
+type SetorTipo   = 'FISCAL' | 'PESSOAL' | 'CONTABIL' | 'TODOS';
+type SetorDocumento = SetorTipo | null;
+type SetorClassificavel = 'FISCAL' | 'PESSOAL' | 'CONTABIL';
 type Origem      = 'UPLOAD_CLIENTE' | 'UPLOAD_CONTADOR';
 
 interface ClienteInfo {
@@ -73,7 +75,7 @@ interface DocumentoDTO {
   id:            string;
   fileName:      string;
   fileType:      'XML' | 'PDF';
-  sector:        SetorTipo;
+  sector:        SetorDocumento;
   fileSizeBytes: number;
   readStatus:    boolean;
   readAt:        string | null;
@@ -141,7 +143,23 @@ const SETOR_CONFIG: Record<SetorTipo, { label: string; classes: string }> = {
   FISCAL:   { label: 'Fiscal',   classes: 'bg-indigo-100 text-indigo-700 border-indigo-200' },
   PESSOAL:  { label: 'Pessoal',  classes: 'bg-pink-100   text-pink-700   border-pink-200' },
   CONTABIL: { label: 'Contábil', classes: 'bg-teal-100   text-teal-700   border-teal-200' },
+  TODOS:    { label: 'Todos',    classes: 'bg-slate-100  text-slate-700  border-slate-200' },
 };
+
+const SETOR_DEFAULT_CONFIG = {
+  label: 'A categorizar',
+  classes: 'bg-amber-100 text-amber-700 border-amber-200',
+};
+
+const SETOR_OPCOES: { value: SetorClassificavel; label: string; classes: string }[] = [
+  { value: 'FISCAL', label: 'Fiscal', classes: 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100' },
+  { value: 'PESSOAL', label: 'Pessoal', classes: 'bg-pink-50 text-pink-700 border-pink-200 hover:bg-pink-100' },
+  { value: 'CONTABIL', label: 'Contábil', classes: 'bg-teal-50 text-teal-700 border-teal-200 hover:bg-teal-100' },
+];
+
+function getSetorConfig(setor: SetorDocumento) {
+  return setor ? SETOR_CONFIG[setor] : SETOR_DEFAULT_CONFIG;
+}
 
 const ORIGEM_CONFIG: Record<Origem, { label: string; icone: typeof Upload; classes: string }> = {
   UPLOAD_CLIENTE:  { label: 'Enviado pelo cliente',  icone: Upload,   classes: 'text-blue-600   bg-blue-50' },
@@ -182,6 +200,8 @@ function ClienteDetalhesPageDono() {
 
   // Assinatura
   const [assinandoId, setAssinandoId] = useState<string | null>(null);
+  const [atualizandoSetorId, setAtualizandoSetorId] = useState<string | null>(null);
+  const [documentoDetalheId, setDocumentoDetalheId] = useState<string | null>(null);
 
   // IA Fiscal
   const [iaCarregando, setIaCarregando] = useState(false);
@@ -230,6 +250,9 @@ function ClienteDetalhesPageDono() {
   const cliente    = data?.cliente;
   const resumo     = data?.resumo;
   const documentos = data?.documentos ?? [];
+  const documentoDetalhe = documentoDetalheId
+    ? documentos.find((doc) => doc.id === documentoDetalheId) ?? null
+    : null;
 
   // Filtros locais (busca + origem)
   const docsFiltrados = documentos.filter((d) => {
@@ -323,6 +346,41 @@ function ClienteDetalhesPageDono() {
     await navigator.clipboard.writeText(link);
     setCopiadoLink(true);
     setTimeout(() => setCopiadoLink(false), 2000);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Alterar setor/categoria do documento
+  // ---------------------------------------------------------------------------
+  async function handleAlterarSetor(doc: DocumentoDTO, novoSetor: SetorClassificavel): Promise<boolean> {
+    if (!token || atualizandoSetorId) return false;
+    if (doc.sector === novoSetor) return true;
+
+    setAtualizandoSetorId(doc.id);
+    try {
+      const res = await fetch(`/api/v1/documentos/${doc.id}/setor`, {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ sector: novoSetor }),
+      });
+
+      const body = await res.json().catch(() => ({})) as { message?: string };
+
+      if (!res.ok) {
+        alert(body.message ?? `Erro ao atualizar categoria: HTTP ${res.status}`);
+        return false;
+      }
+
+      await mutate();
+      return true;
+    } catch {
+      alert('Erro de conexão ao atualizar categoria.');
+      return false;
+    } finally {
+      setAtualizandoSetorId(null);
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -1010,7 +1068,7 @@ function ClienteDetalhesPageDono() {
           <ul role="list" className="divide-y divide-slate-100 dark:divide-gray-700">
             {docsFiltrados.map((doc) => {
               const origemCfg = ORIGEM_CONFIG[doc.origem];
-              const setorCfg  = SETOR_CONFIG[doc.sector];
+              const setorCfg  = getSetorConfig(doc.sector);
               const OrigemIcone = origemCfg.icone;
 
               return (
@@ -1023,8 +1081,13 @@ function ClienteDetalhesPageDono() {
                       <div className={`shrink-0 w-9 h-9 rounded-xl flex items-center justify-center ${origemCfg.classes}`}>
                         <OrigemIcone size={16} />
                       </div>
-                      <div className="min-w-0">
-                        <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate" title={doc.fileName}>
+                      <button
+                        type="button"
+                        onClick={() => setDocumentoDetalheId(doc.id)}
+                        className="min-w-0 text-left group/doc"
+                        title="Abrir detalhes do documento"
+                      >
+                        <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate group-hover/doc:text-blue-700 dark:group-hover/doc:text-blue-300" title={doc.fileName}>
                           {doc.fileName}
                         </p>
                         <div className="flex items-center gap-1.5 mt-0.5 text-xs text-slate-400 dark:text-slate-500">
@@ -1033,7 +1096,7 @@ function ClienteDetalhesPageDono() {
                           <span className="text-slate-300 dark:text-slate-600">·</span>
                           <span>por {doc.uploaderNome}</span>
                         </div>
-                      </div>
+                      </button>
                     </div>
 
                     {/* Setor */}
@@ -1137,6 +1200,115 @@ function ClienteDetalhesPageDono() {
           </div>
         </div>
       )}
+
+      {/* ------------------------------------------------------------------ */}
+      {/* Modal: detalhes e categorização do documento                        */}
+      {/* ------------------------------------------------------------------ */}
+      {documentoDetalhe && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+          onClick={() => setDocumentoDetalheId(null)}
+        >
+          <div
+            className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-2xl border border-slate-200 dark:border-gray-700"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-gray-700">
+              <div>
+                <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">Detalhes do Documento</h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Clique em uma categoria para classificar o arquivo.</p>
+              </div>
+              <button
+                onClick={() => setDocumentoDetalheId(null)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:hover:bg-gray-800 transition-colors"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="px-6 py-5 space-y-5">
+              <div>
+                <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wide">Nome</p>
+                <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 break-all">{documentoDetalhe.fileName}</p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="rounded-xl border border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-800 p-3">
+                  <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Tipo</p>
+                  <p className="mt-1 text-sm text-slate-900 dark:text-slate-100">{documentoDetalhe.fileType}</p>
+                </div>
+                <div className="rounded-xl border border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-800 p-3">
+                  <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Tamanho</p>
+                  <p className="mt-1 text-sm text-slate-900 dark:text-slate-100">{formatarTamanho(documentoDetalhe.fileSizeBytes)}</p>
+                </div>
+                <div className="rounded-xl border border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-800 p-3">
+                  <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Origem</p>
+                  <p className="mt-1 text-sm text-slate-900 dark:text-slate-100">{documentoDetalhe.origem === 'UPLOAD_CLIENTE' ? 'Cliente' : 'Escritório'}</p>
+                </div>
+                <div className="rounded-xl border border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-800 p-3">
+                  <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Enviado em</p>
+                  <p className="mt-1 text-sm text-slate-900 dark:text-slate-100">{formatarDataHora(documentoDetalhe.createdAt)}</p>
+                </div>
+                <div className="rounded-xl border border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-800 p-3">
+                  <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Enviado por</p>
+                  <p className="mt-1 text-sm text-slate-900 dark:text-slate-100">{documentoDetalhe.uploaderNome}</p>
+                </div>
+                <div className="rounded-xl border border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-800 p-3">
+                  <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Competência</p>
+                  <p className="mt-1 text-sm text-slate-900 dark:text-slate-100">{documentoDetalhe.competencia ?? 'Não informada'}</p>
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-3.5">
+                <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">Status de leitura</p>
+                {documentoDetalhe.readStatus ? (
+                  <p className="text-sm text-emerald-700 font-medium">
+                    Lido{documentoDetalhe.readAt ? ` em ${formatarDataHora(documentoDetalhe.readAt)}` : ''}
+                  </p>
+                ) : (
+                  <p className="text-sm text-amber-700 font-medium">Não lido</p>
+                )}
+              </div>
+
+              <div className="rounded-xl border border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-800 p-4">
+                <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">Categoria atual</p>
+                <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wide border ${getSetorConfig(documentoDetalhe.sector).classes}`}>
+                  {getSetorConfig(documentoDetalhe.sector).label}
+                </span>
+
+                <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mt-4 mb-2">Alterar categoria</p>
+                <div className="flex flex-wrap gap-2">
+                  {SETOR_OPCOES.map((opcao) => (
+                    <button
+                      key={opcao.value}
+                      type="button"
+                      onClick={() => handleAlterarSetor(documentoDetalhe, opcao.value)}
+                      disabled={atualizandoSetorId === documentoDetalhe.id}
+                      className={`px-2.5 py-1.5 rounded-md text-[11px] font-bold border transition-colors
+                        ${opcao.classes}
+                        ${documentoDetalhe.sector === opcao.value ? 'ring-1 ring-offset-0 ring-slate-300' : ''}
+                        disabled:opacity-60 disabled:cursor-not-allowed`}
+                    >
+                      {atualizandoSetorId === documentoDetalhe.id && documentoDetalhe.sector !== opcao.value ? 'Salvando...' : opcao.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="px-6 py-4 border-t border-slate-100 dark:border-gray-700 flex justify-end">
+              <button
+                onClick={() => setDocumentoDetalheId(null)}
+                className="px-4 py-2 text-sm font-medium rounded-lg bg-slate-100 dark:bg-gray-800
+                  text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-gray-700 transition-colors"
+              >
+                Fechar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ------------------------------------------------------------------ */}
       {/* Modal: link de assinatura gerado                                     */}
       {/* ------------------------------------------------------------------ */}

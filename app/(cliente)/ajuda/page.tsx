@@ -27,7 +27,7 @@ const FAQ_ITEMS: FAQItem[] = [
   {
     pergunta: 'Como envio documentos para o meu contador?',
     resposta:
-      'Acesse a página "Enviar Arquivo" no menu lateral. Clique no botão "Enviar Documento", selecione o setor (Fiscal, Pessoal ou Contábil), arraste ou selecione seus arquivos PDF ou XML (até 10 MB cada) e clique em "Enviar". Seu contador será notificado automaticamente em tempo real.',
+      'Acesse a página "Enviar Arquivo" no menu lateral. Clique no botão "Enviar Documento", arraste ou selecione seus arquivos PDF ou XML (até 10 MB cada) e confirme o envio. Seu contador será notificado automaticamente e fará a classificação do documento depois.',
     icone: <Upload size={18} className="text-blue-500" />,
   },
   {
@@ -57,7 +57,7 @@ const FAQ_ITEMS: FAQItem[] = [
   {
     pergunta: 'O que significam os setores (Fiscal, Pessoal, Contábil)?',
     resposta:
-      'Os setores organizam seus documentos por área:\n\n• Fiscal — Notas fiscais, guias de impostos (DAS, DARF), declarações tributárias.\n• Pessoal — Folha de pagamento, holerites, FGTS, férias, rescisões.\n• Contábil — Balanços, balancetes, DRE, livros contábeis, contratos.',
+      'Os setores organizam seus documentos por área e a classificação é feita pelo contador após o envio:\n\n• Fiscal — Notas fiscais, guias de impostos (DAS, DARF), declarações tributárias.\n• Pessoal — Folha de pagamento, holerites, FGTS, férias, rescisões.\n• Contábil — Balanços, balancetes, DRE, livros contábeis, contratos.',
     icone: <HelpCircle size={18} className="text-teal-500" />,
   },
   {
