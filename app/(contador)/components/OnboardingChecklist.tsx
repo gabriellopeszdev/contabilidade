@@ -1,12 +1,20 @@
 'use client';
-import { useState } from 'react';
+
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import { ChevronDown, ChevronUp, CheckCircle2, Circle, X, Sparkles } from 'lucide-react';
+import { useAuth } from '../../../src/presentation/hooks/useAuth';
+
+// =============================================================================
+// Tipos
+// =============================================================================
 
 interface Passo {
   id:        string;
   titulo:    string;
   descricao: string;
   href:      string;
+  feature:   string | null;
   concluido: boolean;
 }
 
@@ -17,92 +25,197 @@ interface OnboardingData {
   concluido:       boolean;
 }
 
-async function fetchOnboarding(): Promise<OnboardingData | null> {
-  try {
-    const r = await fetch('/api/v1/onboarding');
-    if (!r.ok) return null;
-    return r.json();
-  } catch {
-    return null;
-  }
-}
-
-async function patchOnboarding(body: { passoId?: string; concluirTudo?: boolean }): Promise<void> {
-  await fetch('/api/v1/onboarding', {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-}
+// =============================================================================
+// OnboardingChecklist
+//
+// Exibido apenas para o dono do escritório (isDono).
+// Desaparece quando o usuário clica em "Pular" ou conclui todos os passos.
+// Os passos são filtrados pelo plano do contador (via API).
+// =============================================================================
 
 export function OnboardingChecklist() {
-  const [data, setData]     = useState<OnboardingData | null | 'loading'>('loading');
+  const { token, isDono } = useAuth();
+
+  const [data,   setData]   = useState<OnboardingData | null>(null);
   const [aberto, setAberto] = useState(true);
+  const [carregando, setCarregando] = useState(false);
 
-  // Lazy-load on first render
-  if (data === 'loading') {
-    setData(null); // prevent re-trigger
-    fetchOnboarding().then(setData);
-    return null;
+  // ---------------------------------------------------------------------------
+  // Fetch da lista de passos
+  // ---------------------------------------------------------------------------
+
+  const carregar = useCallback(async () => {
+    if (!token || !isDono) return;
+    try {
+      const res = await fetch('/api/v1/onboarding', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) return;
+      const d = await res.json() as OnboardingData;
+      setData(d);
+    } catch {
+      // falha silenciosa — não bloqueia a interface
+    }
+  }, [token, isDono]);
+
+  useEffect(() => { void carregar(); }, [carregar]);
+
+  // ---------------------------------------------------------------------------
+  // Ações
+  // ---------------------------------------------------------------------------
+
+  const marcarConcluido = async (passoId: string) => {
+    if (!token || carregando) return;
+    setCarregando(true);
+    try {
+      await fetch('/api/v1/onboarding', {
+        method:  'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body:    JSON.stringify({ passoId }),
+      });
+      await carregar();
+    } finally {
+      setCarregando(false);
+    }
+  };
+
+  const pular = async () => {
+    if (!token) return;
+    try {
+      await fetch('/api/v1/onboarding', {
+        method:  'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body:    JSON.stringify({ concluirTudo: true }),
+      });
+    } finally {
+      setData(null);
+    }
+  };
+
+  // ---------------------------------------------------------------------------
+  // Guards de renderização
+  // ---------------------------------------------------------------------------
+
+  // Só aparece para o dono do escritório
+  if (!isDono) return null;
+
+  // Aguarda o carregamento inicial
+  if (!data) return null;
+
+  // Onboarding concluído — não exibe nada
+  if (data.concluido) return null;
+
+  const progressoPct = data.total > 0
+    ? Math.round((data.totalConcluidos / data.total) * 100)
+    : 0;
+
+  // ---------------------------------------------------------------------------
+  // Estado colapsado — botão flutuante
+  // ---------------------------------------------------------------------------
+
+  if (!aberto) {
+    return (
+      <button
+        onClick={() => setAberto(true)}
+        className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-2.5 rounded-xl
+          bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold shadow-lg transition-colors"
+      >
+        <Sparkles size={15} />
+        Primeiros passos
+        <span className="ml-1 px-1.5 py-0.5 rounded-full bg-white/20 text-xs font-bold tabular-nums">
+          {data.totalConcluidos}/{data.total}
+        </span>
+        <ChevronUp size={14} />
+      </button>
+    );
   }
 
-  if (!data || data.concluido) return null;
-
-  const progressoPct = Math.round((data.totalConcluidos / data.total) * 100);
-
-  async function marcarConcluido(passoId: string) {
-    await patchOnboarding({ passoId });
-    const atualizado = await fetchOnboarding();
-    setData(atualizado);
-  }
-
-  async function dispensar() {
-    await patchOnboarding({ concluirTudo: true });
-    setData(null);
-  }
-
-  if (!aberto) return (
-    <button
-      onClick={() => setAberto(true)}
-      className="fixed bottom-6 right-6 bg-blue-600 text-white rounded-full px-4 py-2 shadow-lg text-sm font-medium z-50"
-    >
-      Primeiros passos ({data.totalConcluidos}/{data.total})
-    </button>
-  );
+  // ---------------------------------------------------------------------------
+  // Estado expandido — checklist
+  // ---------------------------------------------------------------------------
 
   return (
-    <div className="fixed bottom-6 right-6 w-80 bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 z-50">
-      <div className="p-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
-        <div>
-          <h3 className="font-semibold text-sm">Primeiros passos</h3>
-          <p className="text-xs text-gray-400">{data.totalConcluidos} de {data.total} concluídos</p>
+    <div className="fixed bottom-6 right-6 z-50 w-80 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 flex flex-col overflow-hidden">
+
+      {/* Header */}
+      <div className="px-4 py-3 flex items-center justify-between border-b border-gray-100 dark:border-gray-800">
+        <div className="flex items-center gap-2">
+          <Sparkles size={15} className="text-blue-500" />
+          <div>
+            <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">Primeiros passos</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500">
+              {data.totalConcluidos} de {data.total} concluídos
+            </p>
+          </div>
         </div>
-        <button onClick={() => setAberto(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-lg leading-none">&times;</button>
+        <button
+          onClick={() => setAberto(false)}
+          className="p-1 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          title="Minimizar"
+        >
+          <ChevronDown size={16} />
+        </button>
       </div>
+
+      {/* Barra de progresso */}
       <div className="h-1 bg-gray-100 dark:bg-gray-800">
-        <div className="h-1 bg-blue-600 rounded transition-all duration-300" style={{ width: `${progressoPct}%` }} />
+        <div
+          className="h-1 bg-blue-600 transition-all duration-500"
+          style={{ width: `${progressoPct}%` }}
+        />
       </div>
-      <div className="p-4 space-y-3 max-h-72 overflow-y-auto">
+
+      {/* Lista de passos */}
+      <div className="p-3 space-y-1 max-h-72 overflow-y-auto">
         {data.passos.map((p) => (
-          <div key={p.id} className={`flex gap-3 items-start ${p.concluido ? 'opacity-50' : ''}`}>
+          <div
+            key={p.id}
+            className={`flex gap-3 items-start p-2 rounded-xl transition-colors ${
+              p.concluido
+                ? 'opacity-50'
+                : 'hover:bg-gray-50 dark:hover:bg-gray-800/60'
+            }`}
+          >
             <button
-              onClick={() => !p.concluido && marcarConcluido(p.id)}
-              className={`mt-0.5 w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-colors ${p.concluido ? 'bg-blue-600 border-blue-600' : 'border-gray-300 hover:border-blue-400'}`}
+              onClick={() => !p.concluido && void marcarConcluido(p.id)}
+              disabled={p.concluido || carregando}
+              className="mt-0.5 shrink-0 text-gray-300 dark:text-gray-600 hover:text-blue-500 dark:hover:text-blue-400
+                disabled:cursor-default transition-colors"
+              title={p.concluido ? 'Concluído' : 'Marcar como concluído'}
             >
-              {p.concluido && <span className="text-white text-[10px] font-bold">✓</span>}
+              {p.concluido
+                ? <CheckCircle2 size={18} className="text-blue-500" />
+                : <Circle size={18} />
+              }
             </button>
-            <div>
-              <Link href={p.href} className="text-sm font-medium hover:underline text-gray-900 dark:text-gray-100">
+            <div className="flex-1 min-w-0">
+              <Link
+                href={p.href}
+                className={`text-sm font-medium leading-tight hover:text-blue-600 dark:hover:text-blue-400 transition-colors ${
+                  p.concluido
+                    ? 'text-gray-400 dark:text-gray-500 line-through'
+                    : 'text-gray-800 dark:text-gray-200'
+                }`}
+              >
                 {p.titulo}
               </Link>
-              <p className="text-xs text-gray-400 mt-0.5">{p.descricao}</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5 leading-snug">
+                {p.descricao}
+              </p>
             </div>
           </div>
         ))}
       </div>
-      <div className="p-4 border-t border-gray-100 dark:border-gray-800">
-        <button onClick={dispensar} className="text-xs text-gray-400 hover:underline w-full text-center">
-          Não mostrar mais
+
+      {/* Rodapé */}
+      <div className="px-4 py-3 border-t border-gray-100 dark:border-gray-800">
+        <button
+          onClick={() => void pular()}
+          className="w-full flex items-center justify-center gap-1.5 text-xs text-gray-400 dark:text-gray-500
+            hover:text-red-500 dark:hover:text-red-400 transition-colors"
+        >
+          <X size={12} />
+          Pular onboarding
         </button>
       </div>
     </div>

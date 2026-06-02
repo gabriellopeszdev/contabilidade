@@ -2,39 +2,117 @@ import { NextResponse } from 'next/server';
 import { withAuth } from '@/infrastructure/http/middlewares/withAuth';
 import { prisma } from '@/infrastructure/di/Container';
 
+// Passos base (sem feature) + passos condicionais (com feature)
 export const PASSOS_ONBOARDING = [
-  { id: 'configurar-escritorio', titulo: 'Configure seu escritório', descricao: 'Adicione nome, logo e cores em Configurações', href: '/configuracoes' },
-  { id: 'adicionar-cliente',     titulo: 'Adicione seu primeiro cliente', descricao: 'Cadastre um cliente na sua carteira', href: '/clientes' },
-  { id: 'enviar-documento',      titulo: 'Envie um documento', descricao: 'Faça upload de um documento fiscal', href: '/lote' },
-  { id: 'criar-obrigacao',       titulo: 'Configure o calendário fiscal', descricao: 'Adicione obrigações recorrentes', href: '/calendario' },
-  { id: 'explorar-kanban',       titulo: 'Explore o Kanban', descricao: 'Gerencie tarefas no quadro Kanban', href: '/dashboard' },
-] as const;
+  {
+    id:       'configurar-escritorio',
+    titulo:   'Configure seu escritório',
+    descricao:'Adicione nome, logo e cores em Configurações',
+    href:     '/configuracoes',
+    feature:  null,
+  },
+  {
+    id:       'adicionar-cliente',
+    titulo:   'Adicione seu primeiro cliente',
+    descricao:'Cadastre um cliente na sua carteira',
+    href:     '/clientes',
+    feature:  null,
+  },
+  {
+    id:       'enviar-documento',
+    titulo:   'Envie um documento',
+    descricao:'Faça upload de um documento fiscal para um cliente',
+    href:     '/lote',
+    feature:  null,
+  },
+  {
+    id:       'criar-obrigacao',
+    titulo:   'Configure o calendário fiscal',
+    descricao:'Adicione obrigações recorrentes para seus clientes',
+    href:     '/calendario',
+    feature:  null,
+  },
+  {
+    id:       'explorar-kanban',
+    titulo:   'Explore o Kanban',
+    descricao:'Gerencie tarefas e documentos no quadro de trabalho',
+    href:     '/dashboard',
+    feature:  null,
+  },
+  {
+    id:       'configurar-financeiro',
+    titulo:   'Configure a cobrança de honorários',
+    descricao:'Integre com Asaas para emitir boletos automaticamente',
+    href:     '/configuracoes',
+    feature:  'financeiro',
+  },
+  {
+    id:       'explorar-ia',
+    titulo:   'Experimente a IA do FiscoHub',
+    descricao:'Gere obrigações fiscais e analise clientes com IA',
+    href:     '/chat-ia',
+    feature:  'ia',
+  },
+] as const satisfies ReadonlyArray<{
+  id: string;
+  titulo: string;
+  descricao: string;
+  href: string;
+  feature: string | null;
+}>;
+
+// =============================================================================
+// GET /api/v1/onboarding
+//
+// Retorna os passos filtrados pelo plano do contador.
+// =============================================================================
 
 export const GET = withAuth(async (req, ctx, auth) => {
   const contador = await prisma.usuarioContador.findUnique({
-    where: { id: auth.sub },
+    where:  { id: auth.sub },
     select: { onboardingPassos: true, onboardingConcluido: true },
   });
 
   if (!contador) return NextResponse.json({ message: 'Não encontrado' }, { status: 404 });
 
+  // Busca features do plano atual (fallback: trial tem apenas chat e calendario)
+  const assinatura = await prisma.assinaturaSaaS.findUnique({
+    where:   { escritorioId: auth.sub },
+    include: { plano: { select: { features: true } } },
+  });
+  const features: string[] = assinatura?.plano.features ?? ['chat', 'calendario'];
+
+  // Filtra passos disponíveis para o plano
+  const passosDisponiveis = PASSOS_ONBOARDING.filter(
+    (p) => p.feature === null || features.includes(p.feature),
+  );
+
   const passosCompletos = contador.onboardingPassos;
-  const passos = PASSOS_ONBOARDING.map((p) => ({ ...p, concluido: passosCompletos.includes(p.id) }));
+  const passos = passosDisponiveis.map((p) => ({ ...p, concluido: passosCompletos.includes(p.id) }));
+
+  const totalConcluidos = passos.filter((p) => p.concluido).length;
+  const todosCompletos   = totalConcluidos === passos.length && passos.length > 0;
 
   return NextResponse.json({
     passos,
-    totalConcluidos: passosCompletos.length,
-    total: PASSOS_ONBOARDING.length,
-    concluido: contador.onboardingConcluido,
+    totalConcluidos,
+    total:     passos.length,
+    concluido: contador.onboardingConcluido || todosCompletos,
   });
 }, ['ACCOUNTANT']);
+
+// =============================================================================
+// PATCH /api/v1/onboarding
+//
+// Marca um passo como concluído ou dispensa o onboarding.
+// =============================================================================
 
 export const PATCH = withAuth(async (req, ctx, auth) => {
   const body = await req.json() as { passoId?: string; concluirTudo?: boolean };
   const { passoId, concluirTudo } = body;
 
   const contador = await prisma.usuarioContador.findUnique({
-    where: { id: auth.sub },
+    where:  { id: auth.sub },
     select: { onboardingPassos: true },
   });
   if (!contador) return NextResponse.json({ message: 'Não encontrado' }, { status: 404 });
@@ -42,7 +120,7 @@ export const PATCH = withAuth(async (req, ctx, auth) => {
   if (concluirTudo) {
     await prisma.usuarioContador.update({
       where: { id: auth.sub },
-      data: { onboardingConcluido: true },
+      data:  { onboardingConcluido: true },
     });
     return NextResponse.json({ message: 'Onboarding concluído' });
   }
@@ -52,12 +130,14 @@ export const PATCH = withAuth(async (req, ctx, auth) => {
   const passoValido = PASSOS_ONBOARDING.find((p) => p.id === passoId);
   if (!passoValido) return NextResponse.json({ message: 'Passo inválido' }, { status: 400 });
 
-  const novosPassos = [...new Set([...contador.onboardingPassos, passoId])];
-  const todosCompletos = PASSOS_ONBOARDING.every((p) => novosPassos.includes(p.id));
+  const novosPassos  = [...new Set([...contador.onboardingPassos, passoId])];
+  const todosCompletos = PASSOS_ONBOARDING.filter((p) => p.feature === null).every((p) =>
+    novosPassos.includes(p.id),
+  );
 
   await prisma.usuarioContador.update({
     where: { id: auth.sub },
-    data: { onboardingPassos: novosPassos, onboardingConcluido: todosCompletos },
+    data:  { onboardingPassos: novosPassos, onboardingConcluido: todosCompletos },
   });
 
   return NextResponse.json({ passosCompletos: novosPassos, concluido: todosCompletos });
