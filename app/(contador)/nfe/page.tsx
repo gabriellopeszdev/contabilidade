@@ -303,12 +303,19 @@ export default function NfePage() {
     try {
       const token = await getToken();
 
+      // 1. Obtém a pre-signed URL do MinIO
       const dlRes = await fetch(`/api/v1/documentos/${item.id}/download`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!dlRes.ok) return;
-      const blob = await dlRes.blob();
+      const { url } = await dlRes.json() as { url: string };
 
+      // 2. Baixa o arquivo XML real a partir da URL pré-assinada
+      const fileRes = await fetch(url);
+      if (!fileRes.ok) return;
+      const blob = await fileRes.blob();
+
+      // 3. Envia o XML para o parser
       const form = new FormData();
       form.append('arquivos', new File([blob], item.fileName, { type: 'application/xml' }));
 
