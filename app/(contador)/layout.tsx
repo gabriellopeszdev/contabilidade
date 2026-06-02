@@ -154,6 +154,16 @@ export default function ContadorLayout({ children }: { children: React.ReactNode
   const { plan: planoAtual } = usePlanoAtual(isDono ? token : null);
   const { formatado: tempoSessao, critico: sessaoCritica, urgente: sessaoUrgente } = useSessionTimer();
 
+  // null = ainda carregando | true = concluído | false = pendente
+  const [onboardingConcluido, setOnboardingConcluido] = useState<boolean | null>(null);
+  useEffect(() => {
+    if (!token || !isDono) return;
+    fetch('/api/v1/onboarding', { headers: { Authorization: `Bearer ${token}` } })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => setOnboardingConcluido(d ? Boolean(d.concluido) : true))
+      .catch(() => setOnboardingConcluido(true)); // fail-safe: não bloqueia
+  }, [token, isDono]);
+
   const [userMenuAberto, setUserMenuAberto] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -185,11 +195,12 @@ export default function ContadorLayout({ children }: { children: React.ReactNode
     if (!carregando && !usuario) router.push('/login');
   }, [carregando, usuario, router]);
 
-  // Redirect first-time Contadores to the onboarding wizard
+  // Redireciona o dono para o onboarding enquanto não concluir
   useEffect(() => {
-    if (!themeLoaded || carregando || !usuario || !isContador) return;
-    if (!nomeEscritorio) router.push('/onboarding');
-  }, [themeLoaded, nomeEscritorio, carregando, usuario, isContador, router]);
+    if (!themeLoaded || carregando || !usuario || !isDono) return;
+    if (onboardingConcluido === null) return; // aguarda carregar
+    if (!nomeEscritorio || onboardingConcluido === false) router.push('/onboarding');
+  }, [themeLoaded, nomeEscritorio, onboardingConcluido, carregando, usuario, isDono, router]);
 
   if (carregando) {
     return (

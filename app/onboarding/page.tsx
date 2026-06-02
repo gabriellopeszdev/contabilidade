@@ -33,10 +33,10 @@ export default function OnboardingPage() {
   const router = useRouter();
   const { token, carregando, usuario, isContador } = useAuth();
 
-  const [passo,           setPasso]           = useState<Passo>(1);
-  const [salvando,        setSalvando]        = useState(false);
-  const [erro,            setErro]            = useState<string | null>(null);
-  const [verificando,     setVerificando]     = useState(true);
+  const [passo,       setPasso]     = useState<Passo>(1);
+  const [salvando,    setSalvando]  = useState(false);
+  const [erro,        setErro]      = useState<string | null>(null);
+  const [verificando, setVerificando] = useState(true);
 
   // Step 2 — dados do escritório
   const [nomeEscritorio, setNomeEscritorio] = useState('');
@@ -54,20 +54,25 @@ export default function OnboardingPage() {
     if (!isContador) router.push('/dashboard');
   }, [carregando, usuario, isContador, router]);
 
-  // Verifica se o escritório já está configurado — fica no loader até saber
+  // Verifica se o onboarding já foi concluído e pré-preenche campos do wizard
   useEffect(() => {
     if (!token || !isContador) return;
-    fetch('/api/v1/escritorio/config', { headers: { Authorization: `Bearer ${token}` } })
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.config?.nomeEscritorio) {
+
+    Promise.all([
+      fetch('/api/v1/onboarding',       { headers: { Authorization: `Bearer ${token}` } }).then((r) => r.json()),
+      fetch('/api/v1/escritorio/config', { headers: { Authorization: `Bearer ${token}` } }).then((r) => r.json()),
+    ])
+      .then(([onboarding, config]) => {
+        if (onboarding.concluido) {
           router.push('/dashboard');
-          // não libera o wizard — usuário vai ser redirecionado
-        } else {
-          setVerificando(false);
+          return;
         }
+        // Pré-preenche com dados que o admin já configurou
+        if (config.config?.nomeEscritorio) setNomeEscritorio(config.config.nomeEscritorio);
+        if (config.config?.cnpjEscritorio) setCnpj(formatarCnpj(config.config.cnpjEscritorio));
+        setVerificando(false);
       })
-      .catch(() => setVerificando(false)); // em caso de erro mostra o wizard
+      .catch(() => setVerificando(false));
   }, [token, isContador, router]);
 
   if (carregando || !usuario || verificando) {
@@ -150,6 +155,14 @@ export default function OnboardingPage() {
       const ok = await salvarIntegracao();
       if (ok) setPasso(4);
     } else {
+      // Passo 4 → Dashboard: marca onboarding como concluído no banco
+      if (token) {
+        await fetch('/api/v1/onboarding', {
+          method:  'PATCH',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body:    JSON.stringify({ concluirTudo: true }),
+        }).catch(() => {});
+      }
       router.push('/dashboard');
     }
   };
