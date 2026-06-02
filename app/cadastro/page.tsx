@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { ChevronLeft, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
@@ -17,7 +17,7 @@ function formatCNPJ(value: string): string {
     .replace(/(\d{4})(\d)/, '$1-$2');
 }
 
-export default function CadastroPage() {
+function CadastroForm() {
   const searchParams = useSearchParams();
   const planoInicial = searchParams.get('plano') ?? '';
 
@@ -277,5 +277,13 @@ export default function CadastroPage() {
         </div>
       </footer>
     </div>
+  );
+}
+
+export default function CadastroPage() {
+  return (
+    <Suspense>
+      <CadastroForm />
+    </Suspense>
   );
 }
