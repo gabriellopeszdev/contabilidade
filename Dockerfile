@@ -23,7 +23,7 @@ COPY package.json package-lock.json ./
 COPY prisma ./prisma
 
 # Instala todas as deps (inclui devDeps: tsx, prisma CLI, typescript)
-RUN npm ci
+RUN npm install --frozen-lockfile
 
 # Gera o Prisma Client
 RUN npx prisma generate
@@ -53,7 +53,7 @@ RUN addgroup --system --gid 1001 nodejs && \
 # Reinstala deps na imagem final (tsx é necessário em runtime)
 COPY package.json package-lock.json ./
 COPY prisma ./prisma
-RUN npm ci && npm cache clean --force
+RUN npm install --frozen-lockfile && npm cache clean --force
 
 # Gera o Prisma Client na imagem final
 RUN npx prisma generate
