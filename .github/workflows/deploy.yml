@@ -20,9 +20,6 @@ jobs:
       - name: Reconstruir e reiniciar containers
         run: docker compose up -d --build --remove-orphans
 
-      - name: Rodar migrations
-        run: docker compose exec -T app npx prisma migrate deploy
-
       - name: Limpar imagens antigas
         run: docker image prune -f
 

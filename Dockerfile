@@ -66,15 +66,17 @@ COPY --chown=nextjs:nodejs src        ./src
 COPY --chown=nextjs:nodejs app        ./app
 
 # Copia arquivos de configuração necessários em runtime
-COPY --chown=nextjs:nodejs server.ts       .
-COPY --chown=nextjs:nodejs next.config.js  .
-COPY --chown=nextjs:nodejs tsconfig.json   .
-COPY --chown=nextjs:nodejs tailwind.config.ts  .
-COPY --chown=nextjs:nodejs postcss.config.js   .
+COPY --chown=nextjs:nodejs server.ts            .
+COPY --chown=nextjs:nodejs next.config.js       .
+COPY --chown=nextjs:nodejs tsconfig.json        .
+COPY --chown=nextjs:nodejs tailwind.config.ts   .
+COPY --chown=nextjs:nodejs postcss.config.js    .
+COPY --chown=nextjs:nodejs docker-entrypoint.sh .
 
+USER root
+RUN chmod +x /app/docker-entrypoint.sh
 USER nextjs
 
 EXPOSE 4500
 
-# npm start → tsx server.ts (conforme package.json)
-CMD ["npm", "start"]
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
