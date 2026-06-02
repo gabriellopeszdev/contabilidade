@@ -196,30 +196,42 @@ export default function OnboardingPage() {
         </div>
 
         {/* Progress bar */}
-        <div className="flex items-center mb-8 gap-0">
-          {PASSOS_LABELS.map((label, i) => {
-            const num = (i + 1) as Passo;
-            const ativo    = passo === num;
-            const concluido = passo > num;
-            return (
-              <div key={num} className="flex items-center flex-1">
-                <div className="flex flex-col items-center gap-1">
+        <div className="mb-8">
+          {/* Círculos + linha conectora — todos na mesma altura */}
+          <div className="flex items-center">
+            {PASSOS_LABELS.map((label, i) => {
+              const num      = (i + 1) as Passo;
+              const ativo    = passo === num;
+              const concluido = passo > num;
+              return (
+                <div key={num} className="flex items-center flex-1 last:flex-none">
                   <div className={`
-                    w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-200
+                    w-8 h-8 shrink-0 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-200
                     ${concluido ? 'bg-blue-600 text-white' : ativo ? 'bg-blue-600 text-white ring-4 ring-blue-100 dark:ring-blue-900/40' : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'}
                   `}>
                     {concluido ? <CheckCircle2 size={14} /> : num}
                   </div>
+                  {i < PASSOS_LABELS.length - 1 && (
+                    <div className={`flex-1 h-0.5 mx-1 transition-colors duration-300 ${concluido ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'}`} />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          {/* Labels abaixo — alinhadas com cada círculo */}
+          <div className="flex mt-2">
+            {PASSOS_LABELS.map((label, i) => {
+              const num   = (i + 1) as Passo;
+              const ativo = passo === num;
+              return (
+                <div key={num} className={`flex-1 flex ${i === 0 ? 'justify-start' : i === PASSOS_LABELS.length - 1 ? 'justify-end' : 'justify-center'}`}>
                   <span className={`text-[10px] font-medium whitespace-nowrap ${ativo ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'}`}>
                     {label}
                   </span>
                 </div>
-                {i < PASSOS_LABELS.length - 1 && (
-                  <div className={`flex-1 h-0.5 mx-1 mb-4 transition-colors duration-300 ${concluido ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'}`} />
-                )}
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
 
         {/* Card principal */}
