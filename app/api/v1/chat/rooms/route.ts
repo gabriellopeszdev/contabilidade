@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
   const auth = await verificarJWT(request);
   if (!auth.ok) return NextResponse.json({ message: auth.mensagem }, { status: auth.status });
 
-  const { sub, role } = auth.payload;
+  const { sub, role, contadorId: contadorIdJwt, memberType } = auth.payload;
 
   // ── Cliente ────────────────────────────────────────────────────────────────
   if (role === 'CLIENT') {
@@ -108,6 +108,27 @@ export async function GET(request: NextRequest) {
   }
 
   // ── Contador / Funcionário do Escritório ───────────────────────────────────
+  // contadorIdJwt: só existe para funcionários do escritório (superiorId do JWT)
+  const escritorioId = contadorIdJwt ?? sub;
+
+  // Garante que existe uma sala para cada cliente do escritório (upsert idempotente)
+  const clientes = await prisma.contadorCliente.findMany({
+    where:  { contadorId: escritorioId },
+    select: { clienteId: true },
+  });
+
+  if (clientes.length > 0) {
+    await Promise.all(
+      clientes.map((c) =>
+        prisma.chatRoom.upsert({
+          where:  { clienteId_memberId: { clienteId: c.clienteId, memberId: sub } },
+          update: {},
+          create: { clienteId: c.clienteId, memberId: sub, memberType },
+        }),
+      ),
+    );
+  }
+
   const rooms = await prisma.chatRoom.findMany({
     where: { memberId: sub },
     include: {
@@ -143,9 +164,12 @@ export async function GET(request: NextRequest) {
 // =============================================================================
 
 interface JWTInfo {
-  sub: string;
-  role: 'CLIENT' | 'ACCOUNTANT' | 'ADMIN';
-  nome: string;
+  sub:        string;
+  role:       'CLIENT' | 'ACCOUNTANT' | 'ADMIN';
+  nome:       string;
+  // Para EMPLOYEE+ESCRITORIO: contadorId é o superiorId; sub permanece como o próprio ID do funcionário
+  contadorId?: string;
+  memberType: 'CONTADOR' | 'FUNCIONARIO';
 }
 
 async function verificarJWT(
@@ -164,17 +188,38 @@ async function verificarJWT(
 
     let role = payload.role as string;
     let sub  = payload.sub as string;
-    const vinculo    = payload.vinculo as string | undefined;
+    const vinculo    = payload.vinculo    as string | undefined;
     const superiorId = payload.superiorId as string | undefined;
 
-    if (role === 'EMPLOYEE' && vinculo === 'CLIENTE' && superiorId) { role = 'CLIENT';     sub = superiorId; }
-    if (role === 'EMPLOYEE' && vinculo === 'ESCRITORIO' && superiorId) { role = 'ACCOUNTANT'; sub = superiorId; }
+    let contadorId:  string | undefined;
+    let memberType: 'CONTADOR' | 'FUNCIONARIO' = 'CONTADOR';
+
+    if (role === 'EMPLOYEE' && vinculo === 'CLIENTE' && superiorId) {
+      // Funcionário do cliente → age como o próprio cliente
+      role = 'CLIENT';
+      sub  = superiorId;
+    } else if (role === 'EMPLOYEE' && vinculo === 'ESCRITORIO' && superiorId) {
+      // Funcionário do escritório → tem salas próprias; contadorId indica de qual escritório é
+      role       = 'ACCOUNTANT';
+      contadorId = superiorId;
+      memberType = 'FUNCIONARIO';
+      // sub permanece como ID do próprio funcionário (não substituímos por superiorId)
+    }
 
     if (!['CLIENT', 'ACCOUNTANT', 'ADMIN'].includes(role)) {
       return { ok: false, status: 403, mensagem: 'Acesso negado.' };
     }
 
-    return { ok: true, payload: { sub, role: role as JWTInfo['role'], nome: (payload.nome as string) ?? 'Usuário' } };
+    return {
+      ok: true,
+      payload: {
+        sub,
+        role: role as JWTInfo['role'],
+        nome: (payload.nome as string) ?? 'Usuário',
+        contadorId,
+        memberType,
+      },
+    };
   } catch {
     return { ok: false, status: 401, mensagem: 'Token inválido.' };
   }
