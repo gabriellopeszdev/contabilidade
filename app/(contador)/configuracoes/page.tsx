@@ -29,6 +29,8 @@ import {
   XCircle,
   Check,
   Lock,
+  Plug,
+  KeyRound,
 } from 'lucide-react';
 
 import { useAuth } from '../../../src/presentation/hooks/useAuth';
@@ -38,7 +40,7 @@ import { validarEmail, validarTelefone, mascararTelefone } from '../../../src/ut
 // Tipos
 // =============================================================================
 
-type Aba = 'perfil' | 'seguranca' | 'escritorio' | 'white-label' | 'privacidade' | 'assinatura';
+type Aba = 'perfil' | 'seguranca' | 'escritorio' | 'white-label' | 'privacidade' | 'assinatura' | 'integracoes';
 
 interface PerfilForm {
   nome:  string;
@@ -78,12 +80,13 @@ interface Toast {
 // =============================================================================
 
 const ABAS: { id: Aba; label: string; icon: React.ReactNode }[] = [
-  { id: 'perfil',      label: 'Perfil',      icon: <User        size={18} /> },
-  { id: 'seguranca',   label: 'Segurança',   icon: <Shield      size={18} /> },
-  { id: 'escritorio',  label: 'Escritório',  icon: <Building2   size={18} /> },
-  { id: 'white-label', label: 'White Label', icon: <Palette     size={18} /> },
-  { id: 'privacidade', label: 'Privacidade', icon: <ShieldCheck size={18} /> },
-  { id: 'assinatura',  label: 'Assinatura',  icon: <CreditCard  size={18} /> },
+  { id: 'perfil',       label: 'Perfil',       icon: <User        size={18} /> },
+  { id: 'seguranca',    label: 'Segurança',    icon: <Shield      size={18} /> },
+  { id: 'escritorio',   label: 'Escritório',   icon: <Building2   size={18} /> },
+  { id: 'white-label',  label: 'White Label',  icon: <Palette     size={18} /> },
+  { id: 'privacidade',  label: 'Privacidade',  icon: <ShieldCheck size={18} /> },
+  { id: 'assinatura',   label: 'Assinatura',   icon: <CreditCard  size={18} /> },
+  { id: 'integracoes',  label: 'Integrações',  icon: <Plug        size={18} /> },
 ];
 
 // =============================================================================
@@ -214,6 +217,13 @@ export default function ConfiguracoesPage() {
           )}
           {abaAtiva === 'assinatura' && (
             <AssinaturaTab
+              token={token}
+              onSucesso={(msg) => mostrarToast('sucesso', msg)}
+              onErro={(msg) => mostrarToast('erro', msg)}
+            />
+          )}
+          {abaAtiva === 'integracoes' && (
+            <IntegracoesTab
               token={token}
               onSucesso={(msg) => mostrarToast('sucesso', msg)}
               onErro={(msg) => mostrarToast('erro', msg)}
@@ -1741,6 +1751,363 @@ function AssinaturaTab({
             Ver planos disponíveis
           </a>
         </div>
+      )}
+    </div>
+  );
+}
+
+// =============================================================================
+// Tab: Integrações
+// =============================================================================
+
+function IntegracoesTab({
+  token,
+  onSucesso,
+  onErro,
+}: {
+  token:    string | null;
+  onSucesso: (msg: string) => void;
+  onErro:    (msg: string) => void;
+}) {
+  // Asaas
+  const [asaasKey,        setAsaasKey]        = useState('');
+  const [asaasConectado,  setAsaasConectado]  = useState(false);
+  const [asaasEmpresa,    setAsaasEmpresa]    = useState<string | null>(null);
+  const [mostrarAsaasKey, setMostrarAsaasKey] = useState(false);
+  const [salvandoAsaas,   setSalvandoAsaas]   = useState(false);
+
+  // Cora
+  const [coraClientId,   setCoraClientId]   = useState('');
+  const [coraCertPem,    setCoraCertPem]    = useState('');
+  const [coraPrivKeyPem, setCoraPrivKeyPem] = useState('');
+  const [coraConectada,  setCoraConectada]  = useState(false);
+  const [salvandoCora,   setSalvandoCora]   = useState(false);
+
+  const [carregando, setCarregando] = useState(true);
+
+  // integração ativa: 'asaas' | 'cora' | null — apenas uma pode estar ativa
+  const integracaoAtiva: 'asaas' | 'cora' | null =
+    asaasConectado ? 'asaas' : coraConectada ? 'cora' : null;
+
+  // ---------------------------------------------------------------------------
+  // Carregar estado atual
+  // ---------------------------------------------------------------------------
+  useEffect(() => {
+    if (!token) return;
+    fetch('/api/v1/escritorio/integracao', { headers: { Authorization: `Bearer ${token}` } })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d: { asaas?: { configurado: boolean }; cora?: { configurado: boolean; clientId: string | null } } | null) => {
+        if (d?.asaas?.configurado) setAsaasConectado(true);
+        if (d?.cora?.configurado) {
+          setCoraConectada(true);
+          setCoraClientId(d.cora.clientId ?? '');
+        }
+      })
+      .catch(() => {})
+      .finally(() => setCarregando(false));
+  }, [token]);
+
+  // ---------------------------------------------------------------------------
+  // Salvar integração Asaas (o backend zera a Cora automaticamente)
+  // ---------------------------------------------------------------------------
+  const salvarAsaas = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!token || salvandoAsaas) return;
+    setSalvandoAsaas(true);
+    try {
+      const res = await fetch('/api/v1/escritorio/integracao', {
+        method:  'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body:    JSON.stringify({ asaasApiKey: asaasKey }),
+      });
+      const data = await res.json() as { ok?: boolean; configurado?: boolean; nomeEmpresaAsaas?: string; message?: string };
+      if (!res.ok) { onErro(data.message ?? 'Erro ao conectar com Asaas.'); return; }
+      setAsaasConectado(data.configurado ?? false);
+      setAsaasEmpresa(data.nomeEmpresaAsaas ?? null);
+      setAsaasKey('');
+      // Cora foi zerada no backend — reflete no estado local
+      setCoraConectada(false);
+      setCoraClientId('');
+      onSucesso('Asaas conectado com sucesso!');
+    } catch {
+      onErro('Erro ao conectar com Asaas.');
+    } finally {
+      setSalvandoAsaas(false);
+    }
+  };
+
+  const removerAsaas = async () => {
+    if (!token || salvandoAsaas) return;
+    setSalvandoAsaas(true);
+    try {
+      const res = await fetch('/api/v1/escritorio/integracao', {
+        method:  'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body:    JSON.stringify({ asaasApiKey: '' }),
+      });
+      if (!res.ok) { onErro('Erro ao remover chave Asaas.'); return; }
+      setAsaasConectado(false);
+      setAsaasEmpresa(null);
+      onSucesso('Integração Asaas removida.');
+    } catch {
+      onErro('Erro ao remover chave Asaas.');
+    } finally {
+      setSalvandoAsaas(false);
+    }
+  };
+
+  // ---------------------------------------------------------------------------
+  // Salvar integração Cora (o backend zera o Asaas automaticamente)
+  // ---------------------------------------------------------------------------
+  const salvarCora = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!token || salvandoCora) return;
+    if (!coraClientId.trim() || !coraCertPem.trim() || !coraPrivKeyPem.trim()) {
+      onErro('Preencha todos os campos da Cora.');
+      return;
+    }
+    setSalvandoCora(true);
+    try {
+      const res = await fetch('/api/v1/escritorio/integracao/cora', {
+        method:  'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body:    JSON.stringify({ coraClientId, coraCertificatePem: coraCertPem, coraPrivateKeyPem: coraPrivKeyPem }),
+      });
+      const data = await res.json() as { ok?: boolean; message?: string };
+      if (!res.ok) { onErro(data.message ?? 'Erro ao salvar configuração Cora.'); return; }
+      setCoraConectada(true);
+      setCoraCertPem('');
+      setCoraPrivKeyPem('');
+      // Asaas foi zerado no backend — reflete no estado local
+      setAsaasConectado(false);
+      setAsaasEmpresa(null);
+      onSucesso('Cora configurada com sucesso!');
+    } catch {
+      onErro('Erro ao salvar configuração Cora.');
+    } finally {
+      setSalvandoCora(false);
+    }
+  };
+
+  const removerCora = async () => {
+    if (!token || salvandoCora) return;
+    setSalvandoCora(true);
+    try {
+      const res = await fetch('/api/v1/escritorio/integracao/cora', {
+        method:  'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body:    JSON.stringify({ coraClientId: '', coraCertificatePem: '', coraPrivateKeyPem: '' }),
+      });
+      if (!res.ok) { onErro('Erro ao remover integração Cora.'); return; }
+      setCoraClientId('');
+      setCoraConectada(false);
+      onSucesso('Integração Cora removida.');
+    } catch {
+      onErro('Erro ao remover integração Cora.');
+    } finally {
+      setSalvandoCora(false);
+    }
+  };
+
+  // ---------------------------------------------------------------------------
+  // Render
+  // ---------------------------------------------------------------------------
+  return (
+    <div className="space-y-6">
+
+      {/* Aviso de exclusividade */}
+      <div className="flex items-start gap-3 rounded-xl bg-amber-50 dark:bg-amber-900/15 border border-amber-200 dark:border-amber-800/40 px-4 py-3">
+        <AlertCircle size={15} className="text-amber-500 shrink-0 mt-0.5" />
+        <p className="text-xs text-amber-700 dark:text-amber-400 leading-relaxed">
+          <strong>Apenas uma integração de boleto pode estar ativa por vez.</strong>{' '}
+          Ao conectar Asaas ou Cora, a outra é removida automaticamente.
+        </p>
+      </div>
+
+      {carregando ? (
+        <div className="flex items-center gap-2 py-10 justify-center text-sm text-gray-400">
+          <Loader2 size={16} className="animate-spin" /> Carregando…
+        </div>
+      ) : (
+        <>
+          {/* ── Asaas ──────────────────────────────────────────────────────── */}
+          <div className={`bg-white dark:bg-gray-900 rounded-xl border p-6 space-y-5 transition-opacity ${
+            integracaoAtiva === 'cora' ? 'border-gray-200 dark:border-gray-700 opacity-50 pointer-events-none' : 'border-gray-200 dark:border-gray-700'
+          }`}>
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center shrink-0">
+                  <KeyRound size={18} className="text-blue-600 dark:text-blue-400" />
+                </div>
+                <div>
+                  <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Asaas</h2>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Cobrança automatizada e gestão financeira</p>
+                </div>
+              </div>
+              <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full ${
+                asaasConectado
+                  ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400'
+                  : integracaoAtiva === 'cora'
+                    ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
+              }`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${asaasConectado ? 'bg-emerald-500' : 'bg-gray-400'}`} />
+                {asaasConectado ? 'Conectado' : integracaoAtiva === 'cora' ? 'Indisponível' : 'Não configurado'}
+              </span>
+            </div>
+
+            {asaasConectado ? (
+              <div className="space-y-3">
+                {asaasEmpresa && (
+                  <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                    <CheckCircle2 size={14} className="text-emerald-500 shrink-0" />
+                    Conta conectada: <span className="font-medium text-gray-900 dark:text-gray-100">{asaasEmpresa}</span>
+                  </div>
+                )}
+                <button
+                  onClick={removerAsaas}
+                  disabled={salvandoAsaas}
+                  className="inline-flex items-center gap-2 rounded-lg border border-red-200 dark:border-red-800 px-3 py-1.5
+                             text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-50"
+                >
+                  {salvandoAsaas ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />}
+                  Remover integração
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={salvarAsaas} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Chave de API</label>
+                  <div className="relative">
+                    <input
+                      type={mostrarAsaasKey ? 'text' : 'password'}
+                      value={asaasKey}
+                      onChange={(e) => setAsaasKey(e.target.value)}
+                      placeholder="$aact_…"
+                      autoComplete="off"
+                      className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800
+                                 px-3 py-2 pr-10 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500
+                                 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setMostrarAsaasKey((v) => !v)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                    >
+                      {mostrarAsaasKey ? <EyeOff size={15} /> : <Eye size={15} />}
+                    </button>
+                  </div>
+                  <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
+                    Encontre sua chave em <strong>Asaas → Integrações → Chave de API</strong>.
+                  </p>
+                </div>
+                <button
+                  type="submit"
+                  disabled={salvandoAsaas || !asaasKey.trim()}
+                  className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white
+                             hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
+                >
+                  {salvandoAsaas ? <Loader2 size={14} className="animate-spin" /> : <Plug size={14} />}
+                  {salvandoAsaas ? 'Conectando…' : 'Conectar'}
+                </button>
+              </form>
+            )}
+          </div>
+
+          {/* ── Cora ───────────────────────────────────────────────────────── */}
+          <div className={`bg-white dark:bg-gray-900 rounded-xl border p-6 space-y-5 transition-opacity ${
+            integracaoAtiva === 'asaas' ? 'border-gray-200 dark:border-gray-700 opacity-50 pointer-events-none' : 'border-gray-200 dark:border-gray-700'
+          }`}>
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-violet-50 dark:bg-violet-900/20 flex items-center justify-center shrink-0">
+                  <KeyRound size={18} className="text-violet-600 dark:text-violet-400" />
+                </div>
+                <div>
+                  <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Cora</h2>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Conta digital para contadores — boletos e Pix</p>
+                </div>
+              </div>
+              <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full ${
+                coraConectada
+                  ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400'
+                  : integracaoAtiva === 'asaas'
+                    ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
+              }`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${coraConectada ? 'bg-emerald-500' : 'bg-gray-400'}`} />
+                {coraConectada ? 'Configurada' : integracaoAtiva === 'asaas' ? 'Indisponível' : 'Não configurada'}
+              </span>
+            </div>
+
+            {coraConectada ? (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                  <CheckCircle2 size={14} className="text-emerald-500 shrink-0" />
+                  Client ID: <code className="font-mono text-xs bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded">{coraClientId}</code>
+                </div>
+                <button
+                  onClick={removerCora}
+                  disabled={salvandoCora}
+                  className="inline-flex items-center gap-2 rounded-lg border border-red-200 dark:border-red-800 px-3 py-1.5
+                             text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-50"
+                >
+                  {salvandoCora ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />}
+                  Remover integração
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={salvarCora} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Client ID</label>
+                  <input
+                    type="text"
+                    value={coraClientId}
+                    onChange={(e) => setCoraClientId(e.target.value)}
+                    placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                    autoComplete="off"
+                    className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800
+                               px-3 py-2 text-sm font-mono text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500
+                               focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Certificado mTLS (PEM)</label>
+                  <textarea
+                    value={coraCertPem}
+                    onChange={(e) => setCoraCertPem(e.target.value)}
+                    rows={5}
+                    placeholder={"-----BEGIN CERTIFICATE-----\n…\n-----END CERTIFICATE-----"}
+                    className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800
+                               px-3 py-2 text-xs font-mono text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500
+                               focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow resize-y"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Chave Privada (PEM)</label>
+                  <textarea
+                    value={coraPrivKeyPem}
+                    onChange={(e) => setCoraPrivKeyPem(e.target.value)}
+                    rows={5}
+                    placeholder={"-----BEGIN PRIVATE KEY-----\n…\n-----END PRIVATE KEY-----"}
+                    className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800
+                               px-3 py-2 text-xs font-mono text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500
+                               focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow resize-y"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={salvandoCora || !coraClientId.trim() || !coraCertPem.trim() || !coraPrivKeyPem.trim()}
+                  className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white
+                             hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
+                >
+                  {salvandoCora ? <Loader2 size={14} className="animate-spin" /> : <Plug size={14} />}
+                  {salvandoCora ? 'Salvando…' : 'Salvar configuração'}
+                </button>
+              </form>
+            )}
+          </div>
+        </>
       )}
     </div>
   );

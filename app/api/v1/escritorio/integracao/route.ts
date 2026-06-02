@@ -8,6 +8,32 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 // =============================================================================
+// GET /api/v1/escritorio/integracao — Status das integrações configuradas
+// =============================================================================
+
+export const GET = withAuth(async (_req, _ctx, auth) => {
+  try {
+    const config = await prisma.configuracaoEscritorio.findUnique({
+      where:  { contadorId: auth.sub },
+      select: { asaasApiKey: true, coraClientId: true },
+    });
+
+    return NextResponse.json({
+      asaas: {
+        configurado:  Boolean(config?.asaasApiKey),
+      },
+      cora: {
+        configurado:  Boolean(config?.coraClientId),
+        clientId:     config?.coraClientId ?? null,
+      },
+    });
+  } catch (err) {
+    logger.error('[GET /escritorio/integracao] Erro', err instanceof Error ? err : undefined);
+    return NextResponse.json({ message: 'Erro interno.' }, { status: 500 });
+  }
+}, ['ACCOUNTANT']);
+
+// =============================================================================
 // PUT /api/v1/escritorio/integracao
 //
 // Salva (ou remove) a chave Asaas do próprio contador logado.
@@ -41,9 +67,13 @@ export const PUT = withAuth(async (req, _ctx, auth) => {
       }
     }
 
+    // Ao ativar Asaas, remove Cora (apenas uma integração de boleto por vez)
     await prisma.configuracaoEscritorio.upsert({
       where:  { contadorId: auth.sub },
-      update: { asaasApiKey: apiKey || null },
+      update: {
+        asaasApiKey:       apiKey || null,
+        ...(apiKey ? { coraClientId: null, coraCertificatePem: null, coraPrivateKeyPem: null } : {}),
+      },
       create: {
         contadorId:    auth.sub,
         nomeEscritorio: 'Escritório Contábil',
