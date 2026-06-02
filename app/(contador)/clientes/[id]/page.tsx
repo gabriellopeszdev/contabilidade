@@ -543,20 +543,20 @@ function ClienteDetalhesPageDono() {
       {/* ------------------------------------------------------------------ */}
       {/* Seção: Gerar Obrigações com IA                                       */}
       {/* ------------------------------------------------------------------ */}
+      {iaDisponivel !== false && (
       <div className="bg-white dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-700 shadow-sm p-5 sm:p-6">
         <div className="flex flex-col sm:flex-row sm:items-center gap-4">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <Sparkles size={16} className={iaDisponivel === false ? 'text-slate-400' : 'text-violet-500'} />
+              <Sparkles size={16} className="text-violet-500" />
               <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">
                 Calendário Fiscal com IA
               </h2>
-              {iaDisponivel === false && <Lock size={13} className="text-slate-400" />}
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400">
               Gere sugestões de obrigações fiscais para este cliente com base no regime tributário e CNAE.
             </p>
-            {iaDisponivel !== false && cliente && (!cliente.cnae || !cliente.regimeTributario) && (
+            {cliente && (!cliente.cnae || !cliente.regimeTributario) && (
               <div className="mt-2 flex items-start gap-1.5 text-amber-700 dark:text-amber-400">
                 <Info size={13} className="shrink-0 mt-0.5" />
                 <p className="text-xs">
@@ -569,34 +569,15 @@ function ClienteDetalhesPageDono() {
           <button
             type="button"
             onClick={handleGerarObrigacoesIA}
-            disabled={iaCarregando || iaCriando || iaDisponivel === false}
-            title={iaDisponivel === false ? 'Disponível apenas no plano Enterprise' : undefined}
+            disabled={iaCarregando || iaCriando}
             className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white
               bg-violet-600 hover:bg-violet-700 disabled:opacity-40 disabled:cursor-not-allowed
               rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
           >
-            {iaCarregando
-              ? <Loader2 size={15} className="animate-spin" />
-              : iaDisponivel === false ? <Lock size={15} /> : <Sparkles size={15} />
-            }
-            {iaCarregando ? 'Gerando…' : iaDisponivel === false ? 'Enterprise' : 'Gerar com IA'}
+            {iaCarregando ? <Loader2 size={15} className="animate-spin" /> : <Sparkles size={15} />}
+            {iaCarregando ? 'Gerando…' : 'Gerar com IA'}
           </button>
         </div>
-
-        {/* Card de upgrade para Calendário Fiscal IA */}
-        {iaDisponivel === false && (
-          <div className="mt-4 flex items-center gap-3 p-4 rounded-xl bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800">
-            <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-800 flex items-center justify-center shrink-0">
-              <Lock size={14} className="text-purple-600 dark:text-purple-300" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-purple-900 dark:text-purple-100">Recurso exclusivo Enterprise</p>
-              <p className="text-xs text-purple-700 dark:text-purple-300 mt-0.5">
-                O Calendário Fiscal com IA está disponível apenas no plano Enterprise.
-              </p>
-            </div>
-          </div>
-        )}
 
         {/* Erro da IA */}
         {iaErro && (
@@ -702,14 +683,16 @@ function ClienteDetalhesPageDono() {
           </div>
         )}
       </div>
+      )}
 
       {/* ------------------------------------------------------------------ */}
       {/* Seção: Chat por Cliente                                              */}
       {/* ------------------------------------------------------------------ */}
+      {iaDisponivel !== false && (
       <div className="bg-white dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-700 shadow-sm p-5 sm:p-6">
         {/* Header */}
         <div className="flex items-center gap-2 mb-1">
-          <MessageSquare size={16} className={iaDisponivel === false ? 'text-slate-400' : 'text-blue-500'} />
+          <MessageSquare size={16} className="text-blue-500" />
           <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">
             Chat por Cliente
           </h2>
@@ -719,26 +702,10 @@ function ClienteDetalhesPageDono() {
           Converse com a IA sobre a situação fiscal deste cliente. O contexto do cliente é incluído automaticamente.
         </p>
 
-        {(chatBloqueado || iaDisponivel === false) ? (
-          /* Upgrade card */
-          <div className="flex flex-col items-center gap-3 py-8 px-4 rounded-xl bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 text-center">
-            <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-800 flex items-center justify-center">
-              <Lock size={18} className="text-purple-600 dark:text-purple-300" />
-            </div>
-            <div>
-              <p className="text-sm font-bold text-purple-900 dark:text-purple-100">Recurso exclusivo Enterprise</p>
-              <p className="text-xs text-purple-700 dark:text-purple-300 mt-1 max-w-xs mx-auto">
-                O Chat por Cliente está disponível apenas no plano Enterprise. Faça upgrade para conversar com a IA sobre seus clientes.
-              </p>
-            </div>
-            <a
-              href="/configuracoes/planos"
-              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white
-                bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors"
-            >
-              <Sparkles size={13} />
-              Ver planos
-            </a>
+        {chatBloqueado ? (
+          <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-slate-50 dark:bg-gray-800 border border-slate-200 dark:border-gray-700">
+            <Lock size={13} className="text-slate-400 shrink-0" />
+            <p className="text-xs text-slate-500 dark:text-slate-400">Chat temporariamente indisponível.</p>
           </div>
         ) : (
           /* Mini chat UI */
@@ -819,20 +786,21 @@ function ClienteDetalhesPageDono() {
           </div>
         )}
       </div>
+      )}
 
       {/* ------------------------------------------------------------------ */}
       {/* Seção: Sugestão de Regime Tributário                                 */}
       {/* ------------------------------------------------------------------ */}
+      {iaDisponivel !== false && (
       <div className="bg-white dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-700 shadow-sm p-5 sm:p-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-4">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <TrendingUp size={16} className={iaDisponivel === false ? 'text-slate-400' : 'text-emerald-500'} />
+              <TrendingUp size={16} className="text-emerald-500" />
               <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">
                 Sugestão de Regime Tributário
               </h2>
-              {iaDisponivel === false && <Lock size={13} className="text-slate-400" />}
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400">
               A IA analisa o perfil do cliente e recomenda o regime tributário mais adequado com vantagens, desvantagens e alertas.
@@ -842,40 +810,21 @@ function ClienteDetalhesPageDono() {
           <button
             type="button"
             onClick={() => void handleAnalisarRegime()}
-            disabled={regimeCarregando || iaDisponivel === false}
-            title={iaDisponivel === false ? 'Disponível apenas no plano Enterprise' : undefined}
+            disabled={regimeCarregando}
             className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white
               bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed
               rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
           >
-            {regimeCarregando
-              ? <Loader2 size={15} className="animate-spin" />
-              : <TrendingUp size={15} />
-            }
+            {regimeCarregando ? <Loader2 size={15} className="animate-spin" /> : <TrendingUp size={15} />}
             {regimeCarregando ? 'Analisando…' : 'Analisar Regime com IA'}
           </button>
         </div>
 
-        {/* Upgrade card */}
-        {(regimeBloqueado || iaDisponivel === false) && (
-          <div className="mt-4 flex flex-col items-center gap-3 py-8 px-4 rounded-xl bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 text-center">
-            <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-800 flex items-center justify-center">
-              <Lock size={18} className="text-purple-600 dark:text-purple-300" />
-            </div>
-            <div>
-              <p className="text-sm font-bold text-purple-900 dark:text-purple-100">Recurso exclusivo Enterprise</p>
-              <p className="text-xs text-purple-700 dark:text-purple-300 mt-1 max-w-xs mx-auto">
-                A Sugestão de Regime Tributário está disponível apenas no plano Enterprise. Faça upgrade para acessar análises fiscais avançadas.
-              </p>
-            </div>
-            <a
-              href="/configuracoes/planos"
-              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white
-                bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors"
-            >
-              <Sparkles size={13} />
-              Ver planos
-            </a>
+        {/* Aviso quando bloqueado por outro motivo */}
+        {regimeBloqueado && (
+          <div className="mt-3 flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-slate-50 dark:bg-gray-800 border border-slate-200 dark:border-gray-700">
+            <Lock size={13} className="text-slate-400 shrink-0" />
+            <p className="text-xs text-slate-500 dark:text-slate-400">Análise temporariamente indisponível.</p>
           </div>
         )}
 
@@ -963,6 +912,7 @@ function ClienteDetalhesPageDono() {
           </div>
         )}
       </div>
+      )}
 
       {/* ------------------------------------------------------------------ */}
       {/* Filtros                                                              */}

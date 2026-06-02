@@ -1,9 +1,21 @@
 'use client';
 
-import { useState, useCallback, useRef, useEffect, DragEvent, ChangeEvent } from 'react';
-import { Upload, FileText, AlertTriangle, CheckCircle2, Loader2, X, Sparkles, Lock, Trash2, ChevronRight, Building2, Package } from 'lucide-react';
+import { useState, useCallback, useEffect } from 'react';
+import {
+  FileCode2,
+  FileText,
+  AlertTriangle,
+  Loader2,
+  X,
+  Download,
+  Building2,
+  Package,
+  RefreshCw,
+  Search,
+  ChevronRight,
+} from 'lucide-react';
 
-import { useAuth } from '../../../src/presentation/hooks/useAuth';
+import { useAuth }         from '../../../src/presentation/hooks/useAuth';
 import type { NFeParseResult } from '../../../src/utils/nfeParser';
 
 // =============================================================================
@@ -15,6 +27,17 @@ interface ResultadoArquivo {
   ok:          boolean;
   dados?:      NFeParseResult;
   erro?:       string;
+}
+
+interface ItemRecebido {
+  id:        string;
+  fileName:  string;
+  createdAt: string;
+  cliente: {
+    id:   string;
+    name: string;
+    cnpj: string;
+  };
 }
 
 // =============================================================================
@@ -39,105 +62,13 @@ function formatarCNPJ(doc: string): string {
 function formatarData(iso: string): string {
   if (!iso) return '—';
   try {
-    return new Date(iso).toLocaleDateString('pt-BR');
+    return new Date(iso).toLocaleDateString('pt-BR', {
+      day: '2-digit', month: '2-digit', year: 'numeric',
+      hour: '2-digit', minute: '2-digit',
+    });
   } catch {
     return iso;
   }
-}
-
-// =============================================================================
-// Sub-componente: Dropzone
-// =============================================================================
-
-interface DropzoneProps {
-  onArquivos: (files: File[]) => void;
-  carregando: boolean;
-}
-
-function Dropzone({ onArquivos, carregando }: DropzoneProps) {
-  const [arrastando, setArrastando] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  const processarArquivos = useCallback((files: FileList | null) => {
-    if (!files || files.length === 0) return;
-    const xmls = Array.from(files).filter((f) =>
-      f.name.toLowerCase().endsWith('.xml') ||
-      f.type === 'application/xml' ||
-      f.type === 'text/xml'
-    );
-    if (xmls.length > 0) onArquivos(xmls);
-  }, [onArquivos]);
-
-  const onDragOver = (e: DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setArrastando(true);
-  };
-
-  const onDragLeave = (e: DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setArrastando(false);
-  };
-
-  const onDrop = (e: DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setArrastando(false);
-    processarArquivos(e.dataTransfer.files);
-  };
-
-  const onChange = (e: ChangeEvent<HTMLInputElement>) => {
-    processarArquivos(e.target.files);
-    // Reset input so the same file can be re-selected
-    e.target.value = '';
-  };
-
-  return (
-    <div
-      role="button"
-      tabIndex={0}
-      aria-label="Selecionar arquivos XML de NF-e"
-      onDragOver={onDragOver}
-      onDragLeave={onDragLeave}
-      onDrop={onDrop}
-      onClick={() => !carregando && inputRef.current?.click()}
-      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') inputRef.current?.click(); }}
-      className={`
-        flex flex-col items-center justify-center gap-3 p-10 rounded-xl
-        border-2 border-dashed transition-colors cursor-pointer select-none
-        ${arrastando
-          ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-          : 'border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-900/10'
-        }
-        ${carregando ? 'opacity-60 cursor-not-allowed pointer-events-none' : ''}
-      `}
-    >
-      {carregando ? (
-        <Loader2 size={36} className="text-blue-500 animate-spin" />
-      ) : (
-        <Upload size={36} className={arrastando ? 'text-blue-500' : 'text-gray-400 dark:text-gray-500'} />
-      )}
-
-      <div className="text-center">
-        <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-          {carregando ? 'Processando arquivos…' : 'Arraste XMLs de NF-e aqui ou clique para selecionar'}
-        </p>
-        {!carregando && (
-          <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-            Aceita arquivos .xml — máx. 20 arquivos, 2 MB cada
-          </p>
-        )}
-      </div>
-
-      <input
-        ref={inputRef}
-        type="file"
-        accept=".xml,application/xml,text/xml"
-        multiple
-        className="sr-only"
-        onChange={onChange}
-        disabled={carregando}
-      />
-    </div>
-  );
 }
 
 // =============================================================================
@@ -163,7 +94,6 @@ function TipoBadge({ tipo }: { tipo: 'entrada' | 'saida' }) {
 function ModalDetalheNFe({ resultado, onFechar }: { resultado: ResultadoArquivo; onFechar: () => void }) {
   const d = resultado.dados!;
 
-  // Fecha com Escape
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onFechar(); };
     window.addEventListener('keydown', handler);
@@ -326,295 +256,292 @@ function ModalDetalheNFe({ resultado, onFechar }: { resultado: ResultadoArquivo;
 }
 
 // =============================================================================
-// Página principal: /nfe — Importar NF-e
+// Página principal: /nfe — NF-e dos Clientes
 // =============================================================================
 
 export default function NfePage() {
   const { getToken } = useAuth();
 
-  const [carregando,     setCarregando]     = useState(false);
-  const [resultados,     setResultados]     = useState<ResultadoArquivo[]>([]);
-  const [erroGlobal,     setErroGlobal]     = useState<string | null>(null);
+  const [xmls,          setXmls]          = useState<ItemRecebido[]>([]);
+  const [carregando,    setCarregando]    = useState(true);
+  const [erro,          setErro]          = useState<string | null>(null);
   const [nfeSelecionada, setNfeSelecionada] = useState<ResultadoArquivo | null>(null);
-
-  const [analiseIa, setAnaliseIa]             = useState<{
-    resumo:              string;
-    totalEntradas:       number;
-    totalSaidas:         number;
-    valorTotalEntradas:  number;
-    valorTotalSaidas:    number;
-    alertas:             { tipo: 'warning' | 'info' | 'error'; mensagem: string }[];
-    observacoes:         string[];
-  } | null>(null);
-  const [analiseCarregando, setAnaliseCarregando] = useState(false);
-  const [analiseErro, setAnaliseErro]             = useState<string | null>(null);
-  const [analiseBloqueado, setAnaliseBloqueado]   = useState(false);
+  const [visualizandoId, setVisualizandoId] = useState<string | null>(null);
+  const [baixandoId,    setBaixandoId]    = useState<string | null>(null);
+  const [busca,         setBusca]         = useState('');
 
   // ---------------------------------------------------------------------------
-  // Upload e parse
+  // Carregar lista de XMLs recebidos
   // ---------------------------------------------------------------------------
 
-  const processarArquivos = useCallback(async (arquivos: File[]) => {
+  const carregarLista = useCallback(async () => {
     setCarregando(true);
-    setErroGlobal(null);
-
-    let token: string;
+    setErro(null);
     try {
-      token = await getToken();
-    } catch {
-      setErroGlobal('Sessão expirada. Faça login novamente.');
-      setCarregando(false);
-      return;
-    }
-
-    const form = new FormData();
-    for (const arquivo of arquivos) {
-      form.append('arquivos', arquivo);
-    }
-
-    try {
-      const res = await fetch('/api/v1/nfe/importar', {
-        method:  'POST',
+      const token = await getToken();
+      const res = await fetch('/api/v1/nfe/recebidas', {
         headers: { Authorization: `Bearer ${token}` },
-        body:    form,
       });
-
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({})) as { error?: string };
-        setErroGlobal(body.error ?? `Erro ${res.status} ao processar os arquivos.`);
-        return;
-      }
-
-      const data = await res.json() as { resultados: ResultadoArquivo[] };
-      // Acumula novos resultados sem apagar os anteriores
-      setResultados((prev) => [...prev, ...data.resultados]);
-    } catch (err) {
-      setErroGlobal(err instanceof Error ? err.message : 'Erro de rede ao enviar os arquivos.');
+      if (!res.ok) throw new Error(`Erro ${res.status}`);
+      const data = await res.json() as { items: ItemRecebido[] };
+      setXmls(data.items);
+    } catch {
+      setErro('Não foi possível carregar as NF-es dos clientes. Tente novamente.');
     } finally {
       setCarregando(false);
     }
   }, [getToken]);
 
+  useEffect(() => { void carregarLista(); }, [carregarLista]);
+
   // ---------------------------------------------------------------------------
-  // Análise com IA
+  // Visualizar: baixa o XML e abre o modal com os dados parseados
   // ---------------------------------------------------------------------------
 
-  const analisarComIA = useCallback(async () => {
-    if (resultados.length === 0) return;
-    const nfes = resultados
-      .filter((r) => r.ok && r.dados)
-      .map((r) => ({
-        numero:       r.dados!.numero,
-        dataEmissao:  r.dados!.dataEmissao,
-        emitente:     r.dados!.emitente,
-        destinatario: r.dados!.destinatario,
-        valorTotal:   r.dados!.valorTotal,
-        impostos:     r.dados!.impostos,
-        tipo:         r.dados!.tipo,
-      }));
-
-    if (nfes.length === 0) return;
-
-    setAnaliseCarregando(true);
-    setAnaliseErro(null);
-    setAnaliseIa(null);
-
-    let token: string;
+  const handleVisualizar = useCallback(async (item: ItemRecebido) => {
+    setVisualizandoId(item.id);
     try {
-      token = await getToken();
-    } catch {
-      setAnaliseErro('Sessão expirada. Faça login novamente.');
-      setAnaliseCarregando(false);
-      return;
-    }
+      const token = await getToken();
 
-    try {
-      const res = await fetch('/api/v1/nfe/analisar', {
-        method:  'POST',
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ nfes }),
+      const dlRes = await fetch(`/api/v1/documentos/${item.id}/download`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
-      const body = await res.json() as { analise?: typeof analiseIa; message?: string };
-      if (res.status === 403 && body.message?.includes('Enterprise')) {
-        setAnaliseBloqueado(true);
-        return;
-      }
-      if (!res.ok) { setAnaliseErro(body.message ?? `Erro HTTP ${res.status}`); return; }
-      setAnaliseIa(body.analise ?? null);
-    } catch {
-      setAnaliseErro('Erro de conexão. Tente novamente.');
+      if (!dlRes.ok) return;
+      const blob = await dlRes.blob();
+
+      const form = new FormData();
+      form.append('arquivos', new File([blob], item.fileName, { type: 'application/xml' }));
+
+      const parseRes = await fetch('/api/v1/nfe/importar', {
+        method:  'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body:    form,
+      });
+      if (!parseRes.ok) return;
+      const data = await parseRes.json() as { resultados: ResultadoArquivo[] };
+      if (data.resultados?.[0]) setNfeSelecionada(data.resultados[0]);
     } finally {
-      setAnaliseCarregando(false);
+      setVisualizandoId(null);
     }
-  }, [resultados, getToken]);
+  }, [getToken]);
 
   // ---------------------------------------------------------------------------
-  // Estatísticas dos resultados
+  // Baixar: salva o XML no disco
   // ---------------------------------------------------------------------------
-  const totalOk     = resultados.filter((r) => r.ok).length;
-  const totalErro   = resultados.filter((r) => !r.ok).length;
 
-  const limparTudo = useCallback(() => {
-    setResultados([]);
-    setAnaliseIa(null);
-    setAnaliseErro(null);
-    setAnaliseBloqueado(false);
-    setErroGlobal(null);
-  }, []);
+  const handleBaixar = useCallback(async (item: ItemRecebido) => {
+    setBaixandoId(item.id);
+    try {
+      const token = await getToken();
+      const res = await fetch(`/api/v1/documentos/${item.id}/download`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) return;
+      const blob = await res.blob();
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href     = url;
+      a.download = item.fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } finally {
+      setBaixandoId(null);
+    }
+  }, [getToken]);
+
+  // ---------------------------------------------------------------------------
+  // Filtro por busca
+  // ---------------------------------------------------------------------------
+
+  const xmlsFiltrados = busca.trim()
+    ? xmls.filter((x) =>
+        x.cliente.name.toLowerCase().includes(busca.toLowerCase()) ||
+        x.fileName.toLowerCase().includes(busca.toLowerCase())
+      )
+    : xmls;
 
   // ---------------------------------------------------------------------------
   // Render
   // ---------------------------------------------------------------------------
+
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
 
       {/* ------------------------------------------------------------------ */}
       {/* Header                                                               */}
       {/* ------------------------------------------------------------------ */}
-      <div>
+      <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-            <FileText size={18} className="text-blue-600 dark:text-blue-400" />
+            <FileCode2 size={18} className="text-blue-600 dark:text-blue-400" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">Importar NF-e</h1>
+            <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">NF-e dos Clientes</h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Faça upload de XMLs de Nota Fiscal Eletrônica para extrair dados fiscais
+              XMLs enviados pelos seus clientes para importar no DPComp
             </p>
           </div>
         </div>
+        <button
+          onClick={() => void carregarLista()}
+          disabled={carregando}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400
+            hover:text-gray-700 dark:hover:text-gray-200 border border-gray-200 dark:border-gray-700
+            hover:border-gray-300 dark:hover:border-gray-600 rounded-lg transition-colors disabled:opacity-50"
+        >
+          <RefreshCw size={13} className={carregando ? 'animate-spin' : ''} />
+          Atualizar
+        </button>
       </div>
 
       {/* ------------------------------------------------------------------ */}
-      {/* Dropzone                                                             */}
+      {/* Busca                                                                */}
       {/* ------------------------------------------------------------------ */}
-      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
-        <Dropzone onArquivos={processarArquivos} carregando={carregando} />
+      <div className="relative max-w-sm">
+        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+        <input
+          type="text"
+          value={busca}
+          onChange={(e) => setBusca(e.target.value)}
+          placeholder="Buscar por cliente ou arquivo…"
+          className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700
+            bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100
+            placeholder:text-gray-400 dark:placeholder:text-gray-500
+            focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+        />
       </div>
 
       {/* ------------------------------------------------------------------ */}
-      {/* Erro global                                                          */}
+      {/* Erro                                                                 */}
       {/* ------------------------------------------------------------------ */}
-      {erroGlobal && (
+      {erro && (
         <div className="flex items-start gap-3 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
-          <AlertTriangle size={18} className="text-red-500 shrink-0 mt-0.5" />
-          <p className="text-sm text-red-700 dark:text-red-400 flex-1">{erroGlobal}</p>
-          <button onClick={() => setErroGlobal(null)} className="text-red-400 hover:text-red-600 dark:hover:text-red-300">
-            <X size={16} />
+          <AlertTriangle size={16} className="text-red-500 shrink-0 mt-0.5" />
+          <p className="text-sm text-red-700 dark:text-red-400 flex-1">{erro}</p>
+          <button onClick={() => setErro(null)} className="text-red-400 hover:text-red-600">
+            <X size={15} />
           </button>
         </div>
       )}
 
       {/* ------------------------------------------------------------------ */}
-      {/* Resumo dos resultados                                                */}
+      {/* Conteúdo principal                                                   */}
       {/* ------------------------------------------------------------------ */}
-      {resultados.length > 0 && (
-        <div className="flex items-center gap-4 flex-wrap">
-          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-            <span className="font-semibold text-gray-900 dark:text-gray-100">{resultados.length}</span> arquivo(s) processado(s)
+      {carregando ? (
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-16 flex flex-col items-center gap-3">
+          <Loader2 size={28} className="animate-spin text-blue-500" />
+          <p className="text-sm text-gray-500 dark:text-gray-400">Carregando NF-es…</p>
+        </div>
+      ) : xmlsFiltrados.length === 0 ? (
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-16 flex flex-col items-center gap-3 text-center">
+          <FileCode2 size={36} className="text-gray-300 dark:text-gray-700" />
+          <div>
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+              {busca ? 'Nenhum resultado para a busca' : 'Nenhum XML recebido ainda'}
+            </p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+              {busca
+                ? 'Tente buscar por outro nome de cliente ou arquivo.'
+                : 'Quando um cliente enviar um arquivo XML, ele aparecerá aqui.'}
+            </p>
           </div>
-          {totalOk > 0 && (
-            <span className="flex items-center gap-1.5 text-sm text-emerald-700 dark:text-emerald-400">
-              <CheckCircle2 size={14} />
-              {totalOk} com sucesso
-            </span>
+          {busca && (
+            <button
+              onClick={() => setBusca('')}
+              className="text-xs font-medium text-blue-600 dark:text-blue-400 hover:underline"
+            >
+              Limpar busca
+            </button>
           )}
-          {totalErro > 0 && (
-            <span className="flex items-center gap-1.5 text-sm text-red-600 dark:text-red-400">
-              <AlertTriangle size={14} />
-              {totalErro} com erro
-            </span>
-          )}
-          <button
-            onClick={limparTudo}
-            className="ml-auto flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 border border-gray-200 dark:border-gray-700 rounded-lg transition-colors"
-          >
-            <Trash2 size={12} />
-            Limpar tudo
-          </button>
         </div>
-      )}
-
-      {/* ------------------------------------------------------------------ */}
-      {/* Tabela de resultados                                                 */}
-      {/* ------------------------------------------------------------------ */}
-      {resultados.length > 0 && (
+      ) : (
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+          <div className="px-4 py-2.5 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
+            <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+              {xmlsFiltrados.length} arquivo(s)
+            </span>
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-950">
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide whitespace-nowrap">NF número / Série</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide whitespace-nowrap">Data</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide whitespace-nowrap">Emitente</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide whitespace-nowrap">Destinatário</th>
-                  <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide whitespace-nowrap">Valor Total</th>
-                  <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide whitespace-nowrap">ICMS</th>
-                  <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide whitespace-nowrap">Tipo</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Cliente</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Arquivo</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide whitespace-nowrap">Recebido em</th>
+                  <th className="px-4 py-3" />
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
-                {resultados.map((resultado, idx) => (
-                  resultado.ok && resultado.dados ? (
-                    <tr
-                      key={idx}
-                      onClick={() => setNfeSelecionada(resultado)}
-                      className="hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-colors cursor-pointer group"
-                    >
-                      <td className="px-4 py-3">
-                        <div className="font-medium text-gray-900 dark:text-gray-100 flex items-center gap-1">
-                          {resultado.dados.numero || '—'}
-                          {resultado.dados.serie ? <span className="text-gray-400"> / {resultado.dados.serie}</span> : null}
-                          <ChevronRight size={12} className="text-gray-300 dark:text-gray-600 group-hover:text-blue-400 transition-colors ml-0.5" />
+                {xmlsFiltrados.map((item) => (
+                  <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
+                    {/* Cliente */}
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
+                          <Building2 size={13} className="text-blue-600 dark:text-blue-400" />
                         </div>
-                        <div className="text-xs text-gray-400 dark:text-gray-500 truncate max-w-[200px]" title={resultado.nomeArquivo}>
-                          {resultado.nomeArquivo}
+                        <div>
+                          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{item.cliente.name}</p>
+                          <p className="text-xs text-gray-400 dark:text-gray-500">{formatarCNPJ(item.cliente.cnpj)}</p>
                         </div>
-                      </td>
-                      <td className="px-4 py-3 text-gray-700 dark:text-gray-300 whitespace-nowrap">
-                        {formatarData(resultado.dados.dataEmissao)}
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="font-medium text-gray-900 dark:text-gray-100 max-w-[180px] truncate" title={resultado.dados.emitente.nome}>
-                          {resultado.dados.emitente.nome || '—'}
-                        </div>
-                        <div className="text-xs text-gray-400 dark:text-gray-500">
-                          {resultado.dados.emitente.cnpj ? formatarCNPJ(resultado.dados.emitente.cnpj) : ''}
-                          {resultado.dados.emitente.uf ? ` · ${resultado.dados.emitente.uf}` : ''}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="font-medium text-gray-900 dark:text-gray-100 max-w-[180px] truncate" title={resultado.dados.destinatario.nome}>
-                          {resultado.dados.destinatario.nome || '—'}
-                        </div>
-                        <div className="text-xs text-gray-400 dark:text-gray-500">
-                          {resultado.dados.destinatario.cnpjOuCpf
-                            ? formatarCNPJ(resultado.dados.destinatario.cnpjOuCpf)
-                            : ''}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-right font-semibold text-gray-900 dark:text-gray-100 whitespace-nowrap">
-                        {formatarBRL(resultado.dados.valorTotal)}
-                      </td>
-                      <td className="px-4 py-3 text-right text-gray-700 dark:text-gray-300 whitespace-nowrap">
-                        {formatarBRL(resultado.dados.impostos.icms)}
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        <TipoBadge tipo={resultado.dados.tipo} />
-                      </td>
-                    </tr>
-                  ) : (
-                    <tr key={idx} className="bg-red-50/50 dark:bg-red-950/20">
-                      <td colSpan={7} className="px-4 py-3">
-                        <div className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400">
-                          <AlertTriangle size={14} className="shrink-0" />
-                          <span className="font-medium">{resultado.nomeArquivo}</span>
-                          <span className="text-red-400 dark:text-red-500">—</span>
-                          <span>{resultado.erro ?? 'Erro desconhecido'}</span>
-                        </div>
-                      </td>
-                    </tr>
-                  )
+                      </div>
+                    </td>
+
+                    {/* Arquivo */}
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <FileCode2 size={14} className="text-gray-400 dark:text-gray-500 shrink-0" />
+                        <span className="text-sm text-gray-700 dark:text-gray-300 max-w-[240px] truncate" title={item.fileName}>
+                          {item.fileName}
+                        </span>
+                      </div>
+                    </td>
+
+                    {/* Data */}
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                      {formatarData(item.createdAt)}
+                    </td>
+
+                    {/* Ações */}
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2 justify-end">
+                        {/* Ver detalhes */}
+                        <button
+                          type="button"
+                          onClick={() => void handleVisualizar(item)}
+                          disabled={visualizandoId === item.id || baixandoId === item.id}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium
+                            text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400
+                            border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-700
+                            rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {visualizandoId === item.id
+                            ? <Loader2 size={12} className="animate-spin" />
+                            : <ChevronRight size={12} />
+                          }
+                          Ver detalhes
+                        </button>
+
+                        {/* Baixar */}
+                        <button
+                          type="button"
+                          onClick={() => void handleBaixar(item)}
+                          disabled={baixandoId === item.id || visualizandoId === item.id}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white
+                            bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors
+                            disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {baixandoId === item.id
+                            ? <Loader2 size={12} className="animate-spin" />
+                            : <Download size={12} />
+                          }
+                          Baixar
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
                 ))}
               </tbody>
             </table>
@@ -622,106 +549,8 @@ export default function NfePage() {
         </div>
       )}
 
-      {/* ------------------------------------------------------------------ */}
-      {/* Análise Fiscal com IA                                               */}
-      {/* ------------------------------------------------------------------ */}
-      {totalOk > 0 && (
-        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
-          <div className="flex items-center justify-between flex-wrap gap-3">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <Sparkles size={16} className="text-violet-500" />
-                <h2 className="text-sm font-bold text-gray-900 dark:text-gray-100">Análise Fiscal com IA</h2>
-              </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                Analise {totalOk} NF-e(s) importada(s) com inteligência artificial para identificar inconsistências e oportunidades.
-              </p>
-            </div>
-            <button
-              onClick={analisarComIA}
-              disabled={analiseCarregando}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-violet-600 hover:bg-violet-700 disabled:opacity-60 disabled:cursor-not-allowed rounded-lg transition-colors"
-            >
-              {analiseCarregando ? <Loader2 size={15} className="animate-spin" /> : <Sparkles size={15} />}
-              {analiseCarregando ? 'Analisando…' : 'Analisar com IA'}
-            </button>
-          </div>
-
-          {/* Upgrade/locked */}
-          {analiseBloqueado && (
-            <div className="mt-4 flex items-center gap-3 p-4 rounded-xl bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800">
-              <Lock size={18} className="text-purple-500 shrink-0" />
-              <div>
-                <p className="text-sm font-semibold text-purple-800 dark:text-purple-300">Plano Enterprise necessário</p>
-                <p className="text-xs text-purple-600 dark:text-purple-400">A Análise IA de NF-e está disponível apenas no plano Enterprise.</p>
-              </div>
-            </div>
-          )}
-
-          {/* Erro */}
-          {analiseErro && (
-            <div className="mt-4 flex items-start gap-2 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
-              <AlertTriangle size={15} className="text-red-500 mt-0.5 shrink-0" />
-              <p className="text-sm text-red-700 dark:text-red-400">{analiseErro}</p>
-            </div>
-          )}
-
-          {/* Resultado */}
-          {analiseIa && (
-            <div className="mt-4 space-y-4">
-              <p className="text-sm text-gray-700 dark:text-gray-300">{analiseIa.resumo}</p>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
-                  <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Entradas</p>
-                  <p className="text-lg font-bold text-emerald-700 dark:text-emerald-300">{analiseIa.totalEntradas}</p>
-                  <p className="text-xs text-emerald-600 dark:text-emerald-400">{analiseIa.valorTotalEntradas.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
-                </div>
-                <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
-                  <p className="text-xs text-blue-600 dark:text-blue-400 font-medium">Saídas</p>
-                  <p className="text-lg font-bold text-blue-700 dark:text-blue-300">{analiseIa.totalSaidas}</p>
-                  <p className="text-xs text-blue-600 dark:text-blue-400">{analiseIa.valorTotalSaidas.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
-                </div>
-              </div>
-              {analiseIa.alertas.length > 0 && (
-                <div className="space-y-2">
-                  {analiseIa.alertas.map((a, i) => (
-                    <div key={i} className={`flex items-start gap-2 p-3 rounded-lg text-sm
-                      ${a.tipo === 'error' ? 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400'
-                      : a.tipo === 'warning' ? 'bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-400'
-                      : 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-400'}`}>
-                      <AlertTriangle size={14} className="shrink-0 mt-0.5" />
-                      {a.mensagem}
-                    </div>
-                  ))}
-                </div>
-              )}
-              {analiseIa.observacoes.length > 0 && (
-                <ul className="space-y-1">
-                  {analiseIa.observacoes.map((obs, i) => (
-                    <li key={i} className="text-xs text-gray-600 dark:text-gray-400 flex items-start gap-1.5">
-                      <span className="text-violet-400 mt-0.5">•</span> {obs}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ------------------------------------------------------------------ */}
-      {/* Estado vazio (antes de fazer upload)                                */}
-      {/* ------------------------------------------------------------------ */}
-      {resultados.length === 0 && !carregando && !erroGlobal && (
-        <div className="text-center py-12 text-gray-400 dark:text-gray-600">
-          <FileText size={40} className="mx-auto mb-3 opacity-40" />
-          <p className="text-sm">Nenhum arquivo processado ainda.</p>
-          <p className="text-xs mt-1">Arraste XMLs de NF-e para a área acima ou clique para selecionar.</p>
-        </div>
-      )}
-
       {/* Modal de detalhes */}
-      {nfeSelecionada && nfeSelecionada.dados && (
+      {nfeSelecionada?.dados && (
         <ModalDetalheNFe
           resultado={nfeSelecionada}
           onFechar={() => setNfeSelecionada(null)}
