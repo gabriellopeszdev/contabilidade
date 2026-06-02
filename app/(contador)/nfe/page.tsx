@@ -253,30 +253,24 @@ function ModalDetalheNFe({ resultado, onFechar }: { resultado: ResultadoArquivo;
           {/* Valores e Impostos */}
           <div>
             <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Valores e Impostos</p>
-            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+            <div className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
               {[
-                { label: 'Total NF',  value: d.valorTotal,         highlight: true },
+                { label: 'Total NF',  value: d.valorTotal,        highlight: true },
                 { label: 'ICMS',      value: d.impostos.icms },
                 { label: 'PIS',       value: d.impostos.pis },
                 { label: 'COFINS',    value: d.impostos.cofins },
                 { label: 'IPI',       value: d.impostos.ipi },
-                { label: 'Desconto',  value: d.impostos.desconto,  red: true },
-              ].map(({ label, value, highlight, red }) => (
-                <div key={label} className={`p-3 rounded-lg border text-center overflow-hidden ${
-                  highlight
-                    ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
-                    : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700'
-                }`}>
-                  <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">{label}</p>
-                  <p
-                    title={value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                    className={`text-[11px] font-bold mt-0.5 truncate ${
-                      highlight ? 'text-blue-700 dark:text-blue-300'
-                      : red && value > 0 ? 'text-red-600 dark:text-red-400'
-                      : 'text-gray-800 dark:text-gray-200'
-                    }`}>
+                { label: 'Desconto',  value: d.impostos.desconto, red: true },
+              ].map(({ label, value, highlight, red }, i, arr) => (
+                <div key={label} className={`flex items-center justify-between px-4 py-2.5 ${i < arr.length - 1 ? 'border-b border-gray-100 dark:border-gray-800' : ''} ${highlight ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}>
+                  <span className="text-xs font-medium text-gray-500 dark:text-gray-400">{label}</span>
+                  <span className={`text-sm font-bold ${
+                    highlight ? 'text-blue-700 dark:text-blue-300'
+                    : red && value > 0 ? 'text-red-600 dark:text-red-400'
+                    : 'text-gray-800 dark:text-gray-200'
+                  }`}>
                     {value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                  </p>
+                  </span>
                 </div>
               ))}
             </div>
