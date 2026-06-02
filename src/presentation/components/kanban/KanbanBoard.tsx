@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useMemo } from 'react';
+import useSWR from 'swr';
 import {
   DndContext,
   DragOverlay,
@@ -31,6 +32,7 @@ import {
   type EstadoTarefa,
   type TarefaDTO,
   type SetorTipo,
+  type FuncionarioSimples,
 } from '../../hooks/useKanban';
 import { KanbanColumn } from './KanbanColumn';
 import { KanbanCard }   from './KanbanCard';
@@ -102,9 +104,21 @@ interface KanbanBoardProps {
 // KanbanBoard
 // =============================================================================
 
+async function equipeFetcher([url, tkn]: [string, string]): Promise<{ funcionarios: FuncionarioSimples[] }> {
+  const res = await fetch(url, { headers: { Authorization: `Bearer ${tkn}` } });
+  if (!res.ok) return { funcionarios: [] };
+  return res.json() as Promise<{ funcionarios: FuncionarioSimples[] }>;
+}
+
 export function KanbanBoard({ token, clienteId, onErro }: KanbanBoardProps) {
-  const { tarefasAgrupadas, todas, isLoading, isError, erroMsg, moverCard } =
+  const { tarefasAgrupadas, todas, isLoading, isError, erroMsg, moverCard, atribuirResponsavel } =
     useKanban(token, onErro, clienteId);
+
+  // Busca lista de funcionários para o popover de atribuição.
+  // Retorna lista vazia para funcionários (403 na API) — atribuição fica oculta.
+  const swrEquipeKey: [string, string] | null = token ? ['/api/v1/equipe', token] : null;
+  const { data: equipeData } = useSWR(swrEquipeKey, equipeFetcher, { revalidateOnFocus: false });
+  const funcionarios = equipeData?.funcionarios ?? [];
 
   // Filtros locais
   const [filtroSetor,        setFiltroSetor]        = useState<SetorTipo | null>(null);
@@ -379,6 +393,8 @@ export function KanbanBoard({ token, clienteId, onErro }: KanbanBoardProps) {
             tarefas={tarefasFiltradas[col.estado]}
             aceitaDrop={aceitaDrop(col.estado)}
             hayArrastre={hayArrastre}
+            funcionarios={funcionarios.length > 0 ? funcionarios : undefined}
+            onAtribuirResponsavel={funcionarios.length > 0 ? atribuirResponsavel : undefined}
           />
         ))}
       </div>

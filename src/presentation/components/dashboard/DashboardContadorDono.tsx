@@ -1,6 +1,5 @@
 'use client';
 
-import { useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import useSWR from 'swr';
 import {
@@ -14,7 +13,6 @@ import {
   Inbox,
 } from 'lucide-react';
 
-import { KanbanBoard } from '../kanban/KanbanBoard';
 import { RecentActivityFeed } from './RecentActivityFeed';
 import { DashboardCharts } from './DashboardCharts';
 
@@ -118,8 +116,6 @@ export function DashboardContadorDono({ token }: { token: string | null }) {
     revalidateOnFocus: true,
   });
 
-  const handleKanbanErro = useCallback((_msg: string) => {}, []);
-
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6">
       <div>
@@ -188,7 +184,27 @@ export function DashboardContadorDono({ token }: { token: string | null }) {
             <ClipboardList size={16} className="text-gray-400 dark:text-gray-500" />
             <h2 className="text-sm font-bold text-gray-900 dark:text-gray-100">Fluxo de Trabalho</h2>
           </div>
-          <KanbanBoard token={token} onErro={handleKanbanErro} />
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-8 flex flex-col items-center justify-center gap-4 text-center">
+            <div className="w-14 h-14 rounded-2xl bg-violet-50 dark:bg-violet-900/20 flex items-center justify-center">
+              <ClipboardList size={26} className="text-violet-600 dark:text-violet-400" />
+            </div>
+            <div>
+              <p className="text-base font-semibold text-gray-800 dark:text-gray-200">
+                {isLoading ? '…' : (stats?.tarefasPendentes ?? 0)} tarefas em andamento
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 max-w-xs">
+                Acesse o Kanban para visualizar e gerenciar o fluxo de trabalho da equipe
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => router.push('/kanban')}
+              className="flex items-center gap-2 px-5 py-2.5 bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold rounded-xl transition-colors shadow-sm"
+            >
+              Abrir Kanban
+              <ArrowRight size={14} />
+            </button>
+          </div>
         </section>
 
         <section>

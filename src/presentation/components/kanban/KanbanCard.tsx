@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useRef, useEffect } from 'react';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import {
@@ -8,8 +9,9 @@ import {
   AlertTriangle,
   GripVertical,
   CheckCircle2,
+  UserRound,
 } from 'lucide-react';
-import type { TarefaDTO, PrioridadeTarefa, SetorTipo } from '../../hooks/useKanban';
+import type { TarefaDTO, PrioridadeTarefa, SetorTipo, FuncionarioSimples } from '../../hooks/useKanban';
 import { estaAtrasada } from '../../hooks/useKanban';
 
 // =============================================================================
@@ -47,16 +49,33 @@ interface KanbanCardProps {
    * Nesse caso os handlers de drag são desabilitados para evitar recursão.
    */
   isOverlay?: boolean;
+  /** Lista de funcionários disponíveis para atribuição (apenas para o contador). */
+  funcionarios?: FuncionarioSimples[];
+  onAtribuirResponsavel?: (tarefaId: string, funcionarioId: string | null, funcionarioNome: string | null) => Promise<void>;
 }
 
 // =============================================================================
 // KanbanCard
 // =============================================================================
 
-export function KanbanCard({ tarefa, isOverlay = false }: KanbanCardProps) {
+export function KanbanCard({ tarefa, isOverlay = false, funcionarios, onAtribuirResponsavel }: KanbanCardProps) {
   const isDone     = tarefa.currentState === 'DONE';
   const atrasada   = estaAtrasada(tarefa);
   const prioridade = PRIORIDADE_CONFIG[tarefa.priority];
+
+  // Popover de atribuição de responsável
+  const [popoverAberto, setPopoverAberto] = useState(false);
+  const popoverRef = useRef<HTMLDivElement>(null);
+  const canAssign = !isDone && !isOverlay && !!onAtribuirResponsavel && !!funcionarios && funcionarios.length > 0;
+
+  useEffect(() => {
+    if (!popoverAberto) return;
+    const handler = (e: MouseEvent) => {
+      if (!popoverRef.current?.contains(e.target as Node)) setPopoverAberto(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [popoverAberto]);
 
   // -------------------------------------------------------------------------
   // useDraggable — desabilitado para DONE (terminal) e para o DragOverlay
@@ -207,24 +226,86 @@ export function KanbanCard({ tarefa, isOverlay = false }: KanbanCardProps) {
           </div>
 
           <div className="flex items-center gap-1.5">
-            {/* Avatar do funcionário responsável */}
-            {tarefa.assignedToFuncionarioNome ? (
-              <div
-                title={tarefa.assignedToFuncionarioNome}
-                className="w-5 h-5 rounded-full bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400
-                           flex items-center justify-center text-[9px] font-bold shrink-0 border border-violet-200 dark:border-violet-800"
-              >
-                {tarefa.assignedToFuncionarioNome
-                  .split(' ').filter(Boolean).slice(0, 2)
-                  .map((p) => p[0].toUpperCase()).join('')}
-              </div>
-            ) : (
-              <div
-                title="Sem responsável"
-                className="w-5 h-5 rounded-full bg-gray-100 dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-600
-                           flex items-center justify-center shrink-0"
-              />
-            )}
+            {/* Avatar do funcionário responsável — clicável se canAssign */}
+            <div className="relative" ref={popoverRef}>
+              {canAssign ? (
+                <button
+                  type="button"
+                  title={tarefa.assignedToFuncionarioNome ?? 'Atribuir responsável'}
+                  onClick={() => setPopoverAberto((v) => !v)}
+                  className={[
+                    'w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold shrink-0 border',
+                    'transition-all hover:ring-2 hover:ring-offset-1 hover:ring-violet-300 dark:hover:ring-violet-600',
+                    tarefa.assignedToFuncionarioNome
+                      ? 'bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400 border-violet-200 dark:border-violet-800'
+                      : 'bg-gray-100 dark:bg-gray-800 border-dashed border-gray-300 dark:border-gray-600',
+                  ].join(' ')}
+                >
+                  {tarefa.assignedToFuncionarioNome
+                    ? tarefa.assignedToFuncionarioNome.split(' ').filter(Boolean).slice(0, 2).map((p) => p[0].toUpperCase()).join('')
+                    : <UserRound size={10} className="text-gray-400" />
+                  }
+                </button>
+              ) : tarefa.assignedToFuncionarioNome ? (
+                <div
+                  title={tarefa.assignedToFuncionarioNome}
+                  className="w-5 h-5 rounded-full bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400
+                             flex items-center justify-center text-[9px] font-bold shrink-0 border border-violet-200 dark:border-violet-800"
+                >
+                  {tarefa.assignedToFuncionarioNome.split(' ').filter(Boolean).slice(0, 2).map((p) => p[0].toUpperCase()).join('')}
+                </div>
+              ) : (
+                <div
+                  title="Sem responsável"
+                  className="w-5 h-5 rounded-full bg-gray-100 dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-600
+                             flex items-center justify-center shrink-0"
+                />
+              )}
+
+              {/* Popover de seleção */}
+              {popoverAberto && canAssign && (
+                <div className="absolute bottom-full right-0 mb-1.5 w-48 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-xl z-50 py-1 overflow-hidden">
+                  <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500 border-b border-gray-100 dark:border-gray-800">
+                    Responsável
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => { onAtribuirResponsavel(tarefa.id, null, null); setPopoverAberto(false); }}
+                    className={`w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
+                      tarefa.assignedToFuncionarioId === null
+                        ? 'font-semibold text-gray-800 dark:text-gray-100'
+                        : 'text-gray-500 dark:text-gray-400'
+                    }`}
+                  >
+                    <div className="w-4 h-4 rounded-full border border-dashed border-gray-300 dark:border-gray-600 shrink-0" />
+                    <span>Sem responsável</span>
+                    {tarefa.assignedToFuncionarioId === null && (
+                      <CheckCircle2 size={10} className="ml-auto text-emerald-500 shrink-0" />
+                    )}
+                  </button>
+                  {funcionarios!.map((f) => (
+                    <button
+                      key={f.id}
+                      type="button"
+                      onClick={() => { onAtribuirResponsavel(tarefa.id, f.id, f.name); setPopoverAberto(false); }}
+                      className={`w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
+                        tarefa.assignedToFuncionarioId === f.id
+                          ? 'font-semibold text-gray-800 dark:text-gray-100'
+                          : 'text-gray-500 dark:text-gray-400'
+                      }`}
+                    >
+                      <div className="w-4 h-4 rounded-full bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400 flex items-center justify-center text-[8px] font-bold shrink-0">
+                        {f.name.split(' ').filter(Boolean).slice(0, 2).map((p) => p[0].toUpperCase()).join('')}
+                      </div>
+                      <span className="truncate flex-1 text-left">{f.name}</span>
+                      {tarefa.assignedToFuncionarioId === f.id && (
+                        <CheckCircle2 size={10} className="ml-auto text-emerald-500 shrink-0" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
 
             {/* Ícone de concluída */}
             {isDone && (

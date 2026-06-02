@@ -13,6 +13,11 @@ export type PrioridadeTarefa = 'LOW'    | 'MEDIUM'     | 'HIGH'   | 'URGENT';
 
 export type SetorTipo = 'FISCAL' | 'PESSOAL' | 'CONTABIL';
 
+export interface FuncionarioSimples {
+  id:   string;
+  name: string;
+}
+
 export interface TarefaDTO {
   id:           string;
   clientId:     string;
@@ -115,6 +120,8 @@ export interface UseKanbanReturn {
    *   5. Em caso de sucesso: revalida (re-fetch silencioso para sync com servidor)
    */
   moverCard: (tarefaId: string, novoEstado: EstadoTarefa) => Promise<void>;
+  /** Atribui (ou remove) o funcionário responsável por uma tarefa com Optimistic UI. */
+  atribuirResponsavel: (tarefaId: string, funcionarioId: string | null, funcionarioNome: string | null) => Promise<void>;
 }
 
 // =============================================================================
@@ -227,6 +234,54 @@ export function useKanban(
     [data, token, mutate, onErro],
   );
 
+  // -------------------------------------------------------------------------
+  // atribuirResponsavel — Optimistic UI com rollback automático
+  // -------------------------------------------------------------------------
+  const atribuirResponsavel = useCallback(
+    async (tarefaId: string, funcionarioId: string | null, funcionarioNome: string | null): Promise<void> => {
+      if (!token || !data) return;
+
+      const tarefa = data.tarefas.find((t) => t.id === tarefaId);
+      if (!tarefa) return;
+      if (tarefa.assignedToFuncionarioId === funcionarioId) return;
+
+      const snapshot = data;
+
+      await mutate(
+        {
+          tarefas: data.tarefas.map((t) =>
+            t.id === tarefaId
+              ? { ...t, assignedToFuncionarioId: funcionarioId, assignedToFuncionarioNome: funcionarioNome }
+              : t,
+          ),
+        },
+        { revalidate: false },
+      );
+
+      try {
+        const res = await fetch(`/api/v1/kanban/${tarefaId}/responsavel`, {
+          method:  'PATCH',
+          headers: {
+            'Content-Type':  'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({ funcionarioId }),
+        });
+
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({})) as { error?: string };
+          throw new Error(body.error ?? `Erro HTTP ${res.status}`);
+        }
+
+        await mutate();
+      } catch (err) {
+        await mutate(snapshot, { revalidate: false });
+        onErro?.(err instanceof Error ? err.message : 'Erro ao atribuir responsável');
+      }
+    },
+    [data, token, mutate, onErro],
+  );
+
   return {
     tarefasAgrupadas,
     todas,
@@ -234,5 +289,6 @@ export function useKanban(
     isError:  !!error,
     erroMsg:  error?.message ?? null,
     moverCard,
+    atribuirResponsavel,
   };
 }

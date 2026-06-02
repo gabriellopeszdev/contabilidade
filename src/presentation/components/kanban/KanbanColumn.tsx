@@ -2,7 +2,7 @@
 
 import { useDroppable } from '@dnd-kit/core';
 import type { LucideIcon } from 'lucide-react';
-import type { TarefaDTO, EstadoTarefa } from '../../hooks/useKanban';
+import type { TarefaDTO, EstadoTarefa, FuncionarioSimples } from '../../hooks/useKanban';
 import { KanbanCard } from './KanbanCard';
 
 // =============================================================================
@@ -24,6 +24,8 @@ interface KanbanColumnProps {
   aceitaDrop:   boolean;
   /** `true` quando há algum card sendo arrastado (mas não sobre esta coluna). */
   hayArrastre:  boolean;
+  funcionarios?: FuncionarioSimples[];
+  onAtribuirResponsavel?: (tarefaId: string, funcionarioId: string | null, funcionarioNome: string | null) => Promise<void>;
 }
 
 // =============================================================================
@@ -39,6 +41,8 @@ export function KanbanColumn({
   tarefas,
   aceitaDrop,
   hayArrastre,
+  funcionarios,
+  onAtribuirResponsavel,
 }: KanbanColumnProps) {
 
   // useDroppable usa o estado da coluna como ID para que o onDragEnd
@@ -116,7 +120,11 @@ export function KanbanColumn({
           <>
             {tarefas.map((tarefa) => (
               <div key={tarefa.id} role="listitem">
-                <KanbanCard tarefa={tarefa} />
+                <KanbanCard
+                  tarefa={tarefa}
+                  funcionarios={funcionarios}
+                  onAtribuirResponsavel={onAtribuirResponsavel}
+                />
               </div>
             ))}
 

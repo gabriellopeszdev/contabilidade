@@ -23,6 +23,7 @@ import {
   FileBarChart,
   FileText,
   Clock,
+  ClipboardList,
   Sun,
   Moon,
   Search,
@@ -84,6 +85,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: 'Gestão',
     items: [
+      { href: '/kanban',      label: 'Kanban',      icon: <ClipboardList size={18} /> },
       { href: '/calendario',  label: 'Calendário',  icon: <CalendarDays size={18} />,              feature: 'calendario' },
       { href: '/financeiro',  label: 'Financeiro',  icon: <DollarSign   size={18} />, donoOnly: true, feature: 'financeiro' },
       { href: '/relatorios',  label: 'Relatórios',  icon: <FileBarChart size={18} />, donoOnly: true, feature: 'relatorios' },
