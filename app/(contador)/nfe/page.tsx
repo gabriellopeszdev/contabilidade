@@ -340,19 +340,26 @@ export default function NfePage() {
     setBaixandoId(item.id);
     try {
       const token = await getToken();
-      const res = await fetch(`/api/v1/documentos/${item.id}/download`, {
+
+      // 1. Obtém a pre-signed URL do MinIO
+      const dlRes = await fetch(`/api/v1/documentos/${item.id}/download`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!res.ok) return;
-      const blob = await res.blob();
-      const url  = URL.createObjectURL(blob);
-      const a    = document.createElement('a');
-      a.href     = url;
-      a.download = item.fileName;
+      if (!dlRes.ok) return;
+      const { url: presignedUrl, nomeArquivo } = await dlRes.json() as { url: string; nomeArquivo?: string };
+
+      // 2. Baixa o arquivo real a partir da URL pré-assinada
+      const fileRes = await fetch(presignedUrl);
+      if (!fileRes.ok) return;
+      const blob   = await fileRes.blob();
+      const objUrl = URL.createObjectURL(blob);
+      const a      = document.createElement('a');
+      a.href       = objUrl;
+      a.download   = nomeArquivo ?? item.fileName;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      URL.revokeObjectURL(objUrl);
     } finally {
       setBaixandoId(null);
     }

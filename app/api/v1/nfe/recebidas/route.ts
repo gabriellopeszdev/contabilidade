@@ -32,12 +32,14 @@ export const GET = withAuth(async (_req, _ctx, auth) => {
 
     const clienteIds = vinculos.map((v) => v.clienteId);
 
-    // 2. Buscar XMLs desses clientes
+    // 2. Buscar XMLs enviados pelos próprios clientes (uploadedById === clientId)
     const xmls = await prisma.documentoFiscal.findMany({
       where: {
-        clientId:  { in: clienteIds },
-        fileType:  'XML',
-        deletedAt: null,
+        clientId:     { in: clienteIds },
+        fileType:     'XML',
+        deletedAt:    null,
+        // exclui XMLs que o próprio contador enviou em nome do cliente
+        uploadedById: { in: clienteIds },
       },
       include: {
         cliente: { select: { id: true, name: true, cnpj: true } },

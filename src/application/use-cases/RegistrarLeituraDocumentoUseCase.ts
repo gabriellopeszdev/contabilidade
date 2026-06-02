@@ -88,21 +88,28 @@ export class RegistrarLeituraDocumentoUseCase {
     const eraLidoAntes = documento.readStatus;
     const readAtAnterior = documento.readAt;
 
-    // "Lido" só muda quando o CLIENTE acessa — o contador pode baixar
-    // o mesmo arquivo sem que o status seja alterado para o cliente.
+    // Determina se esta visualização deve atualizar o readStatus.
+    // Dois fluxos possíveis:
+    //   1. Contador → Cliente: uploadedById !== clientId  →  readStatus muda quando CLIENT baixa
+    //   2. Cliente → Contador: uploadedById === clientId  →  readStatus muda quando ACCOUNTANT/ADMIN baixa
     const isClienteDownload = input.visualizadoPorRole === 'CLIENT';
+    const isContadorLendoDocumentoDoCliente =
+      input.visualizadoPorRole !== 'CLIENT' &&
+      documento.uploadedById === documento.clientId;
+
+    const deveRegistrarLeitura = isClienteDownload || isContadorLendoDocumentoDoCliente;
 
     // -------------------------------------------------------------------------
-    // Etapa 4: Marca como lido SOMENTE se for o cliente a baixar
+    // Etapa 4: Marca como lido quando o destinatário natural acessa
     // -------------------------------------------------------------------------
-    if (isClienteDownload) {
+    if (deveRegistrarLeitura) {
       documento.registrarVisualizacao();
     }
 
     // -------------------------------------------------------------------------
-    // Etapa 5: Persiste APENAS se o cliente baixou e era a primeira vez
+    // Etapa 5: Persiste apenas na primeira leitura relevante
     // -------------------------------------------------------------------------
-    if (isClienteDownload && !eraLidoAntes) {
+    if (deveRegistrarLeitura && !eraLidoAntes) {
       await this.documentoRepository.atualizar(documento);
     }
 
@@ -134,6 +141,7 @@ export class RegistrarLeituraDocumentoUseCase {
 
     // -------------------------------------------------------------------------
     // Etapa 7: Publica evento SOMENTE na primeira leitura do CLIENTE
+    //          (fluxo contador→cliente — não notifica o contador quando ele lê)
     // -------------------------------------------------------------------------
     if (isClienteDownload && !eraLidoAntes) {
       documento.pullDomainEvents();
@@ -156,7 +164,7 @@ export class RegistrarLeituraDocumentoUseCase {
     // -------------------------------------------------------------------------
     return {
       documentoId: input.documentoId,
-      primeiraLeitura: isClienteDownload && !eraLidoAntes,
+      primeiraLeitura: deveRegistrarLeitura && !eraLidoAntes,
       readAt: documento.readAt ?? readAtAnterior ?? new Date(),
       nomeArquivo: documento.fileName,
     };
