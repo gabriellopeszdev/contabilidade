@@ -2,7 +2,9 @@ import { NextResponse } from 'next/server';
 import { withAuth } from '@/infrastructure/http/middlewares/withAuth';
 import { prisma } from '@/infrastructure/di/Container';
 
-// Passos base (sem feature) + passos condicionais (com feature)
+// Passos base (sem feature) + passos condicionais (com feature).
+// A integração com Asaas e outros serviços externos é configurada pelo admin —
+// não inclua tarefas que o contador não pode executar por conta própria.
 export const PASSOS_ONBOARDING = [
   {
     id:       'configurar-escritorio',
@@ -40,16 +42,30 @@ export const PASSOS_ONBOARDING = [
     feature:  null,
   },
   {
-    id:       'configurar-financeiro',
-    titulo:   'Configure a cobrança de honorários',
-    descricao:'Integre com Asaas para emitir boletos automaticamente',
-    href:     '/configuracoes',
-    feature:  'financeiro',
+    id:       'convidar-equipe',
+    titulo:   'Monte sua equipe',
+    descricao:'Convide colaboradores e defina setores de acesso',
+    href:     '/equipe',
+    feature:  'equipe',
+  },
+  {
+    id:       'explorar-relatorios',
+    titulo:   'Explore os relatórios',
+    descricao:'Acompanhe a produtividade do escritório com dados em tempo real',
+    href:     '/relatorios',
+    feature:  'relatorios',
+  },
+  {
+    id:       'explorar-assinatura',
+    titulo:   'Assine documentos digitalmente',
+    descricao:'Envie contratos e procurações para assinatura eletrônica',
+    href:     '/assinaturas',
+    feature:  'assinatura_eletronica',
   },
   {
     id:       'explorar-ia',
     titulo:   'Experimente a IA do FiscoHub',
-    descricao:'Gere obrigações fiscais e analise clientes com IA',
+    descricao:'Gere obrigações fiscais e analise clientes com inteligência artificial',
     href:     '/chat-ia',
     feature:  'ia',
   },
