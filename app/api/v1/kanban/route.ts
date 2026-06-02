@@ -57,22 +57,30 @@ export const GET = withAuth(async (req, _ctx, auth) => {
       ],
     });
 
-    const clientIds = [...new Set(tarefas.map((t) => t.clientId))];
-    const clientes  = clientIds.length > 0
-      ? await prisma.usuarioCliente.findMany({
-          where:  { id: { in: clientIds } },
-          select: { id: true, name: true },
-        })
-      : [];
+    const clientIds      = [...new Set(tarefas.map((t) => t.clientId))];
+    const funcionarioIds = [...new Set(tarefas.map((t) => t.assignedToFuncionarioId).filter(Boolean))] as string[];
 
-    const clienteNomeMap = new Map(clientes.map((c) => [c.id, c.name]));
+    const [clientes, funcionarios] = await Promise.all([
+      clientIds.length > 0
+        ? prisma.usuarioCliente.findMany({ where: { id: { in: clientIds } }, select: { id: true, name: true } })
+        : [],
+      funcionarioIds.length > 0
+        ? prisma.funcionario.findMany({ where: { id: { in: funcionarioIds } }, select: { id: true, name: true } })
+        : [],
+    ]);
+
+    const clienteNomeMap     = new Map(clientes.map((c) => [c.id, c.name]));
+    const funcionarioNomeMap = new Map(funcionarios.map((f) => [f.id, f.name]));
 
     const tarefasDTO = tarefas.map((t) => ({
       id:           t.id,
       clientId:     t.clientId,
       clienteNome:  clienteNomeMap.get(t.clientId) ?? null,
       assignedTo:   t.assignedTo,
-      assignedToFuncionarioId: t.assignedToFuncionarioId,
+      assignedToFuncionarioId:   t.assignedToFuncionarioId,
+      assignedToFuncionarioNome: t.assignedToFuncionarioId
+        ? (funcionarioNomeMap.get(t.assignedToFuncionarioId) ?? null)
+        : null,
       documentId:   t.documentId,
       sector:       t.sector,
       title:        t.title,

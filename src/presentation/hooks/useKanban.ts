@@ -19,6 +19,8 @@ export interface TarefaDTO {
   /** Retornado pela API via JOIN com usuario_cliente. */
   clienteNome:  string | null;
   assignedTo:   string | null;
+  assignedToFuncionarioId:   string | null;
+  assignedToFuncionarioNome: string | null;
   documentId:   string | null;
   /** Setor do documento associado (Fiscal, Pessoal, Contábil). */
   sector:       SetorTipo | null;

@@ -107,8 +107,10 @@ export function KanbanBoard({ token, clienteId, onErro }: KanbanBoardProps) {
     useKanban(token, onErro, clienteId);
 
   // Filtros locais
-  const [filtroSetor,   setFiltroSetor]   = useState<SetorTipo | null>(null);
-  const [filtroCliente, setFiltroCliente] = useState<string>('');
+  const [filtroSetor,        setFiltroSetor]        = useState<SetorTipo | null>(null);
+  const [filtroCliente,      setFiltroCliente]      = useState<string>('');
+  // '' = todos | '__sem__' = sem responsável | '<uuid>' = funcionário específico
+  const [filtroFuncionario,  setFiltroFuncionario]  = useState<string>('');
 
   // Extrair lista única de clientes para o select
   const clientesUnicos = useMemo(() => {
@@ -121,12 +123,27 @@ export function KanbanBoard({ token, clienteId, onErro }: KanbanBoardProps) {
       .sort((a, b) => a.nome.localeCompare(b.nome));
   }, [todas]);
 
+  // Extrair lista única de funcionários com tarefas atribuídas
+  const funcionariosUnicos = useMemo(() => {
+    const map = new Map<string, string>();
+    todas.forEach((t) => {
+      if (t.assignedToFuncionarioId && t.assignedToFuncionarioNome) {
+        map.set(t.assignedToFuncionarioId, t.assignedToFuncionarioNome);
+      }
+    });
+    return Array.from(map.entries())
+      .map(([id, nome]) => ({ id, nome }))
+      .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+  }, [todas]);
+
   // Aplicar filtros sobre as tarefas agrupadas
   const tarefasFiltradas = useMemo(() => {
     const filtrar = (lista: TarefaDTO[]) =>
       lista.filter((t) => {
         if (filtroSetor && t.sector !== filtroSetor) return false;
         if (filtroCliente && t.clientId !== filtroCliente) return false;
+        if (filtroFuncionario === '__sem__' && t.assignedToFuncionarioId !== null) return false;
+        if (filtroFuncionario && filtroFuncionario !== '__sem__' && t.assignedToFuncionarioId !== filtroFuncionario) return false;
         return true;
       });
 
@@ -136,9 +153,9 @@ export function KanbanBoard({ token, clienteId, onErro }: KanbanBoardProps) {
       REVIEW:     filtrar(tarefasAgrupadas.REVIEW),
       DONE:       filtrar(tarefasAgrupadas.DONE),
     };
-  }, [tarefasAgrupadas, filtroSetor, filtroCliente]);
+  }, [tarefasAgrupadas, filtroSetor, filtroCliente, filtroFuncionario]);
 
-  const temFiltro = filtroSetor !== null || filtroCliente !== '';
+  const temFiltro = filtroSetor !== null || filtroCliente !== '' || filtroFuncionario !== '';
   const totalFiltrado = temFiltro
     ? tarefasFiltradas.PENDING.length + tarefasFiltradas.PROCESSING.length +
       tarefasFiltradas.REVIEW.length + tarefasFiltradas.DONE.length
@@ -286,6 +303,23 @@ export function KanbanBoard({ token, clienteId, onErro }: KanbanBoardProps) {
           </select>
         )}
 
+        {/* Filtro por funcionário responsável */}
+        {funcionariosUnicos.length > 0 && (
+          <select
+            value={filtroFuncionario}
+            onChange={(e) => setFiltroFuncionario(e.target.value)}
+            className="text-[11px] font-medium text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded-lg
+                       px-2.5 py-1 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-violet-400
+                       max-w-[180px] dark:[color-scheme:dark]"
+          >
+            <option value="">Toda a equipe</option>
+            <option value="__sem__">Sem responsável</option>
+            {funcionariosUnicos.map((f) => (
+              <option key={f.id} value={f.id}>{f.nome}</option>
+            ))}
+          </select>
+        )}
+
         {/* Badge de contagem + botão limpar */}
         {temFiltro && (
           <>
@@ -294,7 +328,7 @@ export function KanbanBoard({ token, clienteId, onErro }: KanbanBoardProps) {
             </span>
             <button
               type="button"
-              onClick={() => { setFiltroSetor(null); setFiltroCliente(''); }}
+              onClick={() => { setFiltroSetor(null); setFiltroCliente(''); setFiltroFuncionario(''); }}
               className="flex items-center gap-1 text-[10px] text-gray-400 hover:text-red-500 transition-colors ml-1"
             >
               <X size={12} />

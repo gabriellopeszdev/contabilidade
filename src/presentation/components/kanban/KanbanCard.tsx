@@ -177,7 +177,7 @@ export function KanbanCard({ tarefa, isOverlay = false }: KanbanCardProps) {
           )}
         </div>
 
-        {/* Linha 3: Prazo + tags */}
+        {/* Linha 3: Prazo + tags + responsável */}
         <div className="flex items-center justify-between mt-2 gap-2 flex-wrap">
           <div className="flex items-center gap-2">
             {/* Data de vencimento */}
@@ -192,7 +192,7 @@ export function KanbanCard({ tarefa, isOverlay = false }: KanbanCardProps) {
               </div>
             )}
 
-            {/* Tag "Atrasada" — aproveita o getter estaAtrasada do domínio */}
+            {/* Tag "Atrasada" */}
             {atrasada && (
               <span
                 className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md
@@ -206,10 +206,31 @@ export function KanbanCard({ tarefa, isOverlay = false }: KanbanCardProps) {
             )}
           </div>
 
-          {/* Ícone de concluída */}
-          {isDone && (
-            <CheckCircle2 size={14} className="text-emerald-500 shrink-0" />
-          )}
+          <div className="flex items-center gap-1.5">
+            {/* Avatar do funcionário responsável */}
+            {tarefa.assignedToFuncionarioNome ? (
+              <div
+                title={tarefa.assignedToFuncionarioNome}
+                className="w-5 h-5 rounded-full bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400
+                           flex items-center justify-center text-[9px] font-bold shrink-0 border border-violet-200 dark:border-violet-800"
+              >
+                {tarefa.assignedToFuncionarioNome
+                  .split(' ').filter(Boolean).slice(0, 2)
+                  .map((p) => p[0].toUpperCase()).join('')}
+              </div>
+            ) : (
+              <div
+                title="Sem responsável"
+                className="w-5 h-5 rounded-full bg-gray-100 dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-600
+                           flex items-center justify-center shrink-0"
+              />
+            )}
+
+            {/* Ícone de concluída */}
+            {isDone && (
+              <CheckCircle2 size={14} className="text-emerald-500 shrink-0" />
+            )}
+          </div>
         </div>
       </div>
     </article>
