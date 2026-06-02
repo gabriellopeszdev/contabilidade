@@ -21,6 +21,8 @@ const nextConfig = {
   // Permite HMR via ngrok/túneis em dev (não tem efeito em produção)
   allowedDevOrigins: ['*.ngrok-free.app', '*.ngrok.io', '*.ngrok-free.dev'],
 
+  turbopack: {},
+
   serverExternalPackages: [
     '@prisma/client',
     'ioredis',
