@@ -19,13 +19,13 @@ export async function GET(
   if (!auth.ok) return NextResponse.json({ message: auth.mensagem }, { status: auth.status });
 
   const { roomId } = await params;
-  const { sub, role } = auth.payload;
+  const { sub, role, contadorId } = auth.payload;
 
   // Verifica se o usuário tem acesso à sala
   const room = await prisma.chatRoom.findUnique({ where: { id: roomId } });
   if (!room) return NextResponse.json({ message: 'Sala não encontrada.' }, { status: 404 });
 
-  const temAcesso = await verificarAcessoSala(sub, role, room.clienteId);
+  const temAcesso = await verificarAcessoSala(sub, role, room.clienteId, contadorId);
   if (!temAcesso) return NextResponse.json({ message: 'Acesso negado.' }, { status: 403 });
 
   const url = new URL(request.url);
@@ -70,12 +70,12 @@ export async function POST(
   if (!auth.ok) return NextResponse.json({ message: auth.mensagem }, { status: auth.status });
 
   const { roomId } = await params;
-  const { sub, role, nome } = auth.payload;
+  const { sub, role, nome, contadorId: contadorIdPost } = auth.payload;
 
   const room = await prisma.chatRoom.findUnique({ where: { id: roomId } });
   if (!room) return NextResponse.json({ message: 'Sala não encontrada.' }, { status: 404 });
 
-  const temAcesso = await verificarAcessoSala(sub, role, room.clienteId);
+  const temAcesso = await verificarAcessoSala(sub, role, room.clienteId, contadorIdPost);
   if (!temAcesso) return NextResponse.json({ message: 'Acesso negado.' }, { status: 403 });
 
   const body = await request.json().catch(() => null);
@@ -131,12 +131,12 @@ export async function PATCH(
   if (!auth.ok) return NextResponse.json({ message: auth.mensagem }, { status: auth.status });
 
   const { roomId } = await params;
-  const { sub, role } = auth.payload;
+  const { sub, role, contadorId: contadorIdPatch } = auth.payload;
 
   const room = await prisma.chatRoom.findUnique({ where: { id: roomId } });
   if (!room) return NextResponse.json({ message: 'Sala não encontrada.' }, { status: 404 });
 
-  const temAcesso = await verificarAcessoSala(sub, role, room.clienteId);
+  const temAcesso = await verificarAcessoSala(sub, role, room.clienteId, contadorIdPatch);
   if (!temAcesso) return NextResponse.json({ message: 'Acesso negado.' }, { status: 403 });
 
   // Marcar como lidas as mensagens que NÃO são do remetente logado
@@ -154,21 +154,29 @@ export async function PATCH(
 // Helpers
 // =============================================================================
 
-async function verificarAcessoSala(userId: string, role: string, clienteIdDaSala: string): Promise<boolean> {
+async function verificarAcessoSala(
+  userId: string,
+  role: string,
+  clienteIdDaSala: string,
+  contadorId?: string,
+): Promise<boolean> {
   if (role === 'CLIENT') {
     return userId === clienteIdDaSala;
   }
-  // ACCOUNTANT/ADMIN — deve ter vínculo
+  // ACCOUNTANT/ADMIN — verifica vínculo pelo contadorId do escritório
+  // Para funcionários: contadorId = superiorId (ID do contador dono do escritório)
+  // Para o próprio contador: contadorId === undefined, usa userId
   const vinculo = await prisma.contadorCliente.findFirst({
-    where: { contadorId: userId, clienteId: clienteIdDaSala },
+    where: { contadorId: contadorId ?? userId, clienteId: clienteIdDaSala },
   });
   return !!vinculo;
 }
 
 interface JWTInfo {
-  sub: string;
-  role: 'CLIENT' | 'ACCOUNTANT' | 'ADMIN';
-  nome: string;
+  sub:        string;
+  role:       'CLIENT' | 'ACCOUNTANT' | 'ADMIN';
+  nome:       string;
+  contadorId?: string; // Para EMPLOYEE+ESCRITORIO: ID do escritório (para verificar acesso)
 }
 
 async function verificarJWT(
@@ -187,26 +195,35 @@ async function verificarJWT(
 
     let role = payload.role as string;
     let sub  = payload.sub as string;
-    const vinculo    = payload.vinculo as string | undefined;
+    const vinculo    = payload.vinculo    as string | undefined;
     const superiorId = payload.superiorId as string | undefined;
+    let contadorId: string | undefined;
 
-    // Funcionário de cliente → tratar como CLIENT usando o ID do patrão
+    // Funcionário de cliente → age como o próprio cliente
     if (role === 'EMPLOYEE' && vinculo === 'CLIENTE' && superiorId) {
       role = 'CLIENT';
       sub  = superiorId;
     }
 
-    // Funcionário de escritório → tratar como ACCOUNTANT usando o ID do contador
+    // Funcionário de escritório → sub permanece como ID próprio; contadorId para verificar acesso
     if (role === 'EMPLOYEE' && vinculo === 'ESCRITORIO' && superiorId) {
-      role = 'ACCOUNTANT';
-      sub  = superiorId;
+      role       = 'ACCOUNTANT';
+      contadorId = superiorId;
     }
 
     if (!['CLIENT', 'ACCOUNTANT', 'ADMIN'].includes(role)) {
       return { ok: false, status: 403, mensagem: 'Acesso negado.' };
     }
 
-    return { ok: true, payload: { sub, role: role as JWTInfo['role'], nome: (payload.nome as string) ?? 'Usuário' } };
+    return {
+      ok: true,
+      payload: {
+        sub,
+        role: role as JWTInfo['role'],
+        nome: (payload.nome as string) ?? 'Usuário',
+        contadorId,
+      },
+    };
   } catch {
     return { ok: false, status: 401, mensagem: 'Token inválido.' };
   }
