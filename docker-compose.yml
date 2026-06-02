@@ -40,10 +40,6 @@ services:
       -c log_min_duration_statement=1000
       -c log_checkpoints=on
       -c log_line_prefix='%t [%p] %u@%d '
-    ports:
-      # Expor apenas em localhost para não abrir a porta ao mundo.
-      # Use um túnel SSH ou VPN para acesso remoto ao banco.
-      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
     volumes:
       - ${DATA_DIR:-./.data}/postgres:/var/lib/postgresql/data
     healthcheck:
@@ -75,8 +71,6 @@ services:
       --maxmemory ${REDIS_MAXMEMORY:-256mb}
       --maxmemory-policy noeviction
       --loglevel notice
-    ports:
-      - "127.0.0.1:${REDIS_PORT:-6379}:6379"
     volumes:
       - ${DATA_DIR:-./.data}/redis:/data
     healthcheck:
