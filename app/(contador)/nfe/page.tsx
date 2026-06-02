@@ -262,17 +262,19 @@ function ModalDetalheNFe({ resultado, onFechar }: { resultado: ResultadoArquivo;
                 { label: 'IPI',       value: d.impostos.ipi },
                 { label: 'Desconto',  value: d.impostos.desconto,  red: true },
               ].map(({ label, value, highlight, red }) => (
-                <div key={label} className={`p-3 rounded-lg border text-center ${
+                <div key={label} className={`p-3 rounded-lg border text-center overflow-hidden ${
                   highlight
                     ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
                     : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700'
                 }`}>
                   <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">{label}</p>
-                  <p className={`text-xs font-bold mt-0.5 ${
-                    highlight ? 'text-blue-700 dark:text-blue-300'
-                    : red && value > 0 ? 'text-red-600 dark:text-red-400'
-                    : 'text-gray-800 dark:text-gray-200'
-                  }`}>
+                  <p
+                    title={value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                    className={`text-[11px] font-bold mt-0.5 truncate ${
+                      highlight ? 'text-blue-700 dark:text-blue-300'
+                      : red && value > 0 ? 'text-red-600 dark:text-red-400'
+                      : 'text-gray-800 dark:text-gray-200'
+                    }`}>
                     {value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                   </p>
                 </div>
