@@ -33,9 +33,10 @@ export default function OnboardingPage() {
   const router = useRouter();
   const { token, carregando, usuario, isContador } = useAuth();
 
-  const [passo,    setPasso]    = useState<Passo>(1);
-  const [salvando, setSalvando] = useState(false);
-  const [erro,     setErro]     = useState<string | null>(null);
+  const [passo,           setPasso]           = useState<Passo>(1);
+  const [salvando,        setSalvando]        = useState(false);
+  const [erro,            setErro]            = useState<string | null>(null);
+  const [verificando,     setVerificando]     = useState(true);
 
   // Step 2 — dados do escritório
   const [nomeEscritorio, setNomeEscritorio] = useState('');
@@ -53,20 +54,25 @@ export default function OnboardingPage() {
     if (!isContador) router.push('/dashboard');
   }, [carregando, usuario, isContador, router]);
 
-  // Se o escritório já estiver configurado, vai direto ao dashboard
+  // Verifica se o escritório já está configurado — fica no loader até saber
   useEffect(() => {
     if (!token || !isContador) return;
     fetch('/api/v1/escritorio/config', { headers: { Authorization: `Bearer ${token}` } })
       .then((r) => r.json())
       .then((data) => {
-        if (data.config?.nomeEscritorio) router.push('/dashboard');
+        if (data.config?.nomeEscritorio) {
+          router.push('/dashboard');
+          // não libera o wizard — usuário vai ser redirecionado
+        } else {
+          setVerificando(false);
+        }
       })
-      .catch(() => {});
+      .catch(() => setVerificando(false)); // em caso de erro mostra o wizard
   }, [token, isContador, router]);
 
-  if (carregando || !usuario) {
+  if (carregando || !usuario || verificando) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-50">
+      <div className="flex items-center justify-center h-screen bg-gray-50 dark:bg-gray-950">
         <Loader2 size={32} className="animate-spin text-blue-600" />
       </div>
     );
