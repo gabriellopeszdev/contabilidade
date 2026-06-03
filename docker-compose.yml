@@ -62,6 +62,7 @@ services:
     # performance. Perde no máximo 1 segundo de dados em caso de falha.
     command: >
       redis-server
+      --port 6380
       --requirepass ${REDIS_PASSWORD}
       --appendonly yes
       --appendfsync everysec
@@ -74,7 +75,7 @@ services:
     volumes:
       - ${DATA_DIR:-./.data}/redis:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      test: ["CMD", "redis-cli", "-p", "6380", "-a", "${REDIS_PASSWORD}", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -203,9 +204,9 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
       REDIS_HOST: redis
-      REDIS_PORT: 6379
+      REDIS_PORT: 6380
       REDIS_PASSWORD: ${REDIS_PASSWORD}
-      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6380
       MINIO_ENDPOINT: minio
       MINIO_PORT: 9000
       MINIO_ACCESS_KEY: ${MINIO_ROOT_USER}
