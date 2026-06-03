@@ -63,20 +63,21 @@ async function main() {
     console.log(`Superadmin criado: ${SUPER_ADMIN.email}`);
   }
 
-  const FEATURES_BASE       = ['chat', 'calendario', 'financeiro', 'integracao_cora', 'assinatura_eletronica', 'relatorios', 'equipe'];
-  const FEATURES_ENTERPRISE = [...FEATURES_BASE, 'ia'];
+  const FEATURES_BASICO     = ['chat', 'calendario', 'financeiro', 'integracao_cora'];
+  const FEATURES_PRO        = ['chat', 'calendario', 'financeiro', 'integracao_cora', 'assinatura_eletronica', 'relatorios', 'equipe'];
+  const FEATURES_ENTERPRISE = ['chat', 'calendario', 'financeiro', 'integracao_cora', 'assinatura_eletronica', 'relatorios', 'equipe', 'ia'];
 
   // Planos SaaS
   await Promise.all([
     prisma.planoSaaS.upsert({
       where:  { nome: 'Básico' },
-      update: { preco: 89, limiteClientes: 20, limiteDocumentos: 1000, features: FEATURES_BASE, isActive: true },
-      create: { nome: 'Básico', descricao: 'Para escritórios pequenos que estão começando.', preco: 89, limiteClientes: 20, limiteDocumentos: 1000, features: FEATURES_BASE, isActive: true },
+      update: { preco: 89, limiteClientes: 20, limiteDocumentos: 1000, features: FEATURES_BASICO, isActive: true },
+      create: { nome: 'Básico', descricao: 'Para escritórios pequenos que estão começando.', preco: 89, limiteClientes: 20, limiteDocumentos: 1000, features: FEATURES_BASICO, isActive: true },
     }),
     prisma.planoSaaS.upsert({
       where:  { nome: 'Pro' },
-      update: { preco: 189, limiteClientes: 100, limiteDocumentos: 5000, features: FEATURES_BASE, isActive: true },
-      create: { nome: 'Pro', descricao: 'Para escritórios em crescimento com mais recursos.', preco: 189, limiteClientes: 100, limiteDocumentos: 5000, features: FEATURES_BASE, isActive: true },
+      update: { preco: 189, limiteClientes: 100, limiteDocumentos: 5000, features: FEATURES_PRO, isActive: true },
+      create: { nome: 'Pro', descricao: 'Para escritórios em crescimento com mais recursos.', preco: 189, limiteClientes: 100, limiteDocumentos: 5000, features: FEATURES_PRO, isActive: true },
     }),
     prisma.planoSaaS.upsert({
       where:  { nome: 'Enterprise' },
