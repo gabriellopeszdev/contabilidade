@@ -71,6 +71,7 @@ COPY --chown=nextjs:nodejs next.config.js       .
 COPY --chown=nextjs:nodejs tsconfig.json        .
 COPY --chown=nextjs:nodejs tailwind.config.ts   .
 COPY --chown=nextjs:nodejs postcss.config.js    .
+COPY --chown=nextjs:nodejs prisma.config.ts     .
 COPY --chown=nextjs:nodejs docker-entrypoint.sh .
 
 USER root
