@@ -63,24 +63,25 @@ async function main() {
     console.log(`Superadmin criado: ${SUPER_ADMIN.email}`);
   }
 
-  const TODAS_FEATURES = ['chat', 'calendario', 'financeiro', 'integracao_cora', 'assinatura_eletronica', 'relatorios', 'equipe', 'ia'];
+  const FEATURES_BASE       = ['chat', 'calendario', 'financeiro', 'integracao_cora', 'assinatura_eletronica', 'relatorios', 'equipe'];
+  const FEATURES_ENTERPRISE = [...FEATURES_BASE, 'ia'];
 
   // Planos SaaS
   await Promise.all([
     prisma.planoSaaS.upsert({
       where:  { nome: 'Básico' },
-      update: { preco: 89, limiteClientes: 20, limiteDocumentos: 1000, features: TODAS_FEATURES, isActive: true },
-      create: { nome: 'Básico', descricao: 'Para escritórios pequenos que estão começando.', preco: 89, limiteClientes: 20, limiteDocumentos: 1000, features: TODAS_FEATURES, isActive: true },
+      update: { preco: 89, limiteClientes: 20, limiteDocumentos: 1000, features: FEATURES_BASE, isActive: true },
+      create: { nome: 'Básico', descricao: 'Para escritórios pequenos que estão começando.', preco: 89, limiteClientes: 20, limiteDocumentos: 1000, features: FEATURES_BASE, isActive: true },
     }),
     prisma.planoSaaS.upsert({
       where:  { nome: 'Pro' },
-      update: { preco: 189, limiteClientes: 100, limiteDocumentos: 5000, features: TODAS_FEATURES, isActive: true },
-      create: { nome: 'Pro', descricao: 'Para escritórios em crescimento com mais recursos.', preco: 189, limiteClientes: 100, limiteDocumentos: 5000, features: TODAS_FEATURES, isActive: true },
+      update: { preco: 189, limiteClientes: 100, limiteDocumentos: 5000, features: FEATURES_BASE, isActive: true },
+      create: { nome: 'Pro', descricao: 'Para escritórios em crescimento com mais recursos.', preco: 189, limiteClientes: 100, limiteDocumentos: 5000, features: FEATURES_BASE, isActive: true },
     }),
     prisma.planoSaaS.upsert({
       where:  { nome: 'Enterprise' },
-      update: { preco: 389, limiteClientes: -1, limiteDocumentos: -1, features: TODAS_FEATURES, isActive: true },
-      create: { nome: 'Enterprise', descricao: 'Clientes e documentos ilimitados. Todos os recursos, incluindo IA.', preco: 389, limiteClientes: -1, limiteDocumentos: -1, features: TODAS_FEATURES, isActive: true },
+      update: { preco: 389, limiteClientes: -1, limiteDocumentos: -1, features: FEATURES_ENTERPRISE, isActive: true },
+      create: { nome: 'Enterprise', descricao: 'Clientes e documentos ilimitados. Todos os recursos, incluindo IA.', preco: 389, limiteClientes: -1, limiteDocumentos: -1, features: FEATURES_ENTERPRISE, isActive: true },
     }),
   ]);
   console.log('Planos SaaS criados: Básico (R$89), Pro (R$189), Enterprise (R$389)');
