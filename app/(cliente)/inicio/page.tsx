@@ -196,9 +196,8 @@ export default function InicioPagina() {
             ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-900/30'
             : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700'
           }`}>
-          <div className={`w-9 h-9 rounded-xl flex items-center justify-center
-            ${novosDoContador > 0 ? 'bg-blue-100 dark:bg-blue-900/40' : 'bg-gray-100 dark:bg-gray-800'}`}>
-            <Bell size={16} className={novosDoContador > 0 ? 'text-blue-600' : 'text-gray-400'} />
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-blue-100 dark:bg-blue-900/40">
+            <Bell size={16} className="text-blue-600 dark:text-blue-400" />
           </div>
           <div>
             <p className={`text-2xl font-bold ${novosDoContador > 0 ? 'text-blue-700 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'}`}>
@@ -263,8 +262,8 @@ export default function InicioPagina() {
             : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700'
           }`}>
           <div className={`w-9 h-9 rounded-xl flex items-center justify-center
-            ${diasAteVencer !== null && diasAteVencer <= 5 ? 'bg-amber-100 dark:bg-amber-900/40' : 'bg-gray-100 dark:bg-gray-800'}`}>
-            <CalendarClock size={16} className={diasAteVencer !== null && diasAteVencer <= 5 ? 'text-amber-600 dark:text-amber-400' : 'text-gray-400'} />
+            ${diasAteVencer !== null && diasAteVencer <= 5 ? 'bg-amber-100 dark:bg-amber-900/40' : 'bg-sky-100 dark:bg-sky-900/40'}`}>
+            <CalendarClock size={16} className={diasAteVencer !== null && diasAteVencer <= 5 ? 'text-amber-600 dark:text-amber-400' : 'text-sky-500 dark:text-sky-400'} />
           </div>
           <div>
             <p className={`text-2xl font-bold
@@ -519,8 +518,8 @@ export default function InicioPagina() {
                 bg-white dark:bg-gray-900 text-sm font-medium text-gray-700 dark:text-gray-300 hover:border-sky-300 hover:bg-sky-50/40 dark:hover:bg-sky-900/10
                 hover:text-sky-700 dark:hover:text-sky-400 transition-colors group"
             >
-              <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 group-hover:bg-sky-100 dark:group-hover:bg-sky-900/30 flex items-center justify-center shrink-0">
-                <History size={14} className="text-gray-400 dark:text-gray-500 group-hover:text-sky-600 dark:group-hover:text-sky-400" />
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-sky-500 to-sky-600 flex items-center justify-center shrink-0 group-hover:brightness-110 transition-all">
+                <History size={14} className="text-white" />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-semibold leading-tight">Histórico de Documentos</p>
@@ -534,8 +533,8 @@ export default function InicioPagina() {
                 bg-white dark:bg-gray-900 text-sm font-medium text-gray-700 dark:text-gray-300 hover:border-violet-300 hover:bg-violet-50/40 dark:hover:bg-violet-900/10
                 hover:text-violet-700 dark:hover:text-violet-400 transition-colors group"
             >
-              <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 group-hover:bg-violet-100 dark:group-hover:bg-violet-900/30 flex items-center justify-center shrink-0">
-                <MessageSquare size={14} className="text-gray-400 dark:text-gray-500 group-hover:text-violet-600 dark:group-hover:text-violet-400" />
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center shrink-0 group-hover:brightness-110 transition-all">
+                <MessageSquare size={14} className="text-white" />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-semibold leading-tight">Falar com o Contador</p>
@@ -549,8 +548,8 @@ export default function InicioPagina() {
                 bg-white dark:bg-gray-900 text-sm font-medium text-gray-700 dark:text-gray-300 hover:border-emerald-300 hover:bg-emerald-50/40 dark:hover:bg-emerald-900/10
                 hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors group"
             >
-              <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 group-hover:bg-emerald-100 dark:group-hover:bg-emerald-900/30 flex items-center justify-center shrink-0">
-                <Send size={14} className="text-gray-400 dark:text-gray-500 group-hover:text-emerald-600 dark:group-hover:text-emerald-400" />
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shrink-0 group-hover:brightness-110 transition-all">
+                <Send size={14} className="text-white" />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-semibold leading-tight">Enviar Vários Arquivos</p>
