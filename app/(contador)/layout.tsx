@@ -71,7 +71,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: 'Documentos',
     items: [
-      { href: '/nfe',  label: 'Importar NF-e',  icon: <FileText size={18} />, donoOnly: true },
+      { href: '/nfe',  label: 'NF-e dos Clientes',  icon: <FileText size={18} />, donoOnly: true },
       { href: '/lote', label: 'Upload em Lote', icon: <Upload   size={18} /> },
     ],
   },

@@ -394,7 +394,7 @@ export default function NfePage() {
           <div>
             <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">NF-e dos Clientes</h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              XMLs enviados pelos seus clientes para importar no DPComp
+              XMLs de NF-e enviados pelos seus clientes
             </p>
           </div>
         </div>
