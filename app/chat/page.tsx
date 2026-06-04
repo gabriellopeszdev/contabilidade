@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 
@@ -65,6 +65,27 @@ export default function ChatPage() {
     }
   }, [isVisaoCliente, rooms, roomAtual, selecionarRoom]);
 
+  const handleUploadAnexo = useCallback(
+    async (rid: string, file: File): Promise<{ documentId: string; nome: string } | null> => {
+      if (!token) return null;
+      const form = new FormData();
+      form.append('arquivo', file);
+      try {
+        const res = await fetch(`/api/v1/chat/rooms/${rid}/attachment`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` },
+          body: form,
+        });
+        if (!res.ok) return null;
+        const data = await res.json();
+        return { documentId: data.documentId, nome: data.fileName };
+      } catch {
+        return null;
+      }
+    },
+    [token],
+  );
+
   if (carregando || !usuario) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -102,9 +123,11 @@ export default function ChatPage() {
           typing={typing}
           userId={usuario.id}
           nomeDestinatario={nomeDestinatario}
+          roomId={roomAtual}
           onEnviar={enviarMensagem}
           onCarregarMais={carregarMaisAntigas}
           onTyping={emitirTyping}
+          onUploadAnexo={handleUploadAnexo}
           semSala={!roomAtual}
         />
       </div>
@@ -134,9 +157,11 @@ export default function ChatPage() {
         typing={typing}
         userId={usuario.id}
         nomeDestinatario={roomSelecionada?.clienteNome ?? ''}
+        roomId={roomAtual}
         onEnviar={enviarMensagem}
         onCarregarMais={carregarMaisAntigas}
         onTyping={emitirTyping}
+        onUploadAnexo={handleUploadAnexo}
         semSala={!roomAtual}
       />
     </div>

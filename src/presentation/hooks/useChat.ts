@@ -302,7 +302,7 @@ export function useChat(token: string | null | undefined): UseChatReturn {
   // Enviar mensagem via Socket.IO (com fallback HTTP)
   // -----------------------------------------------------------------------
   const enviarMensagem = useCallback(async (content: string, documentId?: string): Promise<boolean> => {
-    if (!roomAtual || !content.trim()) return false;
+    if (!roomAtual || (!content.trim() && !documentId)) return false;
 
     // Tenta via socket primeiro (mais rápido)
     if (socketRef.current?.connected) {

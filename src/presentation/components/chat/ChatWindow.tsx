@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback, type FormEvent, useImperativeHandle, forwardRef } from 'react';
-import { Send, Loader2, ArrowUp, MessageSquare } from 'lucide-react';
+import { Send, Loader2, ArrowUp, MessageSquare, Paperclip, X, FileText, FileCode2 } from 'lucide-react';
 import type { ChatMensagem, TypingInfo } from '../../hooks/useChat';
 
 // =============================================================================
@@ -19,9 +19,11 @@ interface ChatWindowProps {
   typing:           TypingInfo | null;
   userId:           string;
   nomeDestinatario: string;
-  onEnviar:         (content: string) => Promise<boolean>;
+  roomId:           string | null;
+  onEnviar:         (content: string, documentId?: string) => Promise<boolean>;
   onCarregarMais:   () => Promise<void>;
   onTyping:         (isTyping: boolean) => void;
+  onUploadAnexo:    (roomId: string, file: File) => Promise<{ documentId: string; nome: string } | null>;
   semSala?:         boolean;
 }
 
@@ -49,16 +51,21 @@ export const ChatWindow = forwardRef<ChatWindowHandle, ChatWindowProps>(function
   typing,
   userId,
   nomeDestinatario,
+  roomId,
   onEnviar,
   onCarregarMais,
   onTyping,
+  onUploadAnexo,
   semSala = false,
 }, ref) {
   const [texto, setTexto] = useState('');
   const [enviando, setEnviando] = useState(false);
+  const [anexo, setAnexo] = useState<{ documentId: string; nome: string } | null>(null);
+  const [uploadandoAnexo, setUploadandoAnexo] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prevMsgCountRef = useRef(0);
 
@@ -108,22 +115,37 @@ export const ChatWindow = forwardRef<ChatWindowHandle, ChatWindowProps>(function
     [onTyping],
   );
 
+  // File selection → upload
+  const handleFileSelected = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file || !roomId) return;
+      e.target.value = '';
+      setUploadandoAnexo(true);
+      const resultado = await onUploadAnexo(roomId, file);
+      if (resultado) setAnexo(resultado);
+      setUploadandoAnexo(false);
+    },
+    [roomId, onUploadAnexo],
+  );
+
   // Submit
   const handleSubmit = useCallback(
     async (e?: FormEvent) => {
       e?.preventDefault();
-      if (!texto.trim() || enviando) return;
+      if ((!texto.trim() && !anexo) || enviando) return;
 
       setEnviando(true);
       onTyping(false);
-      const sucesso = await onEnviar(texto.trim());
+      const sucesso = await onEnviar(texto.trim(), anexo?.documentId);
       if (sucesso) {
         setTexto('');
+        setAnexo(null);
         inputRef.current?.focus();
       }
       setEnviando(false);
     },
-    [texto, enviando, onEnviar, onTyping],
+    [texto, anexo, enviando, onEnviar, onTyping],
   );
 
   // Enter to send, Shift+Enter for newline
@@ -262,7 +284,24 @@ export const ChatWindow = forwardRef<ChatWindowHandle, ChatWindowProps>(function
                         {msg.senderNome}
                       </p>
                     )}
-                    <p className="whitespace-pre-wrap break-words">{msg.content}</p>
+                    {msg.content && (
+                      <p className="whitespace-pre-wrap break-words">{msg.content}</p>
+                    )}
+                    {msg.documentId && (
+                      <a
+                        href={`/api/v1/documentos/${msg.documentId}/download`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`flex items-center gap-1.5 mt-1 px-2 py-1 rounded-lg text-[11px] font-medium transition-colors ${
+                          isMe
+                            ? 'bg-white/20 text-white hover:bg-white/30'
+                            : 'bg-gray-300/50 dark:bg-gray-600/50 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'
+                        }`}
+                      >
+                        <FileText size={12} className="shrink-0" />
+                        Ver anexo
+                      </a>
+                    )}
                     <p className={`text-[9px] mt-1 ${isMe ? 'text-white/60' : 'text-gray-500 dark:text-gray-400'} text-right`}>
                       {formatarHoraMensagem(msg.createdAt)}
                     </p>
@@ -292,7 +331,46 @@ export const ChatWindow = forwardRef<ChatWindowHandle, ChatWindowProps>(function
 
       {/* Input area */}
       <div className="px-4 py-3 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shrink-0">
+        {/* Attachment preview */}
+        {anexo && (
+          <div className="flex items-center gap-2 px-2 py-1.5 mb-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+            {anexo.nome.toLowerCase().endsWith('.xml') ? (
+              <FileCode2 size={14} className="text-blue-500 shrink-0" />
+            ) : (
+              <FileText size={14} className="text-blue-500 shrink-0" />
+            )}
+            <span className="text-xs text-blue-700 dark:text-blue-300 truncate flex-1">{anexo.nome}</span>
+            <button
+              type="button"
+              onClick={() => setAnexo(null)}
+              className="text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 shrink-0"
+            >
+              <X size={14} />
+            </button>
+          </div>
+        )}
+
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".pdf,.xml,application/pdf,application/xml,text/xml"
+          className="hidden"
+          onChange={handleFileSelected}
+        />
+
         <form onSubmit={handleSubmit} className="flex items-end gap-2">
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={!roomId || uploadandoAnexo}
+            className="w-9 h-9 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all shrink-0"
+          >
+            {uploadandoAnexo ? (
+              <Loader2 size={16} className="animate-spin" />
+            ) : (
+              <Paperclip size={16} />
+            )}
+          </button>
           <textarea
             ref={inputRef}
             value={texto}
@@ -305,7 +383,7 @@ export const ChatWindow = forwardRef<ChatWindowHandle, ChatWindowProps>(function
           />
           <button
             type="submit"
-            disabled={!texto.trim() || enviando}
+            disabled={(!texto.trim() && !anexo) || enviando || uploadandoAnexo}
             className="w-9 h-9 rounded-xl bg-primary text-white flex items-center justify-center hover:brightness-90 disabled:opacity-40 disabled:cursor-not-allowed transition-all shrink-0"
           >
             {enviando ? (

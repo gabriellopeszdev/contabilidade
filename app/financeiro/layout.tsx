@@ -87,12 +87,13 @@ const NAV_GRUPOS_CONTADOR: NavGroup[] = [
 // =============================================================================
 
 const NAV_CLIENTE: NavItem[] = [
-  { href: '/inicio',      label: 'Início',          icon: <Home          size={18} /> },
-  { href: '/documentos',  label: 'Meus Documentos', icon: <FileText      size={18} /> },
-  { href: '/enviar',      label: 'Enviar Arquivo',  icon: <Upload        size={18} /> },
-  { href: '/financeiro',  label: 'Financeiro',      icon: <DollarSign    size={18} /> },
-  { href: '/chat',        label: 'Chat',            icon: <MessageSquare size={18} /> },
-  { href: '/ajuda',       label: 'Ajuda',           icon: <HelpCircle    size={18} /> },
+  { href: '/inicio',       label: 'Início',          icon: <Home          size={18} /> },
+  { href: '/documentos',   label: 'Meus Documentos', icon: <FileText      size={18} /> },
+  { href: '/enviar',       label: 'Enviar Arquivo',  icon: <Upload        size={18} /> },
+  { href: '/minha-equipe', label: 'Minha Equipe',    icon: <Users         size={18} />, donoOnly: true },
+  { href: '/financeiro',   label: 'Financeiro',      icon: <DollarSign    size={18} /> },
+  { href: '/chat',         label: 'Chat',            icon: <MessageSquare size={18} /> },
+  { href: '/ajuda',        label: 'Ajuda',           icon: <HelpCircle    size={18} /> },
 ];
 
 // =============================================================================
@@ -211,7 +212,7 @@ export default function FinanceiroLayout({ children }: { children: React.ReactNo
 
           <nav className={`flex-1 py-3 overflow-y-auto ${colapsada ? 'px-2' : 'px-3'}`}>
             <div className="space-y-0.5">
-              {NAV_CLIENTE.map((item) => {
+              {NAV_CLIENTE.filter((item) => !item.donoOnly || isCliente).map((item) => {
                 const ativo = pathname === item.href || pathname.startsWith(item.href + '/');
                 return (
                   <Link key={item.href} href={item.href} onClick={() => setSidebarAberta(false)} title={colapsada ? item.label : undefined}
