@@ -46,7 +46,10 @@ export const GET = withAuth(
 
       // 2. Baixa o XML do MinIO server-side (alcança minio:9000 via rede interna)
       const buffer = await storageService.getBuffer(doc.storagePath);
-      const xmlString = buffer.toString('utf-8');
+      // Remove BOM UTF-8 se presente (﻿)
+      const xmlString = buffer.toString('utf-8').replace(/^﻿/, '');
+
+      logger.info('[visualizar] storagePath=' + doc.storagePath + ' primeiros200=' + xmlString.slice(0, 200));
 
       // 3. Parseia o XML
       const dados = parseNFe(xmlString);
