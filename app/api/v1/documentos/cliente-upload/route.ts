@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createHash } from 'crypto';
 
+import { SetorTipo }       from '@prisma/client';
 import { withAuth }        from '../../../../../src/infrastructure/http/middlewares/withAuth';
 import { prisma, storageService } from '../../../../../src/infrastructure/di/Container';
 import { logger } from '../../../../../src/utils/logger';
@@ -24,12 +25,12 @@ const TIPOS_ACEITOS: Record<string, string> = {
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 
-const CATEGORIA_SETOR_MAP: Record<string, string> = {
-  xml:      'FISCAL',
-  extratos: 'CONTABIL',
-  despesas: 'CONTABIL',
-  impostos: 'CONTABIL',
-  folha:    'PESSOAL',
+const CATEGORIA_SETOR_MAP: Record<string, SetorTipo> = {
+  xml:      SetorTipo.FISCAL,
+  extratos: SetorTipo.CONTABIL,
+  despesas: SetorTipo.CONTABIL,
+  impostos: SetorTipo.CONTABIL,
+  folha:    SetorTipo.PESSOAL,
 };
 
 // =============================================================================
