@@ -128,12 +128,15 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
   const [colapsada,     setColapsada]     = useState(false);
 
   useEffect(() => {
-    if (localStorage.getItem('sidebar-colapsada') === 'true') setColapsada(true);
-  }, []);
+    if (carregando) return;
+    const key = isVisaoCliente ? 'sidebar-cliente-colapsada' : 'sidebar-colapsada';
+    setColapsada(localStorage.getItem(key) === 'true');
+  }, [carregando, isVisaoCliente]);
 
   const toggleColapsada = () => {
     setColapsada((v) => {
-      localStorage.setItem('sidebar-colapsada', String(!v));
+      const key = isVisaoCliente ? 'sidebar-cliente-colapsada' : 'sidebar-colapsada';
+      localStorage.setItem(key, String(!v));
       return !v;
     });
   };
