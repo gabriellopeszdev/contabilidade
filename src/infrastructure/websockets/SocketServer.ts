@@ -85,6 +85,9 @@ interface ServerToClientEvents {
     mensagem:  string;
     createdAt: string;
   }) => void;
+
+  /** Disparado ao contador quando um cliente ativa a conta. */
+  cliente_ativado: (payload: { clienteId: string }) => void;
 }
 
 /** Eventos que o CLIENT envia ao servidor. */
@@ -620,6 +623,14 @@ export class SocketServer {
             vencimento:    payload.vencimento,
           },
         });
+        break;
+      }
+
+      case 'ClienteAtivadoEvent': {
+        const contadorId = event.contadorId as string | undefined;
+        const clienteId  = event.clienteId  as string | undefined;
+        if (!contadorId || !clienteId) break;
+        this.io.to(`user:${contadorId}`).emit('cliente_ativado', { clienteId });
         break;
       }
 

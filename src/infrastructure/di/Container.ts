@@ -260,4 +260,4 @@ export const queueProducer =
   globalThis.__contabilidade_bullmq_queue ??
   (globalThis.__contabilidade_bullmq_queue = buildQueueProducer());
 
-export { prisma, redisPublisher, storageService, documentoRepository };
+export { prisma, redisPublisher, storageService, documentoRepository, eventDispatcher };

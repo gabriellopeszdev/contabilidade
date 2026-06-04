@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import useSWR from 'swr';
+import { io } from 'socket.io-client';
 import {
   Users,
   Plus,
@@ -114,6 +115,20 @@ function ClientesPageDono({ token }: { token: string | null }) {
   });
 
   const clientes = data?.clientes ?? [];
+
+  // Atualização em tempo real — escuta cliente_ativado via Socket.IO
+  useEffect(() => {
+    if (!token) return;
+    const socket = io(process.env.NEXT_PUBLIC_APP_URL || window.location.origin, {
+      path:             '/api/ws',
+      addTrailingSlash: false,
+      auth:             { token },
+      transports:       ['websocket'],
+      multiplex:        true,
+    });
+    socket.on('cliente_ativado', () => { void mutate(); });
+    return () => { socket.off('cliente_ativado'); socket.disconnect(); };
+  }, [token, mutate]);
 
   // Busca local
   const [busca, setBusca] = useState('');

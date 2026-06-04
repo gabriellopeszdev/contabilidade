@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '../../../../../src/infrastructure/di/Container';
+import { prisma, eventDispatcher } from '../../../../../src/infrastructure/di/Container';
 import { logger } from '../../../../../src/utils/logger';
 import { checkRateLimit, getClientIp } from '../../../../../src/utils/rateLimiter';
 import { BcryptPasswordHasher } from '../../../../../src/infrastructure/auth/BcryptPasswordHasher';
@@ -86,6 +86,25 @@ export async function POST(req: NextRequest) {
         inviteExpiresAt: null,
       },
     });
+
+    // Notificar contadores vinculados em tempo real
+    const vinculos = await prisma.contadorCliente.findMany({
+      where: { clienteId: cliente.id },
+      select: { contadorId: true },
+    });
+    await Promise.allSettled(
+      vinculos.map(({ contadorId }) =>
+        eventDispatcher.dispatch(
+          Object.assign(Object.create(null) as object, {
+            eventId:    crypto.randomUUID(),
+            eventName:  'ClienteAtivadoEvent',
+            occurredAt: new Date(),
+            clienteId:  cliente.id,
+            contadorId,
+          }) as import('../../../../../src/shared/DomainEvent').DomainEvent,
+        ),
+      ),
+    );
 
     return NextResponse.json({ message: 'Conta ativada com sucesso! Faça login.' });
   } catch (err) {
