@@ -125,8 +125,15 @@ export default function FinanceiroLayout({ children }: { children: React.ReactNo
   const { formatado: tempoSessao } = useSessionTimer();
 
   const [sidebarAberta, setSidebarAberta] = useState(false);
-  const [colapsada,     setColapsada]     = useState(false);
+  const [colapsada,     setColapsada]     = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return (
+      localStorage.getItem('sidebar-cliente-colapsada') === 'true' ||
+      localStorage.getItem('sidebar-colapsada') === 'true'
+    );
+  });
 
+  // Após auth carregar, garante que a chave correta é usada
   useEffect(() => {
     if (carregando) return;
     const key = isVisaoCliente ? 'sidebar-cliente-colapsada' : 'sidebar-colapsada';
