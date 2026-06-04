@@ -31,6 +31,10 @@ RUN npx prisma generate
 # Copia o restante do código-fonte
 COPY . .
 
+# NEXT_PUBLIC_* são embutidos no bundle em build time — passar como ARG
+ARG NEXT_PUBLIC_APP_URL
+ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
+
 # Build do Next.js (gera .next/)
 ENV NODE_ENV=production
 RUN npm run build

@@ -162,7 +162,7 @@ export function useChat(token: string | null | undefined): UseChatReturn {
   useEffect(() => {
     if (!token) return;
 
-    const s = io(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000', {
+    const s = io(process.env.NEXT_PUBLIC_APP_URL || window.location.origin, {
       path:             '/api/ws',
       addTrailingSlash: false,
       auth:             { token },

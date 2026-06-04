@@ -224,7 +224,7 @@ export function useNotificacoes(
       despachar({ tipo: 'CONECTANDO' });
       socketToken = token;
       socket = io(
-        process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+        process.env.NEXT_PUBLIC_APP_URL || window.location.origin,
         {
           path:             '/api/ws',
           addTrailingSlash: false,
