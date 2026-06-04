@@ -60,8 +60,7 @@ export const ChatWindow = forwardRef<ChatWindowHandle, ChatWindowProps>(function
 }, ref) {
   const [texto, setTexto] = useState('');
   const [enviando, setEnviando] = useState(false);
-  const [anexo, setAnexo] = useState<{ documentId: string; nome: string } | null>(null);
-  const [uploadandoAnexo, setUploadandoAnexo] = useState(false);
+  const [anexo, setAnexo] = useState<{ file: File; nome: string } | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -115,21 +114,18 @@ export const ChatWindow = forwardRef<ChatWindowHandle, ChatWindowProps>(function
     [onTyping],
   );
 
-  // File selection → upload
+  // File selection — só guarda o File localmente, sem upload ainda
   const handleFileSelected = useCallback(
-    async (e: React.ChangeEvent<HTMLInputElement>) => {
+    (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
-      if (!file || !roomId) return;
+      if (!file) return;
       e.target.value = '';
-      setUploadandoAnexo(true);
-      const resultado = await onUploadAnexo(roomId, file);
-      if (resultado) setAnexo(resultado);
-      setUploadandoAnexo(false);
+      setAnexo({ file, nome: file.name });
     },
-    [roomId, onUploadAnexo],
+    [],
   );
 
-  // Submit
+  // Submit — faz upload (se houver anexo) e envia a mensagem
   const handleSubmit = useCallback(
     async (e?: FormEvent) => {
       e?.preventDefault();
@@ -137,7 +133,18 @@ export const ChatWindow = forwardRef<ChatWindowHandle, ChatWindowProps>(function
 
       setEnviando(true);
       onTyping(false);
-      const sucesso = await onEnviar(texto.trim(), anexo?.documentId);
+
+      let documentId: string | undefined;
+      if (anexo && roomId) {
+        const resultado = await onUploadAnexo(roomId, anexo.file);
+        if (!resultado) {
+          setEnviando(false);
+          return;
+        }
+        documentId = resultado.documentId;
+      }
+
+      const sucesso = await onEnviar(texto.trim(), documentId);
       if (sucesso) {
         setTexto('');
         setAnexo(null);
@@ -145,7 +152,7 @@ export const ChatWindow = forwardRef<ChatWindowHandle, ChatWindowProps>(function
       }
       setEnviando(false);
     },
-    [texto, anexo, enviando, onEnviar, onTyping],
+    [texto, anexo, roomId, enviando, onEnviar, onTyping, onUploadAnexo],
   );
 
   // Enter to send, Shift+Enter for newline
@@ -362,14 +369,10 @@ export const ChatWindow = forwardRef<ChatWindowHandle, ChatWindowProps>(function
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            disabled={!roomId || uploadandoAnexo}
+            disabled={!roomId || enviando}
             className="w-9 h-9 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all shrink-0"
           >
-            {uploadandoAnexo ? (
-              <Loader2 size={16} className="animate-spin" />
-            ) : (
-              <Paperclip size={16} />
-            )}
+            <Paperclip size={16} />
           </button>
           <textarea
             ref={inputRef}
@@ -383,7 +386,7 @@ export const ChatWindow = forwardRef<ChatWindowHandle, ChatWindowProps>(function
           />
           <button
             type="submit"
-            disabled={(!texto.trim() && !anexo) || enviando || uploadandoAnexo}
+            disabled={(!texto.trim() && !anexo) || enviando}
             className="w-9 h-9 rounded-xl bg-primary text-white flex items-center justify-center hover:brightness-90 disabled:opacity-40 disabled:cursor-not-allowed transition-all shrink-0"
           >
             {enviando ? (
