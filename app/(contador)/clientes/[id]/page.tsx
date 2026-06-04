@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import useSWR from 'swr';
@@ -30,6 +30,7 @@ import {
   Send,
   Lock,
   TrendingUp,
+  Users,
 } from 'lucide-react';
 
 import { useAuth }       from '../../../../src/presentation/hooks/useAuth';
@@ -89,6 +90,15 @@ interface HistoricoResponse {
   cliente:    ClienteInfo;
   resumo:     Resumo;
   documentos: DocumentoDTO[];
+}
+
+interface FuncionarioSimples {
+  id:   string;
+  name: string;
+}
+
+interface DocumentoResponsaveisResponse {
+  responsaveis: { id: string; name: string; assignedAt: string }[];
 }
 
 // =============================================================================
@@ -198,6 +208,24 @@ function ClienteDetalhesPageDono() {
   // Download
   const [baixandoId, setBaixandoId] = useState<string | null>(null);
 
+  // Responsáveis por documento
+  const [responsaveisPopoverId, setResponsaveisPopoverId] = useState<string | null>(null);
+  const [responsaveisPorDoc, setResponsaveisPorDoc] = useState<Record<string, string[]>>({});
+  const [salvandoResponsaveis, setSalvandoResponsaveis] = useState(false);
+  const responsaveisPopoverRef = useRef<HTMLDivElement>(null);
+
+  // Fechar popover de responsáveis ao clicar fora
+  useEffect(() => {
+    if (!responsaveisPopoverId) return;
+    const handler = (e: MouseEvent) => {
+      if (!responsaveisPopoverRef.current?.contains(e.target as Node)) {
+        setResponsaveisPopoverId(null);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [responsaveisPopoverId]);
+
   // Assinatura
   const [assinandoId, setAssinandoId] = useState<string | null>(null);
   const [atualizandoSetorId, setAtualizandoSetorId] = useState<string | null>(null);
@@ -246,6 +274,57 @@ function ClienteDetalhesPageDono() {
     revalidateOnFocus: true,
     keepPreviousData: true,
   });
+
+  // Busca lista de funcionários do escritório
+  const { data: equipeData } = useSWR<{ funcionarios: FuncionarioSimples[] }>(
+    token ? ['/api/v1/equipe', token] : null,
+    ([url, tkn]: [string, string]) =>
+      fetch(url, { headers: { Authorization: `Bearer ${tkn}` } }).then((r) =>
+        r.ok ? (r.json() as Promise<{ funcionarios: FuncionarioSimples[] }>) : { funcionarios: [] },
+      ),
+    { revalidateOnFocus: false },
+  );
+  const funcionarios = equipeData?.funcionarios ?? [];
+
+  // Carrega responsáveis de um documento ao abrir o popover
+  const abrirResponsaveisPopover = useCallback(async (docId: string) => {
+    setResponsaveisPopoverId(docId);
+    if (responsaveisPorDoc[docId] !== undefined || !token) return;
+    try {
+      const res = await fetch(`/api/v1/documentos/${docId}/responsaveis`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const body = await res.json() as DocumentoResponsaveisResponse;
+        setResponsaveisPorDoc((prev) => ({ ...prev, [docId]: body.responsaveis.map((r) => r.id) }));
+      }
+    } catch { /* silencioso — popover continua aberto sem dados */ }
+  }, [token, responsaveisPorDoc]);
+
+  const toggleResponsavel = useCallback((docId: string, funcId: string) => {
+    setResponsaveisPorDoc((prev) => {
+      const atual = prev[docId] ?? [];
+      return {
+        ...prev,
+        [docId]: atual.includes(funcId) ? atual.filter((id) => id !== funcId) : [...atual, funcId],
+      };
+    });
+  }, []);
+
+  const salvarResponsaveis = useCallback(async (docId: string) => {
+    if (!token) return;
+    setSalvandoResponsaveis(true);
+    try {
+      await fetch(`/api/v1/documentos/${docId}/responsaveis`, {
+        method:  'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body:    JSON.stringify({ funcionarioIds: responsaveisPorDoc[docId] ?? [] }),
+      });
+      setResponsaveisPopoverId(null);
+    } catch { /* silencioso */ } finally {
+      setSalvandoResponsaveis(false);
+    }
+  }, [token, responsaveisPorDoc]);
 
   const cliente    = data?.cliente;
   const resumo     = data?.resumo;
@@ -1153,7 +1232,7 @@ function ClienteDetalhesPageDono() {
                       )}
                     </div>
 
-                    {/* Ações: Download + Assinatura */}
+                    {/* Ações: Download + Assinatura + Responsáveis */}
                     <div className="mt-2 lg:mt-0 flex items-center justify-center gap-1">
                       <button
                         onClick={() => handleDownload(doc)}
@@ -1183,6 +1262,70 @@ function ClienteDetalhesPageDono() {
                             <PenLine size={16} />
                           )}
                         </button>
+                      )}
+
+                      {/* Botão de atribuir responsáveis */}
+                      {funcionarios.length > 0 && (
+                        <div className="relative" ref={responsaveisPopoverId === doc.id ? responsaveisPopoverRef : undefined}>
+                          <button
+                            onClick={() => responsaveisPopoverId === doc.id ? setResponsaveisPopoverId(null) : abrirResponsaveisPopover(doc.id)}
+                            title="Atribuir responsáveis"
+                            className={[
+                              'p-2 rounded-lg transition-colors',
+                              responsaveisPopoverId === doc.id
+                                ? 'text-violet-600 bg-violet-50 dark:bg-violet-900/20'
+                                : 'text-slate-400 hover:text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-900/20',
+                              (responsaveisPorDoc[doc.id] ?? []).length > 0
+                                ? 'text-violet-500'
+                                : '',
+                            ].join(' ')}
+                          >
+                            <Users size={16} />
+                          </button>
+
+                          {responsaveisPopoverId === doc.id && (
+                            <div className="absolute bottom-full right-0 mb-1.5 w-56 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-xl z-50 py-1 overflow-hidden">
+                              <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500 border-b border-gray-100 dark:border-gray-800">
+                                Responsáveis
+                              </p>
+                              <div className="max-h-44 overflow-y-auto">
+                                {funcionarios.map((f) => {
+                                  const selecionado = (responsaveisPorDoc[doc.id] ?? []).includes(f.id);
+                                  return (
+                                    <button
+                                      key={f.id}
+                                      type="button"
+                                      onClick={() => toggleResponsavel(doc.id, f.id)}
+                                      className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                                    >
+                                      <div className={[
+                                        'w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold shrink-0 border',
+                                        selecionado
+                                          ? 'bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400 border-violet-300 dark:border-violet-700'
+                                          : 'bg-gray-100 dark:bg-gray-800 text-gray-500 border-gray-300 dark:border-gray-600',
+                                      ].join(' ')}>
+                                        {f.name.split(' ').filter(Boolean).slice(0, 2).map((p) => p[0].toUpperCase()).join('')}
+                                      </div>
+                                      <span className={`flex-1 text-left truncate ${selecionado ? 'font-semibold text-gray-800 dark:text-gray-100' : 'text-gray-500 dark:text-gray-400'}`}>
+                                        {f.name}
+                                      </span>
+                                      {selecionado && <CheckCircle2 size={10} className="text-emerald-500 shrink-0" />}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                              <div className="border-t border-gray-100 dark:border-gray-800 px-3 py-2">
+                                <button
+                                  onClick={() => salvarResponsaveis(doc.id)}
+                                  disabled={salvandoResponsaveis}
+                                  className="w-full py-1.5 rounded-lg bg-violet-600 hover:bg-violet-700 disabled:opacity-60 text-white text-xs font-semibold transition-colors"
+                                >
+                                  {salvandoResponsaveis ? 'Salvando…' : 'Salvar'}
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       )}
                     </div>
                   </div>

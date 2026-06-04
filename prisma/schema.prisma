@@ -259,6 +259,7 @@ model Funcionario {
 
   contador UsuarioContador? @relation("FuncionarioContador", fields: [contadorId], references: [id], onDelete: Cascade)
   cliente  UsuarioCliente?  @relation("FuncionarioCliente",  fields: [clienteId],  references: [id], onDelete: Cascade)
+  documentosResponsavel DocumentoResponsavel[]
 
   @@index([contadorId])
   @@index([clienteId])
@@ -301,6 +302,7 @@ model DocumentoFiscal {
   versaoAtual   Int               @default(1) @map("versao_atual")
   versoes       DocumentoVersao[]
   assinaturas   AssinaturaDocumento[]
+  responsaveis  DocumentoResponsavel[]
 
   // ------------------------------------------------------------------
   // Índices — projetados para as queries do IDocumentoRepository
@@ -340,6 +342,28 @@ model DocumentoVersao {
   @@unique([documentoId, versao])
   @@index([documentoId])
   @@map("documento_versao")
+}
+
+// =============================================================================
+// DocumentoResponsavel — Responsáveis (funcionários) atribuídos a um documento
+//
+// Relação N:N entre DocumentoFiscal e Funcionario.
+// Somente funcionários do escritório (vinculo = ESCRITORIO) podem ser atribuídos.
+// =============================================================================
+
+model DocumentoResponsavel {
+  documentoId   String   @map("documento_id") @db.Uuid
+  funcionarioId String   @map("funcionario_id") @db.Uuid
+  assignedAt    DateTime @default(now()) @map("assigned_at") @db.Timestamptz
+  assignedById  String   @map("assigned_by_id") @db.Uuid
+
+  documento   DocumentoFiscal @relation(fields: [documentoId],   references: [id], onDelete: Cascade)
+  funcionario Funcionario     @relation(fields: [funcionarioId], references: [id], onDelete: Cascade)
+
+  @@id([documentoId, funcionarioId])
+  @@index([documentoId])
+  @@index([funcionarioId])
+  @@map("documento_responsavel")
 }
 
 // =============================================================================

@@ -1,15 +1,19 @@
 'use client';
 
-import { useCallback } from 'react';
-import { ClipboardList } from 'lucide-react';
+import { useState, useCallback } from 'react';
+import { ClipboardList, AlertCircle, X } from 'lucide-react';
 
-import { useAuth }      from '../../../src/presentation/hooks/useAuth';
-import { KanbanBoard }  from '../../../src/presentation/components/kanban/KanbanBoard';
+import { useAuth }     from '../../../src/presentation/hooks/useAuth';
+import { KanbanBoard } from '../../../src/presentation/components/kanban/KanbanBoard';
 
 export default function KanbanPage() {
   const { token } = useAuth();
+  const [erroMsg, setErroMsg] = useState<string | null>(null);
 
-  const handleErro = useCallback((_msg: string) => {}, []);
+  const handleErro = useCallback((msg: string) => {
+    setErroMsg(msg);
+    setTimeout(() => setErroMsg(null), 5000);
+  }, []);
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
@@ -22,6 +26,16 @@ export default function KanbanPage() {
           Acompanhe e gerencie o fluxo de trabalho da equipe
         </p>
       </div>
+
+      {erroMsg && (
+        <div className="mb-4 flex items-center gap-3 rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 px-4 py-3 text-sm text-red-700 dark:text-red-400">
+          <AlertCircle size={16} className="shrink-0" />
+          <span className="flex-1">{erroMsg}</span>
+          <button onClick={() => setErroMsg(null)} className="shrink-0 hover:opacity-70">
+            <X size={14} />
+          </button>
+        </div>
+      )}
 
       <KanbanBoard token={token} onErro={handleErro} />
     </div>
