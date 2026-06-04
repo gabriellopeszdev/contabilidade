@@ -302,31 +302,12 @@ export default function NfePage() {
     setVisualizandoId(item.id);
     try {
       const token = await getToken();
-
-      // 1. Obtém a pre-signed URL do MinIO
-      const dlRes = await fetch(`/api/v1/documentos/${item.id}/download`, {
+      const res = await fetch(`/api/v1/nfe/recebidas/${item.id}/visualizar`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!dlRes.ok) return;
-      const { url } = await dlRes.json() as { url: string };
-
-      // 2. Baixa o arquivo XML real a partir da URL pré-assinada
-      const fileRes = await fetch(url);
-      if (!fileRes.ok) return;
-      const blob = await fileRes.blob();
-
-      // 3. Envia o XML para o parser
-      const form = new FormData();
-      form.append('arquivos', new File([blob], item.fileName, { type: 'application/xml' }));
-
-      const parseRes = await fetch('/api/v1/nfe/importar', {
-        method:  'POST',
-        headers: { Authorization: `Bearer ${token}` },
-        body:    form,
-      });
-      if (!parseRes.ok) return;
-      const data = await parseRes.json() as { resultados: ResultadoArquivo[] };
-      if (data.resultados?.[0]) setNfeSelecionada(data.resultados[0]);
+      if (!res.ok) return;
+      const data = await res.json() as ResultadoArquivo;
+      if (data.ok && data.dados) setNfeSelecionada(data);
     } finally {
       setVisualizandoId(null);
     }
