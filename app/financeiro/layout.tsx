@@ -121,7 +121,7 @@ export default function FinanceiroLayout({ children }: { children: React.ReactNo
 
   const { dark, toggle: toggleDark, mounted: darkMounted } = useDarkMode();
   const { plan: planoAtual } = usePlanoAtual(isDono ? token : null);
-  const { logoUrl, nomeEscritorio } = useTheme(token);
+  const { logoUrl, nomeEscritorio, loaded: themeLoaded } = useTheme(token);
   const { formatado: tempoSessao } = useSessionTimer();
 
   const [sidebarAberta, setSidebarAberta] = useState(false);
@@ -202,7 +202,10 @@ export default function FinanceiroLayout({ children }: { children: React.ReactNo
             {!colapsada && (
               <>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-bold text-gray-900 dark:text-gray-100 leading-tight truncate">{nomeEscritorio || 'Portal do Cliente'}</p>
+                  {themeLoaded
+                    ? <p className="text-sm font-bold text-gray-900 dark:text-gray-100 leading-tight truncate">{nomeEscritorio || 'Portal do Cliente'}</p>
+                    : <div className="h-3.5 bg-gray-200 dark:bg-gray-700 rounded w-24" />
+                  }
                   <p className="text-[10px] text-gray-400 dark:text-gray-500 leading-none">FiscoHub</p>
                 </div>
                 <button className="ml-auto lg:hidden p-1 rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" onClick={() => setSidebarAberta(false)}><X size={18} /></button>
@@ -247,7 +250,9 @@ export default function FinanceiroLayout({ children }: { children: React.ReactNo
             <button className="lg:hidden p-2 -ml-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800" onClick={() => setSidebarAberta(true)} aria-label="Abrir menu"><Menu size={20} /></button>
             <div className="hidden lg:flex items-center gap-2">
               <button onClick={toggleColapsada} className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">{colapsada ? <ChevronsRight size={18} /> : <ChevronsLeft size={18} />}</button>
-              <h1 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Chat</h1>
+              <h1 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                {NAV_CLIENTE.find((n) => pathname === n.href || pathname.startsWith(n.href + '/'))?.label ?? 'Portal'}
+              </h1>
             </div>
             <div className="flex items-center gap-2 ml-auto">
               {darkMounted && <button onClick={toggleDark} className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">{dark ? <Sun size={18} /> : <Moon size={18} />}</button>}
