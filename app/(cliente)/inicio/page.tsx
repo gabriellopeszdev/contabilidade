@@ -1,18 +1,17 @@
 'use client';
 
-import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link          from 'next/link';
 import {
   CloudUpload, FileText, Download, CheckCircle, CheckCircle2,
   Loader2, AlertTriangle, DollarSign, MessageSquare, History,
-  ChevronRight, Upload,
+  ChevronRight,
   FileCode2, Bell, Send, CalendarClock,
 } from 'lucide-react';
 
 import { useAuth }              from '../../../src/presentation/hooks/useAuth';
 import { useDocumentosCliente } from '../../../src/presentation/hooks/useDocumentosCliente';
-import { SectorSelectModal }    from '../../../src/presentation/components/cliente/SectorSelectModal';
 
 // =============================================================================
 // Tipos
@@ -29,9 +28,6 @@ interface Boleto {
 // =============================================================================
 // Helpers
 // =============================================================================
-
-const TIPOS_ACEITOS  = '.pdf,.xml,application/pdf,application/xml,text/xml';
-const MAX_SIZE_BYTES = 10 * 1024 * 1024;
 
 const MESES  = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
 const SEMANA = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
@@ -117,34 +113,6 @@ export default function InicioPagina() {
     }).length;
   }, [documentos, agora]);
 
-  // ── Drag & Drop ─────────────────────────────────────────────────────────────
-  const [dragAtivo,          setDragAtivo]          = useState(false);
-  const [arquivoSelecionado, setArquivoSelecionado] = useState<File | null>(null);
-  const [erroArquivo,        setErroArquivo]        = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const validar = useCallback((f: File): string | null => {
-    const ext = f.name.split('.').pop()?.toLowerCase();
-    if (ext !== 'pdf' && ext !== 'xml') return 'Apenas PDF ou XML são aceitos.';
-    if (f.size > MAX_SIZE_BYTES)         return 'Arquivo excede 10 MB.';
-    return null;
-  }, []);
-
-  const abrirModal = useCallback((f: File) => {
-    const e = validar(f);
-    if (e) { setErroArquivo(e); return; }
-    setErroArquivo(null); setArquivoSelecionado(f);
-  }, [validar]);
-
-  const handleDragOver  = useCallback((e: React.DragEvent) => { e.preventDefault(); setDragAtivo(true); }, []);
-  const handleDragLeave = useCallback((e: React.DragEvent) => { e.preventDefault(); setDragAtivo(false); }, []);
-  const handleDrop      = useCallback((e: React.DragEvent) => {
-    e.preventDefault(); setDragAtivo(false);
-    const f = e.dataTransfer.files[0]; if (f) abrirModal(f);
-  }, [abrirModal]);
-
-  const fecharModal        = useCallback(() => { setArquivoSelecionado(null); if (fileInputRef.current) fileInputRef.current.value = ''; }, []);
-  const aoEnviarComSucesso = useCallback(() => { fecharModal(); revalidar(); }, [fecharModal, revalidar]);
 
   // ── Marcar como lido ────────────────────────────────────────────────────────
   const [marcandoIds, setMarcandoIds] = useState<Set<string>>(new Set());
@@ -453,61 +421,29 @@ export default function InicioPagina() {
         {/* ============================================================== */}
         <aside className="space-y-4">
 
-          {/* Upload sem seleção de setor */}
-          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-4 space-y-3">
-            <h3 className="text-sm font-bold text-gray-800 dark:text-gray-200">Enviar Documento</h3>
-
-            <p className="text-[11px] text-gray-500 dark:text-gray-400">
-              A classificação do documento será feita pelo seu contador após o envio.
-            </p>
-
-            {/* Dropzone */}
-            <div
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
-              onClick={() => fileInputRef.current?.click()}
-              className={`
-                rounded-xl border-2 border-dashed cursor-pointer select-none
-                transition-all duration-200 flex flex-col items-center justify-center
-                gap-2 py-7 text-center
-                ${dragAtivo
-                  ? 'border-sky-400 bg-sky-50 dark:bg-sky-900/20 scale-[1.02]'
-                  : 'border-sky-200 dark:border-sky-800 bg-sky-50/40 dark:bg-sky-900/10 hover:border-sky-400 hover:bg-sky-50 dark:hover:bg-sky-900/20'
-                }
-              `}
-            >
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept={TIPOS_ACEITOS}
-                className="hidden"
-                onChange={e => { const f = e.target.files?.[0]; if (f) abrirModal(f); }}
-              />
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center
-                ${dragAtivo ? 'bg-sky-100 dark:bg-sky-900/30' : 'bg-sky-100 dark:bg-sky-900/40'}`}>
-                <CloudUpload size={20} className="text-sky-500" />
+          {/* Enviar Documento → redireciona para /enviar */}
+          <Link
+            href="/enviar"
+            className="block bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700
+              hover:border-sky-300 dark:hover:border-sky-700 hover:shadow-md transition-all duration-200 group overflow-hidden"
+          >
+            <div className="px-4 pt-4 pb-2 flex items-center justify-between">
+              <h3 className="text-sm font-bold text-gray-800 dark:text-gray-200">Enviar Documento</h3>
+              <ChevronRight size={15} className="text-gray-300 dark:text-gray-600 group-hover:text-sky-400 transition-colors" />
+            </div>
+            <div className="mx-4 mb-4 rounded-xl border-2 border-dashed border-sky-200 dark:border-sky-800
+              bg-sky-50/40 dark:bg-sky-900/10 group-hover:border-sky-400 group-hover:bg-sky-50 dark:group-hover:bg-sky-900/20
+              transition-all duration-200 flex flex-col items-center justify-center gap-2 py-7 text-center">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-500 to-sky-600 flex items-center justify-center
+                group-hover:scale-110 transition-transform duration-200">
+                <CloudUpload size={20} className="text-white" />
               </div>
               <div>
-                <p className="text-xs font-semibold text-gray-700 dark:text-gray-300">
-                  {dragAtivo ? 'Solte aqui!' : 'Arraste ou clique para enviar'}
-                </p>
-                <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">PDF ou XML · Máx. 10 MB</p>
+                <p className="text-xs font-semibold text-gray-700 dark:text-gray-300">Clique para enviar</p>
+                <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">PDF · XML · e mais</p>
               </div>
-              {erroArquivo && <p className="text-[10px] text-red-600 font-medium">{erroArquivo}</p>}
             </div>
-
-            {/* Mobile fallback */}
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="w-full flex items-center justify-center gap-2 py-2 text-xs
-                font-semibold text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/20 border border-sky-200 dark:border-sky-800 rounded-xl
-                hover:bg-sky-100 dark:hover:bg-sky-900/30 transition-colors lg:hidden"
-            >
-              <Upload size={14} /> Selecionar arquivo
-            </button>
-          </div>
+          </Link>
 
           {/* Ações Rápidas */}
           <div className="space-y-2">
@@ -561,14 +497,6 @@ export default function InicioPagina() {
         </aside>
       </div>
 
-      {/* Modal */}
-      {arquivoSelecionado && (
-        <SectorSelectModal
-          arquivo={arquivoSelecionado}
-          onFechar={fecharModal}
-          onSucesso={aoEnviarComSucesso}
-        />
-      )}
     </div>
   );
 }
