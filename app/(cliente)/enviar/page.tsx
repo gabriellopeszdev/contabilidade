@@ -7,9 +7,7 @@ import {
   Receipt,
   Calculator,
   Users,
-  ClipboardList,
   FolderOpen,
-  BadgeCheck,
   CloudUpload,
   CheckCircle2,
   AlertCircle,
@@ -125,22 +123,6 @@ const CATEGORIAS: Categoria[] = [
     },
   },
   {
-    id:       'solicitacoes',
-    label:    'Solicitações',
-    descricao: 'Pedidos e documentos gerais',
-    exemplos: 'PDF · Word · Imagens',
-    icon:     ClipboardList,
-    accept:   '.pdf,.doc,.docx,.jpg,.jpeg,.png',
-    cor: {
-      gradient:    'from-sky-500 to-sky-600',
-      iconBg:      'bg-sky-100 dark:bg-sky-900/40',
-      iconTxt:     'text-sky-600 dark:text-sky-400',
-      cardBg:      'bg-white dark:bg-gray-900',
-      cardBorder:  'border-sky-100 dark:border-sky-900/50',
-      cardHover:   'hover:border-sky-400 hover:shadow-sky-100 dark:hover:border-sky-600',
-    },
-  },
-  {
     id:       'diversos',
     label:    'Documentos Diversos',
     descricao: 'Outros documentos do seu negócio',
@@ -154,22 +136,6 @@ const CATEGORIAS: Categoria[] = [
       cardBg:      'bg-white dark:bg-gray-900',
       cardBorder:  'border-slate-200 dark:border-slate-700',
       cardHover:   'hover:border-slate-400 hover:shadow-slate-100 dark:hover:border-slate-500',
-    },
-  },
-  {
-    id:       'certidoes',
-    label:    'Certidões',
-    descricao: 'Certidões negativas e regularidade',
-    exemplos: 'CND · FGTS · Estadual · Municipal',
-    icon:     BadgeCheck,
-    accept:   '.pdf',
-    cor: {
-      gradient:    'from-teal-500 to-teal-600',
-      iconBg:      'bg-teal-100 dark:bg-teal-900/40',
-      iconTxt:     'text-teal-600 dark:text-teal-400',
-      cardBg:      'bg-white dark:bg-gray-900',
-      cardBorder:  'border-teal-100 dark:border-teal-900/50',
-      cardHover:   'hover:border-teal-400 hover:shadow-teal-100 dark:hover:border-teal-600',
     },
   },
 ];
@@ -381,6 +347,7 @@ export default function EnviarPage() {
       {arquivosModal.length > 0 && (
         <EnvioLoteModal
           arquivos={arquivosModal}
+          categoriaId={catAtiva?.id}
           onFechar={fecharModal}
           onSucesso={aoEnviarComSucesso}
         />

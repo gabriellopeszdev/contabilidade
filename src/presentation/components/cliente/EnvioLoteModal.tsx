@@ -31,9 +31,10 @@ interface ArquivoItem {
 }
 
 interface Props {
-  arquivos:  File[];
-  onFechar:  () => void;
-  onSucesso: () => void;
+  arquivos:     File[];
+  categoriaId?: string;
+  onFechar:     () => void;
+  onSucesso:    () => void;
 }
 
 function formatarTamanho(bytes: number): string {
@@ -41,7 +42,7 @@ function formatarTamanho(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export function EnvioLoteModal({ arquivos, onFechar, onSucesso }: Props) {
+export function EnvioLoteModal({ arquivos, categoriaId, onFechar, onSucesso }: Props) {
   const { token } = useAuth();
 
   const [itens,    setItens]    = useState<ArquivoItem[]>(
@@ -74,6 +75,7 @@ export function EnvioLoteModal({ arquivos, onFechar, onSucesso }: Props) {
       try {
         const form = new FormData();
         form.append('arquivo', itens[i].file);
+        if (categoriaId) form.append('categoriaId', categoriaId);
 
         const res  = await fetch('/api/v1/documentos/cliente-upload', {
           method:  'POST',

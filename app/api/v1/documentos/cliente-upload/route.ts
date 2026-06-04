@@ -24,6 +24,14 @@ const TIPOS_ACEITOS: Record<string, string> = {
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 
+const CATEGORIA_SETOR_MAP: Record<string, string> = {
+  xml:      'FISCAL',
+  extratos: 'CONTABIL',
+  despesas: 'CONTABIL',
+  impostos: 'CONTABIL',
+  folha:    'PESSOAL',
+};
+
 // =============================================================================
 // POST /api/v1/documentos/cliente-upload
 //
@@ -53,8 +61,10 @@ export const POST = withAuth(async (req, _ctx, auth) => {
     // ------------------------------------------------------------------
     // 1. Extrair FormData
     // ------------------------------------------------------------------
-    const formData = await req.formData();
-    const arquivo  = formData.get('arquivo') as File | null;
+    const formData    = await req.formData();
+    const arquivo     = formData.get('arquivo') as File | null;
+    const categoriaId = formData.get('categoriaId') as string | null;
+    const sector      = categoriaId ? (CATEGORIA_SETOR_MAP[categoriaId] ?? null) : null;
 
     if (!arquivo || !(arquivo instanceof File) || arquivo.size === 0) {
       return NextResponse.json(
@@ -137,6 +147,7 @@ export const POST = withAuth(async (req, _ctx, auth) => {
           fileType:      fileType as 'PDF' | 'XML',
           fileSizeBytes: BigInt(arquivo.size),
           fileHash,
+          ...(sector ? { sector } : {}),
         },
       });
 
@@ -146,10 +157,13 @@ export const POST = withAuth(async (req, _ctx, auth) => {
           assignedTo:   vinculo?.contadorId ?? null,
           documentId:   documento.id,
           title:        arquivo.name,
-          description:  'Documento enviado pelo cliente — aguardando categorização',
+          description:  sector
+            ? `Documento enviado pelo cliente — setor: ${sector}`
+            : 'Documento enviado pelo cliente — aguardando categorização',
           currentState: 'PENDING',
           priority:     'MEDIUM',
           position:     0,
+          ...(sector ? { sector } : {}),
         },
       });
 
