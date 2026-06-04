@@ -79,11 +79,10 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
   const { dark, toggle: toggleDark, mounted: darkMounted } = useDarkMode();
 
   const [sidebarAberta, setSidebarAberta] = useState(false);
-  const [colapsada,     setColapsada]     = useState(false);
-
-  useEffect(() => {
-    if (localStorage.getItem('sidebar-cliente-colapsada') === 'true') setColapsada(true);
-  }, []);
+  const [colapsada, setColapsada] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return localStorage.getItem('sidebar-cliente-colapsada') === 'true';
+  });
 
   const toggleColapsada = () => {
     setColapsada((v) => {
