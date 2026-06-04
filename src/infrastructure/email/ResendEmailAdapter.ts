@@ -70,7 +70,7 @@ export class ResendEmailAdapter implements IEmailService {
 
     await this.enviar({
       destinatario: params.email,
-      assunto:      '[Portal Contábil] Convite para acessar seu portal',
+      assunto:      '[FiscoHub] Convite para acessar seu portal',
       corpoHtml,
       corpoTexto:   `Olá, ${params.nome}! Ative sua conta em: ${params.link} (expira em 48h)`,
     });
@@ -91,7 +91,7 @@ export class ResendEmailAdapter implements IEmailService {
 
     await this.enviar({
       destinatario: params.email,
-      assunto:      '[Portal Contábil] Redefinição de senha',
+      assunto:      '[FiscoHub] Redefinição de senha',
       corpoHtml,
       corpoTexto:   `Redefina sua senha acessando: ${params.link} (expira em 2h)`,
     });
@@ -154,7 +154,7 @@ export class ResendEmailAdapter implements IEmailService {
 
     await this.enviar({
       destinatario: params.emailSolicitante,
-      assunto:      `[Portal Contábil] Documento ${assinado ? 'assinado' : 'recusado'}: ${params.nomeDocumento}`,
+      assunto:      `[FiscoHub] Documento ${assinado ? 'assinado' : 'recusado'}: ${params.nomeDocumento}`,
       corpoHtml,
       corpoTexto:   `O documento ${params.nomeDocumento} foi ${assinado ? 'assinado' : 'recusado'} por ${params.nomeSignatario}. Acesse: ${params.urlPortal}`,
     });
@@ -198,7 +198,7 @@ export class ResendEmailAdapter implements IEmailService {
 
     await this.enviar({
       destinatario: params.emailCliente,
-      assunto:      `[Portal Contábil] Novo documento disponível: ${params.nomeArquivo}`,
+      assunto:      `[FiscoHub] Novo documento disponível: ${params.nomeArquivo}`,
       corpoHtml,
       corpoTexto:   `Olá, ${params.nomeCliente}! Novo documento: ${params.nomeArquivo} (${params.setor}). Acesse: ${params.urlPortal}`,
     });

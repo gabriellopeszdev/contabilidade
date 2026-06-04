@@ -1,10 +1,36 @@
+// Logo FiscoHub recriada em HTML puro (SVG não é suportado em vários clientes de email)
+function fiscoHubLogoHtml(): string {
+  return `
+  <table cellpadding="0" cellspacing="0" role="presentation" style="margin:0 auto 0;">
+    <tr>
+      <td style="background:rgba(255,255,255,0.10);border-radius:12px;padding:10px 22px;">
+        <table cellpadding="0" cellspacing="0" role="presentation">
+          <tr>
+            <td style="width:34px;height:34px;background:linear-gradient(135deg,#3b82f6,#1d4ed8);
+                       border-radius:8px;text-align:center;vertical-align:middle;">
+              <span style="display:block;font-size:19px;font-weight:900;color:#fff;line-height:34px;
+                           font-family:Arial,sans-serif;">F</span>
+            </td>
+            <td style="padding-left:10px;vertical-align:middle;">
+              <span style="font-size:17px;font-weight:700;color:#fff;letter-spacing:-0.3px;
+                           font-family:'Segoe UI',Arial,Helvetica,sans-serif;">
+                Fisco<span style="color:#93c5fd;">Hub</span>
+              </span>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>`;
+}
+
 export function emailWrapper(content: string): string {
   return `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Portal Contábil</title>
+  <title>FiscoHub</title>
 </head>
 <body style="margin:0;padding:0;background-color:#eef2f7;font-family:'Segoe UI',Helvetica,Arial,sans-serif;">
   <table width="100%" cellpadding="0" cellspacing="0" role="presentation"
@@ -17,33 +43,14 @@ export function emailWrapper(content: string): string {
 
           <!-- Header -->
           <tr>
-            <td style="background:#1e1b4b;padding:36px 48px 32px;text-align:center;">
-              <!-- Logo pill -->
-              <table cellpadding="0" cellspacing="0" role="presentation" style="margin:0 auto 0;">
-                <tr>
-                  <td style="background:rgba(255,255,255,0.12);border-radius:12px;padding:10px 20px;">
-                    <table cellpadding="0" cellspacing="0" role="presentation">
-                      <tr>
-                        <td style="background:#7c3aed;width:28px;height:28px;border-radius:6px;
-                                   text-align:center;vertical-align:middle;">
-                          <span style="font-size:14px;font-weight:800;color:#fff;line-height:28px;">C</span>
-                        </td>
-                        <td style="padding-left:10px;vertical-align:middle;">
-                          <span style="font-size:16px;font-weight:700;color:#fff;letter-spacing:-0.2px;">
-                            Portal Contábil
-                          </span>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
+            <td style="background:#0f2744;padding:36px 48px 32px;text-align:center;">
+              ${fiscoHubLogoHtml()}
             </td>
           </tr>
 
           <!-- Accent bar -->
           <tr>
-            <td style="background:linear-gradient(90deg,#7c3aed,#4f46e5,#2563eb);height:4px;font-size:0;line-height:0;">&nbsp;</td>
+            <td style="background:linear-gradient(90deg,#1d4ed8,#2563eb,#60a5fa);height:4px;font-size:0;line-height:0;">&nbsp;</td>
           </tr>
 
           <!-- Body -->
@@ -58,7 +65,7 @@ export function emailWrapper(content: string): string {
             <td style="background:#f8fafc;border-top:1px solid #e2e8f0;padding:24px 48px;text-align:center;">
               <p style="margin:0;font-size:12px;color:#94a3b8;line-height:1.8;">
                 Este é um e-mail automático — por favor não responda.<br/>
-                © ${new Date().getFullYear()} Portal Contábil · Todos os direitos reservados.
+                © ${new Date().getFullYear()} FiscoHub · Todos os direitos reservados.
               </p>
             </td>
           </tr>
@@ -71,7 +78,7 @@ export function emailWrapper(content: string): string {
 </html>`;
 }
 
-export function emailButton(label: string, href: string, color = '#7c3aed'): string {
+export function emailButton(label: string, href: string, color = '#2563eb'): string {
   return `<table cellpadding="0" cellspacing="0" role="presentation" style="margin:32px 0 8px;">
     <tr>
       <td style="border-radius:10px;background-color:${color};
@@ -91,7 +98,7 @@ export function emailHeading(text: string): string {
 }
 
 export function emailSubheading(text: string): string {
-  return `<p style="margin:0 0 24px;font-size:14px;color:#7c3aed;font-weight:600;
+  return `<p style="margin:0 0 24px;font-size:14px;color:#2563eb;font-weight:600;
                     text-transform:uppercase;letter-spacing:0.6px;">${text}</p>`;
 }
 

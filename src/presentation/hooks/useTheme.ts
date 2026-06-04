@@ -10,8 +10,11 @@ import { useEffect, useState } from 'react';
 //   --color-primary-dark → corSecundaria
 //   --color-primary-light / --color-primary-50 → derivadas automaticamente
 //
-// Retorna { logoUrl, nomeEscritorio } para uso nas sidebars.
+// Retorna { logoUrl, nomeEscritorio, loaded } para uso nas sidebars.
+// Cache em localStorage para evitar flash ao navegar entre páginas.
 // =============================================================================
+
+const CACHE_KEY = 'fisco-theme-brand';
 
 /** Converte hex (#RRGGBB) em { r, g, b }. */
 function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
@@ -37,8 +40,34 @@ export interface ThemeBrand {
   loaded: boolean;
 }
 
+function readCache(): { logoUrl: string | null; nomeEscritorio: string } | null {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as { logoUrl: string | null; nomeEscritorio: string };
+  } catch {
+    return null;
+  }
+}
+
+function writeCache(logoUrl: string | null, nomeEscritorio: string): void {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ logoUrl, nomeEscritorio }));
+  } catch {
+    // storage full or blocked — silently ignore
+  }
+}
+
 export function useTheme(token: string | null | undefined): ThemeBrand {
   const [brand, setBrand] = useState<ThemeBrand>({ logoUrl: null, nomeEscritorio: '', loaded: false });
+
+  // Restore from cache immediately on mount to prevent flash during navigation
+  useEffect(() => {
+    const cached = readCache();
+    if (cached) {
+      setBrand({ ...cached, loaded: true });
+    }
+  }, []);
 
   useEffect(() => {
     if (!token) {
@@ -46,7 +75,6 @@ export function useTheme(token: string | null | undefined): ThemeBrand {
       return;
     }
 
-    setBrand((prev) => ({ ...prev, loaded: false }));
     let cancelled = false;
 
     (async () => {
@@ -75,11 +103,10 @@ export function useTheme(token: string | null | undefined): ThemeBrand {
         }
 
         if (!cancelled) {
-          setBrand({
-            logoUrl: logoUrl ?? null,
-            nomeEscritorio: nomeEscritorio ?? '',
-            loaded: true,
-          });
+          const newLogoUrl = logoUrl ?? null;
+          const newNome = nomeEscritorio ?? '';
+          setBrand({ logoUrl: newLogoUrl, nomeEscritorio: newNome, loaded: true });
+          writeCache(newLogoUrl, newNome);
         }
       } catch {
         if (!cancelled) setBrand((prev) => ({ ...prev, loaded: true }));

@@ -28,7 +28,7 @@ export function lembreteObrigacaoHtml(data: LembreteObrigacaoData): string {
       </div>
     </div>
     <div style="padding:16px;text-align:center;color:#6b7280;font-size:12px">
-      <p>Konto Contábil · Você recebe este email pois tem lembretes ativados.</p>
+      <p>FiscoHub · Você recebe este e-mail pois tem lembretes ativados.</p>
     </div>
   </div>
 </body>
