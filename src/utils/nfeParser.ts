@@ -67,20 +67,14 @@ export function parseNFe(xmlString: string): NFeParseResult {
 
   // Resolve root — handle <nfeProc> wrapper or bare <NFe>
   // Also handles namespace-prefixed variants (removeNSPrefix strips them)
-  const keys = Object.keys(obj);
-  // eslint-disable-next-line no-console
-  console.log('[parseNFe] chaves do root:', keys);
-
-  const rootKey = keys.find(
+  const rootKey = Object.keys(obj).find(
     (k) => k === 'nfeProc' || k === 'NFe' || k.endsWith(':nfeProc') || k.endsWith(':NFe'),
   );
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const root = (rootKey ? (obj[rootKey] as any) : null) as any;
 
   if (!root) {
-    throw new Error(
-      `XML não reconhecido como NF-e: chaves encontradas: [${keys.join(', ')}]`,
-    );
+    throw new Error('XML não reconhecido como NF-e: nenhum elemento <nfeProc> ou <NFe> encontrado.');
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
