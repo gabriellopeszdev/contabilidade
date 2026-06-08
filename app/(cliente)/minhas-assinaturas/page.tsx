@@ -73,7 +73,7 @@ export default function AssinaturasPage() {
       });
       if (!res.ok) throw new Error();
       const data = await res.json();
-      setAssinaturas(data.items ?? data ?? []);
+      setAssinaturas(data.assinaturas ?? data.items ?? []);
     } catch {
       // silencia
     } finally {
