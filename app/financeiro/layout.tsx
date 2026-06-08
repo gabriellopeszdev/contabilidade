@@ -19,6 +19,8 @@ import { useNotificacoes, type StatusConexao } from '../../src/presentation/hook
 import { useSessionTimer } from '../../src/presentation/hooks/useSessionTimer';
 import { usePlanoAtual }   from '../../src/presentation/hooks/usePlanoAtual';
 import { InstitutionalFooter } from '../../src/presentation/components/lgpd/InstitutionalFooter';
+import { HelpTutorialModal } from '../(contador)/components/HelpTutorialModal';
+import { ClientHelpTutorialModal } from '../(cliente)/components/ClientHelpTutorialModal';
 
 // =============================================================================
 // Nav — Contador (com grupos)
@@ -125,6 +127,7 @@ export default function FinanceiroLayout({ children }: { children: React.ReactNo
   const { formatado: tempoSessao } = useSessionTimer();
 
   const [sidebarAberta, setSidebarAberta] = useState(false);
+  const [helpAberto, setHelpAberto] = useState(false);
   const [colapsada,     setColapsada]     = useState(() => {
     if (typeof window === 'undefined') return false;
     return (
@@ -265,6 +268,13 @@ export default function FinanceiroLayout({ children }: { children: React.ReactNo
               </h1>
             </div>
             <div className="flex items-center gap-2 ml-auto">
+              <button
+                onClick={() => setHelpAberto(true)}
+                title="Ajuda & Tutoriais"
+                className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              >
+                <HelpCircle size={18} />
+              </button>
               {darkMounted && <button onClick={toggleDark} className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">{dark ? <Sun size={18} /> : <Moon size={18} />}</button>}
               <div ref={userMenuRef} className="relative">
                 <button onClick={() => setUserMenuAberto((v) => !v)} className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
@@ -287,6 +297,11 @@ export default function FinanceiroLayout({ children }: { children: React.ReactNo
           <main className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8">{children}</main>
           <InstitutionalFooter />
         </div>
+        {isVisaoCliente ? (
+          <ClientHelpTutorialModal aberto={helpAberto} onClose={() => setHelpAberto(false)} />
+        ) : (
+          <HelpTutorialModal aberto={helpAberto} onClose={() => setHelpAberto(false)} />
+        )}
       </div>
     );
   }
@@ -396,6 +411,14 @@ export default function FinanceiroLayout({ children }: { children: React.ReactNo
                 {tempoSessao}
               </div>
             )}
+            {/* Botão Central de Ajuda */}
+            <button
+              onClick={() => setHelpAberto(true)}
+              title="Ajuda & Tutoriais"
+              className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            >
+              <HelpCircle size={18} />
+            </button>
             {darkMounted && <button onClick={toggleDark} className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">{dark ? <Sun size={18} /> : <Moon size={18} />}</button>}
 
             <div ref={notifRef} className="relative">
@@ -448,6 +471,11 @@ export default function FinanceiroLayout({ children }: { children: React.ReactNo
         <main className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8">{children}</main>
         <InstitutionalFooter />
       </div>
+      {isVisaoCliente ? (
+        <ClientHelpTutorialModal aberto={helpAberto} onClose={() => setHelpAberto(false)} />
+      ) : (
+        <HelpTutorialModal aberto={helpAberto} onClose={() => setHelpAberto(false)} />
+      )}
     </div>
   );
 }
