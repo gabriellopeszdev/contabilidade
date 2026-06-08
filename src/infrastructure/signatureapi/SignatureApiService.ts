@@ -1,5 +1,5 @@
 import { logger } from '../di/Container';
-import { PDFDocument } from 'pdf-lib';
+import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 
 // =============================================================================
 // SignatureApiService — Integração com a SignatureAPI (https://signatureapi.com)
@@ -57,7 +57,36 @@ export class SignatureApiService {
     assinaturaId: string,
   ): Promise<CriarAssinaturaResult> {
     // -------------------------------------------------------------------------
-    // 1. Upload do PDF
+    // 1. Modificar o PDF para adicionar a folha de assinatura ao final
+    // -------------------------------------------------------------------------
+    let totalPages = 1;
+    let modifiedPdfBuffer = pdfBuffer;
+    try {
+      const pdfDoc = await PDFDocument.load(pdfBuffer);
+      const newPage = pdfDoc.addPage();
+      const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+      
+      // Desenhar o cabeçalho na folha de assinatura
+      newPage.drawText('FOLHA DE ASSINATURA', {
+        x: 72,
+        y: 750,
+        size: 14,
+        font,
+        color: rgb(0.2, 0.2, 0.2),
+      });
+
+      const modifiedBytes = await pdfDoc.save();
+      modifiedPdfBuffer = Buffer.from(modifiedBytes);
+      totalPages = pdfDoc.getPageCount();
+      logger.info('[SignatureAPI] Folha de assinatura adicionada com sucesso', { totalPages, fileName });
+    } catch (err) {
+      logger.warn('[SignatureAPI] Falha ao adicionar folha de assinatura, usando PDF original', {
+        error: err instanceof Error ? err.message : String(err),
+      });
+    }
+
+    // -------------------------------------------------------------------------
+    // 2. Upload do PDF (modificado com a folha de assinatura)
     // -------------------------------------------------------------------------
     const uploadResponse = await fetch(`${BASE_URL}/uploads`, {
       method: 'POST',
@@ -66,7 +95,7 @@ export class SignatureApiService {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename="${encodeURIComponent(fileName)}"`,
       },
-      body: new Uint8Array(pdfBuffer),
+      body: new Uint8Array(modifiedPdfBuffer),
     });
 
     if (!uploadResponse.ok) {
@@ -84,20 +113,8 @@ export class SignatureApiService {
 
     logger.info('[SignatureAPI] PDF enviado com sucesso', { uploadId, fileName });
 
-    // Detectar a quantidade total de páginas para posicionar a assinatura na última página por padrão (fallback)
-    let totalPages = 1;
-    try {
-      const pdfDoc = await PDFDocument.load(pdfBuffer);
-      totalPages = pdfDoc.getPageCount();
-      logger.info('[SignatureAPI] Total de páginas do PDF detectado', { totalPages, fileName });
-    } catch (err) {
-      logger.warn('[SignatureAPI] Falha ao obter número de páginas do PDF, usando página 1 como fallback', {
-        error: err instanceof Error ? err.message : String(err)
-      });
-    }
-
     // -------------------------------------------------------------------------
-    // 2. Criar envelope
+    // 3. Criar envelope
     //
     // Configuração:
     //   - Autenticação do tipo 'custom' para receber o link de cerimônia
@@ -128,7 +145,7 @@ export class SignatureApiService {
             {
               place_key: 'assinatura',
               page: totalPages,
-              top: 700,
+              top: 150, // topo da folha de assinatura em branco
               left: 72,
             },
           ],
