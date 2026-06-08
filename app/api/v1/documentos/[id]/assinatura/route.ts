@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { withAuth, type ResolvedRouteContext } from '@/infrastructure/http/middlewares/withAuth';
 import { prisma, emailService, storageService, docSealService, signatureApiService } from '@/infrastructure/di/Container';
 import { logger } from '@/utils/logger';
-import { randomBytes } from 'crypto';
+import { randomBytes, randomUUID } from 'crypto';
 import { getPlanInfo, hasFeature, FEATURES } from '@/utils/planLimits';
 
 const EXPIRACAO_HORAS = 72;
@@ -72,6 +72,7 @@ export const POST = withAuth(async (req, ctx, auth) => {
   const token      = randomBytes(48).toString('hex');
   const expiresAt  = new Date(Date.now() + EXPIRACAO_HORAS * 60 * 60 * 1000);
   const appUrl     = process.env.NEXT_PUBLIC_APP_URL ?? '';
+  const assinaturaId = randomUUID();
 
   let provider:            'INTERNO' | 'DOCSEAL' | 'SIGNATUREAPI' = 'INTERNO';
   let docsealSubmissionId:  number | null         = null;
@@ -91,7 +92,7 @@ export const POST = withAuth(async (req, ctx, auth) => {
         cliente.name,
         cliente.email,
         signatarioId,
-        '', // assinaturaId será preenchido após create — ver abaixo
+        assinaturaId,
       );
 
       provider                = 'SIGNATUREAPI';
@@ -132,6 +133,7 @@ export const POST = withAuth(async (req, ctx, auth) => {
   // ---------------------------------------------------------------------------
   const assinatura = await prisma.assinaturaDocumento.create({
     data: {
+      id:                  assinaturaId,
       documentoId,
       solicitanteId:       auth.sub,
       signatarioId,

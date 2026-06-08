@@ -77,8 +77,9 @@ export class SignatureApiService {
       throw new Error(`SignatureAPI upload falhou: ${uploadResponse.status} - ${errorText}`);
     }
 
-    const uploadData = await uploadResponse.json() as { id: string };
+    const uploadData = await uploadResponse.json() as { id: string; url?: string };
     const uploadId = uploadData.id;
+    const uploadUrl = uploadData.url ?? `${BASE_URL}/uploads/${uploadId}`;
 
     logger.info('[SignatureAPI] PDF enviado com sucesso', { uploadId, fileName });
 
@@ -91,17 +92,21 @@ export class SignatureApiService {
     //   - Posição fixa no rodapé da primeira página (adequado para PDFs variados)
     //   - Metadados com assinaturaId para rastrear no webhook de volta
     // -------------------------------------------------------------------------
+    // Removemos extensões e pontos para evitar o detector de URL no título e mensagem
+    const cleanTitle = fileName.replace(/\.[^/.]+$/, "").replace(/\./g, " ");
+
     const envelopePayload = {
-      title: fileName,
-      message: `Por favor, assine o documento "${fileName}".`,
+      title: cleanTitle,
+      message: `Por favor, assine o documento "${cleanTitle}".`,
       documents: [
         {
-          upload_id: uploadId,
+          url: uploadUrl,
           name: fileName,
         },
       ],
       recipients: [
         {
+          type: 'signer',
           name: signatarioNome,
           email: signatarioEmail,
           authentication: {
