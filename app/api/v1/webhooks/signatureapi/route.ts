@@ -110,6 +110,7 @@ export async function POST(req: NextRequest) {
         envelope_id?: string;
         url?: string;
         metadata?: Record<string, string>;
+        envelope_metadata?: Record<string, string>;
         recipient?: {
           name?: string;
           email?: string;
@@ -120,8 +121,8 @@ export async function POST(req: NextRequest) {
     const { type: eventType, data } = payload;
     logger.info('[Webhook SignatureAPI] Evento recebido', { eventType, webhookId });
 
-    // Extrair assinaturaId dos metadados
-    const assinaturaId = data.metadata?.assinaturaId;
+    // Extrair assinaturaId dos metadados (a SignatureAPI envia no webhook como envelope_metadata)
+    const assinaturaId = data.envelope_metadata?.assinaturaId ?? data.metadata?.assinaturaId;
     const envelopeId = data.envelope_id ?? data.id;
 
     // Buscar a assinatura correspondente
