@@ -16,6 +16,7 @@ const EditarContadorSchema = z.object({
                     .regex(/^CRC-[A-Z]{2}\/\d{1,9}$/i, 'CRC deve estar no formato CRC-UF/NUMERO (ex: CRC-SP/123456).'),
   nomeEscritorio: z.string().min(2, 'Nome do escritório deve ter ao menos 2 caracteres.').max(255),
   cnpjEscritorio: z.string().length(14, 'CNPJ deve ter 14 dígitos.').optional().or(z.literal('')),
+  providerAssinatura: z.enum(['INTERNO', 'DOCSEAL', 'SIGNATUREAPI']),
 });
 
 // =============================================================================
@@ -47,7 +48,7 @@ export const PUT = withAuth(async (req: NextRequest, ctx) => {
       return NextResponse.json({ message: 'Dados inválidos.', fields }, { status: 422 });
     }
 
-    const { name, email, crc, nomeEscritorio, cnpjEscritorio } = parse.data;
+    const { name, email, crc, nomeEscritorio, cnpjEscritorio, providerAssinatura } = parse.data;
 
     // Unicidade: e-mail e CRC não podem pertencer a outro contador
     const [emailConflito, crcConflito] = await Promise.all([
@@ -65,14 +66,14 @@ export const PUT = withAuth(async (req: NextRequest, ctx) => {
       }),
       prisma.configuracaoEscritorio.upsert({
         where:  { contadorId: id },
-        update: { nomeEscritorio, cnpjEscritorio: cnpjEscritorio || null },
-        create: { contadorId: id, nomeEscritorio, cnpjEscritorio: cnpjEscritorio || null },
+        update: { nomeEscritorio, cnpjEscritorio: cnpjEscritorio || null, providerAssinatura },
+        create: { contadorId: id, nomeEscritorio, cnpjEscritorio: cnpjEscritorio || null, providerAssinatura },
       }),
     ]);
 
     logger.info('[PUT /admin/contadores/:id] Dados atualizados.', { id });
 
-    return NextResponse.json({ ok: true, name, email, crc: crc.toUpperCase(), nomeEscritorio, cnpjEscritorio: cnpjEscritorio || null });
+    return NextResponse.json({ ok: true, name, email, crc: crc.toUpperCase(), nomeEscritorio, cnpjEscritorio: cnpjEscritorio || null, providerAssinatura });
   } catch (err) {
     logger.error('[PUT /admin/contadores/:id]', err instanceof Error ? err : undefined);
     return NextResponse.json({ message: 'Erro interno.' }, { status: 500 });

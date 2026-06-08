@@ -43,17 +43,21 @@ export const POST = withAuth(async (req, ctx, auth) => {
     return NextResponse.json({ message: 'signatarioId é obrigatório' }, { status: 400 });
   }
 
-  const [documento, cliente, vinculo] = await Promise.all([
+  const [documento, cliente, vinculo, configEscritorio] = await Promise.all([
     prisma.documentoFiscal.findUnique({
       where:  { id: documentoId, deletedAt: null },
       select: { fileName: true, fileHash: true, clientId: true, storagePath: true, fileType: true },
     }),
     prisma.usuarioCliente.findUnique({
       where:  { id: signatarioId },
-      select: { name: true, email: true },
+      select: { name: true, email: true, providerAssinatura: true },
     }),
     prisma.contadorCliente.findFirst({
       where: { contadorId: auth.sub, clienteId: signatarioId },
+    }),
+    prisma.configuracaoEscritorio.findUnique({
+      where: { contadorId: auth.sub },
+      select: { providerAssinatura: true },
     }),
   ]);
 
@@ -80,9 +84,11 @@ export const POST = withAuth(async (req, ctx, auth) => {
   let linkAssinatura:      string                = `${appUrl}/assinar/${token}`;
 
   // ---------------------------------------------------------------------------
-  // Tenta integração SignatureAPI quando configurado (prioridade sobre DocSeal)
+  // Roteia a assinatura com base no provedor configurado para o cliente (ou escritório)
   // ---------------------------------------------------------------------------
-  if (signatureApiService.isConfigured()) {
+  const selectedProvider = cliente?.providerAssinatura ?? configEscritorio?.providerAssinatura ?? 'INTERNO';
+
+  if (selectedProvider === 'SIGNATUREAPI' && signatureApiService.isConfigured()) {
     try {
       const pdfBuffer = await storageService.getBuffer(documento.storagePath);
 
@@ -99,15 +105,9 @@ export const POST = withAuth(async (req, ctx, auth) => {
       signatureapiEnvelopeId  = result.envelopeId;
       linkAssinatura          = result.linkAssinatura || linkAssinatura;
     } catch (err) {
-      logger.error('[POST assinatura] Falha na SignatureAPI — tentando DocSeal', err instanceof Error ? err : new Error(String(err)));
-      // fallback: tenta DocSeal abaixo
+      logger.error('[POST assinatura] Falha na SignatureAPI — usando fluxo INTERNO', err instanceof Error ? err : new Error(String(err)));
     }
-  }
-
-  // ---------------------------------------------------------------------------
-  // Fallback: tenta integração DocSeal quando configurado
-  // ---------------------------------------------------------------------------
-  if (provider === 'INTERNO' && docSealService.isConfigured()) {
+  } else if (selectedProvider === 'DOCSEAL' && docSealService.isConfigured()) {
     try {
       const pdfBuffer = await storageService.getBuffer(documento.storagePath);
       const pdfBase64 = pdfBuffer.toString('base64');
@@ -124,7 +124,6 @@ export const POST = withAuth(async (req, ctx, auth) => {
       linkAssinatura      = result.linkAssinatura;
     } catch (err) {
       logger.error('[POST assinatura] Falha no DocSeal — usando fluxo INTERNO', err instanceof Error ? err : new Error(String(err)));
-      // fallback: continua com INTERNO (provider e linkAssinatura já têm os valores padrão)
     }
   }
 

@@ -37,7 +37,7 @@ export const GET = withAuth(async (_req: NextRequest, _ctx: RouteContext) => {
           select: { clientesRel: true },
         },
         configuracao: {
-          select: { nomeEscritorio: true, cnpjEscritorio: true, asaasApiKey: true, coraClientId: true, iaApiKey: true, iaProvider: true },
+          select: { nomeEscritorio: true, cnpjEscritorio: true, asaasApiKey: true, coraClientId: true, iaApiKey: true, iaProvider: true, providerAssinatura: true },
         },
         assinaturaSaaS: {
           select: { status: true, dataRenovacao: true, plano: { select: { id: true, nome: true } } },
@@ -58,6 +58,7 @@ export const GET = withAuth(async (_req: NextRequest, _ctx: RouteContext) => {
       coraConfigurado:   Boolean(c.configuracao?.coraClientId),
       iaPersonalizada:   Boolean(c.configuracao?.iaApiKey),
       iaProvider:        c.configuracao?.iaProvider ?? null,
+      providerAssinatura: c.configuracao?.providerAssinatura ?? 'INTERNO',
       createdAt:         c.createdAt.toISOString(),
       planoId:           c.assinaturaSaaS?.plano.id ?? null,
       planoNome:         c.assinaturaSaaS?.plano.nome ?? null,
@@ -94,6 +95,7 @@ const CriarContadorSchema = z.object({
   nomeEscritorio:  z.string().min(2, 'Nome do escritório deve ter ao menos 2 caracteres.').max(255),
   cnpjEscritorio:  z.string().length(14, 'CNPJ deve ter 14 dígitos.').optional(),
   planoId:         z.string().uuid().optional(),
+  providerAssinatura: z.enum(['INTERNO', 'DOCSEAL', 'SIGNATUREAPI']).optional(),
 });
 
 const hasher = new BcryptPasswordHasher();
@@ -115,7 +117,7 @@ export const POST = withAuth(async (req: NextRequest, _ctx: RouteContext) => {
     return NextResponse.json({ message: 'Dados inválidos.', erros }, { status: 422 });
   }
 
-  const { name, email, crc, senhaProvisoria, nomeEscritorio, cnpjEscritorio, planoId } = parse.data;
+  const { name, email, crc, senhaProvisoria, nomeEscritorio, cnpjEscritorio, planoId, providerAssinatura } = parse.data;
 
   // --------------------------------------------------------------------------
   // 2. Verificar unicidade de e-mail e CRC
@@ -163,6 +165,7 @@ export const POST = withAuth(async (req: NextRequest, _ctx: RouteContext) => {
           contadorId:     novoContador.id,
           nomeEscritorio,
           cnpjEscritorio: cnpjEscritorio ?? null,
+          providerAssinatura: providerAssinatura ?? 'INTERNO',
         },
       });
 

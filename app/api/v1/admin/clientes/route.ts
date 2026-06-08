@@ -51,6 +51,7 @@ export const GET = withAuth(async (req: NextRequest) => {
         email:       c.email,
         cnpj:        c.cnpj,
         isActive:    c.isActive,
+        providerAssinatura: c.providerAssinatura,
         escritorios: c.contadoresRel.map((r) => ({ id: r.contador.id, name: r.contador.name })),
         createdAt:   c.createdAt.toISOString(),
       })),

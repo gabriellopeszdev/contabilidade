@@ -112,6 +112,7 @@ model UsuarioCliente {
   regimeTributario String?   @map("regime_tributario") @db.VarChar(50)
   lastLoginAt  DateTime? @map("last_login_at") @db.Timestamptz
   isActive     Boolean   @default(true) @map("is_active")
+  providerAssinatura ProviderAssinatura @default(INTERNO) @map("provider_assinatura")
   consentVersion    String?   @map("consent_version") @db.VarChar(20)
   consentAcceptedAt DateTime? @map("consent_accepted_at") @db.Timestamptz
   consentIpAddress  String?   @map("consent_ip_address") @db.Inet
@@ -506,13 +507,14 @@ model ChatMessage {
 // =============================================================================
 
 model ConfiguracaoEscritorio {
-  id             String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  contadorId     String  @unique @map("contador_id") @db.Uuid
-  nomeEscritorio String  @map("nome_escritorio") @db.VarChar(255)
-  cnpjEscritorio String? @map("cnpj_escritorio") @db.Char(14)
-  logoUrl        String? @map("logo_url") @db.VarChar(1000)
-  corPrimaria    String  @default("#2563eb") @map("cor_primaria") @db.VarChar(9)
-  corSecundaria  String  @default("#1e3a8a") @map("cor_secundaria") @db.VarChar(9)
+  id                 String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  contadorId         String             @unique @map("contador_id") @db.Uuid
+  nomeEscritorio     String             @map("nome_escritorio") @db.VarChar(255)
+  cnpjEscritorio     String?            @map("cnpj_escritorio") @db.Char(14)
+  logoUrl            String?            @map("logo_url") @db.VarChar(1000)
+  corPrimaria        String             @default("#2563eb") @map("cor_primaria") @db.VarChar(9)
+  corSecundaria      String             @default("#1e3a8a") @map("cor_secundaria") @db.VarChar(9)
+  providerAssinatura ProviderAssinatura @default(INTERNO) @map("provider_assinatura")
   // Integração Asaas
   asaasApiKey    String? @map("asaas_api_key") @db.VarChar(500)
 

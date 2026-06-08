@@ -41,6 +41,7 @@ interface ContadorDTO {
   coraConfigurado:  boolean;
   iaPersonalizada:  boolean;
   iaProvider:       string | null;
+  providerAssinatura: 'INTERNO' | 'DOCSEAL' | 'SIGNATUREAPI';
   createdAt:        string;
   planoId:          string | null;
   planoNome:        string | null;
@@ -62,6 +63,7 @@ interface NovoContadorForm {
   nomeEscritorio:  string;
   cnpjEscritorio:  string;
   planoId:         string;
+  providerAssinatura: string;
 }
 
 const FORM_INICIAL: NovoContadorForm = {
@@ -72,6 +74,7 @@ const FORM_INICIAL: NovoContadorForm = {
   nomeEscritorio:  '',
   cnpjEscritorio:  '',
   planoId:         '',
+  providerAssinatura: 'INTERNO',
 };
 
 // =============================================================================
@@ -151,6 +154,7 @@ function ModalCriarContador({ onClose, onCriado, token }: ModalCriarContadorProp
           nomeEscritorio:  form.nomeEscritorio.trim(),
           cnpjEscritorio:  form.cnpjEscritorio.trim() || undefined,
           planoId:         form.planoId || undefined,
+          providerAssinatura: form.providerAssinatura,
         }),
       });
 
@@ -173,6 +177,7 @@ function ModalCriarContador({ onClose, onCriado, token }: ModalCriarContadorProp
         cnpjEscritorio:   form.cnpjEscritorio.trim() || null,
         asaasConfigurado: false,
         coraConfigurado:  false,
+        providerAssinatura: form.providerAssinatura as any,
         createdAt:        new Date().toISOString(),
         planoId:          form.planoId || null,
         planoNome:        null,
@@ -315,6 +320,22 @@ function ModalCriarContador({ onClose, onCriado, token }: ModalCriarContadorProp
                 </select>
               </div>
             )}
+
+            <div className="col-span-2">
+              <label className="block text-[11px] font-medium text-slate-400 mb-1">
+                Provedor de Assinatura *
+              </label>
+              <select
+                name="providerAssinatura"
+                value={form.providerAssinatura}
+                onChange={(e) => setForm((f) => ({ ...f, providerAssinatura: e.target.value }))}
+                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-violet-500"
+              >
+                <option value="INTERNO">Interno (FiscoHub)</option>
+                <option value="DOCSEAL">DocSeal</option>
+                <option value="SIGNATUREAPI">SignatureAPI</option>
+              </select>
+            </div>
           </div>
 
           {/* Footer */}
@@ -359,6 +380,7 @@ function ModalEditarContador({ contador, onClose, onSalvo, token }: ModalEditarC
     crc:            contador.crc,
     nomeEscritorio: contador.nomeEscritorio ?? '',
     cnpjEscritorio: contador.cnpjEscritorio ?? '',
+    providerAssinatura: contador.providerAssinatura ?? 'INTERNO',
   });
   const [erros,    setErros]    = useState<Record<string, string>>({});
   const [enviando, setEnviando] = useState(false);
@@ -392,6 +414,7 @@ function ModalEditarContador({ contador, onClose, onSalvo, token }: ModalEditarC
         crc:            form.crc.toUpperCase(),
         nomeEscritorio: form.nomeEscritorio,
         cnpjEscritorio: form.cnpjEscritorio || null,
+        providerAssinatura: form.providerAssinatura as any,
       });
       onClose();
     } catch {
@@ -447,6 +470,20 @@ function ModalEditarContador({ contador, onClose, onSalvo, token }: ModalEditarC
           </div>
 
           {field('nomeEscritorio', 'Nome do escritório *',  'text',  'Silva & Associados')}
+
+          <div>
+            <label className="block text-[11px] font-medium text-slate-400 mb-1">Provedor de Assinatura *</label>
+            <select
+              name="providerAssinatura"
+              value={form.providerAssinatura}
+              onChange={(e) => setForm((f) => ({ ...f, providerAssinatura: e.target.value as any }))}
+              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-violet-500"
+            >
+              <option value="INTERNO">Interno (FiscoHub)</option>
+              <option value="DOCSEAL">DocSeal</option>
+              <option value="SIGNATUREAPI">SignatureAPI</option>
+            </select>
+          </div>
 
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={onClose}
@@ -1449,7 +1486,10 @@ export default function ContadoresPage() {
                       Criado em
                     </th>
                     <th className="text-center text-[11px] font-semibold text-slate-500 uppercase tracking-wide px-4 py-3 hidden lg:table-cell">
-                      Provedor
+                      Provedor Pag.
+                    </th>
+                    <th className="text-center text-[11px] font-semibold text-slate-500 uppercase tracking-wide px-4 py-3 hidden lg:table-cell">
+                      Assinatura
                     </th>
                     <th className="px-5 py-3" />
                   </tr>
@@ -1522,6 +1562,26 @@ export default function ContadoresPage() {
                           <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full border text-slate-500 bg-slate-800 border-slate-700">
                             <span className="w-1.5 h-1.5 rounded-full bg-slate-600" />
                             PDF local
+                          </span>
+                        )}
+                      </td>
+
+                      {/* Assinatura */}
+                      <td className="px-4 py-3.5 text-center hidden lg:table-cell">
+                        {c.providerAssinatura === 'SIGNATUREAPI' ? (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full border text-emerald-400 bg-emerald-900/30 border-emerald-700/40">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                            SignatureAPI
+                          </span>
+                        ) : c.providerAssinatura === 'DOCSEAL' ? (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full border text-blue-400 bg-blue-900/30 border-blue-700/40">
+                            <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+                            DocSeal
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full border text-slate-400 bg-slate-800 border-slate-700">
+                            <span className="w-1.5 h-1.5 rounded-full bg-slate-500" />
+                            Interno
                           </span>
                         )}
                       </td>
