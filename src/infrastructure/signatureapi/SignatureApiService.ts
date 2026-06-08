@@ -1,4 +1,5 @@
 import { logger } from '../di/Container';
+import { PDFDocument } from 'pdf-lib';
 
 // =============================================================================
 // SignatureApiService — Integração com a SignatureAPI (https://signatureapi.com)
@@ -83,6 +84,16 @@ export class SignatureApiService {
 
     logger.info('[SignatureAPI] PDF enviado com sucesso', { uploadId, fileName });
 
+    // Detectar a quantidade total de páginas para posicionar a assinatura na última página por padrão (fallback)
+    let totalPages = 1;
+    try {
+      const pdfDoc = await PDFDocument.load(pdfBuffer);
+      totalPages = pdfDoc.getPageCount();
+      logger.info('[SignatureAPI] Total de páginas do PDF detectado', { totalPages, fileName });
+    } catch (err) {
+      logger.warn('[SignatureAPI] Falha ao obter número de páginas do PDF, usando página 1 como fallback', err);
+    }
+
     // -------------------------------------------------------------------------
     // 2. Criar envelope
     //
@@ -114,7 +125,7 @@ export class SignatureApiService {
           fixed_positions: [
             {
               place_key: 'assinatura',
-              page: 1,
+              page: totalPages,
               top: 700,
               left: 72,
             },
