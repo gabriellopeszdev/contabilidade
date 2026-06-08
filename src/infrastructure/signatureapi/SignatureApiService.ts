@@ -106,14 +106,14 @@ export class SignatureApiService {
           name: fileName,
           places: [
             {
-              key: 'sig_place',
+              key: 'assinatura',
               type: 'signature',
               recipient_key: recipientKey,
             },
           ],
           fixed_positions: [
             {
-              place_key: 'sig_place',
+              place_key: 'assinatura',
               page: 1,
               top: 700,
               left: 72,
