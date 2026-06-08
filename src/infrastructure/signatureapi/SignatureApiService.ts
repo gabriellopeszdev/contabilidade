@@ -91,7 +91,9 @@ export class SignatureApiService {
       totalPages = pdfDoc.getPageCount();
       logger.info('[SignatureAPI] Total de páginas do PDF detectado', { totalPages, fileName });
     } catch (err) {
-      logger.warn('[SignatureAPI] Falha ao obter número de páginas do PDF, usando página 1 como fallback', err);
+      logger.warn('[SignatureAPI] Falha ao obter número de páginas do PDF, usando página 1 como fallback', {
+        error: err instanceof Error ? err.message : String(err)
+      });
     }
 
     // -------------------------------------------------------------------------
