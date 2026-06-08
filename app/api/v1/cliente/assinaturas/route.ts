@@ -109,7 +109,7 @@ export const POST = withAuth(async (req: NextRequest, _ctx, auth) => {
     const docId = crypto.randomUUID();
     const storagePath = `clientes/${clienteId}/assinaturas/${docId}.pdf`;
 
-    await storageService.uploadFile(storagePath, buffer, 'application/pdf');
+    await storageService.upload(storagePath, buffer, 'application/pdf');
 
     await prisma.documentoFiscal.create({
       data: {
