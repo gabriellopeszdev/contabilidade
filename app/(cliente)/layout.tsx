@@ -61,7 +61,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: '/documentos',  label: 'Meus Documentos', icon: <FileText  size={18} /> },
       { href: '/enviar',      label: 'Enviar Arquivo',  icon: <Upload    size={18} /> },
-      { href: '/assinaturas', label: 'Assinaturas',     icon: <PenLine   size={18} /> },
+      { href: '/minhas-assinaturas', label: 'Assinaturas', icon: <PenLine size={18} /> },
     ],
   },
   {
