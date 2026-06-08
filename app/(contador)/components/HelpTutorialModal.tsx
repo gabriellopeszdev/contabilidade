@@ -129,7 +129,7 @@ export function HelpTutorialModal({ aberto, onClose }: HelpTutorialModalProps) {
                   <span className="px-2.5 py-1 text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 rounded-full">Painel Principal</span>
                   <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Visão Geral & Dashboard</h3>
                   <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-sm">
-                    O **Dashboard** é o ponto de partida do seu dia a dia. Ele consolida métricas críticas do escritório para que você tenha visibilidade instantânea sem precisar navegar por várias telas.
+                    O <strong>Dashboard</strong> é o ponto de partida do seu dia a dia. Ele consolida métricas críticas do escritório para que você tenha visibilidade instantânea sem precisar navegar por várias telas.
                   </p>
                 </div>
 
@@ -197,7 +197,7 @@ export function HelpTutorialModal({ aberto, onClose }: HelpTutorialModalProps) {
                 <div className="p-4 border border-gray-100 dark:border-gray-800 rounded-xl bg-gray-50/50 dark:bg-gray-800/20">
                   <h4 className="font-semibold text-gray-900 dark:text-gray-100 text-xs uppercase tracking-wider mb-2">Fluxo de Consulta</h4>
                   <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
-                    Você pode filtrar as notas fiscais por **Cliente**, **Período (Mês/Ano)** ou **Tipo (Entrada/Saída)**, gerando uma tabela unificada para conferência antes do fechamento fiscal.
+                    Você pode filtrar as notas fiscais por <strong>Cliente</strong>, <strong>Período (Mês/Ano)</strong> ou <strong>Tipo (Entrada/Saída)</strong>, gerando uma tabela unificada para conferência antes do fechamento fiscal.
                   </p>
                 </div>
               </div>
@@ -210,7 +210,7 @@ export function HelpTutorialModal({ aberto, onClose }: HelpTutorialModalProps) {
                   <span className="px-2.5 py-1 text-xs font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 rounded-full">Processamento Massivo</span>
                   <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Upload de Documentos em Lote</h3>
                   <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-sm">
-                    Evite o trabalho repetitivo de importar notas fiscais uma por uma. Com o **Upload em Lote**, você envia centenas de XMLs simultaneamente e o sistema faz a triagem.
+                    Evite o trabalho repetitivo de importar notas fiscais uma por uma. Com o <strong>Upload em Lote</strong>, você envia centenas de XMLs simultaneamente e o sistema faz a triagem.
                   </p>
                 </div>
 
@@ -496,7 +496,7 @@ export function HelpTutorialModal({ aberto, onClose }: HelpTutorialModalProps) {
                   <span className="px-2.5 py-1 text-xs font-semibold text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-900/20 rounded-full">Pesquisa Rápida</span>
                   <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Busca Global do Sistema</h3>
                   <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-sm">
-                    A ferramenta de **Busca Global** varre toda a base de dados em segundos para encontrar qualquer elemento arquivado, poupando tempo em auditorias e consultas rápidas.
+                    A ferramenta de <strong>Busca Global</strong> varre toda a base de dados em segundos para encontrar qualquer elemento arquivado, poupando tempo em auditorias e consultas rápidas.
                   </p>
                 </div>
 

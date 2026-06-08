@@ -139,7 +139,7 @@ export function ClientHelpTutorialModal({ aberto, onClose }: ClientHelpTutorialM
                 <div className="flex items-center gap-3 p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 rounded-xl">
                   <Info className="text-amber-500 shrink-0" size={18} />
                   <p className="text-xs text-amber-800 dark:text-amber-300 leading-relaxed">
-                    <strong>Informação:</strong> Caso precise tirar dúvidas adicionais sobre legislação, impostos ou taxas, use o menu **Chat** para falar com o seu contador.
+                    <strong>Informação:</strong> Caso precise tirar dúvidas adicionais sobre legislação, impostos ou taxas, use o menu <strong>Chat</strong> para falar com o seu contador.
                   </p>
                 </div>
               </div>
@@ -152,7 +152,7 @@ export function ClientHelpTutorialModal({ aberto, onClose }: ClientHelpTutorialM
                   <span className="px-2.5 py-1 text-xs font-semibold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/20 rounded-full">Download de Guias</span>
                   <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Acesso a Guias e Relatórios</h3>
                   <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-sm">
-                    No menu **Meus Documentos**, você encontra todas as guias de impostos, folhas de pagamento, relatórios contábeis e demonstrativos financeiros que a contabilidade preparou para sua empresa.
+                    No menu <strong>Meus Documentos</strong>, você encontra todas as guias de impostos, folhas de pagamento, relatórios contábeis e demonstrativos financeiros que a contabilidade preparou para sua empresa.
                   </p>
                 </div>
 
@@ -194,7 +194,7 @@ export function ClientHelpTutorialModal({ aberto, onClose }: ClientHelpTutorialM
                   <span className="px-2.5 py-1 text-xs font-semibold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/20 rounded-full">Envio de Arquivos</span>
                   <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Como enviar arquivos ao contador</h3>
                   <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-sm">
-                    Sempre que precisar enviar extratos bancários, XMLs de notas que não foram emitidas pelo sistema, contratos assinados ou outros arquivos de suporte, você usará o menu **Enviar Arquivo**.
+                    Sempre que precisar enviar extratos bancários, XMLs de notas que não foram emitidas pelo sistema, contratos assinados ou outros arquivos de suporte, você usará o menu <strong>Enviar Arquivo</strong>.
                   </p>
                 </div>
 
@@ -260,7 +260,7 @@ export function ClientHelpTutorialModal({ aberto, onClose }: ClientHelpTutorialM
                   <span className="px-2.5 py-1 text-xs font-semibold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 rounded-full">Mensalidades</span>
                   <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Histórico de Faturamento & Boletos</h3>
                   <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-sm">
-                    No menu **Financeiro**, você gerencia os honorários cobrados pela contabilidade da sua empresa de forma clara e descomplicada.
+                    No menu <strong>Financeiro</strong>, você gerencia os honorários cobrados pela contabilidade da sua empresa de forma clara e descomplicada.
                   </p>
                 </div>
 
@@ -315,7 +315,7 @@ export function ClientHelpTutorialModal({ aberto, onClose }: ClientHelpTutorialM
                 <div className="p-4 border border-sky-100 dark:border-gray-800 rounded-xl bg-sky-50/10 dark:bg-sky-900/10 space-y-2">
                   <h4 className="font-semibold text-gray-900 dark:text-gray-100 text-sm">Adicionando Colaboradores</h4>
                   <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
-                    No menu **Minha Equipe**, você pode cadastrar o e-mail de colaboradores da sua empresa e definir suas senhas. Eles terão acesso ao portal para enviar notas fiscais, baixar contracheques ou acompanhar o financeiro, conforme as necessidades operacionais da sua empresa.
+                    No menu <strong>Minha Equipe</strong>, você pode cadastrar o e-mail de colaboradores da sua empresa e definir suas senhas. Eles terão acesso ao portal para enviar notas fiscais, baixar contracheques ou acompanhar o financeiro, conforme as necessidades operacionais da sua empresa.
                   </p>
                 </div>
               </div>
