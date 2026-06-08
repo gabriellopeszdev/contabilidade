@@ -114,6 +114,11 @@ export class SignatureApiService {
             authentication: [
               {
                 type: 'custom',
+                provider: 'FiscoHub',
+                data: {
+                  signatarioId,
+                  authenticatedAt: new Date().toISOString(),
+                },
               },
             ],
           },
