@@ -61,7 +61,7 @@ export class SignatureApiService {
     const uploadResponse = await fetch(`${BASE_URL}/uploads`, {
       method: 'POST',
       headers: {
-        'Authorization': `Basic ${Buffer.from(this.apiKey + ':').toString('base64')}`,
+        'X-API-Key': this.apiKey,
         'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename="${encodeURIComponent(fileName)}"`,
       },
@@ -132,7 +132,7 @@ export class SignatureApiService {
     const envelopeResponse = await fetch(`${BASE_URL}/envelopes`, {
       method: 'POST',
       headers: {
-        'Authorization': `Basic ${Buffer.from(this.apiKey + ':').toString('base64')}`,
+        'X-API-Key': this.apiKey,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(envelopePayload),
