@@ -106,7 +106,7 @@ export class SignatureApiService {
       ],
       recipients: [
         {
-          key: signatarioId,
+          key: signatarioId.replace(/-/g, ''),
           type: 'signer',
           name: signatarioNome,
           email: signatarioEmail,
