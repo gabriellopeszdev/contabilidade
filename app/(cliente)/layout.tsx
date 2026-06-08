@@ -32,6 +32,7 @@ import { useTheme }         from '../../src/presentation/hooks/useTheme';
 import { useSessionTimer }  from '../../src/presentation/hooks/useSessionTimer';
 import { useDarkMode }      from '../../src/presentation/hooks/useDarkMode';
 import { InstitutionalFooter } from '../../src/presentation/components/lgpd/InstitutionalFooter';
+import { ClientHelpTutorialModal } from './components/ClientHelpTutorialModal';
 
 // =============================================================================
 // Navegação da Sidebar
@@ -125,6 +126,7 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
   const { dark, toggle: toggleDark, mounted: darkMounted } = useDarkMode();
 
   const [sidebarAberta, setSidebarAberta] = useState(false);
+  const [helpAberto, setHelpAberto] = useState(false);
   const [colapsada, setColapsada] = useState(() => {
     if (typeof window === 'undefined') return false;
     return localStorage.getItem('sidebar-cliente-colapsada') === 'true';
@@ -358,6 +360,15 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
               </div>
             )}
 
+            {/* Botão Central de Ajuda */}
+            <button
+              onClick={() => setHelpAberto(true)}
+              title="Ajuda & Tutoriais"
+              className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            >
+              <HelpCircle size={18} />
+            </button>
+
             {/* Botão Dark Mode */}
             {darkMounted && (
               <button
@@ -465,6 +476,7 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
 
         <InstitutionalFooter />
       </div>
+      <ClientHelpTutorialModal aberto={helpAberto} onClose={() => setHelpAberto(false)} />
     </div>
   );
 }

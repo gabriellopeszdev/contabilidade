@@ -32,6 +32,7 @@ import {
   ChevronsRight,
   Lock,
   Bot,
+  HelpCircle,
 } from 'lucide-react';
 import { FiscoHubLogo } from '../components/FiscoHubLogo';
 
@@ -44,6 +45,7 @@ import { usePlanoAtual }    from '../../src/presentation/hooks/usePlanoAtual';
 import { InstitutionalFooter } from '../../src/presentation/components/lgpd/InstitutionalFooter';
 import { OnboardingChecklist } from './components/OnboardingChecklist';
 import { NpsModal } from './components/NpsModal';
+import { HelpTutorialModal } from './components/HelpTutorialModal';
 
 // =============================================================================
 // Navegação da Sidebar
@@ -131,6 +133,7 @@ export default function ContadorLayout({ children }: { children: React.ReactNode
   const { dark, toggle: toggleDark, mounted: darkMounted } = useDarkMode();
 
   const [sidebarAberta,  setSidebarAberta]  = useState(false);
+  const [helpAberto, setHelpAberto] = useState(false);
   const [colapsada, setColapsada] = useState(() => {
     if (typeof window === 'undefined') return false;
     return localStorage.getItem('sidebar-colapsada') === 'true';
@@ -415,6 +418,15 @@ export default function ContadorLayout({ children }: { children: React.ReactNode
               </div>
             )}
 
+            {/* Botão Central de Ajuda */}
+            <button
+              onClick={() => setHelpAberto(true)}
+              title="Ajuda & Tutoriais"
+              className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            >
+              <HelpCircle size={18} />
+            </button>
+
             {/* Botão Dark Mode */}
             {darkMounted && (
               <button
@@ -524,6 +536,7 @@ export default function ContadorLayout({ children }: { children: React.ReactNode
       </div>
       <OnboardingChecklist />
       <NpsModal />
+      <HelpTutorialModal aberto={helpAberto} onClose={() => setHelpAberto(false)} />
     </div>
   );
 }
