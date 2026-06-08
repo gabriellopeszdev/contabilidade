@@ -95,6 +95,8 @@ export class SignatureApiService {
     // Removemos extensões e pontos para evitar o detector de URL no título e mensagem
     const cleanTitle = fileName.replace(/\.[^/.]+$/, "").replace(/\./g, " ");
 
+    const recipientKey = `r_${signatarioId.replace(/-/g, '').slice(0, 30)}`;
+
     const envelopePayload = {
       title: cleanTitle,
       message: `Por favor, assine o documento "${cleanTitle}".`,
@@ -102,11 +104,26 @@ export class SignatureApiService {
         {
           url: uploadUrl,
           name: fileName,
+          places: [
+            {
+              key: 'sig_place',
+              type: 'signature',
+              recipient_key: recipientKey,
+            },
+          ],
+          fixed_positions: [
+            {
+              place_key: 'sig_place',
+              page: 1,
+              top: 700,
+              left: 72,
+            },
+          ],
         },
       ],
       recipients: [
         {
-          key: `r_${signatarioId.replace(/-/g, '').slice(0, 30)}`,
+          key: recipientKey,
           type: 'signer',
           name: signatarioNome,
           email: signatarioEmail,
@@ -122,17 +139,6 @@ export class SignatureApiService {
               },
             ],
           },
-          fields: [
-            {
-              type: 'signature',
-              page: 1,
-              x: 72,
-              y: 700,
-              width: 200,
-              height: 60,
-              required: true,
-            },
-          ],
         },
       ],
       metadata: {
