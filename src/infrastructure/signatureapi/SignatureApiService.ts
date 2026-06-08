@@ -110,8 +110,12 @@ export class SignatureApiService {
           type: 'signer',
           name: signatarioNome,
           email: signatarioEmail,
-          authentication: {
-            type: 'custom',
+          ceremony: {
+            authentication: [
+              {
+                type: 'custom',
+              },
+            ],
           },
           fields: [
             {
@@ -156,14 +160,18 @@ export class SignatureApiService {
     const envelopeData = await envelopeResponse.json() as {
       id: string;
       recipients: Array<{
+        ceremony?: {
+          url?: string;
+        };
         ceremony_url?: string;
         signing_url?: string;
       }>;
     };
 
     const envelopeId = envelopeData.id;
-    // O link de cerimônia pode vir em ceremony_url ou signing_url dependendo da versão da API
+    // O link de cerimônia pode vir em ceremony.url, ceremony_url ou signing_url dependendo da versão da API
     const linkAssinatura =
+      envelopeData.recipients?.[0]?.ceremony?.url ??
       envelopeData.recipients?.[0]?.ceremony_url ??
       envelopeData.recipients?.[0]?.signing_url ??
       '';
