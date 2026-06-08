@@ -114,7 +114,7 @@ export const POST = withAuth(async (req: NextRequest, _ctx, auth) => {
     await prisma.documentoFiscal.create({
       data: {
         id: docId,
-        clienteId,
+        clientId: clienteId,
         uploadedById: clienteId,
         storagePath,
         fileName: arquivo.name,
