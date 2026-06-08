@@ -13,7 +13,7 @@ interface AssinaturaInfo {
   nomeDocumento:  string;
   signatarioNome: string;
   expiresAt:      string;
-  provider:       'INTERNO' | 'DOCSEAL';
+  provider:       'INTERNO' | 'DOCSEAL' | 'SIGNATUREAPI';
   linkExterno:    string | null;
   pdfUrl:         string | null;
 }
@@ -514,7 +514,7 @@ export default function AssinarPage() {
       .then((r) => r.json())
       .then((d: AssinaturaInfo & { message?: string }) => {
         if (d.message && !d.nomeDocumento) { setErroMsg(d.message); setPasso('erro'); return; }
-        if (d.provider === 'DOCSEAL' && d.linkExterno) { window.location.replace(d.linkExterno); return; }
+        if ((d.provider === 'DOCSEAL' || d.provider === 'SIGNATUREAPI') && d.linkExterno) { window.location.replace(d.linkExterno); return; }
         setInfo(d);
         setNome(d.signatarioNome);
         setPasso('solicitar_otp');

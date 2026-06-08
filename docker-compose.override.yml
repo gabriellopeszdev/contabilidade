@@ -1,0 +1,17 @@
+# Override para desenvolvimento local — expõe portas dos serviços para o host
+# Este arquivo é lido automaticamente pelo docker compose e NÃO deve ser commitado
+# (já está no .gitignore via *.override.yml ou .env.local)
+
+services:
+  redis:
+    ports:
+      - "127.0.0.1:6380:6380"
+
+  postgres:
+    ports:
+      - "127.0.0.1:5432:5432"
+
+  minio:
+    ports:
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9001:9001"

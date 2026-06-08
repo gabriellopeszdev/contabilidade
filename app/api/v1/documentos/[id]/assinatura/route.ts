@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withAuth, type ResolvedRouteContext } from '@/infrastructure/http/middlewares/withAuth';
-import { prisma, emailService, storageService, docSealService } from '@/infrastructure/di/Container';
+import { prisma, emailService, storageService, docSealService, signatureApiService } from '@/infrastructure/di/Container';
 import { logger } from '@/utils/logger';
 import { randomBytes } from 'crypto';
 import { getPlanInfo, hasFeature, FEATURES } from '@/utils/planLimits';
@@ -73,14 +73,40 @@ export const POST = withAuth(async (req, ctx, auth) => {
   const expiresAt  = new Date(Date.now() + EXPIRACAO_HORAS * 60 * 60 * 1000);
   const appUrl     = process.env.NEXT_PUBLIC_APP_URL ?? '';
 
-  let provider:            'INTERNO' | 'DOCSEAL' = 'INTERNO';
-  let docsealSubmissionId: number | null         = null;
+  let provider:            'INTERNO' | 'DOCSEAL' | 'SIGNATUREAPI' = 'INTERNO';
+  let docsealSubmissionId:  number | null         = null;
+  let signatureapiEnvelopeId: string | null       = null;
   let linkAssinatura:      string                = `${appUrl}/assinar/${token}`;
 
   // ---------------------------------------------------------------------------
-  // Tenta integração DocSeal quando configurado
+  // Tenta integração SignatureAPI quando configurado (prioridade sobre DocSeal)
   // ---------------------------------------------------------------------------
-  if (docSealService.isConfigured()) {
+  if (signatureApiService.isConfigured()) {
+    try {
+      const pdfBuffer = await storageService.getBuffer(documento.storagePath);
+
+      const result = await signatureApiService.criarAssinatura(
+        documento.fileName,
+        pdfBuffer,
+        cliente.name,
+        cliente.email,
+        signatarioId,
+        '', // assinaturaId será preenchido após create — ver abaixo
+      );
+
+      provider                = 'SIGNATUREAPI';
+      signatureapiEnvelopeId  = result.envelopeId;
+      linkAssinatura          = result.linkAssinatura || linkAssinatura;
+    } catch (err) {
+      logger.error('[POST assinatura] Falha na SignatureAPI — tentando DocSeal', err instanceof Error ? err : new Error(String(err)));
+      // fallback: tenta DocSeal abaixo
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Fallback: tenta integração DocSeal quando configurado
+  // ---------------------------------------------------------------------------
+  if (provider === 'INTERNO' && docSealService.isConfigured()) {
     try {
       const pdfBuffer = await storageService.getBuffer(documento.storagePath);
       const pdfBase64 = pdfBuffer.toString('base64');
@@ -116,7 +142,8 @@ export const POST = withAuth(async (req, ctx, auth) => {
       expiresAt,
       provider,
       ...(docsealSubmissionId !== null && { docsealSubmissionId }),
-      ...(provider === 'DOCSEAL' && { linkExterno: linkAssinatura }),
+      ...(signatureapiEnvelopeId !== null && { signatureapiEnvelopeId }),
+      ...((provider === 'DOCSEAL' || provider === 'SIGNATUREAPI') && { linkExterno: linkAssinatura }),
     },
   });
 
