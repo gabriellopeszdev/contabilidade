@@ -3,7 +3,7 @@ import { createHash } from 'crypto';
 
 import { SetorTipo }       from '@prisma/client';
 import { withAuth }        from '../../../../../src/infrastructure/http/middlewares/withAuth';
-import { prisma, storageService } from '../../../../../src/infrastructure/di/Container';
+import { prisma, storageService, emailService } from '../../../../../src/infrastructure/di/Container';
 import { logger } from '../../../../../src/utils/logger';
 
 // =============================================================================
@@ -192,7 +192,27 @@ export const POST = withAuth(async (req, _ctx, auth) => {
     });
 
     // ------------------------------------------------------------------
-    // 7. Resposta de sucesso
+    // 7. Notifica o contador por e-mail (fire-and-forget)
+    // ------------------------------------------------------------------
+    if (vinculo?.contadorId) {
+      prisma.usuarioContador.findUnique({
+        where:  { id: vinculo.contadorId },
+        select: { email: true, name: true },
+      }).then((contador) => {
+        if (!contador) return;
+        const nomeCliente = auth.nome ?? 'Um cliente';
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? '';
+        return emailService.enviar({
+          destinatario: contador.email,
+          assunto:      `Novo documento recebido: ${arquivo.name}`,
+          corpoHtml:    `<p>Olá, <strong>${contador.name}</strong>.</p><p><strong>${nomeCliente}</strong> enviou um novo documento para análise: <strong>${arquivo.name}</strong>.</p><p><a href="${appUrl}/kanban">Acesse o painel</a> para categorizar e processar o arquivo.</p>`,
+          corpoTexto:   `${nomeCliente} enviou um novo documento: ${arquivo.name}. Acesse ${appUrl}/kanban para processar.`,
+        });
+      }).catch(() => {});
+    }
+
+    // ------------------------------------------------------------------
+    // 8. Resposta de sucesso
     // ------------------------------------------------------------------
     return NextResponse.json(
       {

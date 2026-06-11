@@ -3,18 +3,29 @@ import { withAuth } from '@/infrastructure/http/middlewares/withAuth';
 import { prisma } from '@/infrastructure/di/Container';
 
 export const GET = withAuth(async (req, ctx, auth) => {
-  const contador = await prisma.usuarioContador.findUnique({
-    where: { id: auth.sub },
-    select: { primeiroLoginEm: true },
-  });
+  let primeiroLoginEm: Date | null = null;
 
-  if (!contador?.primeiroLoginEm) return NextResponse.json({ exibir: false });
+  if (auth.role === 'ACCOUNTANT' || auth.role === 'ADMIN') {
+    const contador = await prisma.usuarioContador.findUnique({
+      where:  { id: auth.sub },
+      select: { primeiroLoginEm: true },
+    });
+    primeiroLoginEm = contador?.primeiroLoginEm ?? null;
+  } else {
+    const cliente = await prisma.usuarioCliente.findUnique({
+      where:  { id: auth.sub },
+      select: { lastLoginAt: true },
+    });
+    primeiroLoginEm = cliente?.lastLoginAt ?? null;
+  }
 
-  const diasDesdeLogin = (Date.now() - contador.primeiroLoginEm.getTime()) / (1000 * 60 * 60 * 24);
+  if (!primeiroLoginEm) return NextResponse.json({ exibir: false });
+
+  const diasDesdeLogin = (Date.now() - primeiroLoginEm.getTime()) / (1000 * 60 * 60 * 24);
   if (diasDesdeLogin < 7) return NextResponse.json({ exibir: false });
 
   const ultimaResposta = await prisma.npsResponse.findFirst({
-    where: { userId: auth.sub },
+    where:   { userId: auth.sub },
     orderBy: { createdAt: 'desc' },
   });
 

@@ -17,6 +17,8 @@ import {
   Receipt,
   Activity,
   Package,
+  ShieldAlert,
+  Shield,
 } from 'lucide-react';
 
 import { useAuth } from '../../src/presentation/hooks/useAuth';
@@ -38,6 +40,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/planos',          label: 'Planos',           icon: <Package         size={18} /> },
   { href: '/faturamento',     label: 'Faturamento SaaS', icon: <CreditCard      size={18} /> },
   { href: '/webhook-logs',    label: 'Log de Webhooks',  icon: <Activity        size={18} /> },
+  { href: '/auditoria',       label: 'Auditoria',        icon: <Shield          size={18} /> },
   { href: '/admin-config',    label: 'Configurações',    icon: <Settings        size={18} /> },
 ];
 
@@ -49,9 +52,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const router   = useRouter();
 
-  const { usuario, carregando, logout, isAdmin } = useAuth();
+  const { usuario, token, carregando, logout, isAdmin } = useAuth();
 
-  const [sidebarAberta, setSidebarAberta] = useState(false);
+  const [sidebarAberta,    setSidebarAberta]    = useState(false);
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState<boolean | null>(null);
 
   // Guard: redireciona não-admins
   useEffect(() => {
@@ -65,12 +69,23 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
   }, [carregando, usuario, isAdmin, router]);
 
+  // Verifica se o admin tem 2FA ativo
+  useEffect(() => {
+    if (!token || !isAdmin) return;
+    fetch('/api/v1/auth/me', { headers: { Authorization: `Bearer ${token}` } })
+      .then((r) => r.json())
+      .then((d: { usuario?: { twoFactorEnabled?: boolean } }) => {
+        setTwoFactorEnabled(d.usuario?.twoFactorEnabled ?? false);
+      })
+      .catch(() => setTwoFactorEnabled(true)); // em caso de erro, não bloqueia
+  }, [token, isAdmin]);
+
   const handleLogout = useCallback(() => {
     logout();
     router.push('/login');
   }, [logout, router]);
 
-  if (carregando || !usuario || !isAdmin) {
+  if (carregando || !usuario || !isAdmin || twoFactorEnabled === null) {
     return (
       <div className="flex items-center justify-center h-screen bg-slate-950">
         <Loader2 size={32} className="animate-spin text-violet-400" />
@@ -198,7 +213,28 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </header>
 
         {/* Conteúdo */}
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-y-auto p-6 relative">
+          {/* Overlay de 2FA obrigatório */}
+          {twoFactorEnabled === false && (
+            <div className="absolute inset-0 z-50 bg-slate-950/95 backdrop-blur-sm flex items-center justify-center p-6">
+              <div className="bg-slate-900 border border-red-700/50 rounded-2xl p-8 max-w-md w-full text-center shadow-2xl">
+                <div className="w-14 h-14 rounded-full bg-red-900/30 border border-red-700/40 flex items-center justify-center mx-auto mb-4">
+                  <ShieldAlert size={28} className="text-red-400" />
+                </div>
+                <h2 className="text-lg font-bold text-white mb-2">Autenticação em 2 fatores obrigatória</h2>
+                <p className="text-sm text-slate-400 mb-6">
+                  Por segurança, contas de administrador devem ter 2FA ativo. Configure agora para acessar o painel.
+                </p>
+                <Link
+                  href="/admin-config"
+                  className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold rounded-lg transition-colors"
+                >
+                  <ShieldCheck size={16} />
+                  Configurar 2FA agora
+                </Link>
+              </div>
+            </div>
+          )}
           {children}
         </main>
       </div>

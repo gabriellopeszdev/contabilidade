@@ -19,6 +19,8 @@ import {
   Eye,
   Send,
   Download,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 
 import {
@@ -51,8 +53,20 @@ interface ClienteDTO {
 // SWR Fetcher
 // =============================================================================
 
-async function fetcher([url, token]: [string, string]): Promise<{ clientes: ClienteDTO[] }> {
-  const res = await fetch(url, {
+interface ClientesResponse {
+  clientes:        ClienteDTO[];
+  total:           number;
+  totalPages:      number;
+  hasNextPage:     boolean;
+  hasPreviousPage: boolean;
+}
+
+const PER_PAGE = 20;
+
+async function fetcher([url, token, page, search]: [string, string, number, string]): Promise<ClientesResponse> {
+  const params = new URLSearchParams({ page: String(page), perPage: String(PER_PAGE) });
+  if (search) params.set('search', search);
+  const res = await fetch(`${url}?${params}`, {
     headers: { Authorization: `Bearer ${token}` },
     cache: 'no-store',
   });
@@ -60,7 +74,7 @@ async function fetcher([url, token]: [string, string]): Promise<{ clientes: Clie
   if (res.status === 401) throw new Error('Sessão expirada. Faça login novamente.');
   if (!res.ok) throw new Error(`Erro ao buscar clientes (HTTP ${res.status})`);
 
-  return res.json() as Promise<{ clientes: ClienteDTO[] }>;
+  return res.json() as Promise<ClientesResponse>;
 }
 
 // =============================================================================
@@ -107,14 +121,30 @@ export default function ClientesPage() {
 function ClientesPageDono({ token }: { token: string | null }) {
   const router = useRouter();
 
+  // Paginação e busca
+  const [page,   setPage]   = useState(1);
+  const [busca,  setBusca]  = useState('');
+  const [buscaDebounced, setBuscaDebounced] = useState('');
+
+  useEffect(() => {
+    const t = setTimeout(() => setBuscaDebounced(busca), 350);
+    return () => clearTimeout(t);
+  }, [busca]);
+
+  useEffect(() => { setPage(1); }, [buscaDebounced]);
+
   // SWR
-  const swrKey: [string, string] | null = token ? ['/api/v1/clientes', token] : null;
+  const swrKey: [string, string, number, string] | null = token
+    ? ['/api/v1/clientes', token, page, buscaDebounced]
+    : null;
   const { data, error, isLoading, mutate } = useSWR(swrKey, fetcher, {
     revalidateOnFocus: true,
     keepPreviousData:  true,
   });
 
-  const clientes = data?.clientes ?? [];
+  const clientes   = data?.clientes   ?? [];
+  const total      = data?.total      ?? 0;
+  const totalPages = data?.totalPages ?? 1;
 
   // Atualização em tempo real — escuta cliente_ativado via Socket.IO
   useEffect(() => {
@@ -129,17 +159,6 @@ function ClientesPageDono({ token }: { token: string | null }) {
     socket.on('cliente_ativado', () => { void mutate(); });
     return () => { socket.off('cliente_ativado'); socket.disconnect(); };
   }, [token, mutate]);
-
-  // Busca local
-  const [busca, setBusca] = useState('');
-  const filtrados = busca.trim()
-    ? clientes.filter(
-        (c) =>
-          c.nome.toLowerCase().includes(busca.toLowerCase()) ||
-          c.cnpj.includes(busca.replace(/\D/g, '')) ||
-          c.email.toLowerCase().includes(busca.toLowerCase()),
-      )
-    : clientes;
 
   // Modal
   const [modalAberto, setModalAberto] = useState(false);
@@ -253,7 +272,7 @@ function ClientesPageDono({ token }: { token: string | null }) {
         <div>
           <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">Gestão de Clientes</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-            {clientes.length} cliente{clientes.length !== 1 ? 's' : ''} na carteira
+            {total} cliente{total !== 1 ? 's' : ''} na carteira
           </p>
         </div>
 
@@ -309,16 +328,16 @@ function ClientesPageDono({ token }: { token: string | null }) {
             <Loader2 size={28} className="animate-spin text-blue-500" />
             <p className="text-sm text-slate-500 dark:text-slate-400">Carregando clientes…</p>
           </div>
-        ) : filtrados.length === 0 ? (
+        ) : clientes.length === 0 ? (
           <div className="bg-white dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-700 shadow-sm p-12 flex flex-col items-center gap-3 text-center">
             <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-slate-100 dark:bg-gray-800">
               <Users size={24} className="text-slate-400 dark:text-slate-500" />
             </div>
             <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-              {busca.trim() ? 'Nenhum cliente encontrado' : 'Nenhum cliente cadastrado'}
+              {buscaDebounced ? 'Nenhum cliente encontrado' : 'Nenhum cliente cadastrado'}
             </p>
             <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xs">
-              {busca.trim()
+              {buscaDebounced
                 ? 'Tente uma busca diferente.'
                 : 'Clique em "+ Novo Cliente" para cadastrar o primeiro.'}
             </p>
@@ -338,7 +357,7 @@ function ClientesPageDono({ token }: { token: string | null }) {
 
             {/* Linhas */}
             <ul role="list" className="divide-y divide-slate-100 dark:divide-gray-700">
-              {filtrados.map((c) => (
+              {clientes.map((c) => (
                 <li key={c.id} className="group">
                   <div className="sm:grid sm:grid-cols-[1fr_180px_200px_120px_130px] gap-4 items-center
                     px-5 py-4 hover:bg-slate-50 dark:hover:bg-gray-800 transition-colors">
@@ -455,12 +474,33 @@ function ClientesPageDono({ token }: { token: string | null }) {
               ))}
             </ul>
 
-            {/* Rodapé */}
-            <div className="px-5 py-3 border-t border-slate-100 dark:border-gray-700 bg-slate-50 dark:bg-gray-800">
+            {/* Rodapé com paginação */}
+            <div className="px-5 py-3 border-t border-slate-100 dark:border-gray-700 bg-slate-50 dark:bg-gray-800 flex items-center justify-between gap-4 flex-wrap">
               <span className="text-xs text-slate-500 dark:text-slate-400">
-                {filtrados.length} de {clientes.length} cliente{clientes.length !== 1 ? 's' : ''}
-                {busca.trim() ? ' (filtrado)' : ''}
+                {clientes.length} de {total} cliente{total !== 1 ? 's' : ''}
+                {buscaDebounced ? ' (filtrado)' : ''}
               </span>
+              {totalPages > 1 && (
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    disabled={page <= 1 || isLoading}
+                    className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-gray-700 disabled:opacity-40 transition-colors"
+                  >
+                    <ChevronLeft size={16} />
+                  </button>
+                  <span className="text-xs text-slate-600 dark:text-slate-400 min-w-[80px] text-center">
+                    Página {page} de {totalPages}
+                  </span>
+                  <button
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={page >= totalPages || isLoading}
+                    className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-gray-700 disabled:opacity-40 transition-colors"
+                  >
+                    <ChevronRight size={16} />
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         )}

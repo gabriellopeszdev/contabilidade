@@ -13,6 +13,10 @@ import {
   ChevronDown,
   ChevronUp,
   History,
+  CheckSquare,
+  Square,
+  PackageOpen,
+  X,
 } from 'lucide-react';
 
 import type {
@@ -38,6 +42,7 @@ interface DocumentosTableProps {
   onMudarSetor:    (s: SetorFiltro | undefined) => void;
   onMudarPagina:   (p: number) => void;
   onBaixar:        (id: string) => Promise<void>;
+  onBaixarLote?:   (ids: string[]) => Promise<void>;
 }
 
 // =============================================================================
@@ -125,12 +130,15 @@ function FileIcon({ type }: { type: 'XML' | 'PDF' }) {
 // =============================================================================
 
 interface DocumentoLinhaProps {
-  doc:        DocumentoClienteDTO;
-  baixando:   boolean;
-  onBaixar:   (id: string) => Promise<void>;
+  doc:           DocumentoClienteDTO;
+  baixando:      boolean;
+  onBaixar:      (id: string) => Promise<void>;
+  modoSelecao?:  boolean;
+  selecionado?:  boolean;
+  onToggle?:     (id: string) => void;
 }
 
-function DocumentoLinha({ doc, baixando, onBaixar }: DocumentoLinhaProps) {
+function DocumentoLinha({ doc, baixando, onBaixar, modoSelecao, selecionado, onToggle }: DocumentoLinhaProps) {
   const [erro, setErro] = useState<string | null>(null);
   const [expandido, setExpandido] = useState(false);
   const [metadata, setMetadata] = useState<Record<string, unknown> | null>(null);
@@ -199,7 +207,24 @@ function DocumentoLinha({ doc, baixando, onBaixar }: DocumentoLinhaProps) {
 
   return (
     <li className="group relative">
-      <div className="flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50 dark:hover:bg-gray-800 transition-colors">
+      <div
+        className={`flex items-center gap-3 px-4 py-3.5 transition-colors
+          ${modoSelecao && selecionado
+            ? 'bg-blue-50 dark:bg-blue-900/20'
+            : 'hover:bg-slate-50 dark:hover:bg-gray-800'
+          }`}
+      >
+        {/* Checkbox de seleção */}
+        {modoSelecao && (
+          <button
+            type="button"
+            onClick={() => onToggle?.(doc.id)}
+            aria-label={selecionado ? `Desmarcar ${doc.fileName}` : `Selecionar ${doc.fileName}`}
+            className="shrink-0 text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+          >
+            {selecionado ? <CheckSquare size={18} /> : <Square size={18} />}
+          </button>
+        )}
 
         {/* Ícone de tipo */}
         <FileIcon type={doc.fileType} />
@@ -439,12 +464,70 @@ export function DocumentosTable({
   onMudarSetor,
   onMudarPagina,
   onBaixar,
+  onBaixarLote,
 }: DocumentosTableProps) {
+  const [modoSelecao, setModoSelecao] = useState(false);
+  const [selecionados, setSelecionados] = useState<Set<string>>(new Set());
+  const [baixandoLote, setBaixandoLote] = useState(false);
+
+  const toggleSelecao = useCallback((id: string) => {
+    setSelecionados((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const sairModoSelecao = useCallback(() => {
+    setModoSelecao(false);
+    setSelecionados(new Set());
+  }, []);
+
+  const handleBaixarLote = useCallback(async () => {
+    const ids = [...selecionados];
+    if (ids.length === 0) return;
+
+    setBaixandoLote(true);
+    try {
+      if (onBaixarLote) {
+        await onBaixarLote(ids);
+      } else {
+        // Implementação padrão: POST → blob → download
+        const res = await fetch('/api/v1/documentos/download-lote', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ ids }),
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error((err as { message?: string }).message ?? 'Falha ao gerar ZIP.');
+        }
+
+        const blob = await res.blob();
+        const url  = URL.createObjectURL(blob);
+        const a    = document.createElement('a');
+        a.href     = url;
+        a.download = 'documentos.zip';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      }
+      sairModoSelecao();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Falha ao baixar documentos.');
+    } finally {
+      setBaixandoLote(false);
+    }
+  }, [selecionados, onBaixarLote, sairModoSelecao]);
+
   return (
     <div className="bg-white dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-700 shadow-sm overflow-hidden">
 
       {/* ------------------------------------------------------------------ */}
-      {/* Abas de setor                                                        */}
+      {/* Abas de setor + botão de seleção                                    */}
       {/* ------------------------------------------------------------------ */}
       <div
         className="flex overflow-x-auto border-b border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-900 sticky top-0 z-10"
@@ -476,6 +559,35 @@ export function DocumentosTable({
             </button>
           );
         })}
+
+        {/* Separador + botão Selecionar */}
+        <div className="flex items-center ml-auto px-3 shrink-0">
+          {modoSelecao ? (
+            <button
+              type="button"
+              onClick={sairModoSelecao}
+              title="Cancelar seleção"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold
+                         bg-slate-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300
+                         hover:bg-slate-200 dark:hover:bg-gray-600 transition-colors"
+            >
+              <X size={13} />
+              Cancelar
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setModoSelecao(true)}
+              title="Selecionar documentos para download em lote"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold
+                         bg-slate-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300
+                         hover:bg-slate-200 dark:hover:bg-gray-600 transition-colors"
+            >
+              <CheckSquare size={13} />
+              Selecionar
+            </button>
+          )}
+        </div>
       </div>
 
       {/* ------------------------------------------------------------------ */}
@@ -511,10 +623,18 @@ export function DocumentosTable({
       ) : (
         <>
           {/* Cabeçalho sumário */}
-          <div className="px-4 py-2.5 border-b border-slate-100 dark:border-gray-700 bg-slate-50 dark:bg-gray-800">
+          <div className="px-4 py-2.5 border-b border-slate-100 dark:border-gray-700 bg-slate-50 dark:bg-gray-800 flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wide">
               {total} documento{total !== 1 ? 's' : ''}
             </span>
+            {modoSelecao && (
+              <span className="text-xs text-slate-400 dark:text-gray-500">
+                {selecionados.size > 0
+                  ? `${selecionados.size} selecionado${selecionados.size !== 1 ? 's' : ''}`
+                  : 'Clique para selecionar'
+                }
+              </span>
+            )}
           </div>
 
           {/* Lista */}
@@ -529,6 +649,9 @@ export function DocumentosTable({
                 doc={doc}
                 baixando={baixandoIds.has(doc.id)}
                 onBaixar={onBaixar}
+                modoSelecao={modoSelecao}
+                selecionado={selecionados.has(doc.id)}
+                onToggle={toggleSelecao}
               />
             ))}
           </ul>
@@ -542,6 +665,46 @@ export function DocumentosTable({
             total={total}
             onMudar={onMudarPagina}
           />
+
+          {/* Barra flutuante de ação em lote */}
+          {modoSelecao && selecionados.size > 0 && (
+            <div className="sticky bottom-4 mx-4 mb-4 mt-2 z-20">
+              <div className="flex items-center justify-between gap-3 px-4 py-3
+                              bg-slate-800 dark:bg-gray-950 text-white rounded-xl shadow-xl
+                              border border-slate-700 dark:border-gray-800">
+                <span className="text-sm font-medium flex items-center gap-2">
+                  <PackageOpen size={16} className="text-blue-400 shrink-0" />
+                  {selecionados.size} arquivo{selecionados.size !== 1 ? 's' : ''} selecionado{selecionados.size !== 1 ? 's' : ''}
+                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={sairModoSelecao}
+                    disabled={baixandoLote}
+                    className="px-3 py-1.5 rounded-lg text-xs font-semibold
+                               bg-slate-700 hover:bg-slate-600 transition-colors
+                               disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleBaixarLote}
+                    disabled={baixandoLote}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold
+                               bg-blue-600 hover:bg-blue-500 transition-colors
+                               disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {baixandoLote
+                      ? <Loader2 size={13} className="animate-spin" />
+                      : <Download size={13} />
+                    }
+                    {baixandoLote ? 'Gerando ZIP…' : 'Baixar ZIP'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </>
       )}
 

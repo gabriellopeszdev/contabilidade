@@ -1,0 +1,127 @@
+import { NextRequest, NextResponse } from 'next/server';
+
+import { prisma }   from '../../../../../src/infrastructure/di/Container';
+import { logger }   from '../../../../../src/utils/logger';
+import { withAuth } from '../../../../../src/infrastructure/http/middlewares/withAuth';
+import type { RouteContext } from '../../../../../src/infrastructure/http/middlewares/withAuth';
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+// =============================================================================
+// GET /api/v1/admin/audit-log
+//
+// Lista todos os logs de auditoria do sistema (acesso exclusivo ADMIN).
+//
+// Query params:
+//   - page      (default: 1)
+//   - perPage   (default: 50, max: 200)
+//   - userId    (opcional) — filtra por usuário específico
+//   - actionType (opcional) — filtra por tipo de ação
+//   - from      (opcional) — data inicial ISO (ex: 2024-01-01)
+//   - to        (opcional) — data final ISO (ex: 2024-12-31)
+//
+// Response: { logs, total, page, totalPages }
+// =============================================================================
+
+export const GET = withAuth(async (req: NextRequest, _ctx: RouteContext) => {
+  try {
+    const url      = new URL(req.url);
+    const page     = Math.max(1, parseInt(url.searchParams.get('page')    ?? '1',  10));
+    const perPage  = Math.min(200, Math.max(1, parseInt(url.searchParams.get('perPage') ?? '50', 10)));
+    const skip     = (page - 1) * perPage;
+
+    const userId     = url.searchParams.get('userId')     ?? undefined;
+    const actionType = url.searchParams.get('actionType') ?? undefined;
+    const from       = url.searchParams.get('from')       ?? undefined;
+    const to         = url.searchParams.get('to')         ?? undefined;
+
+    // -------------------------------------------------------------------------
+    // Construir filtro Prisma
+    // -------------------------------------------------------------------------
+    const where: Record<string, unknown> = {};
+
+    if (userId)     where.userId     = userId;
+    if (actionType) where.actionType = actionType;
+
+    if (from || to) {
+      const timestampFilter: Record<string, Date> = {};
+      if (from) timestampFilter.gte = new Date(from);
+      if (to) {
+        // Inclui o dia inteiro de "to"
+        const toDate = new Date(to);
+        toDate.setHours(23, 59, 59, 999);
+        timestampFilter.lte = toDate;
+      }
+      where.timestamp = timestampFilter;
+    }
+
+    // -------------------------------------------------------------------------
+    // Buscar logs + total em paralelo
+    // -------------------------------------------------------------------------
+    const [rawLogs, total] = await Promise.all([
+      prisma.auditLog.findMany({
+        where,
+        orderBy: { timestamp: 'desc' },
+        skip,
+        take: perPage,
+        select: {
+          id:           true,
+          userId:       true,
+          actionType:   true,
+          resourceType: true,
+          timestamp:    true,
+          ipAddress:    true,
+          detailsJson:  true,
+        },
+      }),
+      prisma.auditLog.count({ where }),
+    ]);
+
+    // -------------------------------------------------------------------------
+    // Enriquecer com nome/email do usuário
+    // Coleta os userIds únicos e busca em ambas as tabelas
+    // -------------------------------------------------------------------------
+    const uniqueUserIds = [...new Set(rawLogs.map((l) => l.userId))];
+
+    const [contadores, clientes] = await Promise.all([
+      prisma.usuarioContador.findMany({
+        where: { id: { in: uniqueUserIds } },
+        select: { id: true, name: true, email: true },
+      }),
+      prisma.usuarioCliente.findMany({
+        where: { id: { in: uniqueUserIds } },
+        select: { id: true, name: true, email: true },
+      }),
+    ]);
+
+    const userMap = new Map<string, { name: string; email: string }>();
+    for (const c of contadores) userMap.set(c.id, { name: c.name, email: c.email });
+    for (const c of clientes)   userMap.set(c.id, { name: c.name, email: c.email });
+
+    const logs = rawLogs.map((log) => {
+      const user = userMap.get(log.userId) ?? { name: 'Desconhecido', email: '-' };
+      return {
+        id:           log.id,
+        userId:       log.userId,
+        userName:     user.name,
+        userEmail:    user.email,
+        actionType:   log.actionType,
+        resourceType: log.resourceType,
+        timestamp:    log.timestamp,
+        ipAddress:    log.ipAddress,
+        detailsJson:  log.detailsJson,
+      };
+    });
+
+    return NextResponse.json({
+      logs,
+      total,
+      page,
+      totalPages: Math.ceil(total / perPage),
+    });
+  } catch (err) {
+    logger.error('[GET /admin/audit-log] Erro interno', err instanceof Error ? err : { err });
+    return NextResponse.json({ message: 'Erro interno do servidor.' }, { status: 500 });
+  }
+}, ['ADMIN']);

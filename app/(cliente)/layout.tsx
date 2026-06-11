@@ -33,6 +33,7 @@ import { useSessionTimer }  from '../../src/presentation/hooks/useSessionTimer';
 import { useDarkMode }      from '../../src/presentation/hooks/useDarkMode';
 import { InstitutionalFooter } from '../../src/presentation/components/lgpd/InstitutionalFooter';
 import { ClientHelpTutorialModal } from './components/ClientHelpTutorialModal';
+import { NpsModal } from './components/NpsModal';
 
 // =============================================================================
 // Navegação da Sidebar
@@ -127,6 +128,7 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
 
   const [sidebarAberta, setSidebarAberta] = useState(false);
   const [helpAberto, setHelpAberto] = useState(false);
+  const [mostrarNps, setMostrarNps] = useState(false);
   const [colapsada, setColapsada] = useState(() => {
     if (typeof window === 'undefined') return false;
     return localStorage.getItem('sidebar-cliente-colapsada') === 'true';
@@ -182,6 +184,17 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
     if (!usuario) { router.push('/login'); return; }
     if (!isCliente && !isFuncionarioCliente) router.push('/dashboard');
   }, [carregando, usuario, isCliente, isFuncionarioCliente, router]);
+
+  useEffect(() => {
+    if (!usuario || !token) return;
+    fetch('/api/v1/nps', {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((r) => r.json())
+      .then((d: { exibir?: boolean }) => { if (d.exibir) setMostrarNps(true); })
+      .catch(() => {/* ignorar erros silenciosamente */});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [usuario?.id]);
 
   if (carregando) {
     return (
@@ -477,6 +490,9 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
         <InstitutionalFooter />
       </div>
       <ClientHelpTutorialModal aberto={helpAberto} onClose={() => setHelpAberto(false)} />
+      {mostrarNps && (
+        <NpsModal token={token} onFechar={() => setMostrarNps(false)} />
+      )}
     </div>
   );
 }

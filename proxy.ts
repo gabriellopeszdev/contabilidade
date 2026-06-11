@@ -19,7 +19,7 @@ import { jwtVerify } from 'jose';
 //   A chave JWT é lazy-loaded e cacheada no escopo do módulo.
 // =============================================================================
 
-const ROTAS_ADMIN    = ['/dashboard-admin', '/contadores', '/faturamento', '/admin-config', '/webhook-logs', '/admin-boletos', '/admin-clientes'];
+const ROTAS_ADMIN    = ['/dashboard-admin', '/contadores', '/faturamento', '/admin-config', '/webhook-logs', '/admin-boletos', '/admin-clientes', '/auditoria'];
 const ROTAS_CONTADOR = ['/dashboard', '/lote', '/clientes', '/configuracoes', '/calendario', '/equipe', '/busca', '/assinaturas'];
 const ROTAS_CLIENTE  = ['/documentos', '/enviar', '/ajuda'];
 const ROTAS_COMPARTILHADAS = ['/chat', '/financeiro'];
@@ -200,7 +200,13 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
-  return NextResponse.next();
+  const res = NextResponse.next();
+  res.headers.set('X-Content-Type-Options', 'nosniff');
+  res.headers.set('X-Frame-Options', 'DENY');
+  res.headers.set('X-XSS-Protection', '1; mode=block');
+  res.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), interest-cohort=()');
+  return res;
 }
 
 // =============================================================================
@@ -217,6 +223,7 @@ export const config = {
     '/webhook-logs/:path*',
     '/admin-boletos/:path*',
     '/admin-clientes/:path*',
+    '/auditoria/:path*',
     '/dashboard/:path*',
     '/lote/:path*',
     '/clientes/:path*',

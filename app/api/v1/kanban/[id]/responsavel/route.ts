@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withAuth, type ResolvedRouteContext } from '../../../../../../src/infrastructure/http/middlewares/withAuth';
-import { prisma } from '../../../../../../src/infrastructure/di/Container';
+import { prisma, emailService } from '../../../../../../src/infrastructure/di/Container';
 import { logger } from '../../../../../../src/utils/logger';
 
 export const runtime = 'nodejs';
@@ -55,9 +55,27 @@ export const PATCH = withAuth(async (req, ctx, auth) => {
     }
 
     const atualizada = await prisma.tarefaKanban.update({
-      where: { id },
-      data:  { assignedToFuncionarioId: funcionarioId },
+      where:  { id },
+      data:   { assignedToFuncionarioId: funcionarioId },
+      select: { assignedToFuncionarioId: true, title: true },
     });
+
+    // Notifica o funcionário por e-mail (fire-and-forget)
+    if (funcionarioId) {
+      prisma.funcionario.findUnique({
+        where:  { id: funcionarioId },
+        select: { email: true, name: true },
+      }).then((func) => {
+        if (!func) return;
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? '';
+        return emailService.enviar({
+          destinatario: func.email,
+          assunto:      `Tarefa atribuída a você: ${atualizada.title}`,
+          corpoHtml:    `<p>Olá, <strong>${func.name}</strong>.</p><p>Uma tarefa foi atribuída a você: <strong>${atualizada.title}</strong>.</p><p><a href="${appUrl}/kanban">Acesse o quadro Kanban</a> para visualizá-la.</p>`,
+          corpoTexto:   `Uma tarefa foi atribuída a você: ${atualizada.title}. Acesse ${appUrl}/kanban.`,
+        });
+      }).catch(() => {});
+    }
 
     return NextResponse.json({ assignedToFuncionarioId: atualizada.assignedToFuncionarioId });
   } catch (err) {
