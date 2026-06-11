@@ -35,9 +35,16 @@ export class ResendEmailAdapter implements IEmailService {
     this.client = new Resend(apiKey);
   }
 
+  private get from(): string {
+    // Se o fromEmail já tem nome de exibição, usa como está
+    if (this.fromEmail.includes('<')) return this.fromEmail;
+    const name = process.env.RESEND_FROM_NAME ?? 'FiscoHub';
+    return `${name} <${this.fromEmail}>`;
+  }
+
   async enviar(dto: EnviarEmailDTO): Promise<void> {
     const { error } = await this.client.emails.send({
-      from:    this.fromEmail,
+      from:    this.from,
       to:      dto.destinatario,
       subject: dto.assunto,
       html:    dto.corpoHtml,

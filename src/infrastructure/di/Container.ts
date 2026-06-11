@@ -161,7 +161,7 @@ function buildMinioClient(): MinioClient {
 
 function buildEmailService(): IEmailService {
   const apiKey    = process.env.RESEND_API_KEY;
-  const fromEmail = process.env.RESEND_FROM_EMAIL ?? 'noreply@contabilidade.app';
+  const fromEmail = process.env.RESEND_FROM_EMAIL ?? process.env.FROM_EMAIL ?? 'noreply@contabilidade.app';
   if (apiKey) {
     return new ResendEmailAdapter(apiKey, fromEmail, logger);
   }
