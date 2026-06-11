@@ -21,6 +21,7 @@ import {
   Download,
   ChevronLeft,
   ChevronRight,
+  X,
 } from 'lucide-react';
 
 import {
@@ -187,8 +188,9 @@ function ClientesPageDono({ token }: { token: string | null }) {
   }, [mutate]);
 
   // Exclusão com confirmação
-  const [excluindo, setExcluindo] = useState<string | null>(null);
-  const [reenviando, setReenviando] = useState<string | null>(null);
+  const [excluindo,         setExcluindo]         = useState<string | null>(null);
+  const [reenviando,        setReenviando]         = useState<string | null>(null);
+  const [clienteParaExcluir, setClienteParaExcluir] = useState<ClienteDTO | null>(null);
 
   // Reenviar convite
   const handleReenviarConvite = useCallback(
@@ -232,34 +234,32 @@ function ClientesPageDono({ token }: { token: string | null }) {
     }
   }, [token]);
 
-  const handleExcluir = useCallback(
-    async (cliente: ClienteDTO) => {
-      const confirma = window.confirm(
-        `Tem certeza que deseja desativar "${cliente.nome}"?\n\nO cliente perderá acesso ao sistema.`,
-      );
-      if (!confirma) return;
+  const handleExcluir = useCallback((cliente: ClienteDTO) => {
+    setClienteParaExcluir(cliente);
+  }, []);
 
-      setExcluindo(cliente.id);
-      try {
-        const res = await fetch(`/api/v1/clientes/${cliente.id}`, {
-          method: 'DELETE',
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (!res.ok) {
-          const body = (await res.json().catch(() => ({}))) as { message?: string };
-          throw new Error(body.message ?? `Erro HTTP ${res.status}`);
-        }
-
-        mutate();
-      } catch (err) {
-        alert(err instanceof Error ? err.message : 'Erro ao desativar cliente.');
-      } finally {
-        setExcluindo(null);
+  const confirmarExclusao = useCallback(async () => {
+    if (!clienteParaExcluir) return;
+    const { id, nome } = clienteParaExcluir;
+    setClienteParaExcluir(null);
+    setExcluindo(id);
+    try {
+      const res = await fetch(`/api/v1/clientes/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as { message?: string };
+        throw new Error(body.message ?? `Erro HTTP ${res.status}`);
       }
-    },
-    [token, mutate],
-  );
+      toast.success(`Cliente "${nome}" removido com sucesso.`);
+      mutate();
+    } catch (err) {
+      toast.error('Erro ao remover cliente', { description: err instanceof Error ? err.message : 'Tente novamente.' });
+    } finally {
+      setExcluindo(null);
+    }
+  }, [clienteParaExcluir, token, mutate]);
 
   // ---------------------------------------------------------------------------
   // Render
@@ -512,6 +512,70 @@ function ClientesPageDono({ token }: { token: string | null }) {
         token={token ?? ''}
         onSucesso={handleSucesso}
       />
+
+      {/* Modal de confirmação de exclusão */}
+      {clienteParaExcluir && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          onClick={() => setClienteParaExcluir(null)}
+        >
+          <div
+            className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-gray-700 w-full max-w-md p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Cabeçalho */}
+            <div className="flex items-start justify-between gap-3 mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center shrink-0">
+                  <Trash2 size={18} className="text-red-600 dark:text-red-400" />
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-gray-900 dark:text-gray-100">Remover cliente</h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Esta ação não pode ser desfeita.</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setClienteParaExcluir(null)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-gray-800 transition-colors"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Corpo */}
+            <div className="bg-slate-50 dark:bg-gray-800 rounded-xl px-4 py-3 mb-5 border border-slate-200 dark:border-gray-700">
+              <p className="text-sm text-slate-700 dark:text-slate-300">
+                Você está prestes a remover o cliente{' '}
+                <span className="font-semibold text-slate-900 dark:text-slate-100">
+                  {clienteParaExcluir.nome}
+                </span>
+                . O acesso ao sistema será revogado imediatamente.
+              </p>
+            </div>
+
+            {/* Botões */}
+            <div className="flex gap-3 justify-end">
+              <button
+                type="button"
+                onClick={() => setClienteParaExcluir(null)}
+                className="px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-gray-800
+                  border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={confirmarExclusao}
+                className="px-4 py-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-700
+                  rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+              >
+                Remover cliente
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
