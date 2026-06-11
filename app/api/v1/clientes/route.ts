@@ -6,6 +6,7 @@ import { withAuth }     from '../../../../src/infrastructure/http/middlewares/wi
 import { prisma, emailService } from '../../../../src/infrastructure/di/Container';
 import { logger }        from '../../../../src/utils/logger';
 import { checkClienteLimit } from '../../../../src/utils/planLimits';
+import { checkRateLimit } from '../../../../src/utils/rateLimiter';
 
 // =============================================================================
 // Configuração do runtime
@@ -181,6 +182,14 @@ export const GET = withAuth(async (req, _ctx, auth) => {
 // =============================================================================
 
 export const POST = withAuth(async (req, _ctx, auth) => {
+  const rl = await checkRateLimit(`write:clientes:${auth.sub}`, 30, 3600);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { message: 'Muitas requisições. Tente novamente em alguns minutos.' },
+      { status: 429, headers: { 'Retry-After': String(rl.resetInSec) } },
+    );
+  }
+
   let body: unknown;
   try {
     body = await req.json();

@@ -41,9 +41,12 @@ export const GET = withAuth(async (req, ctx, auth) => {
       } : {}),
     },
     orderBy: { createdAt: 'desc' },
-    take: 5000,
+    take: 1001,
     select: { fileName: true, fileType: true, sector: true, competencia: true, readStatus: true, createdAt: true },
   });
+
+  const truncado = documentos.length > 1000;
+  if (truncado) documentos.splice(1000);
 
   const linhas = documentos.map((d) => ({
     fileName:    d.fileName,
@@ -55,7 +58,7 @@ export const GET = withAuth(async (req, ctx, auth) => {
   }));
 
   if (format === 'json') {
-    return NextResponse.json({ total: linhas.length, dados: linhas });
+    return NextResponse.json({ total: linhas.length, truncado, dados: linhas });
   }
 
   if (format === 'excel') {
@@ -64,12 +67,13 @@ export const GET = withAuth(async (req, ctx, auth) => {
       headers: {
         'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         'Content-Disposition': 'attachment; filename="documentos.xlsx"',
+        ...(truncado ? { 'X-Truncado': 'true' } : {}),
       },
     });
   }
 
   const bytes = await gerarPDF({ titulo: 'Relatório de Documentos Fiscais', colunas: COLUNAS, linhas });
   return new NextResponse(bytes, {
-    headers: { 'Content-Type': 'application/pdf', 'Content-Disposition': 'attachment; filename="documentos.pdf"' },
+    headers: { 'Content-Type': 'application/pdf', 'Content-Disposition': 'attachment; filename="documentos.pdf"', ...(truncado ? { 'X-Truncado': 'true' } : {}) },
   });
 }, ['ACCOUNTANT', 'EMPLOYEE', 'ADMIN']);

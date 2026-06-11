@@ -19,6 +19,9 @@ export const GET = withAuth(async (req, _ctx, auth) => {
   try {
     const { searchParams } = req.nextUrl;
     const clienteId = searchParams.get('clienteId') ?? undefined;
+    const setor    = searchParams.get('setor')    ?? undefined;
+    const priority = searchParams.get('priority') ?? undefined;
+    const status   = searchParams.get('status')   ?? undefined;
 
     if (clienteId && !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(clienteId)) {
       return NextResponse.json({ message: 'clienteId inválido.' }, { status: 400 });
@@ -50,6 +53,9 @@ export const GET = withAuth(async (req, _ctx, auth) => {
       where: {
         clientId: clienteId ? clienteId : { in: meusClienteIds },
         ...funcionarioFilter,
+        ...(setor    ? { sector:       setor    as any } : {}),
+        ...(priority ? { priority:     priority as any } : {}),
+        ...(status   ? { currentState: status   as any } : {}),
       },
       orderBy: [
         { currentState: 'asc' },

@@ -3,6 +3,7 @@ import { withAuth } from '../../../../src/infrastructure/http/middlewares/withAu
 import { prisma }   from '../../../../src/infrastructure/di/Container';
 import { logger }   from '../../../../src/utils/logger';
 import { getPlanInfo, hasFeature, FEATURES } from '../../../../src/utils/planLimits';
+import { checkRateLimit } from '../../../../src/utils/rateLimiter';
 import { BcryptPasswordHasher } from '../../../../src/infrastructure/auth/BcryptPasswordHasher';
 import { SenhaHash } from '../../../../src/domain/value-objects/SenhaHash';
 
@@ -49,6 +50,14 @@ export const GET = withAuth(async (_req, _ctx, auth) => {
 // =============================================================================
 
 export const POST = withAuth(async (req, _ctx, auth) => {
+  const rl = await checkRateLimit(`write:equipe:${auth.sub}`, 20, 3600);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { message: 'Muitas requisições. Tente novamente em alguns minutos.' },
+      { status: 429, headers: { 'Retry-After': String(rl.resetInSec) } },
+    );
+  }
+
   try {
     const plan = await getPlanInfo(auth.sub);
     if (!hasFeature(plan, FEATURES.EQUIPE)) {

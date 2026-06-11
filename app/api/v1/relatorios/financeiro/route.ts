@@ -39,9 +39,12 @@ export const GET = withAuth(async (req, ctx, auth) => {
       } : {}),
     },
     orderBy: { createdAt: 'desc' },
-    take: 5000,
+    take: 1001,
     select: { valor: true, vencimento: true, status: true, mesReferencia: true, createdAt: true, cliente: { select: { name: true } } },
   });
+
+  const truncado = boletos.length > 1000;
+  if (truncado) boletos.splice(1000);
 
   const linhas = boletos.map((b) => ({
     cliente:       b.cliente.name,
@@ -53,7 +56,7 @@ export const GET = withAuth(async (req, ctx, auth) => {
   }));
 
   if (format === 'json') {
-    return NextResponse.json({ total: linhas.length, dados: linhas });
+    return NextResponse.json({ total: linhas.length, truncado, dados: linhas });
   }
 
   if (format === 'excel') {
@@ -62,12 +65,13 @@ export const GET = withAuth(async (req, ctx, auth) => {
       headers: {
         'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         'Content-Disposition': 'attachment; filename="financeiro.xlsx"',
+        ...(truncado ? { 'X-Truncado': 'true' } : {}),
       },
     });
   }
 
   const bytes = await gerarPDF({ titulo: 'Relatório Financeiro', colunas: COLUNAS, linhas });
   return new NextResponse(bytes, {
-    headers: { 'Content-Type': 'application/pdf', 'Content-Disposition': 'attachment; filename="financeiro.pdf"' },
+    headers: { 'Content-Type': 'application/pdf', 'Content-Disposition': 'attachment; filename="financeiro.pdf"', ...(truncado ? { 'X-Truncado': 'true' } : {}) },
   });
 }, ['ACCOUNTANT', 'ADMIN']);

@@ -39,9 +39,12 @@ export const GET = withAuth(async (req, ctx, auth) => {
       } : {}),
     },
     orderBy: { assignedAt: 'desc' },
-    take: 5000,
+    take: 1001,
     select: { assignedAt: true, clienteId: true, cliente: { select: { name: true, cnpj: true, email: true, phone: true, isActive: true } } },
   });
+
+  const truncado = relacoes.length > 1000;
+  if (truncado) relacoes.splice(1000);
 
   const linhas = relacoes.map((r) => ({
     id:         r.clienteId,
@@ -54,7 +57,7 @@ export const GET = withAuth(async (req, ctx, auth) => {
   }));
 
   if (format === 'json') {
-    return NextResponse.json({ total: linhas.length, dados: linhas });
+    return NextResponse.json({ total: linhas.length, truncado, dados: linhas });
   }
 
   if (format === 'excel') {
@@ -63,12 +66,13 @@ export const GET = withAuth(async (req, ctx, auth) => {
       headers: {
         'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         'Content-Disposition': 'attachment; filename="clientes.xlsx"',
+        ...(truncado ? { 'X-Truncado': 'true' } : {}),
       },
     });
   }
 
   const bytes = await gerarPDF({ titulo: 'Carteira de Clientes', colunas: COLUNAS, linhas });
   return new NextResponse(bytes, {
-    headers: { 'Content-Type': 'application/pdf', 'Content-Disposition': 'attachment; filename="clientes.pdf"' },
+    headers: { 'Content-Type': 'application/pdf', 'Content-Disposition': 'attachment; filename="clientes.pdf"', ...(truncado ? { 'X-Truncado': 'true' } : {}) },
   });
 }, ['ACCOUNTANT', 'ADMIN']);
