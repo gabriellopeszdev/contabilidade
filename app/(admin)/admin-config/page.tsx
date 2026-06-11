@@ -18,6 +18,9 @@ import {
   Loader2,
   CheckCircle2,
   AlertCircle,
+  ShieldAlert,
+  Smartphone,
+  Lock,
 } from 'lucide-react';
 
 import { useAuth } from '../../../src/presentation/hooks/useAuth';
@@ -124,6 +127,9 @@ export default function AdminConfigPage() {
           Configurações globais do sistema. Variáveis de ambiente são definidas no arquivo <code className="text-violet-300 text-[11px]">.env</code>.
         </p>
       </div>
+
+      {/* Autenticação em 2 Fatores */}
+      <TwoFactorSection onSucesso={(m) => mostrarToast('sucesso', m)} onErro={(m) => mostrarToast('erro', m)} />
 
       {/* Integração Asaas */}
       <SectionCard title="Integração Asaas" icon={Zap}>
@@ -267,6 +273,211 @@ export default function AdminConfigPage() {
         </div>
       )}
 
+    </div>
+  );
+}
+
+// =============================================================================
+// Seção interativa: Autenticação em 2 Fatores (2FA)
+// =============================================================================
+
+function TwoFactorSection({
+  onSucesso,
+  onErro,
+}: {
+  onSucesso: (msg: string) => void;
+  onErro:    (msg: string) => void;
+}) {
+  const { token } = useAuth();
+
+  const [enabled,    setEnabled]    = useState<boolean | null>(null);
+  const [step,       setStep]       = useState<'idle' | 'qr' | 'codes'>('idle');
+  const [qrCode,     setQrCode]     = useState('');
+  const [totpInput,  setTotpInput]  = useState('');
+  const [backupCodes, setBackupCodes] = useState<string[]>([]);
+  const [loading,    setLoading]    = useState(false);
+
+  // Carrega status atual
+  useEffect(() => {
+    if (!token) return;
+    fetch('/api/v1/auth/me', { headers: { Authorization: `Bearer ${token}` } })
+      .then((r) => r.json())
+      .then((d: { usuario?: { twoFactorEnabled?: boolean } }) => {
+        setEnabled(d.usuario?.twoFactorEnabled ?? false);
+      })
+      .catch(() => setEnabled(false));
+  }, [token]);
+
+  async function handleIniciarSetup() {
+    if (!token) return;
+    setLoading(true);
+    try {
+      const res = await fetch('/api/v1/auth/2fa/setup', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json() as { qrCode?: string; message?: string };
+      if (!res.ok) { onErro(data.message ?? 'Falha ao iniciar setup.'); return; }
+      setQrCode(data.qrCode ?? '');
+      setTotpInput('');
+      setStep('qr');
+    } catch {
+      onErro('Erro de conexão.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleAtivar() {
+    if (!token || totpInput.length !== 6) return;
+    setLoading(true);
+    try {
+      const res = await fetch('/api/v1/auth/2fa/enable', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body:    JSON.stringify({ token: totpInput }),
+      });
+      const data = await res.json() as { backupCodes?: string[]; message?: string };
+      if (!res.ok) { onErro(data.message ?? 'Código inválido.'); return; }
+      setBackupCodes(data.backupCodes ?? []);
+      setEnabled(true);
+      setStep('codes');
+      onSucesso('2FA ativado com sucesso!');
+    } catch {
+      onErro('Erro de conexão.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+      <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-800">
+        <div className="p-1.5 rounded-lg bg-violet-600/15">
+          <ShieldCheck size={16} className="text-violet-400" />
+        </div>
+        <h2 className="text-sm font-semibold text-slate-100">Autenticação em 2 Fatores (2FA)</h2>
+        {enabled === true && (
+          <span className="ml-auto text-[10px] font-medium text-emerald-400 bg-emerald-900/30 border border-emerald-700/40 px-2 py-0.5 rounded-full flex items-center gap-1">
+            <CheckCircle2 size={10} /> Ativo
+          </span>
+        )}
+        {enabled === false && (
+          <span className="ml-auto text-[10px] font-medium text-red-400 bg-red-900/30 border border-red-700/40 px-2 py-0.5 rounded-full flex items-center gap-1">
+            <ShieldAlert size={10} /> Inativo
+          </span>
+        )}
+      </div>
+
+      <div className="px-5 py-4 space-y-4">
+        {enabled === null && (
+          <div className="flex items-center gap-2 text-slate-500 text-xs py-2">
+            <Loader2 size={14} className="animate-spin" /> Carregando…
+          </div>
+        )}
+
+        {/* 2FA já ativo */}
+        {enabled === true && step !== 'codes' && (
+          <div className="flex items-start gap-3 p-3 rounded-lg bg-emerald-900/10 border border-emerald-700/30">
+            <CheckCircle2 size={15} className="text-emerald-400 shrink-0 mt-0.5" />
+            <p className="text-xs text-emerald-300">
+              O 2FA está ativo nesta conta. Use o app autenticador para gerar códigos ao fazer login.
+            </p>
+          </div>
+        )}
+
+        {/* Aviso quando inativo */}
+        {enabled === false && step === 'idle' && (
+          <>
+            <div className="flex items-start gap-3 p-3 rounded-lg bg-red-900/10 border border-red-700/30">
+              <ShieldAlert size={15} className="text-red-400 shrink-0 mt-0.5" />
+              <p className="text-xs text-red-300">
+                Contas de administrador precisam ter o 2FA ativo para acessar o painel. Configure agora.
+              </p>
+            </div>
+            <button
+              onClick={handleIniciarSetup}
+              disabled={loading}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-violet-600 hover:bg-violet-500 text-white text-xs font-semibold transition-colors disabled:opacity-50"
+            >
+              {loading ? <Loader2 size={13} className="animate-spin" /> : <Smartphone size={13} />}
+              {loading ? 'Gerando QR Code…' : 'Configurar 2FA'}
+            </button>
+          </>
+        )}
+
+        {/* Step QR */}
+        {step === 'qr' && (
+          <div className="space-y-4">
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Escaneie o QR Code abaixo com um app autenticador (Google Authenticator, Authy, etc.) e insira o código gerado para confirmar.
+            </p>
+            {qrCode && (
+              <div className="flex justify-center">
+                <div className="p-3 bg-white rounded-xl inline-block">
+                  <img src={qrCode} alt="QR Code 2FA" className="w-44 h-44" />
+                </div>
+              </div>
+            )}
+            <div className="space-y-1.5">
+              <label className="block text-xs font-medium text-slate-300">
+                Código de verificação (6 dígitos)
+              </label>
+              <input
+                type="text"
+                inputMode="numeric"
+                maxLength={6}
+                value={totpInput}
+                onChange={(e) => setTotpInput(e.target.value.replace(/\D/g, ''))}
+                placeholder="000000"
+                className="w-40 rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-center text-sm font-mono text-slate-100 placeholder:text-slate-600 focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 tracking-widest"
+              />
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={handleAtivar}
+                disabled={loading || totpInput.length !== 6}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-violet-600 hover:bg-violet-500 text-white text-xs font-semibold transition-colors disabled:opacity-50"
+              >
+                {loading ? <Loader2 size={13} className="animate-spin" /> : <Lock size={13} />}
+                {loading ? 'Ativando…' : 'Ativar 2FA'}
+              </button>
+              <button
+                onClick={() => setStep('idle')}
+                className="px-4 py-2 rounded-lg border border-slate-700 text-slate-400 text-xs hover:bg-slate-800 transition-colors"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Step códigos de backup */}
+        {step === 'codes' && backupCodes.length > 0 && (
+          <div className="space-y-4">
+            <div className="flex items-start gap-3 p-3 rounded-lg bg-amber-900/10 border border-amber-700/30">
+              <AlertCircle size={15} className="text-amber-400 shrink-0 mt-0.5" />
+              <p className="text-xs text-amber-300 leading-relaxed">
+                <span className="font-semibold">Guarde estes códigos de backup em local seguro.</span>{' '}
+                Eles permitem recuperar acesso caso perca o app autenticador. Cada código só pode ser usado uma vez.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {backupCodes.map((code, i) => (
+                <span key={i} className="font-mono text-xs text-slate-200 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-center tracking-widest">
+                  {code}
+                </span>
+              ))}
+            </div>
+            <button
+              onClick={() => setStep('idle')}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-semibold transition-colors"
+            >
+              <CheckCircle2 size={13} />
+              Concluir
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
