@@ -218,22 +218,24 @@ export const POST = withAuth(async (req, _ctx, auth) => {
       );
     }
 
-    // Verifica duplicidade de e-mail ou CNPJ
+    // Verifica duplicidade de e-mail ou CNPJ (inclui soft-deleted para não violar a unique constraint)
     const existente = await prisma.usuarioCliente.findFirst({
       where: {
         OR: [
           { email: email.toLowerCase() },
           { cnpj },
         ],
-        deletedAt: null,
       },
-      select: { email: true, cnpj: true },
+      select: { email: true, cnpj: true, deletedAt: true },
     });
 
     if (existente) {
       const campo = existente.email === email.toLowerCase() ? 'E-mail' : 'CNPJ';
+      const sufixo = existente.deletedAt
+        ? ' (pertence a um cliente anteriormente removido).'
+        : ' já cadastrado no sistema.';
       return NextResponse.json(
-        { message: `${campo} já cadastrado no sistema.` },
+        { message: `${campo}${sufixo}` },
         { status: 409 },
       );
     }
@@ -292,6 +294,17 @@ export const POST = withAuth(async (req, _ctx, auth) => {
       { status: 201 },
     );
   } catch (err) {
+    // P2002 = unique constraint violation (race condition ou CNPJ/e-mail duplicado)
+    if (
+      err instanceof Error &&
+      'code' in err &&
+      (err as { code: string }).code === 'P2002'
+    ) {
+      return NextResponse.json(
+        { message: 'CNPJ ou e-mail já cadastrado no sistema.' },
+        { status: 409 },
+      );
+    }
     logger.error('[POST /clientes] Erro', err instanceof Error ? err : undefined);
     return NextResponse.json(
       { message: 'Erro interno do servidor.' },
