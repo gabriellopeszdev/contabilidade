@@ -85,18 +85,50 @@ const NAV_GRUPOS_CONTADOR: NavGroup[] = [
 ];
 
 // =============================================================================
-// Nav — Cliente
+// Nav — Cliente (com grupos, igual ao layout principal do cliente)
 // =============================================================================
 
-const NAV_CLIENTE: NavItem[] = [
-  { href: '/inicio',             label: 'Início',          icon: <Home          size={18} /> },
-  { href: '/documentos',         label: 'Meus Documentos', icon: <FileText      size={18} /> },
-  { href: '/enviar',             label: 'Enviar Arquivo',  icon: <Upload        size={18} /> },
-  { href: '/minhas-assinaturas', label: 'Assinaturas',     icon: <PenLine       size={18} /> },
-  { href: '/minha-equipe',       label: 'Minha Equipe',    icon: <Users         size={18} />, donoOnly: true },
-  { href: '/financeiro',         label: 'Financeiro',      icon: <DollarSign    size={18} /> },
-  { href: '/chat',               label: 'Chat',            icon: <MessageSquare size={18} /> },
-  { href: '/ajuda',              label: 'Ajuda',           icon: <HelpCircle    size={18} /> },
+interface NavGrupoCliente { label?: string; donoOnly?: boolean; items: NavItem[]; }
+
+const NAV_GRUPOS_CLIENTE: NavGrupoCliente[] = [
+  {
+    items: [
+      { href: '/inicio', label: 'Início', icon: <Home size={18} /> },
+    ],
+  },
+  {
+    label: 'Documentos',
+    items: [
+      { href: '/documentos',         label: 'Meus Documentos', icon: <FileText size={18} /> },
+      { href: '/enviar',             label: 'Enviar Arquivo',  icon: <Upload   size={18} /> },
+      { href: '/minhas-assinaturas', label: 'Assinaturas',     icon: <PenLine  size={18} /> },
+    ],
+  },
+  {
+    label: 'Financeiro',
+    items: [
+      { href: '/financeiro', label: 'Financeiro', icon: <DollarSign size={18} /> },
+    ],
+  },
+  {
+    label: 'Comunicação',
+    items: [
+      { href: '/chat', label: 'Chat', icon: <MessageSquare size={18} /> },
+    ],
+  },
+  {
+    label: 'Minha Empresa',
+    donoOnly: true,
+    items: [
+      { href: '/minha-equipe', label: 'Minha Equipe', icon: <Users size={18} />, donoOnly: true },
+    ],
+  },
+  {
+    label: 'Suporte',
+    items: [
+      { href: '/ajuda', label: 'Ajuda', icon: <HelpCircle size={18} /> },
+    ],
+  },
 ];
 
 // =============================================================================
@@ -227,19 +259,30 @@ export default function FinanceiroLayout({ children }: { children: React.ReactNo
             )}
           </div>
 
-          <nav className={`flex-1 py-3 overflow-y-auto ${colapsada ? 'px-2' : 'px-3'}`}>
-            <div className="space-y-0.5">
-              {NAV_CLIENTE.filter((item) => !item.donoOnly || isCliente).map((item) => {
-                const ativo = pathname === item.href || pathname.startsWith(item.href + '/');
-                return (
-                  <Link key={item.href} href={item.href} onClick={() => setSidebarAberta(false)} title={colapsada ? item.label : undefined}
-                    className={`flex items-center rounded-lg text-sm font-medium transition-colors ${colapsada ? 'justify-center py-2.5' : 'gap-3 px-3 py-2.5'} ${ativo ? 'bg-sky-50 dark:bg-sky-900/20 text-sky-700 dark:text-sky-400' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'}`}>
-                    <span className={`shrink-0 ${ativo ? 'text-sky-600 dark:text-sky-400' : 'text-gray-400 dark:text-gray-500'}`}>{item.icon}</span>
-                    {!colapsada && item.label}
-                  </Link>
-                );
-              })}
-            </div>
+          <nav className={`flex-1 py-4 overflow-y-auto ${colapsada ? 'px-2' : 'px-3'}`}>
+            {NAV_GRUPOS_CLIENTE
+              .filter((g) => !g.donoOnly || isCliente)
+              .map((grupo, gi) => (
+                <div key={gi} className={gi > 0 ? 'mt-4' : ''}>
+                  {!colapsada && grupo.label && (
+                    <p className="px-3 mb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-600">
+                      {grupo.label}
+                    </p>
+                  )}
+                  <div className="space-y-0.5">
+                    {grupo.items.filter((item) => !item.donoOnly || isCliente).map((item) => {
+                      const ativo = pathname === item.href || pathname.startsWith(item.href + '/');
+                      return (
+                        <Link key={item.href} href={item.href} onClick={() => setSidebarAberta(false)} title={colapsada ? item.label : undefined}
+                          className={`flex items-center rounded-lg text-sm font-medium transition-colors ${colapsada ? 'justify-center py-2.5' : 'gap-3 px-3 py-2.5'} ${ativo ? 'bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'}`}>
+                          <span className={`shrink-0 ${ativo ? 'text-sky-600 dark:text-sky-400' : 'text-gray-400 dark:text-gray-500'}`}>{item.icon}</span>
+                          {!colapsada && item.label}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
           </nav>
 
           <div className={`border-t border-sky-100 dark:border-gray-800 py-3 shrink-0 space-y-2 ${colapsada ? 'px-2' : 'px-3'}`}>
@@ -265,7 +308,7 @@ export default function FinanceiroLayout({ children }: { children: React.ReactNo
             <div className="hidden lg:flex items-center gap-2">
               <button onClick={toggleColapsada} className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">{colapsada ? <ChevronsRight size={18} /> : <ChevronsLeft size={18} />}</button>
               <h1 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                {NAV_CLIENTE.find((n) => pathname === n.href || pathname.startsWith(n.href + '/'))?.label ?? 'Portal'}
+                {NAV_GRUPOS_CLIENTE.flatMap((g) => g.items).find((n) => pathname === n.href || pathname.startsWith(n.href + '/'))?.label ?? 'Portal'}
               </h1>
             </div>
             <div className="flex items-center gap-2 ml-auto">
