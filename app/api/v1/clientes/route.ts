@@ -218,24 +218,22 @@ export const POST = withAuth(async (req, _ctx, auth) => {
       );
     }
 
-    // Verifica duplicidade de e-mail ou CNPJ (inclui soft-deleted para não violar a unique constraint)
-    const existente = await prisma.usuarioCliente.findFirst({
+    // Verifica duplicidade de e-mail ou CNPJ em registros ativos
+    const ativo = await prisma.usuarioCliente.findFirst({
       where: {
+        deletedAt: null,
         OR: [
           { email: email.toLowerCase() },
           { cnpj },
         ],
       },
-      select: { email: true, cnpj: true, deletedAt: true },
+      select: { email: true, cnpj: true },
     });
 
-    if (existente) {
-      const campo = existente.email === email.toLowerCase() ? 'E-mail' : 'CNPJ';
-      const sufixo = existente.deletedAt
-        ? ' (pertence a um cliente anteriormente removido).'
-        : ' já cadastrado no sistema.';
+    if (ativo) {
+      const campo = ativo.email === email.toLowerCase() ? 'E-mail' : 'CNPJ';
       return NextResponse.json(
-        { message: `${campo}${sufixo}` },
+        { message: `${campo} já cadastrado no sistema.` },
         { status: 409 },
       );
     }
@@ -244,29 +242,73 @@ export const POST = withAuth(async (req, _ctx, auth) => {
     const inviteToken = randomBytes(32).toString('hex');
     const inviteExpiresAt = new Date(Date.now() + INVITE_EXPIRY_HOURS * 60 * 60 * 1000);
 
-    // Cria cliente (sem senha) + vinculação na mesma transação
+    // Verifica se há registro soft-deleted com mesmo CNPJ ou e-mail → restaurar
+    const softDeleted = await prisma.usuarioCliente.findFirst({
+      where: {
+        deletedAt: { not: null },
+        OR: [
+          { email: email.toLowerCase() },
+          { cnpj },
+        ],
+      },
+      select: { id: true },
+    });
+
+    // Cria ou restaura cliente + vinculação na mesma transação
     const cliente = await prisma.$transaction(async (tx) => {
-      const novoCliente = await tx.usuarioCliente.create({
-        data: {
-          name:             nome,
-          email:            email.toLowerCase(),
-          cnpj,
-          phone:            phone ?? null,
-          cnae:             cnae ?? null,
-          regimeTributario: regimeTributario ?? null,
-          inviteToken,
-          inviteExpiresAt,
-        },
-      });
+      let clienteData: {
+        id: string; name: string; email: string; cnpj: string;
+        phone: string | null; avatarUrl: string | null; isActive: boolean; createdAt: Date;
+      };
 
-      await tx.contadorCliente.create({
-        data: {
-          contadorId: auth.sub,
-          clienteId:  novoCliente.id,
-        },
-      });
+      if (softDeleted) {
+        // Restaura o registro soft-deleted com os novos dados
+        clienteData = await tx.usuarioCliente.update({
+          where: { id: softDeleted.id },
+          data: {
+            name:             nome,
+            email:            email.toLowerCase(),
+            cnpj,
+            phone:            phone ?? null,
+            cnae:             cnae ?? null,
+            regimeTributario: regimeTributario ?? null,
+            isActive:         false,
+            deletedAt:        null,
+            inviteToken,
+            inviteExpiresAt,
+          },
+          select: { id: true, name: true, email: true, cnpj: true, phone: true, avatarUrl: true, isActive: true, createdAt: true },
+        });
 
-      return novoCliente;
+        // Garante o vínculo com o contador (pode não existir ou pertencer a outro)
+        await tx.contadorCliente.upsert({
+          where: { contadorId_clienteId: { contadorId: auth.sub, clienteId: softDeleted.id } },
+          update: {},
+          create: { contadorId: auth.sub, clienteId: softDeleted.id },
+        });
+      } else {
+        // Criação normal
+        const novoCliente = await tx.usuarioCliente.create({
+          data: {
+            name:             nome,
+            email:            email.toLowerCase(),
+            cnpj,
+            phone:            phone ?? null,
+            cnae:             cnae ?? null,
+            regimeTributario: regimeTributario ?? null,
+            inviteToken,
+            inviteExpiresAt,
+          },
+        });
+
+        await tx.contadorCliente.create({
+          data: { contadorId: auth.sub, clienteId: novoCliente.id },
+        });
+
+        clienteData = novoCliente;
+      }
+
+      return clienteData;
     });
 
     const appUrl     = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
