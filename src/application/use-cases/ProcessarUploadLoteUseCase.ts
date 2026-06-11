@@ -30,9 +30,18 @@ const PRESIGNED_UPLOAD_EXPIRY_SECONDS = 900; // 15 minutos
 
 /** Mapa de MIME type aceito → tipo interno. Factory Method implícito. */
 const MIME_PARA_FILETYPE: Readonly<Record<string, FileType>> = {
-  'application/xml': 'XML',
-  'text/xml': 'XML',
-  'application/pdf': 'PDF',
+  'application/xml':  'XML',
+  'text/xml':         'XML',
+  'application/pdf':  'PDF',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'XLSX',
+  'application/vnd.ms-excel':                                          'XLS',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'DOCX',
+  'application/msword':                                                'DOC',
+  'text/csv':                                                          'CSV',
+  'application/csv':                                                   'CSV',
+  'application/x-ofx':                                                 'OFX',
+  'application/ofx':                                                   'OFX',
+  'application/vnd.oasis.opendocument.spreadsheet':                    'ODS',
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -201,7 +210,7 @@ export class ProcessarUploadLoteUseCase {
     if (!fileType) {
       throw new DomainException(
         `Tipo de arquivo não suportado: "${arquivo.mimeType}". ` +
-          `Aceitos: application/xml, text/xml, application/pdf.`,
+          `Formatos aceitos: PDF, XML, XLSX, XLS, DOCX, DOC, CSV, OFX, ODS.`,
       );
     }
 

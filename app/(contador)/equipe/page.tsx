@@ -14,6 +14,8 @@ import {
   FileText,
   Users as UsersIcon,
   Globe,
+  UserX,
+  UserCheck,
 } from 'lucide-react';
 
 import { useAuth } from '../../../src/presentation/hooks/useAuth';
@@ -32,6 +34,7 @@ interface Funcionario {
   vinculo:   string;
   isActive:  boolean;
   createdAt: string;
+  deletedAt: string | null;
 }
 
 const SETORES_OPCOES = [
@@ -68,6 +71,8 @@ export default function EquipePage() {
   const [setores, setSetores] = useState<string[]>([]);
   const [salvando, setSalvando] = useState(false);
 
+  const [mostrarDesligados, setMostrarDesligados] = useState(false);
+
   // Toast
   const [toast, setToast] = useState<{ tipo: 'sucesso' | 'erro'; msg: string } | null>(null);
 
@@ -84,14 +89,17 @@ export default function EquipePage() {
     if (!token) return;
     setCarregando(true);
     try {
-      const res = await fetch('/api/v1/equipe', {
+      const url = mostrarDesligados
+        ? '/api/v1/equipe?incluirDesligados=true'
+        : '/api/v1/equipe';
+      const res = await fetch(url, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
       if (res.ok) setFuncionarios(data.funcionarios ?? []);
     } catch { /* silêncio */ }
     setCarregando(false);
-  }, [token]);
+  }, [token, mostrarDesligados]);
 
   useEffect(() => { carregar(); }, [carregar]);
 
@@ -253,13 +261,26 @@ export default function EquipePage() {
             Cadastre funcionários e defina seus setores de acesso.
           </p>
         </div>
-        <button
-          onClick={abrirNovo}
-          className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:opacity-90 transition-opacity"
-        >
-          <Plus size={16} />
-          Novo Funcionário
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setMostrarDesligados((prev) => !prev)}
+            className={`inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${
+              mostrarDesligados
+                ? 'border-amber-400 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/30'
+                : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
+            }`}
+          >
+            {mostrarDesligados ? <UserX size={16} /> : <UserCheck size={16} />}
+            {mostrarDesligados ? 'Ocultar Desligados' : 'Mostrar Desligados'}
+          </button>
+          <button
+            onClick={abrirNovo}
+            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:opacity-90 transition-opacity"
+          >
+            <Plus size={16} />
+            Novo Funcionário
+          </button>
+        </div>
       </div>
 
       {/* Tabela */}
@@ -284,52 +305,63 @@ export default function EquipePage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-              {funcionarios.map((f) => (
-                <tr key={f.id} className={`hover:bg-gray-50 dark:hover:bg-gray-800 ${!f.isActive ? 'opacity-50' : ''}`}>
-                  <td className="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">{f.name}</td>
-                  <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{f.email}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex gap-1.5 flex-wrap">
-                      {f.setores.map((s) => (
-                        <span key={s} className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${SETOR_CORES[s] ?? 'bg-gray-100 text-gray-600'}`}>
-                          {SETORES_OPCOES.find((o) => o.value === s)?.icon}
-                          {SETORES_OPCOES.find((o) => o.value === s)?.label ?? s}
+              {funcionarios.map((f) => {
+                const desligado = f.deletedAt !== null;
+                return (
+                  <tr key={f.id} className={`hover:bg-gray-50 dark:hover:bg-gray-800 ${!f.isActive && !desligado ? 'opacity-50' : ''}`}>
+                    <td className={`px-4 py-3 font-medium text-gray-900 dark:text-gray-100 ${desligado ? 'opacity-40 line-through' : ''}`}>{f.name}</td>
+                    <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{f.email}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex gap-1.5 flex-wrap">
+                        {f.setores.map((s) => (
+                          <span key={s} className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${SETOR_CORES[s] ?? 'bg-gray-100 text-gray-600'}`}>
+                            {SETORES_OPCOES.find((o) => o.value === s)?.icon}
+                            {SETORES_OPCOES.find((o) => o.value === s)?.label ?? s}
+                          </span>
+                        ))}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      {desligado ? (
+                        <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400">
+                          Desligado
                         </span>
-                      ))}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    <button
-                      onClick={() => toggleAtivo(f)}
-                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors ${
-                        f.isActive
-                          ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-200 dark:hover:bg-emerald-900/40'
-                          : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
-                      }`}
-                    >
-                      {f.isActive ? 'Ativo' : 'Inativo'}
-                    </button>
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    <div className="flex items-center justify-center gap-2">
-                      <button
-                        onClick={() => abrirEdicao(f)}
-                        className="rounded-lg p-1.5 text-gray-400 dark:text-gray-500 hover:text-primary hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                        title="Editar"
-                      >
-                        <Pencil size={15} />
-                      </button>
-                      <button
-                        onClick={() => handleExcluir(f.id)}
-                        className="rounded-lg p-1.5 text-gray-400 dark:text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                        title="Excluir"
-                      >
-                        <Trash2 size={15} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                      ) : (
+                        <button
+                          onClick={() => toggleAtivo(f)}
+                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors ${
+                            f.isActive
+                              ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-200 dark:hover:bg-emerald-900/40'
+                              : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                          }`}
+                        >
+                          {f.isActive ? 'Ativo' : 'Inativo'}
+                        </button>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      {!desligado && (
+                        <div className="flex items-center justify-center gap-2">
+                          <button
+                            onClick={() => abrirEdicao(f)}
+                            className="rounded-lg p-1.5 text-gray-400 dark:text-gray-500 hover:text-primary hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                            title="Editar"
+                          >
+                            <Pencil size={15} />
+                          </button>
+                          <button
+                            onClick={() => handleExcluir(f.id)}
+                            className="rounded-lg p-1.5 text-gray-400 dark:text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                            title="Excluir"
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         )}

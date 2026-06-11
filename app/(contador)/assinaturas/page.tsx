@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { FileSignature, Loader2, Clock, CheckCircle2, XCircle, AlertCircle, RefreshCw, ExternalLink, Filter, Download } from 'lucide-react';
+import { FileSignature, Loader2, Clock, CheckCircle2, XCircle, AlertCircle, RefreshCw, ExternalLink, Filter, Download, ShieldCheck, X } from 'lucide-react';
 import { useAuth } from '../../../src/presentation/hooks/useAuth';
 
 type StatusAssinatura = 'TODOS' | 'PENDENTE' | 'ASSINADO' | 'RECUSADO' | 'EXPIRADO';
@@ -20,6 +20,11 @@ interface Assinatura {
   documentoNome:   string;
   documentoTipo:   string;
   temComprovante:  boolean;
+  ipAssinatura:           string | null;
+  hashDocumento:          string;
+  provider:               string;
+  docsealSubmissionId:    number | null;
+  signatureapiEnvelopeId: string | null;
 }
 
 const STATUS_CONFIG: Record<string, { label: string; cor: string; icon: React.ReactNode }> = {
@@ -43,6 +48,7 @@ export default function AssinaturasPage() {
   const [assinaturas, setAssinaturas] = useState<Assinatura[]>([]);
   const [carregando, setCarregando]   = useState(true);
   const [erro, setErro]               = useState('');
+  const [drawerAssinatura, setDrawerAssinatura] = useState<Assinatura | null>(null);
 
   const carregar = useCallback(async () => {
     setCarregando(true);
@@ -244,6 +250,13 @@ export default function AssinaturasPage() {
                               Baixar assinado
                             </button>
                           )}
+                          <button
+                            onClick={() => setDrawerAssinatura(a)}
+                            className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                          >
+                            <ShieldCheck size={12} />
+                            Auditoria
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -254,6 +267,111 @@ export default function AssinaturasPage() {
           </div>
           <div className="px-4 py-3 border-t border-gray-100 dark:border-gray-800 text-xs text-gray-400 dark:text-gray-500">
             {assinaturas.length} solicitaç{assinaturas.length !== 1 ? 'ões' : 'ão'}
+          </div>
+        </div>
+      )}
+      {drawerAssinatura && (
+        <div className="fixed inset-0 z-50 flex justify-end" onClick={() => setDrawerAssinatura(null)}>
+          <div className="fixed inset-0 bg-black/30" />
+          <div
+            className="relative z-10 w-full max-w-md bg-white dark:bg-gray-900 h-full overflow-y-auto shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center gap-2">
+                <ShieldCheck size={18} className="text-blue-600" />
+                <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Auditoria de Assinatura</h2>
+              </div>
+              <button onClick={() => setDrawerAssinatura(null)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="px-6 py-5 space-y-5">
+              {/* Documento */}
+              <div>
+                <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-2">Documento</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{drawerAssinatura.documentoNome}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{drawerAssinatura.documentoTipo}</p>
+              </div>
+
+              {/* Signatário */}
+              <div>
+                <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-2">Signatário</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{drawerAssinatura.signatarioNome}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{drawerAssinatura.signatarioEmail}</p>
+              </div>
+
+              {/* Status e datas */}
+              <div>
+                <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-2">Linha do Tempo</p>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 dark:text-gray-400">Solicitado em</span>
+                    <span className="text-gray-900 dark:text-gray-100">{new Date(drawerAssinatura.createdAt).toLocaleString('pt-BR')}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 dark:text-gray-400">Vencimento</span>
+                    <span className="text-gray-900 dark:text-gray-100">{new Date(drawerAssinatura.expiresAt).toLocaleString('pt-BR')}</span>
+                  </div>
+                  {drawerAssinatura.assinadoAt && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-500 dark:text-gray-400">Assinado em</span>
+                      <span className="text-emerald-700 dark:text-emerald-400 font-medium">{new Date(drawerAssinatura.assinadoAt).toLocaleString('pt-BR')}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* IP */}
+              {drawerAssinatura.ipAssinatura && (
+                <div>
+                  <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-2">IP da Assinatura</p>
+                  <p className="text-sm font-mono bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded text-gray-900 dark:text-gray-100">{drawerAssinatura.ipAssinatura}</p>
+                </div>
+              )}
+
+              {/* Hash */}
+              <div>
+                <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-2">Hash do Documento (SHA-256)</p>
+                <p className="text-xs font-mono bg-gray-100 dark:bg-gray-800 px-3 py-2 rounded text-gray-700 dark:text-gray-300 break-all">{drawerAssinatura.hashDocumento}</p>
+              </div>
+
+              {/* Provider */}
+              <div>
+                <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-2">Provedor de Assinatura</p>
+                <span className="text-xs px-2 py-1 rounded bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-medium border border-blue-200 dark:border-blue-800">
+                  {drawerAssinatura.provider === 'INTERNO' ? 'Sistema Interno' : drawerAssinatura.provider === 'DOCSEAL' ? 'DocSeal' : 'SignatureAPI'}
+                </span>
+                {drawerAssinatura.docsealSubmissionId && (
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">ID DocSeal: #{drawerAssinatura.docsealSubmissionId}</p>
+                )}
+                {drawerAssinatura.signatureapiEnvelopeId && (
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Envelope ID: {drawerAssinatura.signatureapiEnvelopeId}</p>
+                )}
+              </div>
+
+              {/* Motivo de recusa */}
+              {drawerAssinatura.motivoRecusa && (
+                <div>
+                  <p className="text-xs font-semibold text-red-400 uppercase tracking-wide mb-2">Motivo da Recusa</p>
+                  <p className="text-sm text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded px-3 py-2">{drawerAssinatura.motivoRecusa}</p>
+                </div>
+              )}
+
+              {/* Baixar comprovante */}
+              {drawerAssinatura.status === 'ASSINADO' && drawerAssinatura.temComprovante && (
+                <button
+                  onClick={() => baixarComprovante(drawerAssinatura.id, drawerAssinatura.documentoNome)}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors"
+                >
+                  <Download size={15} />
+                  Baixar Comprovante Assinado
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}

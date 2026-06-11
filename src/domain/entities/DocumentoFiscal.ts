@@ -8,7 +8,7 @@ import { Setor } from '../value-objects/Setor';
 // Tipos auxiliares
 // ---------------------------------------------------------------------------
 
-export type FileType = 'XML' | 'PDF';
+export type FileType = 'XML' | 'PDF' | 'XLSX' | 'XLS' | 'DOCX' | 'DOC' | 'CSV' | 'OFX' | 'ODS';
 
 export interface DocumentoFiscalProps {
   id: string;
@@ -92,9 +92,10 @@ export class DocumentoFiscal extends AggregateRoot {
     if (!props.fileHash?.trim()) {
       throw new DomainException('DocumentoFiscal: hash do arquivo é obrigatório.');
     }
-    if (!['XML', 'PDF'].includes(props.fileType)) {
+    const TIPOS_VALIDOS: FileType[] = ['XML', 'PDF', 'XLSX', 'XLS', 'DOCX', 'DOC', 'CSV', 'OFX', 'ODS'];
+    if (!TIPOS_VALIDOS.includes(props.fileType)) {
       throw new DomainException(
-        `DocumentoFiscal: tipo de arquivo inválido "${props.fileType}". Aceitos: XML, PDF.`,
+        `DocumentoFiscal: tipo de arquivo inválido "${props.fileType}". Aceitos: XML, PDF, XLSX, XLS, DOCX, DOC, CSV, OFX, ODS.`,
       );
     }
   }

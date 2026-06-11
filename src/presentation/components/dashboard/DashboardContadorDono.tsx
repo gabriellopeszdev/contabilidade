@@ -11,6 +11,8 @@ import {
   ArrowRight,
   AlertCircle,
   Inbox,
+  AlarmClock,
+  CheckCircle2,
 } from 'lucide-react';
 
 import { RecentActivityFeed } from './RecentActivityFeed';
@@ -27,8 +29,27 @@ interface DashboardStats {
   novosDocumentosRecebidos: number;
 }
 
+interface ObrigacaoCritica {
+  id:            string;
+  nome:          string;
+  vencimento:    string;
+  diasRestantes: number;
+  urgente:       boolean;
+  clienteNome:   string;
+  clienteId:     string;
+}
+
+interface PlanoAtual {
+  planoNome:        string;
+  limiteClientes:   number;
+  limiteDocumentos: number;
+  features:         string[];
+  status:           string;
+  isRestricted:     boolean;
+}
+
 // =============================================================================
-// Fetcher
+// Fetchers
 // =============================================================================
 
 async function statsFetcher([url, token]: [string, string]): Promise<DashboardStats> {
@@ -38,6 +59,24 @@ async function statsFetcher([url, token]: [string, string]): Promise<DashboardSt
   });
   if (!res.ok) throw new Error(`Erro HTTP ${res.status}`);
   return res.json() as Promise<DashboardStats>;
+}
+
+async function obrigacoesFetcher([url, token]: [string, string]): Promise<{ obrigacoes: ObrigacaoCritica[]; total: number }> {
+  const res = await fetch(url, {
+    headers: { Authorization: `Bearer ${token}` },
+    cache: 'no-store',
+  });
+  if (!res.ok) throw new Error(`Erro HTTP ${res.status}`);
+  return res.json() as Promise<{ obrigacoes: ObrigacaoCritica[]; total: number }>;
+}
+
+async function planoFetcher([url, token]: [string, string]): Promise<{ plan: PlanoAtual }> {
+  const res = await fetch(url, {
+    headers: { Authorization: `Bearer ${token}` },
+    cache: 'no-store',
+  });
+  if (!res.ok) throw new Error(`Erro HTTP ${res.status}`);
+  return res.json() as Promise<{ plan: PlanoAtual }>;
 }
 
 // =============================================================================
@@ -97,6 +136,207 @@ function QuickAction({ label, icone, cor, onClick }: QuickActionProps) {
       {label}
       <ArrowRight size={14} className="ml-auto opacity-70" />
     </button>
+  );
+}
+
+// =============================================================================
+// PlanUsageWidget
+// =============================================================================
+
+interface UsageBarProps {
+  label:   string;
+  current: number | null;
+  limit:   number;
+}
+
+function UsageBar({ label, current, limit }: UsageBarProps) {
+  const unlimited = limit === -1;
+
+  let pct = 0;
+  if (!unlimited && current !== null && limit > 0) {
+    pct = Math.min((current / limit) * 100, 100);
+  } else if (unlimited) {
+    pct = 100;
+  }
+
+  const barColor =
+    unlimited
+      ? 'bg-emerald-500'
+      : pct > 90
+      ? 'bg-red-500'
+      : pct > 70
+      ? 'bg-amber-500'
+      : 'bg-emerald-500';
+
+  const currentLabel =
+    current === null ? '—' : String(current);
+  const limitLabel =
+    unlimited ? '∞' : String(limit);
+
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center justify-between">
+        <span className="text-xs text-gray-500 dark:text-gray-400">{label}</span>
+        {unlimited ? (
+          <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">Sem limite</span>
+        ) : (
+          <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
+            {currentLabel} / {limitLabel}
+          </span>
+        )}
+      </div>
+      <div className="w-full h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+        <div
+          className={`h-full rounded-full transition-all ${barColor}`}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function PlanUsageWidget({
+  token,
+  clientesAtivos,
+}: {
+  token: string | null;
+  clientesAtivos: number | undefined;
+}) {
+  const swrKey: [string, string] | null = token
+    ? ['/api/v1/plano/atual', token]
+    : null;
+
+  const { data, isLoading } = useSWR(swrKey, planoFetcher, {
+    revalidateOnFocus: false,
+  });
+
+  if (isLoading) {
+    return (
+      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-5 space-y-3 animate-pulse">
+        <div className="h-4 w-32 bg-gray-100 dark:bg-gray-800 rounded" />
+        <div className="h-3 w-full bg-gray-100 dark:bg-gray-800 rounded" />
+        <div className="h-1.5 w-full bg-gray-100 dark:bg-gray-800 rounded-full" />
+        <div className="h-3 w-full bg-gray-100 dark:bg-gray-800 rounded mt-2" />
+        <div className="h-1.5 w-full bg-gray-100 dark:bg-gray-800 rounded-full" />
+      </div>
+    );
+  }
+
+  if (!data) return null;
+
+  const { plan } = data;
+
+  return (
+    <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-5 space-y-4">
+      {plan.isRestricted && (
+        <div className="flex items-center gap-2 px-3 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
+          <AlertCircle size={14} className="text-red-500 shrink-0" />
+          <p className="text-xs font-semibold text-red-700 dark:text-red-400">
+            Assinatura suspensa ou cancelada
+          </p>
+        </div>
+      )}
+
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">Uso do Plano</h3>
+        <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-primary-50 text-primary dark:bg-primary/10 dark:text-primary-400">
+          Plano {plan.planoNome}
+        </span>
+      </div>
+
+      <div className="space-y-3">
+        <UsageBar
+          label="Clientes"
+          current={clientesAtivos ?? null}
+          limit={plan.limiteClientes}
+        />
+        <UsageBar
+          label="Documentos"
+          current={null}
+          limit={plan.limiteDocumentos}
+        />
+      </div>
+    </div>
+  );
+}
+
+// =============================================================================
+// ObrigacoesCriticasWidget
+// =============================================================================
+
+function ObrigacoesCriticasWidget({ token }: { token: string | null }) {
+  const swrKey: [string, string] | null = token
+    ? ['/api/v1/calendario/obrigacoes/criticas?dias=7', token]
+    : null;
+
+  const { data, isLoading } = useSWR(swrKey, obrigacoesFetcher, {
+    refreshInterval: 60_000,
+  });
+
+  if (isLoading) {
+    return (
+      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-5 space-y-3">
+        {[...Array(3)].map((_, i) => (
+          <div key={i} className="h-14 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse" />
+        ))}
+      </div>
+    );
+  }
+
+  const obrigacoes = data?.obrigacoes?.slice(0, 5) ?? [];
+
+  if (obrigacoes.length === 0) {
+    return (
+      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-8 flex flex-col items-center justify-center gap-3 text-center">
+        <CheckCircle2 size={32} className="text-emerald-500" />
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          Sem obrigações críticas nos próximos 7 dias
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm divide-y divide-gray-100 dark:divide-gray-800 overflow-hidden">
+      {obrigacoes.map((ob) => {
+        const dataFormatada = new Intl.DateTimeFormat('pt-BR', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+        }).format(new Date(ob.vencimento));
+
+        const badgeDias =
+          ob.diasRestantes <= 3
+            ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+            : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400';
+
+        return (
+          <div key={ob.id} className="flex items-center justify-between px-5 py-3.5 gap-4">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
+                {ob.nome}
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                {ob.clienteNome}
+              </p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              {ob.urgente && (
+                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                  Urgente
+                </span>
+              )}
+              <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${badgeDias}`}>
+                {ob.diasRestantes}d
+              </span>
+              <span className="text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap">
+                {dataFormatada}
+              </span>
+            </div>
+          </div>
+        );
+      })}
+    </div>
   );
 }
 
@@ -161,6 +401,8 @@ export function DashboardContadorDono({ token }: { token: string | null }) {
         </div>
       )}
 
+      <PlanUsageWidget token={token} clientesAtivos={stats?.clientesAtivos} />
+
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <QuickAction
           label="Novo Upload em Lote"
@@ -175,6 +417,14 @@ export function DashboardContadorDono({ token }: { token: string | null }) {
           onClick={() => router.push('/clientes')}
         />
       </div>
+
+      <section>
+        <div className="flex items-center gap-2 mb-3">
+          <AlarmClock size={16} className="text-gray-400 dark:text-gray-500" />
+          <h2 className="text-sm font-bold text-gray-900 dark:text-gray-100">Obrigações Próximas</h2>
+        </div>
+        <ObrigacoesCriticasWidget token={token} />
+      </section>
 
       <DashboardCharts token={token} />
 

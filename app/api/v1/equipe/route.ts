@@ -18,12 +18,15 @@ const SETORES_VALIDOS = ['FISCAL', 'PESSOAL', 'CONTABIL', 'TODOS'];
 // GET /api/v1/equipe — Lista funcionários do escritório do contador autenticado
 // =============================================================================
 
-export const GET = withAuth(async (_req, _ctx, auth) => {
+export const GET = withAuth(async (req, _ctx, auth) => {
   try {
+    const { searchParams } = new URL(req.url);
+    const incluirDesligados = searchParams.get('incluirDesligados') === 'true';
+
     const funcionarios = await prisma.funcionario.findMany({
       where: {
         contadorId: auth.sub,
-        deletedAt:  null,
+        ...(incluirDesligados ? {} : { deletedAt: null }),
       },
       orderBy: { createdAt: 'desc' },
       select: {
@@ -35,6 +38,7 @@ export const GET = withAuth(async (_req, _ctx, auth) => {
         vinculo:   true,
         isActive:  true,
         createdAt: true,
+        deletedAt: true,
       },
     });
 

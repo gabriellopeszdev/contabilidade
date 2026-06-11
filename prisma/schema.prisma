@@ -36,6 +36,13 @@ enum VinculoTipo {
 enum FileType {
   XML
   PDF
+  XLSX
+  XLS
+  DOCX
+  DOC
+  CSV
+  OFX
+  ODS
 }
 
 enum EstadoTarefa {

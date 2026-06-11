@@ -3,7 +3,9 @@ import { withAuth } from '@/infrastructure/http/middlewares/withAuth';
 import { prisma }   from '@/infrastructure/di/Container';
 
 export const GET = withAuth(async (req: NextRequest, _ctx, auth) => {
-  const q = req.nextUrl.searchParams.get('q')?.trim() ?? '';
+  const q     = req.nextUrl.searchParams.get('q')?.trim() ?? '';
+  const setor = req.nextUrl.searchParams.get('setor')?.trim() ?? '';
+  const tipo  = req.nextUrl.searchParams.get('tipo')?.trim() ?? '';
 
   if (q.length < 2) {
     return NextResponse.json({ documentos: [], clientes: [], obrigacoes: [] });
@@ -24,6 +26,8 @@ export const GET = withAuth(async (req: NextRequest, _ctx, auth) => {
       where: {
         deletedAt: null,
         clientId: { in: clienteIds },
+        ...(setor ? { sector: setor as 'FISCAL' | 'PESSOAL' | 'CONTABIL' } : {}),
+        ...(tipo  ? { fileType: tipo as 'PDF' | 'XML' | 'XLSX' | 'XLS' | 'DOCX' | 'DOC' | 'CSV' | 'OFX' | 'ODS' } : {}),
         OR: [
           { fileName: like },
         ],

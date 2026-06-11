@@ -13,13 +13,29 @@ import type {
 
 const MAX_FILE_SIZE_BYTES = 10 * 1_048_576; // 10 MB
 const MAX_FILES_PER_BATCH = 50;
-const ALLOWED_EXTENSIONS  = new Set(['.xml', '.pdf']);
+const ALLOWED_EXTENSIONS = new Set([
+  '.xml', '.pdf',
+  '.xlsx', '.xls',
+  '.docx', '.doc',
+  '.csv',
+  '.ofx',
+  '.ods',
+]);
 
 // Mapa de MIME types aceitos (espelha MIME_PARA_FILETYPE do use case)
 const ALLOWED_MIME_TYPES = new Set([
   'application/xml',
   'text/xml',
   'application/pdf',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // xlsx
+  'application/vnd.ms-excel',                                          // xls
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // docx
+  'application/msword',                                                // doc
+  'text/csv',
+  'application/csv',
+  'application/x-ofx',
+  'application/ofx',
+  'application/vnd.oasis.opendocument.spreadsheet',                    // ods
 ]);
 
 // UUID v4 estrito — garante que clienteId e contadorId são UUIDs reais,
@@ -99,7 +115,7 @@ function validarArquivo(file: File): string[] {
   if (!ALLOWED_EXTENSIONS.has(ext)) {
     erros.push(
       `"${nome}": extensão "${ext || '(nenhuma)'}" não permitida. ` +
-      `Aceitos: .xml, .pdf`,
+      `Aceitos: .xml, .pdf, .xlsx, .xls, .docx, .doc, .csv, .ofx, .ods`,
     );
   }
 
@@ -108,7 +124,7 @@ function validarArquivo(file: File): string[] {
   if (!ALLOWED_MIME_TYPES.has(file.type)) {
     erros.push(
       `"${nome}": MIME type "${file.type || '(ausente)'}" não permitido. ` +
-      `Aceitos: application/xml, text/xml, application/pdf`,
+      `Aceitos: application/xml, text/xml, application/pdf, xlsx, xls, docx, doc, csv, ofx, ods`,
     );
   }
 

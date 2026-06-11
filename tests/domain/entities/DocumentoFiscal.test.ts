@@ -77,8 +77,8 @@ describe('DocumentoFiscal', () => {
     });
 
     it('lança DomainException para fileType inválido', () => {
-      // @ts-expect-error — teste intencional
-      expect(() => DocumentoFiscal.criar({ ...propsBase(), fileType: 'DOCX' })).toThrow(DomainException);
+      // @ts-expect-error — teste intencional com tipo inválido
+      expect(() => DocumentoFiscal.criar({ ...propsBase(), fileType: 'TXT' })).toThrow(DomainException);
     });
 
     it('aceita fileType PDF', () => {

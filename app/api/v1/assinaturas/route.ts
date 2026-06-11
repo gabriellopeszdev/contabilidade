@@ -25,6 +25,11 @@ export const GET = withAuth(async (req: NextRequest, _ctx, auth) => {
       createdAt:       true,
       tokenAssinatura: true,
       comprovanteStoragePath: true,
+      ipAssinatura:           true,
+      hashDocumento:          true,
+      provider:               true,
+      docsealSubmissionId:    true,
+      signatureapiEnvelopeId: true,
       documento: {
         select: { id: true, fileName: true, fileType: true },
       },
@@ -50,6 +55,11 @@ export const GET = withAuth(async (req: NextRequest, _ctx, auth) => {
       documentoNome:            a.documento.fileName,
       documentoTipo:            a.documento.fileType,
       temComprovante:           Boolean(a.comprovanteStoragePath),
+      ipAssinatura:             a.ipAssinatura ?? null,
+      hashDocumento:            a.hashDocumento,
+      provider:                 a.provider,
+      docsealSubmissionId:      a.docsealSubmissionId ?? null,
+      signatureapiEnvelopeId:   a.signatureapiEnvelopeId ?? null,
     })),
   });
 }, ['ACCOUNTANT', 'ADMIN']);

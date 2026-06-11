@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef } from 'react';
-import { Search, FileText, Users, CalendarCheck, Loader2, X, Download } from 'lucide-react';
+import { Search, FileText, Users, CalendarCheck, Loader2, X, Download, SlidersHorizontal } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '../../../src/presentation/hooks/useAuth';
 
@@ -22,6 +22,8 @@ export default function BuscaPage() {
   const [loading, setLoading]       = useState(false);
   const [error, setError]           = useState('');
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [filtroSetor, setFiltroSetor] = useState('');
+  const [filtroTipo, setFiltroTipo]   = useState('');
 
   async function handleDownloadDoc(id: string) {
     setDownloadingId(id);
@@ -39,13 +41,16 @@ export default function BuscaPage() {
   }
   const debounceRef           = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const buscar = useCallback(async (texto: string) => {
+  const buscar = useCallback(async (texto: string, setor?: string, tipo?: string) => {
     if (texto.trim().length < 2) { setResults(null); return; }
     setLoading(true);
     setError('');
     try {
       const token = await getToken();
-      const res = await fetch(`/api/v1/busca?q=${encodeURIComponent(texto)}`, {
+      let url = `/api/v1/busca?q=${encodeURIComponent(texto)}`;
+      if (setor) url += `&setor=${encodeURIComponent(setor)}`;
+      if (tipo)  url += `&tipo=${encodeURIComponent(tipo)}`;
+      const res = await fetch(url, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error();
@@ -60,7 +65,17 @@ export default function BuscaPage() {
   function handleChange(valor: string) {
     setQ(valor);
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => buscar(valor), 400);
+    debounceRef.current = setTimeout(() => buscar(valor, filtroSetor, filtroTipo), 400);
+  }
+
+  function handleFiltroSetor(value: string) {
+    setFiltroSetor(value);
+    if (q.length >= 2) buscar(q, value, filtroTipo);
+  }
+
+  function handleFiltroTipo(value: string) {
+    setFiltroTipo(value);
+    if (q.length >= 2) buscar(q, filtroSetor, value);
   }
 
   const total = results
@@ -96,6 +111,57 @@ export default function BuscaPage() {
           </button>
         )}
       </div>
+
+      {/* Filters — visible only when query has 2+ chars */}
+      {q.length >= 2 && (
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
+          <SlidersHorizontal size={14} className="text-gray-400" />
+
+          {/* Setor filter */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-medium text-gray-500 dark:text-gray-400 shrink-0">Setor:</span>
+            {(['', 'FISCAL', 'PESSOAL', 'CONTABIL'] as const).map((value) => {
+              const label = value === '' ? 'Todos' : value.charAt(0) + value.slice(1).toLowerCase();
+              const isActive = filtroSetor === value;
+              return (
+                <button
+                  key={value}
+                  onClick={() => handleFiltroSetor(value)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                    isActive
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  {label === 'Contabil' ? 'Contábil' : label}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Tipo filter */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-medium text-gray-500 dark:text-gray-400 shrink-0">Tipo:</span>
+            {(['', 'PDF', 'XML', 'XLSX', 'DOCX', 'CSV', 'OFX', 'ODS'] as const).map((value) => {
+              const label = value === '' ? 'Todos' : value;
+              const isActive = filtroTipo === value;
+              return (
+                <button
+                  key={value}
+                  onClick={() => handleFiltroTipo(value)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                    isActive
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Loading */}
       {loading && (

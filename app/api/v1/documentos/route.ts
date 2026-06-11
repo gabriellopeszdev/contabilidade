@@ -29,7 +29,7 @@ interface ClienteJWTPayload extends JWTPayload {
 export interface DocumentoClienteDTO {
   id:            string;
   fileName:      string;
-  fileType:      'XML' | 'PDF';
+  fileType:      'XML' | 'PDF' | 'XLSX' | 'XLS' | 'DOCX' | 'DOC' | 'CSV' | 'OFX' | 'ODS';
   /** Tamanho em bytes. Mantemos como number — arquivos fiscais < 10 MB. */
   fileSizeBytes: number;
   sector:        SetorTipo;

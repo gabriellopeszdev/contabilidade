@@ -18,9 +18,18 @@ export const dynamic = 'force-dynamic';
 // =============================================================================
 
 const TIPOS_ACEITOS: Record<string, string> = {
-  'application/pdf': 'PDF',
-  'application/xml': 'XML',
-  'text/xml':        'XML',
+  'application/xml':  'XML',
+  'text/xml':         'XML',
+  'application/pdf':  'PDF',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'XLSX',
+  'application/vnd.ms-excel':                                          'XLS',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'DOCX',
+  'application/msword':                                                'DOC',
+  'text/csv':                                                          'CSV',
+  'application/csv':                                                   'CSV',
+  'application/x-ofx':                                                 'OFX',
+  'application/ofx':                                                   'OFX',
+  'application/vnd.oasis.opendocument.spreadsheet':                    'ODS',
 };
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
@@ -48,7 +57,7 @@ const CATEGORIA_SETOR_MAP: Record<string, SetorTipo> = {
 //   6. Registra AuditLog
 //
 // FormData esperado:
-//   arquivo  → File (PDF ou XML, máx 10 MB)
+//   arquivo  → File (PDF, XML, XLSX, XLS, DOCX, DOC, CSV, OFX, ODS — máx 10 MB)
 //
 // Respostas:
 //   201 → { documento, tarefa }
@@ -80,7 +89,7 @@ export const POST = withAuth(async (req, _ctx, auth) => {
     const fileType = TIPOS_ACEITOS[arquivo.type];
     if (!fileType) {
       return NextResponse.json(
-        { message: 'Tipo de arquivo não permitido. Envie PDF ou XML.' },
+        { message: 'Tipo de arquivo não permitido. Formatos aceitos: PDF, XML, XLSX, XLS, DOCX, DOC, CSV, OFX, ODS.' },
         { status: 400 },
       );
     }
@@ -145,7 +154,7 @@ export const POST = withAuth(async (req, _ctx, auth) => {
           uploadedById:  auth.sub,
           fileName:      arquivo.name,
           storagePath,
-          fileType:      fileType as 'PDF' | 'XML',
+          fileType:      fileType as 'PDF' | 'XML' | 'XLSX' | 'XLS' | 'DOCX' | 'DOC' | 'CSV' | 'OFX' | 'ODS',
           fileSizeBytes: BigInt(arquivo.size),
           fileHash,
           ...(sector ? { sector } : {}),
