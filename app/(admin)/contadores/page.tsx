@@ -18,6 +18,7 @@ import {
   Bot,
   Eye,
   EyeOff,
+  LockKeyhole,
 } from 'lucide-react';
 
 import { IA_PROVIDERS, type IaProvider } from '../../../src/utils/aiProviders';
@@ -1230,6 +1231,130 @@ function ModalPlano({ contador, onClose, onSalvo, token }: ModalPlanoProps) {
 }
 
 // =============================================================================
+// Modal Alterar Senha
+// =============================================================================
+
+interface ModalAlterarSenhaProps {
+  contador: ContadorDTO;
+  onClose:  () => void;
+  token:    string;
+}
+
+function ModalAlterarSenha({ contador, onClose, token }: ModalAlterarSenhaProps) {
+  const [novaSenha,    setNovaSenha]    = useState('');
+  const [confirmar,    setConfirmar]    = useState('');
+  const [mostrar,      setMostrar]      = useState(false);
+  const [salvando,     setSalvando]     = useState(false);
+  const [erro,         setErro]         = useState('');
+  const [sucesso,      setSucesso]      = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErro('');
+    setSucesso('');
+
+    if (novaSenha.length < 8) { setErro('A senha deve ter ao menos 8 caracteres.'); return; }
+    if (novaSenha !== confirmar) { setErro('As senhas não coincidem.'); return; }
+
+    setSalvando(true);
+    try {
+      const res = await fetch(`/api/v1/admin/contadores/${contador.id}/senha`, {
+        method:  'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body:    JSON.stringify({ novaSenha }),
+      });
+      const data = await res.json() as { ok?: boolean; message?: string };
+      if (!res.ok) { setErro(data.message ?? `Erro HTTP ${res.status}`); return; }
+      setSucesso('Senha redefinida com sucesso!');
+      setTimeout(onClose, 1200);
+    } catch {
+      setErro('Erro de rede. Tente novamente.');
+    } finally {
+      setSalvando(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
+      <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
+
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
+          <div>
+            <h2 className="text-sm font-bold text-white">Redefinir Senha</h2>
+            <p className="text-xs text-slate-400 mt-0.5">{contador.name}</p>
+          </div>
+          <button onClick={onClose} className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800">
+            <X size={16} />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
+          {erro && (
+            <div className="flex items-start gap-2 bg-red-900/30 border border-red-700/50 rounded-lg px-3 py-2.5">
+              <AlertCircle size={13} className="text-red-400 shrink-0 mt-0.5" />
+              <p className="text-xs text-red-300">{erro}</p>
+            </div>
+          )}
+          {sucesso && (
+            <div className="flex items-center gap-2 bg-emerald-900/30 border border-emerald-700/50 rounded-lg px-3 py-2.5">
+              <CheckCircle2 size={13} className="text-emerald-400 shrink-0" />
+              <p className="text-xs text-emerald-300">{sucesso}</p>
+            </div>
+          )}
+
+          <div className="space-y-3">
+            <div>
+              <label className="block text-[11px] font-medium text-slate-400 mb-1">Nova senha *</label>
+              <div className="relative">
+                <input
+                  type={mostrar ? 'text' : 'password'}
+                  value={novaSenha}
+                  onChange={(e) => { setNovaSenha(e.target.value); setErro(''); }}
+                  placeholder="mín. 8 caracteres"
+                  autoComplete="new-password"
+                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 pr-10 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-violet-500"
+                />
+                <button
+                  type="button"
+                  onClick={() => setMostrar((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
+                  tabIndex={-1}
+                >
+                  {mostrar ? <EyeOff size={14} /> : <Eye size={14} />}
+                </button>
+              </div>
+            </div>
+            <div>
+              <label className="block text-[11px] font-medium text-slate-400 mb-1">Confirmar senha *</label>
+              <input
+                type={mostrar ? 'text' : 'password'}
+                value={confirmar}
+                onChange={(e) => { setConfirmar(e.target.value); setErro(''); }}
+                placeholder="repita a senha"
+                autoComplete="new-password"
+                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-violet-500"
+              />
+            </div>
+          </div>
+
+          <div className="flex gap-3 pt-1">
+            <button type="button" onClick={onClose}
+              className="flex-1 px-4 py-2 text-sm font-medium text-slate-300 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors">
+              Cancelar
+            </button>
+            <button type="submit" disabled={salvando}
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-violet-600 hover:bg-violet-500 disabled:opacity-60 rounded-lg transition-colors">
+              {salvando && <Loader2 size={13} className="animate-spin" />}
+              {salvando ? 'Salvando…' : 'Redefinir senha'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// =============================================================================
 // Página principal
 // =============================================================================
 
@@ -1247,6 +1372,7 @@ export default function ContadoresPage() {
   const [modalEditar,   setModalEditar]   = useState<ContadorDTO | null>(null);
   const [modalPlano,    setModalPlano]    = useState<ContadorDTO | null>(null);
   const [modalIa,       setModalIa]       = useState<ContadorDTO | null>(null);
+  const [modalSenha,    setModalSenha]    = useState<ContadorDTO | null>(null);
 
   // Carrega lista
   const carregar = useCallback(async () => {
@@ -1399,6 +1525,15 @@ export default function ContadoresPage() {
               prev.map((c) => c.id === modalIa.id ? { ...c, iaPersonalizada, iaProvider } : c),
             );
           }}
+        />
+      )}
+
+      {/* Modal: Alterar Senha */}
+      {modalSenha && (
+        <ModalAlterarSenha
+          contador={modalSenha}
+          token={token ?? ''}
+          onClose={() => setModalSenha(null)}
         />
       )}
 
@@ -1597,6 +1732,16 @@ export default function ContadoresPage() {
                           >
                             <Pencil size={12} />
                             Editar
+                          </button>
+
+                          {/* Senha */}
+                          <button
+                            onClick={() => setModalSenha(c)}
+                            title="Redefinir senha"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors"
+                          >
+                            <LockKeyhole size={12} />
+                            Senha
                           </button>
 
                           {/* Plano */}

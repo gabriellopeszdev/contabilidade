@@ -119,7 +119,7 @@ export const POST = withAuth(async (req: NextRequest, _ctx, auth) => {
         storagePath,
         fileName: arquivo.name,
         fileType: 'PDF',
-        fileSizeBytes: buffer.byteLength,
+        fileSizeBytes: BigInt(buffer.byteLength),
         fileHash,
         sector: 'CONTABIL',
       },
