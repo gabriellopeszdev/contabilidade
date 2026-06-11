@@ -8,9 +8,15 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   return Promise.race([
     promise,
     new Promise<T>((_, reject) =>
-      setTimeout(() => reject(new Error('timeout')), ms),
+      setTimeout(() => reject(new Error(`timeout after ${ms}ms`)), ms),
     ),
   ]);
+}
+
+function checkResult(result: PromiseSettledResult<unknown>): { status: 'ok' | 'error'; error?: string } {
+  if (result.status === 'fulfilled') return { status: 'ok' };
+  const msg = result.reason instanceof Error ? result.reason.message : String(result.reason);
+  return { status: 'error', error: msg };
 }
 
 export async function GET() {
@@ -24,12 +30,12 @@ export async function GET() {
   ]);
 
   const checks = {
-    database: dbResult.status    === 'fulfilled' ? 'ok' : 'error',
-    redis:    redisResult.status === 'fulfilled' ? 'ok' : 'error',
-    storage:  storageResult.status === 'fulfilled' ? 'ok' : 'error',
+    database: checkResult(dbResult),
+    redis:    checkResult(redisResult),
+    storage:  checkResult(storageResult),
   };
 
-  const allOk = Object.values(checks).every((v) => v === 'ok');
+  const allOk = Object.values(checks).every((c) => c.status === 'ok');
   const mem   = process.memoryUsage();
 
   return NextResponse.json(
