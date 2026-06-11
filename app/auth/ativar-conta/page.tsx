@@ -3,6 +3,7 @@
 import { Suspense, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { KeyRound, Loader2, CheckCircle2, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { useAuth } from '../../../src/presentation/hooks/useAuth';
 
 // =============================================================================
 // Página: /auth/ativar-conta?token=...
@@ -14,6 +15,7 @@ import { KeyRound, Loader2, CheckCircle2, AlertCircle, Eye, EyeOff } from 'lucid
 function AtivarContaContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { finalizarLogin } = useAuth();
   const token = searchParams.get('token') ?? '';
 
   const [senha, setSenha] = useState('');
@@ -50,7 +52,7 @@ function AtivarContaContent() {
         body: JSON.stringify({ token, senha }),
       });
 
-      const data = await res.json();
+      const data = await res.json() as { message?: string; token?: string };
 
       if (!res.ok) {
         setErro(data.message ?? 'Erro ao ativar conta.');
@@ -58,7 +60,13 @@ function AtivarContaContent() {
       }
 
       setSucesso(true);
-      setTimeout(() => router.push('/login'), 3000);
+
+      if (data.token) {
+        finalizarLogin(data.token);
+        setTimeout(() => router.push('/documentos'), 1500);
+      } else {
+        setTimeout(() => router.push('/login'), 1500);
+      }
     } catch {
       setErro('Erro de conexão. Tente novamente.');
     } finally {
@@ -87,7 +95,7 @@ function AtivarContaContent() {
           <CheckCircle2 size={48} className="text-emerald-500 mx-auto mb-4" />
           <h1 className="text-lg font-bold text-gray-900">Conta Ativada!</h1>
           <p className="text-sm text-gray-500 mt-2">
-            Sua conta foi ativada com sucesso. Redirecionando para o login…
+            Sua conta foi ativada com sucesso. Entrando no portal…
           </p>
         </div>
       </div>

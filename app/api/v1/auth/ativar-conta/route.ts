@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { SignJWT } from 'jose';
 import { prisma, eventDispatcher } from '../../../../../src/infrastructure/di/Container';
 import { logger } from '../../../../../src/utils/logger';
 import { checkRateLimit, getClientIp } from '../../../../../src/utils/rateLimiter';
@@ -46,8 +47,11 @@ export async function POST(req: NextRequest) {
     const cliente = await prisma.usuarioCliente.findUnique({
       where: { inviteToken: token },
       select: {
-        id: true,
-        activatedAt: true,
+        id:              true,
+        name:            true,
+        email:           true,
+        avatarUrl:       true,
+        activatedAt:     true,
         inviteExpiresAt: true,
       },
     });
@@ -106,7 +110,37 @@ export async function POST(req: NextRequest) {
       ),
     );
 
-    return NextResponse.json({ message: 'Conta ativada com sucesso! Faça login.' });
+    // Atualiza lastLoginAt
+    prisma.usuarioCliente.update({
+      where: { id: cliente.id },
+      data:  { lastLoginAt: new Date() },
+    }).catch(() => {});
+
+    // Gera JWT para login automático
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      logger.error('[POST /auth/ativar-conta] JWT_SECRET não configurado');
+      return NextResponse.json({ message: 'Conta ativada com sucesso! Faça login.' });
+    }
+
+    const jwt = await new SignJWT({ role: 'CLIENT', nome: cliente.name })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setSubject(cliente.id)
+      .setIssuedAt()
+      .setExpirationTime('8h')
+      .sign(new TextEncoder().encode(jwtSecret));
+
+    return NextResponse.json({
+      message: 'Conta ativada com sucesso!',
+      token: jwt,
+      usuario: {
+        id:       cliente.id,
+        nome:     cliente.name,
+        email:    cliente.email,
+        role:     'CLIENT',
+        avatarUrl: cliente.avatarUrl,
+      },
+    });
   } catch (err) {
     logger.error('[POST /auth/ativar-conta] Erro', err instanceof Error ? err : undefined);
     return NextResponse.json({ message: 'Erro interno.' }, { status: 500 });
