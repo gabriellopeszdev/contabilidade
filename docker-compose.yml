@@ -5,7 +5,7 @@
 # Uso:
 #   1. Copie .env.example para .env e preencha os valores
 #   2. Crie os diretórios de dados:
-#        mkdir -p .data/postgres .data/redis .data/minio
+#        mkdir -p .data/postgres .data/redis .data/minio .data/backups
 #   3. docker compose up -d
 # =============================================================================
 
@@ -173,6 +173,41 @@ services:
       - "127.0.0.1:${DOCSEAL_PORT:-3001}:3000"
     volumes:
       - ${DATA_DIR:-./.data}/docseal:/data
+    networks:
+      - contabilidade_net
+
+  # ---------------------------------------------------------------------------
+  # pg_backup — Backup automático do PostgreSQL
+  #
+  # Executa pg_dump comprimido todo dia às 02:00 UTC.
+  # Retenção: 7 backups diários, 4 semanais, 6 mensais.
+  # Arquivos salvos em .data/backups/ no host.
+  #
+  # Para restaurar manualmente:
+  #   gunzip -c .data/backups/daily/contabilidade-YYYYMMDD-020000.sql.gz | \
+  #     docker exec -i contabilidade_postgres psql -U postgres contabilidade
+  # ---------------------------------------------------------------------------
+  pg_backup:
+    image: prodrigestivill/postgres-backup-local:16-alpine
+    container_name: contabilidade_pg_backup
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      POSTGRES_HOST:         postgres
+      POSTGRES_PORT:         5432
+      POSTGRES_DB:           ${POSTGRES_DB}
+      POSTGRES_USER:         ${POSTGRES_USER}
+      POSTGRES_PASSWORD:     ${POSTGRES_PASSWORD}
+      POSTGRES_EXTRA_OPTS:   "--compress=1"
+      SCHEDULE:              "0 2 * * *"
+      BACKUP_KEEP_DAYS:      7
+      BACKUP_KEEP_WEEKS:     4
+      BACKUP_KEEP_MONTHS:    6
+      HEALTHCHECK_PORT:      8080
+    volumes:
+      - ${DATA_DIR:-./.data}/backups:/backups
     networks:
       - contabilidade_net
 
