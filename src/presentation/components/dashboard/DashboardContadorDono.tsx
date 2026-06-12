@@ -95,7 +95,6 @@ interface MetricCardProps {
 function MetricCard({ label, valor, icone, cor, carregando, 'aria-label': ariaLabel }: MetricCardProps) {
   return (
     <div
-      role="article"
       aria-label={ariaLabel ?? `${label}: ${valor ?? 0}`}
       className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-5 flex items-center gap-4"
     >
@@ -410,7 +409,7 @@ export function DashboardContadorDono({ token }: { token: string | null }) {
 
       <PlanUsageWidget token={token} clientesAtivos={stats?.clientesAtivos} />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3">
         <QuickAction
           label="Novo Upload em Lote"
           ariaLabel="Ir para upload de documentos em lote"
