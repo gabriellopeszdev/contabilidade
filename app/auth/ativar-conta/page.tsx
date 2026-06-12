@@ -108,7 +108,7 @@ function AtivarContaContent() {
         {/* Header */}
         <div className="text-center mb-6">
           <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center mx-auto mb-4">
-            <KeyRound size={28} className="text-blue-600" />
+            <KeyRound size={28} className="text-primary" />
           </div>
           <h1 className="text-xl font-bold text-gray-900">Ativar sua Conta</h1>
           <p className="text-sm text-gray-500 mt-1">
@@ -128,8 +128,9 @@ function AtivarContaContent() {
                 type={mostrarSenha ? 'text' : 'password'}
                 value={senha}
                 onChange={(e) => setSenha(e.target.value)}
+                minLength={8}
                 className="w-full rounded-lg border border-gray-300 px-3 py-2.5 pr-10 text-sm text-gray-900
-                           placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500
+                           placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary
                            focus:border-transparent transition-shadow"
                 placeholder="Mínimo 8 caracteres"
                 autoComplete="new-password"
@@ -137,6 +138,7 @@ function AtivarContaContent() {
               <button
                 type="button"
                 onClick={() => setMostrarSenha((v) => !v)}
+                aria-label={mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'}
                 className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 tabIndex={-1}
               >
@@ -155,8 +157,9 @@ function AtivarContaContent() {
               type="password"
               value={confirmar}
               onChange={(e) => setConfirmar(e.target.value)}
+              minLength={8}
               className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900
-                         placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500
+                         placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary
                          focus:border-transparent transition-shadow"
               placeholder="Repita a senha"
               autoComplete="new-password"
@@ -174,12 +177,12 @@ function AtivarContaContent() {
           <button
             type="submit"
             disabled={carregando}
-            className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5
-                       text-sm font-semibold text-white shadow-sm hover:bg-blue-700 disabled:opacity-50
+            className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5
+                       text-sm font-semibold text-white shadow-sm hover:brightness-90 disabled:opacity-50
                        disabled:cursor-not-allowed transition-colors focus-visible:outline-none
-                       focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                       focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
           >
-            {carregando ? <Loader2 size={16} className="animate-spin" /> : <KeyRound size={16} />}
+            {carregando ? <Loader2 size={16} className="animate-spin text-white" /> : <KeyRound size={16} />}
             {carregando ? 'Ativando…' : 'Ativar Conta'}
           </button>
         </form>
@@ -193,7 +196,7 @@ export default function AtivarContaPage() {
     <Suspense
       fallback={
         <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          <Loader2 size={24} className="animate-spin text-blue-600" />
+          <Loader2 size={24} className="animate-spin text-primary" />
         </div>
       }
     >
