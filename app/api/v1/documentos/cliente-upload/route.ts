@@ -140,8 +140,10 @@ export const POST = withAuth(async (req, _ctx, auth) => {
     // 5. Buscar o contador responsável (primeiro vínculo ativo)
     // ------------------------------------------------------------------
     const vinculo = await prisma.contadorCliente.findFirst({
-      where: { clienteId: auth.sub },
-      select: { contadorId: true },
+      where:   { clienteId: auth.sub },
+      include: {
+        contador: { select: { id: true, email: true, name: true, notifEmailNovoDoc: true } },
+      },
     });
 
     // ------------------------------------------------------------------
@@ -164,7 +166,7 @@ export const POST = withAuth(async (req, _ctx, auth) => {
       const tarefa = await tx.tarefaKanban.create({
         data: {
           clientId:     auth.sub,
-          assignedTo:   vinculo?.contadorId ?? null,
+          assignedTo:   vinculo?.contador?.id ?? null,
           documentId:   documento.id,
           title:        arquivo.name,
           description:  sector
@@ -203,21 +205,18 @@ export const POST = withAuth(async (req, _ctx, auth) => {
     // ------------------------------------------------------------------
     // 7. Notifica o contador por e-mail (fire-and-forget)
     // ------------------------------------------------------------------
-    if (vinculo?.contadorId) {
-      prisma.usuarioContador.findUnique({
-        where:  { id: vinculo.contadorId },
-        select: { email: true, name: true },
-      }).then((contador) => {
-        if (!contador) return;
-        const nomeCliente = auth.nome ?? 'Um cliente';
-        const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? '';
-        return emailService.enviar({
-          destinatario: contador.email,
-          assunto:      `Novo documento recebido: ${arquivo.name}`,
-          corpoHtml:    `<p>Olá, <strong>${contador.name}</strong>.</p><p><strong>${nomeCliente}</strong> enviou um novo documento para análise: <strong>${arquivo.name}</strong>.</p><p><a href="${appUrl}/kanban">Acesse o painel</a> para categorizar e processar o arquivo.</p>`,
-          corpoTexto:   `${nomeCliente} enviou um novo documento: ${arquivo.name}. Acesse ${appUrl}/kanban para processar.`,
-        });
-      }).catch(() => {});
+    if (vinculo?.contador?.notifEmailNovoDoc) {
+      const nomeCliente = auth.nome ?? 'Um cliente';
+      emailService
+        .enviarNovoDocumentoContador({
+          emailContador: vinculo.contador.email,
+          nomeContador:  vinculo.contador.name,
+          nomeCliente,
+          nomeArquivo:   arquivo.name,
+          setor:         sector ?? 'A categorizar',
+          urlPortal:     process.env.NEXT_PUBLIC_APP_URL ?? '',
+        })
+        .catch((err) => logger.error('[cliente-upload] falha ao enviar email', err instanceof Error ? err : undefined));
     }
 
     // ------------------------------------------------------------------
