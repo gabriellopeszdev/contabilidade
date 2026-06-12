@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Package,
   Plus,
@@ -86,21 +86,41 @@ function ModalPlano({
   erro:      string | null;
 }) {
   const [form, setForm] = useState<PlanoForm>(plano);
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (modalRef.current) modalRef.current.focus();
+  }, []);
 
   function setField<K extends keyof PlanoForm>(key: K, value: PlanoForm[K]) {
     setForm((f) => ({ ...f, [key]: value }));
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      onKeyDown={(e) => { if (e.key === 'Escape') onFechar(); }}
+    >
       <div className="absolute inset-0 bg-black/70" onClick={onFechar} />
-      <div className="relative bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div
+        ref={modalRef}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-plano-titulo"
+        className="relative bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto focus:outline-none"
+      >
         {/* Cabeçalho */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
-          <h2 className="text-base font-semibold text-white">
+          <h2 id="modal-plano-titulo" className="text-base font-semibold text-white">
             {modo === 'criar' ? 'Novo Plano' : 'Editar Plano'}
           </h2>
-          <button onClick={onFechar} className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">
+          <button
+            type="button"
+            onClick={onFechar}
+            aria-label="Fechar modal"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+          >
             <X size={16} />
           </button>
         </div>
@@ -116,8 +136,9 @@ function ModalPlano({
 
           {/* Nome */}
           <div>
-            <label className="block text-xs font-medium text-slate-400 mb-1.5">Nome do Plano *</label>
+            <label htmlFor="plano-nome" className="block text-xs font-medium text-slate-400 mb-1.5">Nome do Plano *</label>
             <input
+              id="plano-nome"
               type="text"
               value={form.nome}
               onChange={(e) => setField('nome', e.target.value)}
@@ -128,8 +149,9 @@ function ModalPlano({
 
           {/* Descrição */}
           <div>
-            <label className="block text-xs font-medium text-slate-400 mb-1.5">Descrição</label>
+            <label htmlFor="plano-descricao" className="block text-xs font-medium text-slate-400 mb-1.5">Descrição</label>
             <input
+              id="plano-descricao"
               type="text"
               value={form.descricao}
               onChange={(e) => setField('descricao', e.target.value)}
@@ -140,8 +162,9 @@ function ModalPlano({
 
           {/* Preço */}
           <div>
-            <label className="block text-xs font-medium text-slate-400 mb-1.5">Preço / mês (R$) *</label>
+            <label htmlFor="plano-preco" className="block text-xs font-medium text-slate-400 mb-1.5">Preço / mês (R$) *</label>
             <input
+              id="plano-preco"
               type="number"
               min="0"
               step="0.01"
@@ -155,8 +178,9 @@ function ModalPlano({
           {/* Limites */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5">Limite de Clientes *</label>
+              <label htmlFor="plano-limite-clientes" className="block text-xs font-medium text-slate-400 mb-1.5">Limite de Clientes *</label>
               <input
+                id="plano-limite-clientes"
                 type="number"
                 min="0"
                 value={form.limiteClientes}
@@ -166,8 +190,9 @@ function ModalPlano({
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5">Limite de Documentos *</label>
+              <label htmlFor="plano-limite-documentos" className="block text-xs font-medium text-slate-400 mb-1.5">Limite de Documentos *</label>
               <input
+                id="plano-limite-documentos"
                 type="number"
                 min="0"
                 value={form.limiteDocumentos}
@@ -217,6 +242,9 @@ function ModalPlano({
             <div className="flex items-center gap-3">
               <button
                 type="button"
+                role="switch"
+                aria-checked={form.isActive}
+                aria-label="Plano ativo"
                 onClick={() => setField('isActive', !form.isActive)}
                 className={`relative w-10 h-5 rounded-full transition-colors ${form.isActive ? 'bg-violet-600' : 'bg-slate-700'}`}
               >
@@ -527,9 +555,18 @@ export default function PlanosPage() {
       )}
 
       {!carregando && erro && (
-        <div className="flex items-center gap-3 bg-red-900/20 border border-red-700/40 text-red-400 rounded-xl px-5 py-4">
-          <AlertCircle size={18} />
-          <span className="text-sm">{erro}</span>
+        <div className="flex flex-col gap-2 bg-red-900/20 border border-red-700/40 text-red-400 rounded-xl px-5 py-4">
+          <div className="flex items-center gap-3">
+            <AlertCircle size={18} />
+            <span className="text-sm">{erro}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => carregarPlanos()}
+            className="mt-2 self-start px-4 py-2 text-sm font-semibold text-red-400 border border-red-500/50 rounded-lg hover:bg-red-900/30 transition-colors"
+          >
+            Tentar novamente
+          </button>
         </div>
       )}
 
@@ -599,15 +636,23 @@ export default function PlanosPage() {
 
       {/* Modal: Confirmação de exclusão */}
       {planoExcluindo && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          onKeyDown={(e) => { if (e.key === 'Escape') setPlanoExcluindo(null); }}
+        >
           <div className="absolute inset-0 bg-black/70" onClick={() => setPlanoExcluindo(null)} />
-          <div className="relative bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl p-6">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="modal-excluir-plano-titulo"
+            className="relative bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl p-6"
+          >
             <div className="flex items-center gap-3 mb-4">
               <div className="p-2.5 rounded-lg bg-red-900/30">
                 <Trash2 size={18} className="text-red-400" />
               </div>
               <div>
-                <h3 className="text-sm font-semibold text-white">Excluir plano</h3>
+                <h2 id="modal-excluir-plano-titulo" className="text-sm font-semibold text-white">Excluir plano</h2>
                 <p className="text-xs text-slate-400">Esta ação não pode ser desfeita.</p>
               </div>
             </div>
