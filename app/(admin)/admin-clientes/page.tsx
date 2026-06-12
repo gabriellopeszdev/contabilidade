@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Users, Loader2, AlertCircle, Search,
   ChevronLeft, ChevronRight, CheckCircle2, XCircle,
@@ -43,6 +43,11 @@ function ModalEditarCliente({ cliente, onClose, onSalvo, token }: ModalEditarCli
   const [enviando, setEnviando] = useState(false);
   const [erro,     setErro]     = useState('');
 
+  const modalRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (modalRef.current) modalRef.current.focus();
+  }, []);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     const val = type === 'checkbox' ? (e.target as HTMLInputElement).checked : value;
@@ -82,10 +87,11 @@ function ModalEditarCliente({ cliente, onClose, onSalvo, token }: ModalEditarCli
     }
   };
 
-  const field = (name: keyof typeof form, label: string, type = 'text', placeholder = '') => (
+  const field = (name: keyof typeof form, label: string, type = 'text', placeholder = '', inputId = '') => (
     <div>
-      <label className="block text-[11px] font-medium text-slate-400 mb-1">{label}</label>
+      <label htmlFor={inputId || name} className="block text-[11px] font-medium text-slate-400 mb-1">{label}</label>
       <input
+        id={inputId || name}
         name={name}
         type={type}
         value={form[name] as string}
@@ -98,15 +104,25 @@ function ModalEditarCliente({ cliente, onClose, onSalvo, token }: ModalEditarCli
   );
 
   return (
-    <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
-      <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
+    <div
+      className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
+      onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }}
+    >
+      <div
+        ref={modalRef}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-editar-cliente-titulo"
+        className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl focus:outline-none"
+      >
 
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
           <div>
-            <h2 className="text-sm font-bold text-white">Editar Cliente</h2>
+            <h2 id="modal-editar-cliente-titulo" className="text-sm font-bold text-white">Editar Cliente</h2>
             <p className="text-xs text-slate-400 mt-0.5">{cliente.name}</p>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800">
+          <button onClick={onClose} aria-label="Fechar modal" className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800">
             <X size={16} />
           </button>
         </div>
@@ -119,9 +135,9 @@ function ModalEditarCliente({ cliente, onClose, onSalvo, token }: ModalEditarCli
             </div>
           )}
 
-          {field('name',           'Nome do cliente *',     'text',  'Empresa Fictícia Ltda')}
-          {field('email',          'E-mail *',              'email', 'contato@empresa.com')}
-          {field('cnpj',           'CNPJ *',                'text',  '14 dígitos')}
+          {field('name',  'Nome do cliente *', 'text',  'Empresa Fictícia Ltda', 'cliente-nome')}
+          {field('email', 'E-mail *',          'email', 'contato@empresa.com',   'cliente-email')}
+          {field('cnpj',  'CNPJ *',            'text',  '14 dígitos',            'cliente-cnpj')}
 
           <div>
             <label className="block text-[11px] font-medium text-slate-400 mb-1">Provedor de Assinatura *</label>
@@ -245,6 +261,7 @@ export default function AdminClientesPage() {
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
           <input
             type="text"
+            aria-label="Buscar clientes"
             placeholder="Buscar por nome, e-mail ou CNPJ…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -274,13 +291,13 @@ export default function AdminClientesPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-800">
-                <th className="px-5 py-3 text-left text-xs font-medium text-slate-400">Cliente</th>
-                <th className="px-5 py-3 text-left text-xs font-medium text-slate-400">CNPJ</th>
-                <th className="px-5 py-3 text-center text-xs font-medium text-slate-400">Status</th>
-                <th className="px-5 py-3 text-left text-xs font-medium text-slate-400">Escritório(s)</th>
-                <th className="px-5 py-3 text-center text-xs font-medium text-slate-400">Assinatura</th>
-                <th className="px-5 py-3 text-right text-xs font-medium text-slate-400">Desde</th>
-                <th className="px-5 py-3" />
+                <th scope="col" className="px-5 py-3 text-left text-xs font-medium text-slate-400">Cliente</th>
+                <th scope="col" className="px-5 py-3 text-left text-xs font-medium text-slate-400">CNPJ</th>
+                <th scope="col" className="px-5 py-3 text-center text-xs font-medium text-slate-400">Status</th>
+                <th scope="col" className="px-5 py-3 text-left text-xs font-medium text-slate-400">Escritório(s)</th>
+                <th scope="col" className="px-5 py-3 text-center text-xs font-medium text-slate-400">Assinatura</th>
+                <th scope="col" className="px-5 py-3 text-right text-xs font-medium text-slate-400">Desde</th>
+                <th scope="col" className="px-5 py-3" />
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60">
@@ -350,6 +367,7 @@ export default function AdminClientesPage() {
                       <button
                         onClick={() => setModalEditar(c)}
                         title="Editar cliente"
+                        aria-label="Editar cliente"
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors"
                       >
                         <Pencil size={12} />

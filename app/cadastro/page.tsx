@@ -132,10 +132,11 @@ function CadastroForm() {
 
                 {/* Nome */}
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1.5">
+                  <label htmlFor="cadastro-nome" className="block text-sm font-medium text-slate-300 mb-1.5">
                     Nome completo <span className="text-rose-400">*</span>
                   </label>
                   <input
+                    id="cadastro-nome"
                     type="text"
                     value={nome}
                     onChange={(e) => setNome(e.target.value)}
@@ -147,10 +148,11 @@ function CadastroForm() {
 
                 {/* E-mail */}
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1.5">
+                  <label htmlFor="cadastro-email" className="block text-sm font-medium text-slate-300 mb-1.5">
                     E-mail profissional <span className="text-rose-400">*</span>
                   </label>
                   <input
+                    id="cadastro-email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -163,10 +165,11 @@ function CadastroForm() {
                 {/* Telefone + CNPJ (row) */}
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1.5">
+                    <label htmlFor="cadastro-telefone" className="block text-sm font-medium text-slate-300 mb-1.5">
                       Telefone
                     </label>
                     <input
+                      id="cadastro-telefone"
                       type="tel"
                       value={telefone}
                       onChange={(e) => setTelefone(e.target.value)}
@@ -175,10 +178,11 @@ function CadastroForm() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1.5">
+                    <label htmlFor="cadastro-cnpj" className="block text-sm font-medium text-slate-300 mb-1.5">
                       CNPJ do escritório
                     </label>
                     <input
+                      id="cadastro-cnpj"
                       type="text"
                       value={cnpj}
                       onChange={(e) => handleCnpjChange(e.target.value)}
@@ -192,10 +196,11 @@ function CadastroForm() {
                 {/* CRC + Plano (row) */}
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1.5">
+                    <label htmlFor="cadastro-crc" className="block text-sm font-medium text-slate-300 mb-1.5">
                       Número CRC
                     </label>
                     <input
+                      id="cadastro-crc"
                       type="text"
                       value={crc}
                       onChange={(e) => setCrc(e.target.value)}
@@ -204,10 +209,11 @@ function CadastroForm() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1.5">
+                    <label htmlFor="cadastro-plano" className="block text-sm font-medium text-slate-300 mb-1.5">
                       Plano de interesse
                     </label>
                     <select
+                      id="cadastro-plano"
                       value={plano}
                       onChange={(e) => setPlano(e.target.value)}
                       className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-violet-500/50 focus:bg-white/8 transition-all text-sm appearance-none"
@@ -221,10 +227,11 @@ function CadastroForm() {
 
                 {/* Mensagem */}
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1.5">
+                  <label htmlFor="cadastro-mensagem" className="block text-sm font-medium text-slate-300 mb-1.5">
                     Mensagem adicional
                   </label>
                   <textarea
+                    id="cadastro-mensagem"
                     value={mensagem}
                     onChange={(e) => setMensagem(e.target.value)}
                     rows={3}
@@ -235,7 +242,7 @@ function CadastroForm() {
 
                 {/* Error message */}
                 {formState === 'error' && (
-                  <div className="flex items-start gap-2.5 px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm">
+                  <div role="alert" className="flex items-start gap-2.5 px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm">
                     <AlertCircle size={16} className="mt-0.5 shrink-0" />
                     {errorMsg}
                   </div>
@@ -249,7 +256,8 @@ function CadastroForm() {
                 >
                   {formState === 'submitting' ? (
                     <>
-                      <Loader2 size={16} className="animate-spin" />
+                      <Loader2 size={16} className="animate-spin" aria-hidden="true" />
+                      <span className="sr-only">Enviando...</span>
                       Enviando...
                     </>
                   ) : (
