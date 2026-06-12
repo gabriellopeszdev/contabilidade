@@ -56,6 +56,15 @@ export interface OtpAssinaturaEmailParams {
   codigo:        string;
 }
 
+export interface NovoDocumentoContadorEmailParams {
+  emailContador: string;
+  nomeContador:  string;
+  nomeCliente:   string;
+  nomeArquivo:   string;
+  setor:         string;
+  urlPortal:     string;
+}
+
 export interface IEmailService {
   enviar(dto: EnviarEmailDTO): Promise<void>;
   enviarOtpAssinatura(params: OtpAssinaturaEmailParams): Promise<void>;
@@ -65,4 +74,5 @@ export interface IEmailService {
   enviarConviteCliente(params: ConviteClienteEmailParams): Promise<void>;
   enviarSolicitacaoAssinatura(params: SolicitacaoAssinaturaEmailParams): Promise<void>;
   enviarStatusAssinatura(params: StatusAssinaturaEmailParams): Promise<void>;
+  enviarNovoDocumentoContador(params: NovoDocumentoContadorEmailParams): Promise<void>;
 }

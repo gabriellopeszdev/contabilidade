@@ -8,6 +8,7 @@ import type {
   SolicitacaoAssinaturaEmailParams,
   StatusAssinaturaEmailParams,
   OtpAssinaturaEmailParams,
+  NovoDocumentoContadorEmailParams,
 } from '../../domain/ports/IEmailService';
 import type { ILogger } from '../../domain/ports/ILogger';
 
@@ -225,5 +226,19 @@ export class ConsoleEmailAdapter implements IEmailService {
       nomeDocumento: params.nomeDocumento,
       status:        params.status,
     });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Template: Novo Documento para o Contador
+  // ---------------------------------------------------------------------------
+
+  async enviarNovoDocumentoContador(params: NovoDocumentoContadorEmailParams): Promise<void> {
+    await this.enviar({
+      destinatario: params.emailContador,
+      assunto:      `Novo documento recebido de ${params.nomeCliente}`,
+      corpoHtml:    `<p>Olá, ${params.nomeContador}! ${params.nomeCliente} enviou: <strong>${params.nomeArquivo}</strong> (${params.setor}). <a href="${params.urlPortal}/kanban">Ver no painel</a></p>`,
+      corpoTexto:   `${params.nomeCliente} enviou "${params.nomeArquivo}" (${params.setor}). Acesse: ${params.urlPortal}/kanban`,
+    });
+    this.logger.debug('[ConsoleEmailAdapter] novoDocumentoContador', { destinatario: params.emailContador });
   }
 }

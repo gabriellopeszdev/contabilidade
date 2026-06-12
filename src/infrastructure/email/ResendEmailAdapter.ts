@@ -9,6 +9,7 @@ import type {
   SolicitacaoAssinaturaEmailParams,
   StatusAssinaturaEmailParams,
   OtpAssinaturaEmailParams,
+  NovoDocumentoContadorEmailParams,
 } from '../../domain/ports/IEmailService';
 import type { ILogger } from '../../domain/ports/ILogger';
 import { solicitacaoAssinaturaHtml } from './templates/solicitacaoAssinatura';
@@ -186,6 +187,28 @@ export class ResendEmailAdapter implements IEmailService {
       assunto:      `${params.codigo} — Código de verificação FiscoHub`,
       corpoHtml,
       corpoTexto:   `Código de verificação: ${params.codigo} (válido por 15 minutos). Não compartilhe.`,
+    });
+  }
+
+  async enviarNovoDocumentoContador(params: NovoDocumentoContadorEmailParams): Promise<void> {
+    const corpoHtml = emailWrapper(
+      emailHeading(`${params.nomeCliente} enviou um documento`) +
+      emailSubheading('Novo Documento Recebido') +
+      emailText(
+        `O cliente <strong>${params.nomeCliente}</strong> enviou um novo documento para sua análise.`,
+      ) +
+      emailInfoBox([
+        { label: 'Arquivo', value: params.nomeArquivo },
+        { label: 'Setor',   value: params.setor },
+      ]) +
+      emailButton('Ver no Painel', `${params.urlPortal}/kanban`),
+    );
+
+    await this.enviar({
+      destinatario: params.emailContador,
+      assunto:      `Novo documento recebido de ${params.nomeCliente}`,
+      corpoHtml,
+      corpoTexto:   `${params.nomeCliente} enviou "${params.nomeArquivo}" (${params.setor}). Acesse: ${params.urlPortal}/kanban`,
     });
   }
 
