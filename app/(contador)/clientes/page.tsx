@@ -303,8 +303,10 @@ function ClientesPageDono({ token }: { token: string | null }) {
         {/* Barra de busca */}
         <div className="mb-5">
           <div className="relative max-w-md">
+            <label htmlFor="busca-clientes" className="sr-only">Buscar clientes</label>
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
+              id="busca-clientes"
               type="text"
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
@@ -322,6 +324,13 @@ function ClientesPageDono({ token }: { token: string | null }) {
             <AlertCircle size={28} className="text-red-400" />
             <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">Falha ao carregar clientes</p>
             <p className="text-xs text-slate-500 dark:text-slate-400">{error.message}</p>
+            <button
+              type="button"
+              onClick={() => mutate()}
+              className="mt-2 px-4 py-2 text-sm font-semibold text-primary border border-primary rounded-lg hover:bg-primary/5 transition-colors"
+            >
+              Tentar novamente
+            </button>
           </div>
         ) : isLoading ? (
           <div className="bg-white dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-700 shadow-sm p-12 flex flex-col items-center gap-3">
@@ -339,140 +348,136 @@ function ClientesPageDono({ token }: { token: string | null }) {
             <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xs">
               {buscaDebounced
                 ? 'Tente uma busca diferente.'
-                : 'Clique em "+ Novo Cliente" para cadastrar o primeiro.'}
+                : 'Cadastre o primeiro cliente da sua carteira.'}
             </p>
+            {!buscaDebounced && (
+              <button
+                type="button"
+                onClick={abrirCriar}
+                className="mt-1 inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-primary rounded-lg hover:brightness-90 transition-all"
+              >
+                <Plus size={15} />
+                Novo Cliente
+              </button>
+            )}
           </div>
         ) : (
-          /* Tabela */
+          /* Tabela semântica */
           <div className="bg-white dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-700 shadow-sm overflow-hidden">
-            {/* Header da tabela */}
-            <div className="hidden sm:grid sm:grid-cols-[1fr_180px_200px_120px_130px] gap-4 px-5 py-3
-              border-b border-slate-100 dark:border-gray-700 bg-slate-50 dark:bg-gray-800 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
-              <span>Cliente</span>
-              <span>CNPJ</span>
-              <span>E-mail</span>
-              <span>Desde</span>
-              <span className="text-right">Ações</span>
-            </div>
-
-            {/* Linhas */}
-            <ul role="list" className="divide-y divide-slate-100 dark:divide-gray-700">
-              {clientes.map((c) => (
-                <li key={c.id} className="group">
-                  <div className="sm:grid sm:grid-cols-[1fr_180px_200px_120px_130px] gap-4 items-center
-                    px-5 py-4 hover:bg-slate-50 dark:hover:bg-gray-800 transition-colors">
-
-                    {/* Avatar + Nome + Telefone */}
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="shrink-0 w-9 h-9 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400
-                        flex items-center justify-center text-xs font-bold">
-                        {iniciais(c.nome)}
-                      </div>
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[640px]">
+                <thead className="bg-slate-50 dark:bg-gray-800 border-b border-slate-100 dark:border-gray-700">
+                  <tr>
+                    <th scope="col" className="px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Cliente</th>
+                    <th scope="col" className="px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide w-[180px]">CNPJ</th>
+                    <th scope="col" className="px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide w-[200px]">E-mail</th>
+                    <th scope="col" className="px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide w-[120px]">Desde</th>
+                    <th scope="col" className="px-5 py-3 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide w-[130px]">Ações</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-gray-700">
+                  {clientes.map((c) => (
+                    <tr key={c.id} className="hover:bg-slate-50 dark:hover:bg-gray-800 transition-colors">
+                      {/* Avatar + Nome */}
+                      <td className="px-5 py-4">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="shrink-0 w-9 h-9 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400
+                            flex items-center justify-center text-xs font-bold">
+                            {iniciais(c.nome)}
+                          </div>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <button
+                                type="button"
+                                onClick={() => router.push(`/clientes/${c.id}`)}
+                                className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate hover:text-primary transition-colors text-left"
+                              >
+                                {c.nome}
+                              </button>
+                              {c.activatedAt === null ? (
+                                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px]
+                                  font-semibold bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
+                                  Pendente
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px]
+                                  font-semibold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                                  Ativo
+                                </span>
+                              )}
+                            </div>
+                            {c.phone && (
+                              <p className="text-xs text-slate-400 dark:text-slate-500 flex items-center gap-1 mt-0.5">
+                                <Phone size={10} /> {c.phone}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                      {/* CNPJ */}
+                      <td className="px-5 py-4">
+                        <div className="flex items-center gap-1.5">
+                          <Building2 size={12} className="text-slate-400 shrink-0" />
+                          <span className="text-xs text-slate-700 dark:text-slate-300 font-mono">{formatarCNPJ(c.cnpj)}</span>
+                        </div>
+                      </td>
+                      {/* E-mail */}
+                      <td className="px-5 py-4">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <Mail size={12} className="text-slate-400 shrink-0" />
+                          <span className="text-sm text-slate-600 dark:text-slate-400 truncate">{c.email}</span>
+                        </div>
+                      </td>
+                      {/* Desde */}
+                      <td className="px-5 py-4">
+                        <span className="text-xs text-slate-500 dark:text-slate-400">{formatarData(c.createdAt)}</span>
+                      </td>
+                      {/* Ações */}
+                      <td className="px-5 py-4">
+                        <div className="flex items-center justify-end gap-1">
+                          {c.activatedAt === null && (
+                            <button
+                              type="button"
+                              onClick={() => handleReenviarConvite(c)}
+                              disabled={reenviando === c.id}
+                              aria-label={`Reenviar convite para ${c.nome}`}
+                              className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors disabled:opacity-50"
+                            >
+                              {reenviando === c.id ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
+                            </button>
+                          )}
                           <button
                             type="button"
                             onClick={() => router.push(`/clientes/${c.id}`)}
-                            className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate hover:text-primary
-                              transition-colors text-left"
+                            aria-label={`Ver prontuário de ${c.nome}`}
+                            className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
                           >
-                            {c.nome}
+                            <Eye size={15} />
                           </button>
-                          {c.activatedAt === null ? (
-                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px]
-                              font-semibold bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
-                              Pendente
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px]
-                              font-semibold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
-                              Ativo
-                            </span>
-                          )}
+                          <button
+                            type="button"
+                            onClick={() => abrirEditar(c)}
+                            aria-label={`Editar ${c.nome}`}
+                            className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                          >
+                            <Pencil size={15} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleExcluir(c)}
+                            disabled={excluindo === c.id}
+                            aria-label={`Remover ${c.nome}`}
+                            className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-50"
+                          >
+                            {excluindo === c.id ? <Loader2 size={15} className="animate-spin" /> : <Trash2 size={15} />}
+                          </button>
                         </div>
-                        {c.phone && (
-                          <p className="text-xs text-slate-400 dark:text-slate-500 flex items-center gap-1 mt-0.5">
-                            <Phone size={10} /> {c.phone}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* CNPJ */}
-                    <div className="flex items-center gap-1.5 mt-2 sm:mt-0">
-                      <Building2 size={12} className="text-slate-400 shrink-0 hidden sm:block" />
-                      <span className="text-xs text-slate-700 dark:text-slate-300 font-mono">
-                        {formatarCNPJ(c.cnpj)}
-                      </span>
-                    </div>
-
-                    {/* E-mail */}
-                    <div className="flex items-center gap-1.5 mt-1 sm:mt-0 min-w-0">
-                      <Mail size={12} className="text-slate-400 shrink-0 hidden sm:block" />
-                      <span className="text-sm text-slate-600 dark:text-slate-400 truncate">{c.email}</span>
-                    </div>
-
-                    {/* Desde */}
-                    <span className="text-xs text-slate-500 dark:text-slate-400 mt-1 sm:mt-0">
-                      {formatarData(c.createdAt)}
-                    </span>
-
-                    {/* Ações */}
-                    <div className="flex items-center justify-end gap-1 mt-2 sm:mt-0">
-                      {c.activatedAt === null && (
-                        <button
-                          type="button"
-                          onClick={() => handleReenviarConvite(c)}
-                          disabled={reenviando === c.id}
-                          aria-label={`Reenviar convite para ${c.nome}`}
-                          title="Reenviar convite"
-                          className="p-2 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20
-                            transition-colors disabled:opacity-50
-                            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
-                        >
-                          {reenviando === c.id
-                            ? <Loader2 size={15} className="animate-spin" />
-                            : <Send size={15} />
-                          }
-                        </button>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => router.push(`/clientes/${c.id}`)}
-                        aria-label={`Ver prontuário de ${c.nome}`}
-                        className="p-2 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20
-                          transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
-                      >
-                        <Eye size={15} />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => abrirEditar(c)}
-                        aria-label={`Editar ${c.nome}`}
-                        className="p-2 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20
-                          transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-                      >
-                        <Pencil size={15} />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleExcluir(c)}
-                        disabled={excluindo === c.id}
-                        aria-label={`Desativar ${c.nome}`}
-                        className="p-2 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20
-                          transition-colors disabled:opacity-50
-                          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-                      >
-                        {excluindo === c.id
-                          ? <Loader2 size={15} className="animate-spin" />
-                          : <Trash2 size={15} />
-                        }
-                      </button>
-                    </div>
-                  </div>
-                </li>
-              ))}
-            </ul>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
             {/* Rodapé com paginação */}
             <div className="px-5 py-3 border-t border-slate-100 dark:border-gray-700 bg-slate-50 dark:bg-gray-800 flex items-center justify-between gap-4 flex-wrap">
@@ -516,6 +521,9 @@ function ClientesPageDono({ token }: { token: string | null }) {
       {/* Modal de confirmação de exclusão */}
       {clienteParaExcluir && (
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-excluir-titulo"
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
           onClick={() => setClienteParaExcluir(null)}
         >
@@ -530,7 +538,7 @@ function ClientesPageDono({ token }: { token: string | null }) {
                   <Trash2 size={18} className="text-red-600 dark:text-red-400" />
                 </div>
                 <div>
-                  <h2 className="text-base font-bold text-gray-900 dark:text-gray-100">Remover cliente</h2>
+                  <h2 id="modal-excluir-titulo" className="text-base font-bold text-gray-900 dark:text-gray-100">Remover cliente</h2>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Esta ação não pode ser desfeita.</p>
                 </div>
               </div>
