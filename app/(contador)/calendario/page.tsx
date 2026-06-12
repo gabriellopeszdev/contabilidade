@@ -392,9 +392,11 @@ export default function CalendarioPage() {
                       key={idx}
                       type="button"
                       disabled={!cell.mesAtual}
+                      aria-disabled={!cell.mesAtual ? 'true' : undefined}
+                      aria-label={cell.mesAtual ? `Dia ${cell.dia}, ${MESES[mesAtual.mes]}` : undefined}
                       onClick={() => cell.mesAtual && setDiaSelecionado(cell.dia)}
                       className={[
-                        'relative h-20 rounded-lg p-1.5 text-left transition-all border',
+                        'relative h-14 sm:h-20 rounded-lg p-1.5 text-left transition-all border',
                         !cell.mesAtual
                           ? 'text-gray-300 dark:text-gray-600 bg-gray-50/50 dark:bg-gray-800/50 border-transparent cursor-default'
                           : !selecionado
@@ -579,14 +581,14 @@ export default function CalendarioPage() {
                           <button
                             onClick={() => handleDeletarObrigacao(ob.id)}
                             disabled={deletando}
-                            className="text-[10px] font-semibold text-red-600 hover:text-red-700 disabled:opacity-50"
+                            className="min-h-[44px] min-w-[44px] flex items-center justify-center text-[10px] font-semibold text-red-600 hover:text-red-700 disabled:opacity-50"
                           >
                             {deletando ? '...' : 'Sim'}
                           </button>
                           <span className="text-gray-300 dark:text-gray-600 text-xs">|</span>
                           <button
                             onClick={() => setConfirmandoDeleteId(null)}
-                            className="text-[10px] text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+                            className="min-h-[44px] min-w-[44px] flex items-center justify-center text-[10px] text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
                           >
                             Não
                           </button>
