@@ -41,6 +41,7 @@
 import { loadEnvConfig } from '@next/env';
 import { createServer }  from 'node:http';
 import { parse }         from 'node:url';
+import compression       from 'compression';
 
 import next from 'next';
 
@@ -95,11 +96,15 @@ app.prepare().then(async () => {
 
   // Envolve o handler do Next.js com logging HTTP estruturado + RequestContext
   const loggingHandler = withRequestLogging(handler, logger);
+  const compress = compression();
 
   const httpServer = createServer((req, res) => {
-    // parse(url, true) → querystring como objeto (necessário para o router)
-    const parsedUrl = parse(req.url ?? '/', true);
-    loggingHandler(req, res, parsedUrl);
+    // Compressão gzip/deflate automática para todas as respostas
+    compress(req, res, () => {
+      // parse(url, true) → querystring como objeto (necessário para o router)
+      const parsedUrl = parse(req.url ?? '/', true);
+      loggingHandler(req, res, parsedUrl);
+    });
   });
 
   // ---------------------------------------------------------------------------
