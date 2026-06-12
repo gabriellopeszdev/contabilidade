@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import useSWR from 'swr';
@@ -230,7 +230,7 @@ function ClientesPageDono({ token }: { token: string | null }) {
       a.click();
       URL.revokeObjectURL(url);
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Erro ao exportar CSV.');
+      toast.error(err instanceof Error ? err.message : 'Erro ao exportar CSV.');
     }
   }, [token]);
 
@@ -260,6 +260,14 @@ function ClientesPageDono({ token }: { token: string | null }) {
       setExcluindo(null);
     }
   }, [clienteParaExcluir, token, mutate]);
+
+  // Ref e foco acessível do modal de exclusão
+  const modalRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (clienteParaExcluir && modalRef.current) {
+      modalRef.current.focus();
+    }
+  }, [clienteParaExcluir]);
 
   // ---------------------------------------------------------------------------
   // Render
@@ -488,6 +496,7 @@ function ClientesPageDono({ token }: { token: string | null }) {
               {totalPages > 1 && (
                 <div className="flex items-center gap-2">
                   <button
+                    type="button"
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
                     disabled={page <= 1 || isLoading}
                     className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-gray-700 disabled:opacity-40 transition-colors"
@@ -498,6 +507,7 @@ function ClientesPageDono({ token }: { token: string | null }) {
                     Página {page} de {totalPages}
                   </span>
                   <button
+                    type="button"
                     onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                     disabled={page >= totalPages || isLoading}
                     className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-gray-700 disabled:opacity-40 transition-colors"
@@ -526,8 +536,12 @@ function ClientesPageDono({ token }: { token: string | null }) {
           aria-labelledby="modal-excluir-titulo"
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
           onClick={() => setClienteParaExcluir(null)}
+          onKeyDown={(e) => { if (e.key === 'Escape') setClienteParaExcluir(null); }}
+          tabIndex={-1}
         >
           <div
+            ref={modalRef}
+            tabIndex={-1}
             className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-gray-700 w-full max-w-md p-6"
             onClick={(e) => e.stopPropagation()}
           >
