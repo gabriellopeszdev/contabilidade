@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import {
   X,
   Upload,
@@ -44,6 +44,12 @@ function formatarTamanho(bytes: number): string {
 
 export function EnvioLoteModal({ arquivos, categoriaId, onFechar, onSucesso }: Props) {
   const { token } = useAuth();
+
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (modalRef.current) modalRef.current.focus();
+  }, []);
 
   const [itens,    setItens]    = useState<ArquivoItem[]>(
     () => arquivos.map((file) => ({ file, estado: 'aguardando' })),
@@ -104,16 +110,23 @@ export function EnvioLoteModal({ arquivos, categoriaId, onFechar, onSucesso }: P
       <div
         className="absolute inset-0 bg-black/50"
         onClick={!enviando ? onFechar : undefined}
+        onKeyDown={(e) => { if (e.key === 'Escape') onFechar(); }}
       />
 
       {/* Painel */}
-      <div className="relative w-full sm:max-w-lg bg-white dark:bg-gray-900 sm:rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700
+      <div
+        ref={modalRef}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-envio-lote-titulo"
+        className="relative w-full sm:max-w-lg bg-white dark:bg-gray-900 sm:rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700
         flex flex-col max-h-[92dvh] rounded-t-2xl">
 
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800 shrink-0">
           <div>
-            <h3 className="text-base font-bold text-gray-900 dark:text-gray-100">Confirmar envio</h3>
+            <h3 id="modal-envio-lote-titulo" className="text-base font-bold text-gray-900 dark:text-gray-100">Confirmar envio</h3>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
               {totalAtivos} arquivo{totalAtivos !== 1 ? 's' : ''} selecionado{totalAtivos !== 1 ? 's' : ''}
             </p>
@@ -121,6 +134,7 @@ export function EnvioLoteModal({ arquivos, categoriaId, onFechar, onSucesso }: P
           <button
             onClick={onFechar}
             disabled={enviando}
+            aria-label="Fechar modal"
             className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800
               disabled:opacity-40 transition-colors"
           >
@@ -178,18 +192,19 @@ export function EnvioLoteModal({ arquivos, categoriaId, onFechar, onSucesso }: P
                         onClick={() => removerArquivo(idx)}
                         className="p-1 rounded text-gray-300 hover:text-red-500 transition-colors"
                         title="Remover arquivo"
+                        aria-label={`Remover ${item.file.name}`}
                       >
                         <Trash2 size={14} />
                       </button>
                     )}
                     {item.estado === 'enviando' && (
-                      <Loader2 size={16} className="animate-spin text-sky-500" />
+                      <Loader2 size={16} className="animate-spin text-sky-500" aria-hidden="true" />
                     )}
                     {item.estado === 'sucesso' && (
-                      <CheckCircle2 size={16} className="text-emerald-500" />
+                      <CheckCircle2 size={16} className="text-emerald-500" aria-hidden="true" />
                     )}
                     {item.estado === 'erro' && (
-                      <AlertCircle size={16} className="text-red-500" />
+                      <AlertCircle size={16} className="text-red-500" aria-hidden="true" />
                     )}
                   </div>
                 </div>
@@ -217,7 +232,7 @@ export function EnvioLoteModal({ arquivos, categoriaId, onFechar, onSucesso }: P
         <div className="px-5 py-4 border-t border-gray-100 dark:border-gray-800 shrink-0 flex items-center gap-3">
           {concluido ? (
             <button
-              onClick={totalErro === 0 ? onSucesso : undefined}
+              onClick={totalErro === 0 ? onSucesso : onFechar}
               className="flex-1 py-2.5 text-sm font-semibold text-white bg-sky-600 rounded-xl
                 hover:bg-sky-700 transition-colors flex items-center justify-center gap-2"
             >
