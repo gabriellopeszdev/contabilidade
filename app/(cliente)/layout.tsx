@@ -24,6 +24,7 @@ import {
   ChevronsRight,
   Users,
   PenLine,
+  Settings,
 } from 'lucide-react';
 
 import { useAuth }          from '../../src/presentation/hooks/useAuth';
@@ -83,6 +84,12 @@ const NAV_GROUPS: NavGroup[] = [
     donoOnly: true,
     items: [
       { href: '/minha-equipe', label: 'Minha Equipe', icon: <Users size={18} />, donoOnly: true },
+    ],
+  },
+  {
+    label: 'Conta',
+    items: [
+      { href: '/configuracoes', label: 'Configurações', icon: <Settings size={18} /> },
     ],
   },
   {
