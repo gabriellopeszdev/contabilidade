@@ -143,6 +143,9 @@ model UsuarioCliente {
   twoFactorSecret      String?   @map("two_factor_secret") @db.VarChar(500)
   twoFactorBackupCodes String[]  @map("two_factor_backup_codes")
 
+  notifEmailNovoDoc Boolean   @default(true) @map("notif_email_novo_doc")
+  notifEmailBoleto  Boolean   @default(true) @map("notif_email_boleto")
+
   // Índice parcial para ignorar registros soft-deleted em queries comuns.
   // OBS: índices parciais via Prisma requerem a cláusula `where` no schema.
   @@index([email])
@@ -183,6 +186,8 @@ model UsuarioContador {
   onboardingConcluido Boolean   @default(false) @map("onboarding_concluido")
   onboardingPassos    String[]  @map("onboarding_passos")
   primeiroLoginEm     DateTime? @map("primeiro_login_em") @db.Timestamptz
+
+  notifEmailNovoDoc Boolean   @default(true) @map("notif_email_novo_doc")
 
   // Relações
   clientesRel   ContadorCliente[]
@@ -652,6 +657,7 @@ model BoletoHonorario {
   coraBarcode    String? @map("cora_barcode")      @db.VarChar(300)
   coraBoletoUrl  String? @map("cora_boleto_url")   @db.VarChar(500)
   coraPixPayload String? @map("cora_pix_payload")  @db.Text
+  lembreteEnviado Boolean      @default(false) @map("lembrete_enviado")
   createdAt      DateTime     @default(now()) @map("created_at") @db.Timestamptz
   updatedAt      DateTime     @updatedAt @map("updated_at") @db.Timestamptz
 
