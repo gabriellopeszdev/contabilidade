@@ -40,6 +40,9 @@ services:
       -c log_min_duration_statement=1000
       -c log_checkpoints=on
       -c log_line_prefix='%t [%p] %u@%d '
+    ports:
+      # Exposto apenas no loopback do VPS — acesse via túnel SSH
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
     volumes:
       - ${DATA_DIR:-./.data}/postgres:/var/lib/postgresql/data
     healthcheck:
