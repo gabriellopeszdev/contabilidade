@@ -150,7 +150,7 @@ function LoginContent() {
   if (carregando) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center">
-        <Loader2 size={32} className="animate-spin text-blue-600" />
+        <Loader2 size={32} className="animate-spin text-primary" />
       </div>
     );
   }
@@ -173,7 +173,7 @@ function LoginContent() {
       <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900">
         <div className="w-full max-w-sm">
           <div className="flex flex-col items-center mb-8">
-            <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-600 shadow-lg mb-4">
+            <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-primary shadow-lg mb-4">
               <ShieldCheck size={32} className="text-white" />
             </div>
             <h1 className="text-2xl font-bold text-white tracking-tight">Verificação em dois fatores</h1>
@@ -202,7 +202,7 @@ function LoginContent() {
                 {enviando ? 'Verificando…' : 'Verificar'}
               </button>
               <div className="text-center">
-                <button type="button" onClick={() => { setErro(''); setStep('BACKUP'); }} className="text-xs text-blue-600 hover:underline">
+                <button type="button" onClick={() => { setErro(''); setStep('BACKUP'); }} className="text-xs text-primary hover:underline">
                   Usar código de backup
                 </button>
               </div>
@@ -220,7 +220,7 @@ function LoginContent() {
       <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900">
         <div className="w-full max-w-sm">
           <div className="flex flex-col items-center mb-8">
-            <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-600 shadow-lg mb-4">
+            <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-primary shadow-lg mb-4">
               <KeyRound size={32} className="text-white" />
             </div>
             <h1 className="text-2xl font-bold text-white tracking-tight">Usar código de backup</h1>
@@ -248,7 +248,7 @@ function LoginContent() {
                 {enviando ? 'Verificando…' : 'Verificar'}
               </button>
               <div className="text-center">
-                <button type="button" onClick={() => { setErro(''); setStep('TOTP'); }} className="text-xs text-blue-600 hover:underline">
+                <button type="button" onClick={() => { setErro(''); setStep('TOTP'); }} className="text-xs text-primary hover:underline">
                   Voltar
                 </button>
               </div>
@@ -313,7 +313,7 @@ function LoginContent() {
               <a
                 href="/auth/recuperar-senha"
                 aria-label="Recuperar senha por e-mail"
-                className="text-xs text-blue-600 hover:underline"
+                className="text-xs text-primary hover:underline"
               >
                 Esqueci minha senha
               </a>
@@ -360,7 +360,7 @@ export default function LoginPage() {
     <Suspense
       fallback={
         <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-          <Loader2 size={32} className="animate-spin text-blue-600" />
+          <Loader2 size={32} className="animate-spin text-primary" />
         </div>
       }
     >

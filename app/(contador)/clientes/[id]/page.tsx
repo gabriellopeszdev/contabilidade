@@ -609,7 +609,7 @@ function ClienteDetalhesPageDono() {
       <div>
         <Link
           href="/clientes"
-          className="inline-flex items-center gap-1.5 text-sm text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400
+          className="inline-flex items-center gap-1.5 text-sm text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary/80
             transition-colors mb-4"
         >
           <ArrowLeft size={15} />
@@ -618,7 +618,7 @@ function ClienteDetalhesPageDono() {
 
         {isLoading && !cliente ? (
           <div className="h-20 flex items-center gap-3">
-            <Loader2 size={20} className="animate-spin text-blue-500" />
+            <Loader2 size={20} className="animate-spin text-primary" />
             <span className="text-sm text-slate-500 dark:text-slate-400">Carregando prontuário…</span>
           </div>
         ) : error ? (
@@ -863,7 +863,7 @@ function ClienteDetalhesPageDono() {
                   <div
                     className={`max-w-[80%] px-3 py-2 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap
                       ${msg.role === 'user'
-                        ? 'bg-blue-600 text-white rounded-br-sm'
+                        ? 'bg-primary text-white rounded-br-sm'
                         : 'bg-slate-100 dark:bg-gray-700 text-slate-900 dark:text-slate-100 rounded-bl-sm'
                       }`}
                   >
@@ -906,15 +906,15 @@ function ClienteDetalhesPageDono() {
                 aria-label="Mensagem"
                 className="flex-1 px-3 py-2 text-sm rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-gray-800
                   text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500
-                  focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none transition-colors"
+                  focus:outline-none focus:ring-2 focus:ring-primary resize-none transition-colors"
               />
               <button
                 type="button"
                 onClick={() => void handleChatEnviar()}
                 disabled={!chatInput.trim() || chatCarregando}
-                className="shrink-0 p-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white
+                className="shrink-0 p-2.5 rounded-xl bg-primary hover:bg-primary/90 text-white
                   disabled:opacity-50 disabled:cursor-not-allowed transition-colors
-                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 title="Enviar mensagem"
                 aria-label="Enviar mensagem"
               >
@@ -1070,7 +1070,7 @@ function ClienteDetalhesPageDono() {
             aria-label="Buscar documento"
             className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-gray-800
               text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500
-              focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+              focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
           />
         </div>
 
@@ -1083,7 +1083,7 @@ function ClienteDetalhesPageDono() {
             onChange={(e) => setFiltroSetor(e.target.value as SetorTipo | '')}
             aria-label="Filtrar por setor"
             className="px-3 py-2 text-xs font-medium rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-gray-800
-              text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:[color-scheme:dark]"
+              text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-primary dark:[color-scheme:dark]"
           >
             <option value="">Todos os Setores</option>
             <option value="FISCAL">Fiscal</option>
@@ -1097,7 +1097,7 @@ function ClienteDetalhesPageDono() {
             onChange={(e) => setFiltroLeitura(e.target.value as 'lido' | 'nao_lido' | '')}
             aria-label="Filtrar por leitura"
             className="px-3 py-2 text-xs font-medium rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-gray-800
-              text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:[color-scheme:dark]"
+              text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-primary dark:[color-scheme:dark]"
           >
             <option value="">Todos</option>
             <option value="nao_lido">Não lidos</option>
@@ -1110,7 +1110,7 @@ function ClienteDetalhesPageDono() {
             onChange={(e) => setFiltroOrigem(e.target.value as Origem | '')}
             aria-label="Filtrar por origem"
             className="px-3 py-2 text-xs font-medium rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-gray-800
-              text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:[color-scheme:dark]"
+              text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-primary dark:[color-scheme:dark]"
           >
             <option value="">Todas as Origens</option>
             <option value="UPLOAD_CLIENTE">Enviado pelo Cliente</option>
@@ -1124,7 +1124,7 @@ function ClienteDetalhesPageDono() {
       {/* ------------------------------------------------------------------ */}
       {isLoading && documentos.length === 0 ? (
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-700 shadow-sm p-12 flex flex-col items-center gap-3">
-          <Loader2 size={24} className="animate-spin text-blue-500" />
+          <Loader2 size={24} className="animate-spin text-primary" />
           <p className="text-sm text-slate-500 dark:text-slate-400">Carregando documentos…</p>
         </div>
       ) : docsFiltrados.length === 0 ? (
@@ -1247,7 +1247,7 @@ function ClienteDetalhesPageDono() {
                         disabled={!!baixandoId || !!assinandoId}
                         title="Baixar arquivo"
                         aria-label={`Baixar ${doc.fileName}`}
-                        className="p-2 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50
+                        className="p-2 rounded-lg text-slate-400 hover:text-primary hover:bg-primary/5
                           disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       >
                         {baixandoId === doc.id ? (
@@ -1537,7 +1537,7 @@ function ClienteDetalhesPageDono() {
                     href={modalAssinatura.link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="shrink-0 p-1.5 rounded-md text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                    className="shrink-0 p-1.5 rounded-md text-slate-500 hover:text-primary hover:bg-primary/5 transition-colors"
                     title="Abrir link"
                   >
                     <ExternalLink size={14} />

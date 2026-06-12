@@ -524,7 +524,7 @@ export default function CalendarioPage() {
                           ) : (
                             <button
                               onClick={() => setAtribuindoTarefaId(ev.id)}
-                              className="text-[10px] text-blue-500 hover:text-blue-700 underline"
+                              className="text-[10px] text-primary hover:text-primary/80 underline"
                             >
                               Atribuir responsável
                             </button>

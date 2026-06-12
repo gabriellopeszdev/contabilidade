@@ -288,6 +288,7 @@ function ClientesPageDono({ token }: { token: string | null }) {
           <button
             type="button"
             onClick={handleExportarCSV}
+            aria-label="Exportar CSV"
             className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300
               bg-white dark:bg-gray-800 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-gray-700 transition-all shadow-sm
               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
@@ -341,9 +342,10 @@ function ClientesPageDono({ token }: { token: string | null }) {
             </button>
           </div>
         ) : isLoading ? (
-          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-700 shadow-sm p-12 flex flex-col items-center gap-3">
-            <Loader2 size={28} className="animate-spin text-blue-500" />
+          <div role="status" className="bg-white dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-700 shadow-sm p-12 flex flex-col items-center gap-3">
+            <Loader2 size={28} className="animate-spin text-primary" />
             <p className="text-sm text-slate-500 dark:text-slate-400">Carregando clientes…</p>
+            <span className="sr-only">Carregando...</span>
           </div>
         ) : clientes.length === 0 ? (
           <div className="bg-white dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-700 shadow-sm p-12 flex flex-col items-center gap-3 text-center">
@@ -466,7 +468,7 @@ function ClientesPageDono({ token }: { token: string | null }) {
                             type="button"
                             onClick={() => abrirEditar(c)}
                             aria-label={`Editar ${c.nome}`}
-                            className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                            className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-slate-400 hover:text-primary hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors"
                           >
                             <Pencil size={15} />
                           </button>
