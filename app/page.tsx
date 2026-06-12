@@ -752,6 +752,7 @@ export default function LandingPage() {
                 </ul>
                 <Link
                   href={`/cadastro?plano=${encodeURIComponent(plano.nome)}`}
+                  aria-label={`Contratar plano ${plano.nome}`}
                   className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm transition-all hover:scale-[1.02] active:scale-95 ${
                     plano.destaque
                       ? 'bg-violet-600 hover:bg-violet-500 text-white shadow-lg shadow-violet-600/30'
@@ -760,7 +761,7 @@ export default function LandingPage() {
                       : 'border border-white/15 text-slate-300 hover:bg-white/10 hover:text-white'
                   }`}
                 >
-                  Contratar<ChevronRight size={14} />
+                  Contratar<ChevronRight size={14} aria-hidden="true" />
                 </Link>
               </div>
             ))}
