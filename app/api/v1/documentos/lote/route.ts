@@ -4,6 +4,7 @@ import { withAuth }                  from '../../../../../src/infrastructure/htt
 import { processarUploadLoteUseCase } from '../../../../../src/infrastructure/di/Container';
 import { prisma }                     from '../../../../../src/infrastructure/di/Container';
 import { queueProducer }              from '../../../../../src/infrastructure/di/Container';
+import { emailService }               from '../../../../../src/infrastructure/di/Container';
 import { logger }                     from '../../../../../src/utils/logger';
 import { parsearFormDataUploadLote } from '../../../../../src/infrastructure/http/validators/UploadLoteSchema';
 import { DomainException }           from '../../../../../src/domain/exceptions/DomainException';
@@ -154,7 +155,9 @@ export const POST = withAuth(async (request, _ctx, auth): Promise<NextResponse> 
         clienteId: parseResult.dto.clienteId,
       },
     },
-    select: { clienteId: true },
+    include: {
+      cliente: { select: { email: true, name: true, notifEmailNovoDoc: true } },
+    },
   });
 
   if (!vinculo) {
@@ -242,6 +245,21 @@ export const POST = withAuth(async (request, _ctx, auth): Promise<NextResponse> 
       })),
       skipDuplicates: true,
     }).catch(() => {/* non-critical */});
+  }
+
+  // Fire-and-forget: notificar cliente por email para cada documento enviado
+  if (output.uploadados.length > 0 && vinculo.cliente.notifEmailNovoDoc) {
+    for (const uploadado of output.uploadados) {
+      emailService
+        .enviarNovoDocumentoDisponivel({
+          emailCliente: vinculo.cliente.email,
+          nomeCliente:  vinculo.cliente.name,
+          nomeArquivo:  uploadado.fileName,
+          setor:        parseResult.dto.sector,
+          urlPortal:    process.env.NEXT_PUBLIC_APP_URL ?? '',
+        })
+        .catch((err) => logger.error('[lote] falha ao enviar email novo doc', err instanceof Error ? err : undefined));
+    }
   }
 
   // -------------------------------------------------------------------------
