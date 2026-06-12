@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useEffect, useState, type FormEvent } from 'react';
+import { Suspense, useEffect, useRef, useState, type FormEvent } from 'react';
 import { useRouter, useSearchParams }           from 'next/navigation';
 import { Lock, Mail, Loader2, ShieldCheck, KeyRound } from 'lucide-react';
 import { FiscoHubLogo } from '../components/FiscoHubLogo';
@@ -47,6 +47,16 @@ function LoginContent() {
   const [tempToken,  setTempToken]  = useState('');
   const [totpCode,   setTotpCode]   = useState('');
   const [backupCode, setBackupCode] = useState('');
+
+  // Accessibility: ref para foco automático em erro
+  const erroRef = useRef<HTMLParagraphElement>(null);
+
+  // Foco automático quando erro é exibido
+  useEffect(() => {
+    if (erro && erroRef.current) {
+      erroRef.current.focus();
+    }
+  }, [erro]);
 
   // Se já autenticado, vai direto para a rota da role
   useEffect(() => {
@@ -147,9 +157,11 @@ function LoginContent() {
 
   const ErroAlert = erro ? (
     <p
+      ref={erroRef}
       role="alert"
+      tabIndex={-1}
       className="text-sm text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800
-                 rounded-xl px-3 py-2 leading-snug"
+                 rounded-xl px-3 py-2 leading-snug focus:outline-none"
     >
       {erro}
     </p>
@@ -298,7 +310,11 @@ function LoginContent() {
             </button>
 
             <div className="text-center">
-              <a href="/auth/recuperar-senha" className="text-xs text-blue-600 hover:underline">
+              <a
+                href="/auth/recuperar-senha"
+                aria-label="Recuperar senha por e-mail"
+                className="text-xs text-blue-600 hover:underline"
+              >
                 Esqueci minha senha
               </a>
             </div>
@@ -314,11 +330,23 @@ function LoginContent() {
         </p>
 
         <div className="flex items-center justify-center gap-3 mt-3 text-[11px] text-slate-400">
-          <a href="/privacidade" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 transition-colors">
+          <a
+            href="/privacidade"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Política de Privacidade (abre em nova aba)"
+            className="hover:text-slate-600 transition-colors"
+          >
             Política de Privacidade
           </a>
-          <span>|</span>
-          <a href="/termos" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 transition-colors">
+          <span aria-hidden="true">|</span>
+          <a
+            href="/termos"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Termos de Uso (abre em nova aba)"
+            className="hover:text-slate-600 transition-colors"
+          >
             Termos de Uso
           </a>
         </div>
