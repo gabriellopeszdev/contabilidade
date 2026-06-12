@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef, type FormEvent } from 'react';
+import { useState, useEffect, useCallback, type FormEvent } from 'react';
 import { X, Loader2, AlertCircle } from 'lucide-react';
 
 // =============================================================================
@@ -134,8 +134,6 @@ export function ClienteModal({
   const [erroApi, setErroApi]   = useState<string | null>(null);
   const [salvando, setSalvando] = useState(false);
 
-  const nomeRef = useRef<HTMLInputElement>(null);
-
   // Preenche o form quando abre em modo edição
   useEffect(() => {
     if (aberto) {
@@ -155,8 +153,6 @@ export function ClienteModal({
       setErros({});
       setErroApi(null);
       setSalvando(false);
-      // Foco no primeiro campo após animação
-      setTimeout(() => nomeRef.current?.focus(), 100);
     }
   }, [aberto, dadosIniciais]);
 
@@ -242,7 +238,7 @@ export function ClienteModal({
       className="fixed inset-0 z-50 flex items-center justify-center"
       role="dialog"
       aria-modal="true"
-      aria-label={modoEdicao ? 'Editar cliente' : 'Novo cliente'}
+      aria-labelledby="modal-cliente-titulo"
     >
       {/* Backdrop */}
       <div
@@ -255,7 +251,7 @@ export function ClienteModal({
       <div className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-gray-700 w-full max-w-lg mx-4 animate-in zoom-in-95 duration-200">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-gray-700">
-          <h2 className="text-lg font-bold text-slate-900 dark:text-gray-100">
+          <h2 id="modal-cliente-titulo" className="text-lg font-bold text-slate-900 dark:text-gray-100">
             {modoEdicao ? 'Editar Cliente' : 'Novo Cliente'}
           </h2>
           <button
@@ -279,27 +275,30 @@ export function ClienteModal({
           )}
 
           {/* Nome */}
-          <div>
-            <label htmlFor="cliente-nome" className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-1">
+          <div className="space-y-1.5">
+            <label htmlFor="cliente-nome" className="block text-sm font-medium text-slate-700 dark:text-gray-300">
               Razão Social / Nome <span className="text-red-400">*</span>
             </label>
             <input
-              ref={nomeRef}
+              autoFocus
               id="cliente-nome"
               type="text"
               value={form.nome}
               onChange={handleChange('nome')}
               placeholder="Empresa Exemplo Ltda"
+              aria-required="true"
+              aria-invalid={!!erros.nome}
+              aria-describedby={erros.nome ? 'erro-nome' : undefined}
               className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 dark:text-gray-100 placeholder:text-slate-400 dark:placeholder:text-gray-500
                 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors
                 ${erros.nome ? 'border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/20' : 'border-slate-300 dark:border-gray-600'}`}
             />
-            {erros.nome && <p className="mt-1 text-xs text-red-600">{erros.nome}</p>}
+            {erros.nome && <p id="erro-nome" className="text-xs text-red-600">{erros.nome}</p>}
           </div>
 
           {/* E-mail */}
-          <div>
-            <label htmlFor="cliente-email" className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-1">
+          <div className="space-y-1.5">
+            <label htmlFor="cliente-email" className="block text-sm font-medium text-slate-700 dark:text-gray-300">
               E-mail <span className="text-red-400">*</span>
             </label>
             <input
@@ -308,16 +307,19 @@ export function ClienteModal({
               value={form.email}
               onChange={handleChange('email')}
               placeholder="contato@empresa.com.br"
+              aria-required="true"
+              aria-invalid={!!erros.email}
+              aria-describedby={erros.email ? 'erro-email' : undefined}
               className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 dark:text-gray-100 placeholder:text-slate-400 dark:placeholder:text-gray-500
                 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors
                 ${erros.email ? 'border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/20' : 'border-slate-300 dark:border-gray-600'}`}
             />
-            {erros.email && <p className="mt-1 text-xs text-red-600">{erros.email}</p>}
+            {erros.email && <p id="erro-email" className="text-xs text-red-600">{erros.email}</p>}
           </div>
 
           {/* CNPJ */}
-          <div>
-            <label htmlFor="cliente-cnpj" className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-1">
+          <div className="space-y-1.5">
+            <label htmlFor="cliente-cnpj" className="block text-sm font-medium text-slate-700 dark:text-gray-300">
               CNPJ <span className="text-red-400">*</span>
             </label>
             <input
@@ -327,16 +329,19 @@ export function ClienteModal({
               onChange={handleChange('cnpj')}
               placeholder="00.000.000/0000-00"
               maxLength={18}
+              aria-required="true"
+              aria-invalid={!!erros.cnpj}
+              aria-describedby={erros.cnpj ? 'erro-cnpj' : undefined}
               className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 dark:text-gray-100 placeholder:text-slate-400 dark:placeholder:text-gray-500
                 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors
                 ${erros.cnpj ? 'border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/20' : 'border-slate-300 dark:border-gray-600'}`}
             />
-            {erros.cnpj && <p className="mt-1 text-xs text-red-600">{erros.cnpj}</p>}
+            {erros.cnpj && <p id="erro-cnpj" className="text-xs text-red-600">{erros.cnpj}</p>}
           </div>
 
           {/* Telefone */}
-          <div>
-            <label htmlFor="cliente-phone" className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-1">
+          <div className="space-y-1.5">
+            <label htmlFor="cliente-phone" className="block text-sm font-medium text-slate-700 dark:text-gray-300">
               Telefone
             </label>
             <input
@@ -352,8 +357,8 @@ export function ClienteModal({
           </div>
 
           {/* CNAE */}
-          <div>
-            <label htmlFor="cliente-cnae" className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-1">
+          <div className="space-y-1.5">
+            <label htmlFor="cliente-cnae" className="block text-sm font-medium text-slate-700 dark:text-gray-300">
               CNAE
             </label>
             <input
@@ -369,8 +374,8 @@ export function ClienteModal({
           </div>
 
           {/* Regime Tributário */}
-          <div>
-            <label htmlFor="cliente-regime" className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-1">
+          <div className="space-y-1.5">
+            <label htmlFor="cliente-regime" className="block text-sm font-medium text-slate-700 dark:text-gray-300">
               Regime Tributário
             </label>
             <select
