@@ -1,5 +1,6 @@
 'use client';
 
+import './landing.css';
 import { useEffect, useState, useRef, Fragment } from 'react';
 import Link from 'next/link';
 import {
