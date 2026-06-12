@@ -3,7 +3,7 @@ import type { RedisOptions } from 'ioredis';
 import type { ILogger } from '../../domain/ports/ILogger';
 import type { PrismaClient } from '@prisma/client';
 import type { IEmailService } from '../../domain/ports/IEmailService';
-import { emailWrapper, emailButton, emailHeading, emailSubheading, emailCallout, emailWarningCallout, emailInfoBox } from '../email/emailTemplate';
+import { emailWrapper, emailButton, emailHeading, emailSubheading, emailCallout, emailWarningCallout, emailInfoBox, emailText } from '../email/emailTemplate';
 import { verificarLembretesJob } from './jobs/verificarLembretesJob';
 import { gerarObrigacoesRecorrentesJob } from './jobs/gerarObrigacoesRecorrentesJob';
 import { parsearXmlNfeJob } from './jobs/parsearXmlNfeJob';
@@ -342,13 +342,15 @@ export class BullMQAdapter {
 
     const boletos = await this.prisma.boletoHonorario.findMany({
       where: {
-        status:     'PENDENTE',
-        vencimento: { gte: hoje, lte: em3Dias },
+        status:          'PENDENTE',
+        lembreteEnviado: false,
+        vencimento:      { gte: hoje, lte: em3Dias },
+        cliente:         { notifEmailBoleto: true },
       },
       select: {
-        id:           true,
-        valor:        true,
-        vencimento:   true,
+        id:            true,
+        valor:         true,
+        vencimento:    true,
         mesReferencia: true,
         cliente:       { select: { email: true, name: true } },
         escritorio:    { select: { name: true } },
@@ -366,24 +368,20 @@ export class BullMQAdapter {
       });
       const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
 
-      const html = emailWrapper(`
-        ${emailSubheading('Lembrete de Vencimento')}
-        ${emailHeading('Seu boleto vence em breve')}
-        <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 24px 0">
-          Olá, <strong>${boleto.cliente.name}</strong>! Este é um lembrete de que você tem um boleto de honorários contábeis com vencimento em <strong>${vencimentoFmt}</strong>.
-        </p>
-        ${emailWarningCallout(`Este boleto vence em <strong>${vencimentoFmt}</strong>. Efetue o pagamento para evitar encargos por atraso.`)}
-        ${emailInfoBox([
+      const html = emailWrapper(
+        emailSubheading('Lembrete de Vencimento') +
+        emailHeading('Seu boleto vence em breve') +
+        emailText(
+          `Olá, <strong>${boleto.cliente.name}</strong>! Você tem um boleto de honorários com vencimento em <strong>${vencimentoFmt}</strong>.`,
+        ) +
+        emailInfoBox([
           { label: 'Escritório', value: boleto.escritorio.name },
           { label: 'Referência', value: boleto.mesReferencia },
           { label: 'Valor',      value: valorFmt },
           { label: 'Vencimento', value: vencimentoFmt },
-        ])}
-        ${emailCallout('Acesse o portal para visualizar e baixar o boleto.', 'ℹ️')}
-        <div style="text-align:center;margin:32px 0">
-          ${emailButton('Acessar Portal', `${appUrl}/cliente/financeiro`)}
-        </div>
-      `);
+        ]) +
+        emailButton('Acessar Portal', `${appUrl}/cliente/financeiro`),
+      );
 
       try {
         await this.emailService.enviar({
@@ -392,12 +390,18 @@ export class BullMQAdapter {
           corpoHtml:    html,
           corpoTexto:   `Olá ${boleto.cliente.name}, seu boleto de ${valorFmt} vence em ${vencimentoFmt}. Acesse: ${appUrl}/cliente/financeiro`,
         });
-        this.logger.info('[BullMQAdapter] Lembrete enviado.', {
+
+        await this.prisma.boletoHonorario.update({
+          where: { id: boleto.id },
+          data:  { lembreteEnviado: true },
+        });
+
+        this.logger.info('[BullMQAdapter] Lembrete de boleto enviado.', {
           clienteEmail: boleto.cliente.email,
-          boletoId: boleto.id,
+          boletoId:     boleto.id,
         });
       } catch (err) {
-        this.logger.error('[BullMQAdapter] Falha ao enviar lembrete.', {
+        this.logger.error('[BullMQAdapter] Falha ao enviar lembrete de boleto.', {
           boletoId: boleto.id,
           message:  err instanceof Error ? err.message : String(err),
         });
