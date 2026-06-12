@@ -23,6 +23,10 @@ const nextConfig = {
 
   turbopack: {},
 
+  experimental: {
+    optimizeCss: true,
+  },
+
   serverExternalPackages: [
     '@prisma/client',
     'ioredis',
