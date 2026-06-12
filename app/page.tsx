@@ -351,6 +351,8 @@ export default function LandingPage() {
         </div>
       </header>
 
+      <main id="main-content">
+
       {/* ================================================================ */}
       {/* HERO                                                               */}
       {/* ================================================================ */}
@@ -834,6 +836,8 @@ export default function LandingPage() {
           <p className="text-slate-400 text-sm mt-6">Sistema self-hosted · LGPD Compliant · Open Source</p>
         </div>
       </section>
+
+      </main>
 
       {/* ================================================================ */}
       {/* FOOTER                                                             */}
