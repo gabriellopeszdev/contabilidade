@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { ShieldCheck, Loader2, ExternalLink, LogOut } from 'lucide-react';
 
 import { useAuth } from '../../hooks/useAuth';
@@ -17,6 +17,14 @@ export function ConsentModal() {
   const [aceitando, setAceitando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [sessaoExpirada, setSessaoExpirada] = useState(false);
+
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (modalRef.current) {
+      modalRef.current.focus();
+    }
+  }, []);
 
   // Verifica se o consentimento é necessário
   const verificar = useCallback(async () => {
@@ -75,15 +83,25 @@ export function ConsentModal() {
   if (verificando || !necessario || !usuario) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 sm:p-8 space-y-5 animate-in fade-in zoom-in-95 duration-300">
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+      onKeyDown={(e) => { if (e.key === 'Escape') { /* modal bloqueante — usuário deve aceitar os termos */ } }}
+    >
+      <div
+        ref={modalRef}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-lgpd-titulo"
+        className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 sm:p-8 space-y-5 animate-in fade-in zoom-in-95 duration-300 focus:outline-none"
+      >
         {/* Header */}
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center">
             <ShieldCheck size={20} className="text-violet-600" />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-gray-900">
+            <h2 id="modal-lgpd-titulo" className="text-lg font-bold text-gray-900">
               Política de Privacidade e Termos
             </h2>
             <p className="text-xs text-gray-500">
