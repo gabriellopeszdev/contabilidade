@@ -83,16 +83,19 @@ export default function WebhookLogsPage() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-slate-800">
-              <th className="px-5 py-3 text-left text-xs font-medium text-slate-400">Evento</th>
-              <th className="px-5 py-3 text-left text-xs font-medium text-slate-400">ID do Recurso</th>
-              <th className="px-5 py-3 text-right text-xs font-medium text-slate-400">Recebido em</th>
+              <th scope="col" className="px-5 py-3 text-left text-xs font-medium text-slate-400">Evento</th>
+              <th scope="col" className="px-5 py-3 text-left text-xs font-medium text-slate-400">ID do Recurso</th>
+              <th scope="col" className="px-5 py-3 text-right text-xs font-medium text-slate-400">Recebido em</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-800/60">
             {loading ? (
               <tr>
                 <td colSpan={3} className="px-5 py-12 text-center">
-                  <Loader2 size={22} className="animate-spin text-violet-400 mx-auto" />
+                  <div role="status" className="flex flex-col items-center gap-2">
+                    <Loader2 size={22} className="animate-spin text-violet-400 mx-auto" />
+                    <span className="sr-only">Carregando...</span>
+                  </div>
                 </td>
               </tr>
             ) : logs.length === 0 ? (
@@ -141,6 +144,7 @@ export default function WebhookLogsPage() {
             <button
               onClick={() => carregar(page - 1)}
               disabled={page <= 1 || loading}
+              aria-label="Página anterior"
               className="p-2 rounded-lg border border-slate-700 text-slate-400 hover:text-white hover:border-slate-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronLeft size={15} />
@@ -148,6 +152,7 @@ export default function WebhookLogsPage() {
             <button
               onClick={() => carregar(page + 1)}
               disabled={page >= totalPages || loading}
+              aria-label="Próxima página"
               className="p-2 rounded-lg border border-slate-700 text-slate-400 hover:text-white hover:border-slate-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronRight size={15} />

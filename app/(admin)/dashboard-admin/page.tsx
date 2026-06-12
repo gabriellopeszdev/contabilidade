@@ -85,16 +85,18 @@ function KpiCard({ label, valor, sub, icon: Icon, cor, bg }: {
 export default function DashboardAdminPage() {
   const { token } = useAuth();
 
-  const [stats,    setStats]    = useState<Stats | null>(null);
-  const [webhooks, setWebhooks] = useState<WebhookLog[]>([]);
-  const [loading,  setLoading]  = useState(true);
-  const [erro,     setErro]     = useState<string | null>(null);
+  const [stats,     setStats]     = useState<Stats | null>(null);
+  const [webhooks,  setWebhooks]  = useState<WebhookLog[]>([]);
+  const [loading,   setLoading]   = useState(true);
+  const [erro,      setErro]      = useState<string | null>(null);
+  const [retryKey,  setRetryKey]  = useState(0);
 
   useEffect(() => {
     if (!token) return;
 
     (async () => {
       setLoading(true);
+      setErro(null);
       try {
         const [statsRes, wRes] = await Promise.all([
           fetch('/api/v1/admin/stats',                             { headers: { Authorization: `Bearer ${token}` } }),
@@ -114,21 +116,31 @@ export default function DashboardAdminPage() {
         setLoading(false);
       }
     })();
-  }, [token]);
+  }, [token, retryKey]);
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div role="status" className="flex items-center justify-center h-64">
         <Loader2 size={28} className="animate-spin text-violet-400" />
+        <span className="sr-only">Carregando...</span>
       </div>
     );
   }
 
   if (erro || !stats) {
     return (
-      <div className="flex items-center gap-3 bg-red-900/20 border border-red-700/40 text-red-400 rounded-xl px-5 py-4">
-        <AlertCircle size={18} />
-        <span className="text-sm">{erro ?? 'Sem dados.'}</span>
+      <div className="flex flex-col items-start gap-3 bg-red-900/20 border border-red-700/40 text-red-400 rounded-xl px-5 py-4">
+        <div className="flex items-center gap-3">
+          <AlertCircle size={18} />
+          <span className="text-sm">{erro ?? 'Sem dados.'}</span>
+        </div>
+        <button
+          type="button"
+          onClick={() => setRetryKey(k => k + 1)}
+          className="mt-2 px-4 py-2 text-sm font-semibold text-primary border border-primary rounded-lg hover:bg-primary/5 transition-colors"
+        >
+          Tentar novamente
+        </button>
       </div>
     );
   }

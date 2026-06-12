@@ -291,7 +291,7 @@ export default function InicioPagina() {
               </div>
               <Link
                 href="/documentos"
-                className="flex items-center gap-1 text-xs text-sky-600 dark:text-sky-400 hover:underline font-medium shrink-0"
+                className="flex items-center gap-1 text-xs text-primary dark:text-sky-400 hover:underline font-medium shrink-0"
               >
                 Ver todos <ChevronRight size={13} />
               </Link>
@@ -300,7 +300,7 @@ export default function InicioPagina() {
             {/* Loading */}
             {docsCarregando && (
               <div className="flex items-center justify-center gap-2 py-12 text-sm text-gray-400 dark:text-gray-500">
-                <Loader2 size={16} className="animate-spin" />
+                <Loader2 size={16} className="animate-spin" aria-hidden="true" />
                 Carregando…
               </div>
             )}
@@ -384,20 +384,22 @@ export default function InicioPagina() {
                             onClick={() => marcarComoLido(doc.id)}
                             disabled={isMarcando || isBaixando}
                             title="Marcar como lido"
+                            aria-label="Marcar como lido"
                             className="p-2 rounded-lg text-gray-300 dark:text-gray-600 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20
                               disabled:opacity-40 transition-colors"
                           >
-                            {isMarcando ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle size={14} />}
+                            {isMarcando ? <Loader2 size={14} className="animate-spin" aria-hidden="true" /> : <CheckCircle size={14} aria-hidden="true" />}
                           </button>
                         )}
                         <button
                           onClick={() => baixarDocumento(doc.id)}
                           disabled={isBaixando || isMarcando}
                           title="Baixar"
+                          aria-label="Baixar"
                           className="p-2 rounded-lg text-gray-300 dark:text-gray-600 hover:text-sky-500 hover:bg-sky-50 dark:hover:bg-sky-900/20
                             disabled:opacity-40 transition-colors"
                         >
-                          {isBaixando ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
+                          {isBaixando ? <Loader2 size={14} className="animate-spin" aria-hidden="true" /> : <Download size={14} aria-hidden="true" />}
                         </button>
                       </div>
                     </li>

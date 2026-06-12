@@ -28,10 +28,10 @@ export default function KanbanPage() {
       </div>
 
       {erroMsg && (
-        <div className="mb-4 flex items-center gap-3 rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 px-4 py-3 text-sm text-red-700 dark:text-red-400">
+        <div role="alert" className="mb-4 flex items-center gap-3 rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 px-4 py-3 text-sm text-red-700 dark:text-red-400">
           <AlertCircle size={16} className="shrink-0" />
           <span className="flex-1">{erroMsg}</span>
-          <button onClick={() => setErroMsg(null)} className="shrink-0 hover:opacity-70">
+          <button onClick={() => setErroMsg(null)} aria-label="Fechar alerta" className="shrink-0 hover:opacity-70">
             <X size={14} />
           </button>
         </div>

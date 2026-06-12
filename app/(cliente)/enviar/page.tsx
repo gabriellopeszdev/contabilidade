@@ -254,7 +254,7 @@ export default function EnviarPage() {
             >
               {/* Ícone com gradiente */}
               <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-4 transition-transform duration-200 group-hover:scale-110 bg-gradient-to-br ${cat.cor.gradient}`}>
-                <Icon size={26} className="text-white" />
+                <Icon size={26} className="text-white" aria-hidden="true" />
               </div>
 
               {/* Título */}
@@ -274,9 +274,9 @@ export default function EnviarPage() {
 
               {/* CTA */}
               <div className="mt-4 flex items-center gap-1 text-xs font-semibold text-gray-400 dark:text-gray-500 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors">
-                <CloudUpload size={13} />
+                <CloudUpload size={13} aria-hidden="true" />
                 Enviar
-                <ChevronRight size={12} className="group-hover:translate-x-0.5 transition-transform" />
+                <ChevronRight size={12} className="group-hover:translate-x-0.5 transition-transform" aria-hidden="true" />
               </div>
             </button>
           );
@@ -300,7 +300,9 @@ export default function EnviarPage() {
 
         {loadingHistorico ? (
           <div className="py-10 flex justify-center">
-            <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+            <div role="status" aria-label="Carregando" className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin">
+              <span className="sr-only">Carregando...</span>
+            </div>
           </div>
         ) : enviosRecentes.length === 0 ? (
           <div className="py-12 text-center">
