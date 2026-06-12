@@ -599,10 +599,10 @@ export default function LandingPage() {
                     Para esse faturamento o <span className="text-violet-300 font-semibold">Lucro Presumido</span> costuma ser mais vantajoso que o Simples (alíquota efetiva maior no Anexo I)…
                   </div>
                 </div>
-                <div className="flex gap-1 pl-7 items-center text-slate-600">
-                  <span className="w-1.5 h-1.5 rounded-full bg-slate-600 animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <span className="w-1.5 h-1.5 rounded-full bg-slate-600 animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <span className="w-1.5 h-1.5 rounded-full bg-slate-600 animate-bounce" style={{ animationDelay: '300ms' }} />
+                <div className="flex gap-1 pl-7 items-center text-slate-400">
+                  <span className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <span className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <span className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: '300ms' }} />
                 </div>
               </div>
             </div>
@@ -742,9 +742,9 @@ export default function LandingPage() {
                       {f.ok ? (
                         <CheckCircle2 size={15} className={`mt-0.5 shrink-0 ${'destaque' in f && f.destaque ? 'text-violet-400' : 'text-emerald-400'}`} />
                       ) : (
-                        <XCircle size={15} className="text-slate-700 mt-0.5 shrink-0" />
+                        <XCircle size={15} className="text-slate-500 mt-0.5 shrink-0" aria-hidden="true" />
                       )}
-                      <span className={f.ok ? ('destaque' in f && f.destaque ? 'text-violet-300 font-semibold' : 'text-slate-300') : 'text-slate-600'}>
+                      <span className={f.ok ? ('destaque' in f && f.destaque ? 'text-violet-300 font-semibold' : 'text-slate-300') : 'text-slate-400'}>
                         {f.label}
                       </span>
                     </li>
@@ -830,7 +830,7 @@ export default function LandingPage() {
             {dashLabel ?? 'Entrar na plataforma'}
             <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
           </Link>
-          <p className="text-slate-600 text-sm mt-6">Sistema self-hosted · LGPD Compliant · Open Source</p>
+          <p className="text-slate-400 text-sm mt-6">Sistema self-hosted · LGPD Compliant · Open Source</p>
         </div>
       </section>
 
@@ -841,12 +841,12 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <FiscoHubLogo size="sm" className="[&_span]:!text-white" />
-            <span className="text-slate-600 text-sm hidden sm:block">© {new Date().getFullYear()} · Sistema self-hosted · LGPD Compliant</span>
+            <span className="text-slate-400 text-sm hidden sm:block">© {new Date().getFullYear()} · Sistema self-hosted · LGPD Compliant</span>
           </div>
-          <div className="flex items-center gap-5 text-xs text-slate-600">
-            <a href="/privacidade" className="hover:text-slate-400 transition-colors">Política de Privacidade</a>
-            <span>·</span>
-            <a href="/termos" className="hover:text-slate-400 transition-colors">Termos de Uso</a>
+          <div className="flex items-center gap-5 text-xs text-slate-400">
+            <a href="/privacidade" className="hover:text-white transition-colors">Política de Privacidade</a>
+            <span aria-hidden="true">·</span>
+            <a href="/termos" className="hover:text-white transition-colors">Termos de Uso</a>
           </div>
         </div>
       </footer>
