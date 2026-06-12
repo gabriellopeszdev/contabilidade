@@ -311,7 +311,8 @@ export default function ContadorLayout({ children }: { children: React.ReactNode
                         key={item.href}
                         title={title}
                         aria-disabled="true"
-                        role="link"
+                        role="button"
+                        tabIndex={-1}
                         className={`
                           flex items-center rounded-lg text-sm font-medium cursor-not-allowed opacity-50
                           ${colapsada ? 'justify-center py-2.5' : 'gap-3 px-3 py-2.5'}
