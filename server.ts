@@ -100,7 +100,8 @@ app.prepare().then(async () => {
 
   const httpServer = createServer((req, res) => {
     // Compressão gzip/deflate automática para todas as respostas
-    compress(req, res, () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    compress(req as any, res as any, () => {
       // parse(url, true) → querystring como objeto (necessário para o router)
       const parsedUrl = parse(req.url ?? '/', true);
       loggingHandler(req, res, parsedUrl);
