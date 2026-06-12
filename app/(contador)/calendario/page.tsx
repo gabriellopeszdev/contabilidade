@@ -347,6 +347,7 @@ export default function CalendarioPage() {
           <div className="flex items-center justify-between mb-5">
             <button
               onClick={mesAnterior}
+              aria-label="Mês anterior"
               className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
               <ChevronLeft size={18} className="text-gray-600 dark:text-gray-400" />
@@ -356,6 +357,7 @@ export default function CalendarioPage() {
             </h2>
             <button
               onClick={mesSeguinte}
+              aria-label="Próximo mês"
               className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
               <ChevronRight size={18} className="text-gray-600 dark:text-gray-400" />
@@ -614,15 +616,15 @@ export default function CalendarioPage() {
             <h3 className="text-xs font-bold text-gray-700 dark:text-gray-300 mb-2">Legenda</h3>
             <div className="space-y-1.5">
               <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#3b82f6]" />
+                <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
                 <span className="text-[11px] text-gray-600 dark:text-gray-400">Obrigação Fiscal</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#6366f1]" />
+                <span className="w-2.5 h-2.5 rounded-full bg-indigo-500" />
                 <span className="text-[11px] text-gray-600 dark:text-gray-400">Tarefa Kanban</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#ef4444]" />
+                <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
                 <span className="text-[11px] text-gray-600 dark:text-gray-400">Urgente (vence em 3 dias, pendente)</span>
               </div>
             </div>
@@ -640,6 +642,7 @@ export default function CalendarioPage() {
               <h3 className="text-base font-bold text-gray-900 dark:text-gray-100">Nova Obrigação Fiscal</h3>
               <button
                 onClick={() => setModalAberto(false)}
+                aria-label="Fechar modal"
                 className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
               >
                 <X size={18} className="text-gray-400 dark:text-gray-500" />
