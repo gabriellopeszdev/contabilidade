@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Plus,
   Building2,
@@ -111,6 +111,8 @@ function ModalCriarContador({ onClose, onCriado, token }: ModalCriarContadorProp
   const [erros,    setErros]    = useState<string[]>([]);
   const [enviando, setEnviando] = useState(false);
   const [planos,   setPlanos]   = useState<PlanoDTO[]>([]);
+  const modalRef = useRef<HTMLDivElement>(null);
+  useEffect(() => { if (modalRef.current) modalRef.current.focus(); }, []);
 
   useEffect(() => {
     fetch('/api/v1/planos')
@@ -195,14 +197,25 @@ function ModalCriarContador({ onClose, onCriado, token }: ModalCriarContadorProp
   };
 
   return (
-    <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
-      <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
+    <div
+      className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
+      onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }}
+    >
+      <div
+        ref={modalRef}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-criar-contador-titulo"
+        className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl focus:outline-none"
+      >
 
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
-          <h2 className="text-sm font-bold text-white">Novo Contador / Escritório</h2>
+          <h2 id="modal-criar-contador-titulo" className="text-sm font-bold text-white">Novo Contador / Escritório</h2>
           <button
             onClick={onClose}
+            aria-label="Fechar modal"
             className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
           >
             <X size={16} />
@@ -225,10 +238,11 @@ function ModalCriarContador({ onClose, onCriado, token }: ModalCriarContadorProp
 
           <div className="grid grid-cols-2 gap-3">
             <div className="col-span-2">
-              <label className="block text-[11px] font-medium text-slate-400 mb-1">
+              <label htmlFor="criar-nome" className="block text-[11px] font-medium text-slate-400 mb-1">
                 Nome completo *
               </label>
               <input
+                id="criar-nome"
                 name="name"
                 value={form.name}
                 onChange={handleChange}
@@ -238,8 +252,9 @@ function ModalCriarContador({ onClose, onCriado, token }: ModalCriarContadorProp
             </div>
 
             <div className="col-span-2">
-              <label className="block text-[11px] font-medium text-slate-400 mb-1">E-mail *</label>
+              <label htmlFor="criar-email" className="block text-[11px] font-medium text-slate-400 mb-1">E-mail *</label>
               <input
+                id="criar-email"
                 name="email"
                 type="email"
                 value={form.email}
@@ -250,8 +265,9 @@ function ModalCriarContador({ onClose, onCriado, token }: ModalCriarContadorProp
             </div>
 
             <div>
-              <label className="block text-[11px] font-medium text-slate-400 mb-1">CRC *</label>
+              <label htmlFor="criar-crc" className="block text-[11px] font-medium text-slate-400 mb-1">CRC *</label>
               <input
+                id="criar-crc"
                 name="crc"
                 value={form.crc}
                 onChange={handleChange}
@@ -261,10 +277,11 @@ function ModalCriarContador({ onClose, onCriado, token }: ModalCriarContadorProp
             </div>
 
             <div>
-              <label className="block text-[11px] font-medium text-slate-400 mb-1">
+              <label htmlFor="criar-senha-provisoria" className="block text-[11px] font-medium text-slate-400 mb-1">
                 Senha provisória *
               </label>
               <input
+                id="criar-senha-provisoria"
                 name="senhaProvisoria"
                 type="password"
                 value={form.senhaProvisoria}
@@ -275,10 +292,11 @@ function ModalCriarContador({ onClose, onCriado, token }: ModalCriarContadorProp
             </div>
 
             <div className="col-span-2">
-              <label className="block text-[11px] font-medium text-slate-400 mb-1">
+              <label htmlFor="criar-nome-escritorio" className="block text-[11px] font-medium text-slate-400 mb-1">
                 Nome do escritório *
               </label>
               <input
+                id="criar-nome-escritorio"
                 name="nomeEscritorio"
                 value={form.nomeEscritorio}
                 onChange={handleChange}
@@ -288,11 +306,12 @@ function ModalCriarContador({ onClose, onCriado, token }: ModalCriarContadorProp
             </div>
 
             <div className="col-span-2">
-              <label className="block text-[11px] font-medium text-slate-400 mb-1">
+              <label htmlFor="criar-cnpj" className="block text-[11px] font-medium text-slate-400 mb-1">
                 CNPJ do escritório
                 <span className="text-slate-600 ml-1">(opcional)</span>
               </label>
               <input
+                id="criar-cnpj"
                 name="cnpjEscritorio"
                 value={form.cnpjEscritorio}
                 onChange={handleChange}
@@ -304,10 +323,11 @@ function ModalCriarContador({ onClose, onCriado, token }: ModalCriarContadorProp
 
             {planos.length > 0 && (
               <div className="col-span-2">
-                <label className="block text-[11px] font-medium text-slate-400 mb-1">
+                <label htmlFor="criar-plano" className="block text-[11px] font-medium text-slate-400 mb-1">
                   Plano de trial <span className="text-slate-500">(7 dias gratuitos)</span>
                 </label>
                 <select
+                  id="criar-plano"
                   name="planoId"
                   value={form.planoId}
                   onChange={(e) => setForm((f) => ({ ...f, planoId: e.target.value }))}
@@ -323,10 +343,11 @@ function ModalCriarContador({ onClose, onCriado, token }: ModalCriarContadorProp
             )}
 
             <div className="col-span-2">
-              <label className="block text-[11px] font-medium text-slate-400 mb-1">
+              <label htmlFor="criar-provider-assinatura" className="block text-[11px] font-medium text-slate-400 mb-1">
                 Provedor de Assinatura *
               </label>
               <select
+                id="criar-provider-assinatura"
                 name="providerAssinatura"
                 value={form.providerAssinatura}
                 onChange={(e) => setForm((f) => ({ ...f, providerAssinatura: e.target.value }))}
@@ -386,6 +407,8 @@ function ModalEditarContador({ contador, onClose, onSalvo, token }: ModalEditarC
   const [erros,    setErros]    = useState<Record<string, string>>({});
   const [enviando, setEnviando] = useState(false);
   const [erro,     setErro]     = useState('');
+  const modalRef = useRef<HTMLDivElement>(null);
+  useEffect(() => { if (modalRef.current) modalRef.current.focus(); }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
@@ -425,31 +448,45 @@ function ModalEditarContador({ contador, onClose, onSalvo, token }: ModalEditarC
     }
   };
 
-  const field = (name: keyof typeof form, label: string, type = 'text', placeholder = '') => (
-    <div>
-      <label className="block text-[11px] font-medium text-slate-400 mb-1">{label}</label>
-      <input
-        name={name}
-        type={type}
-        value={form[name]}
-        onChange={handleChange}
-        placeholder={placeholder}
-        className={`w-full bg-slate-800 border rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-violet-500 ${erros[name] ? 'border-red-500' : 'border-slate-700'}`}
-      />
-      {erros[name] && <p className="text-xs text-red-400 mt-1">{erros[name]}</p>}
-    </div>
-  );
+  const field = (name: keyof typeof form, label: string, type = 'text', placeholder = '') => {
+    const fieldId = `editar-${name.replace(/([A-Z])/g, (m) => `-${m.toLowerCase()}`)}`;
+    return (
+      <div>
+        <label htmlFor={fieldId} className="block text-[11px] font-medium text-slate-400 mb-1">{label}</label>
+        <input
+          id={fieldId}
+          name={name}
+          type={type}
+          value={form[name]}
+          onChange={handleChange}
+          placeholder={placeholder}
+          className={`w-full bg-slate-800 border rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-violet-500 ${erros[name] ? 'border-red-500' : 'border-slate-700'}`}
+        />
+        {erros[name] && <p className="text-xs text-red-400 mt-1">{erros[name]}</p>}
+      </div>
+    );
+  };
 
   return (
-    <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
-      <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
+    <div
+      className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
+      onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }}
+    >
+      <div
+        ref={modalRef}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-editar-contador-titulo"
+        className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl focus:outline-none"
+      >
 
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
           <div>
-            <h2 className="text-sm font-bold text-white">Editar Escritório</h2>
+            <h2 id="modal-editar-contador-titulo" className="text-sm font-bold text-white">Editar Escritório</h2>
             <p className="text-xs text-slate-400 mt-0.5">{contador.name}</p>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800">
+          <button onClick={onClose} aria-label="Fechar modal" className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800">
             <X size={16} />
           </button>
         </div>
@@ -473,8 +510,9 @@ function ModalEditarContador({ contador, onClose, onSalvo, token }: ModalEditarC
           {field('nomeEscritorio', 'Nome do escritório *',  'text',  'Silva & Associados')}
 
           <div>
-            <label className="block text-[11px] font-medium text-slate-400 mb-1">Provedor de Assinatura *</label>
+            <label htmlFor="editar-provider-assinatura" className="block text-[11px] font-medium text-slate-400 mb-1">Provedor de Assinatura *</label>
             <select
+              id="editar-provider-assinatura"
               name="providerAssinatura"
               value={form.providerAssinatura}
               onChange={(e) => setForm((f) => ({ ...f, providerAssinatura: e.target.value as any }))}
@@ -519,6 +557,8 @@ function ModalAsaas({ contador, onClose, onSalvo, token }: ModalAsaasProps) {
   const [salvando, setSalvando] = useState(false);
   const [erro,     setErro]     = useState('');
   const [sucesso,  setSucesso]  = useState('');
+  const modalRef = useRef<HTMLDivElement>(null);
+  useEffect(() => { if (modalRef.current) modalRef.current.focus(); }, []);
 
   const handleSalvar = async () => {
     setErro('');
@@ -568,15 +608,25 @@ function ModalAsaas({ contador, onClose, onSalvo, token }: ModalAsaasProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
-      <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
+    <div
+      className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
+      onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }}
+    >
+      <div
+        ref={modalRef}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-asaas-titulo"
+        className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl focus:outline-none"
+      >
 
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
           <div>
-            <h2 className="text-sm font-bold text-white">Integração Asaas</h2>
+            <h2 id="modal-asaas-titulo" className="text-sm font-bold text-white">Integração Asaas</h2>
             <p className="text-xs text-slate-400 mt-0.5">{contador.name}</p>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800">
+          <button onClick={onClose} aria-label="Fechar modal" className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800">
             <X size={16} />
           </button>
         </div>
@@ -603,11 +653,12 @@ function ModalAsaas({ contador, onClose, onSalvo, token }: ModalAsaasProps) {
           )}
 
           <div>
-            <label className="block text-[11px] font-medium text-slate-400 mb-1">
+            <label htmlFor="asaas-apikey" className="block text-[11px] font-medium text-slate-400 mb-1">
               API Key do Asaas
               <span className="text-slate-600 ml-1">(deixe vazio para remover)</span>
             </label>
             <input
+              id="asaas-apikey"
               type="password"
               value={apiKey}
               onChange={(e) => { setApiKey(e.target.value); setErro(''); setSucesso(''); }}
@@ -671,6 +722,8 @@ function ModalCora({ contador, onClose, onSalvo, token }: ModalCoraProps) {
   const [salvando,       setSalvando]       = useState(false);
   const [erro,           setErro]           = useState('');
   const [sucesso,        setSucesso]        = useState('');
+  const modalRef = useRef<HTMLDivElement>(null);
+  useEffect(() => { if (modalRef.current) modalRef.current.focus(); }, []);
 
   const limparMsgs = () => { setErro(''); setSucesso(''); };
 
@@ -723,15 +776,25 @@ function ModalCora({ contador, onClose, onSalvo, token }: ModalCoraProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
-      <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-lg shadow-2xl">
+    <div
+      className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
+      onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }}
+    >
+      <div
+        ref={modalRef}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-cora-titulo"
+        className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-lg shadow-2xl focus:outline-none"
+      >
 
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
           <div>
-            <h2 className="text-sm font-bold text-white">Integração Cora</h2>
+            <h2 id="modal-cora-titulo" className="text-sm font-bold text-white">Integração Cora</h2>
             <p className="text-xs text-slate-400 mt-0.5">{contador.name}</p>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800">
+          <button onClick={onClose} aria-label="Fechar modal" className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800">
             <X size={16} />
           </button>
         </div>
@@ -762,8 +825,9 @@ function ModalCora({ contador, onClose, onSalvo, token }: ModalCoraProps) {
 
           {/* Client ID */}
           <div>
-            <label className="block text-[11px] font-medium text-slate-400 mb-1">Client ID *</label>
+            <label htmlFor="cora-clientid" className="block text-[11px] font-medium text-slate-400 mb-1">Client ID *</label>
             <input
+              id="cora-clientid"
               type="text"
               value={clientId}
               onChange={(e) => { setClientId(e.target.value); limparMsgs(); }}
@@ -774,10 +838,11 @@ function ModalCora({ contador, onClose, onSalvo, token }: ModalCoraProps) {
 
           {/* Certificado PEM */}
           <div>
-            <label className="block text-[11px] font-medium text-slate-400 mb-1">
+            <label htmlFor="cora-certificate" className="block text-[11px] font-medium text-slate-400 mb-1">
               Certificado TLS (PEM) *
             </label>
             <textarea
+              id="cora-certificate"
               value={certificatePem}
               onChange={(e) => { setCertificatePem(e.target.value); limparMsgs(); }}
               placeholder={'-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----'}
@@ -788,10 +853,11 @@ function ModalCora({ contador, onClose, onSalvo, token }: ModalCoraProps) {
 
           {/* Chave privada PEM */}
           <div>
-            <label className="block text-[11px] font-medium text-slate-400 mb-1">
+            <label htmlFor="cora-clientsecret" className="block text-[11px] font-medium text-slate-400 mb-1">
               Chave Privada (PEM) *
             </label>
             <textarea
+              id="cora-clientsecret"
               value={privateKeyPem}
               onChange={(e) => { setPrivateKeyPem(e.target.value); limparMsgs(); }}
               placeholder={'-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----'}
@@ -854,6 +920,8 @@ function ModalIa({ contador, onClose, onSalvo, token }: ModalIaProps) {
   const [removendo,   setRemovendo]   = useState(false);
   const [erro,        setErro]        = useState('');
   const [sucesso,     setSucesso]     = useState('');
+  const modalRef = useRef<HTMLDivElement>(null);
+  useEffect(() => { if (modalRef.current) modalRef.current.focus(); }, []);
 
   const KEY_LINKS: Record<IaProvider, string> = {
     anthropic: 'console.anthropic.com',
@@ -910,15 +978,25 @@ function ModalIa({ contador, onClose, onSalvo, token }: ModalIaProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
-      <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
+    <div
+      className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
+      onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }}
+    >
+      <div
+        ref={modalRef}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-ia-titulo"
+        className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl focus:outline-none"
+      >
 
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
           <div>
-            <h2 className="text-sm font-bold text-white">IA do Calendário Fiscal</h2>
+            <h2 id="modal-ia-titulo" className="text-sm font-bold text-white">IA do Calendário Fiscal</h2>
             <p className="text-xs text-slate-400 mt-0.5">{contador.name}</p>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800">
+          <button onClick={onClose} aria-label="Fechar modal" className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800">
             <X size={16} />
           </button>
         </div>
@@ -980,8 +1058,10 @@ function ModalIa({ contador, onClose, onSalvo, token }: ModalIaProps) {
           {/* Config personalizada */}
           {!usarPadrao && (
             <>
-              <div className="space-y-2">
-                <p className="text-[11px] font-medium text-slate-400">Provedor</p>
+              <fieldset>
+                <legend className="block text-[11px] font-medium text-slate-400 mb-2">
+                  Provedor de IA
+                </legend>
                 <div className="grid grid-cols-2 gap-2">
                   {IA_PROVIDERS.map((p) => (
                     <label key={p.id} className={`flex items-start gap-2 p-2.5 rounded-lg border cursor-pointer transition-colors ${provider === p.id ? 'border-violet-500 bg-violet-900/20' : 'border-slate-700 bg-slate-800 hover:border-slate-600'}`}>
@@ -1000,15 +1080,16 @@ function ModalIa({ contador, onClose, onSalvo, token }: ModalIaProps) {
                     </label>
                   ))}
                 </div>
-              </div>
+              </fieldset>
 
               <div className="space-y-1.5">
-                <label className="block text-[11px] font-medium text-slate-400">
+                <label htmlFor="ia-apikey" className="block text-[11px] font-medium text-slate-400">
                   Chave de API
                   {contador.iaPersonalizada && <span className="text-slate-500 font-normal ml-1">(deixe em branco para manter)</span>}
                 </label>
                 <div className="relative">
                   <input
+                    id="ia-apikey"
                     type={mostrarKey ? 'text' : 'password'}
                     value={apiKey}
                     onChange={(e) => setApiKey(e.target.value)}
@@ -1019,6 +1100,7 @@ function ModalIa({ contador, onClose, onSalvo, token }: ModalIaProps) {
                   <button
                     type="button"
                     onClick={() => setMostrarKey((v) => !v)}
+                    aria-label={mostrarKey ? 'Ocultar senha' : 'Mostrar senha'}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
                     tabIndex={-1}
                   >
@@ -1247,6 +1329,8 @@ function ModalAlterarSenha({ contador, onClose, token }: ModalAlterarSenhaProps)
   const [salvando,     setSalvando]     = useState(false);
   const [erro,         setErro]         = useState('');
   const [sucesso,      setSucesso]      = useState('');
+  const modalRef = useRef<HTMLDivElement>(null);
+  useEffect(() => { if (modalRef.current) modalRef.current.focus(); }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1275,15 +1359,25 @@ function ModalAlterarSenha({ contador, onClose, token }: ModalAlterarSenhaProps)
   };
 
   return (
-    <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
-      <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
+    <div
+      className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
+      onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }}
+    >
+      <div
+        ref={modalRef}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-senha-titulo"
+        className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl focus:outline-none"
+      >
 
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
           <div>
-            <h2 className="text-sm font-bold text-white">Redefinir Senha</h2>
+            <h2 id="modal-senha-titulo" className="text-sm font-bold text-white">Redefinir Senha</h2>
             <p className="text-xs text-slate-400 mt-0.5">{contador.name}</p>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800">
+          <button onClick={onClose} aria-label="Fechar modal" className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800">
             <X size={16} />
           </button>
         </div>
@@ -1304,9 +1398,10 @@ function ModalAlterarSenha({ contador, onClose, token }: ModalAlterarSenhaProps)
 
           <div className="space-y-3">
             <div>
-              <label className="block text-[11px] font-medium text-slate-400 mb-1">Nova senha *</label>
+              <label htmlFor="senha-nova" className="block text-[11px] font-medium text-slate-400 mb-1">Nova senha *</label>
               <div className="relative">
                 <input
+                  id="senha-nova"
                   type={mostrar ? 'text' : 'password'}
                   value={novaSenha}
                   onChange={(e) => { setNovaSenha(e.target.value); setErro(''); }}
@@ -1317,6 +1412,7 @@ function ModalAlterarSenha({ contador, onClose, token }: ModalAlterarSenhaProps)
                 <button
                   type="button"
                   onClick={() => setMostrar((v) => !v)}
+                  aria-label={mostrar ? 'Ocultar senha' : 'Mostrar senha'}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
                   tabIndex={-1}
                 >
@@ -1325,8 +1421,9 @@ function ModalAlterarSenha({ contador, onClose, token }: ModalAlterarSenhaProps)
               </div>
             </div>
             <div>
-              <label className="block text-[11px] font-medium text-slate-400 mb-1">Confirmar senha *</label>
+              <label htmlFor="senha-confirmar" className="block text-[11px] font-medium text-slate-400 mb-1">Confirmar senha *</label>
               <input
+                id="senha-confirmar"
                 type={mostrar ? 'text' : 'password'}
                 value={confirmar}
                 onChange={(e) => { setConfirmar(e.target.value); setErro(''); }}
@@ -1565,6 +1662,7 @@ export default function ContadoresPage() {
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
             placeholder="Buscar por nome, e-mail, CRC ou escritório…"
+            aria-label="Buscar contadores"
             className="w-full bg-slate-900 border border-slate-700 rounded-lg pl-9 pr-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-violet-500"
           />
         </div>
@@ -1728,6 +1826,7 @@ export default function ContadoresPage() {
                           <button
                             onClick={() => setModalEditar(c)}
                             title="Editar dados"
+                            aria-label="Editar contador"
                             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors"
                           >
                             <Pencil size={12} />
@@ -1738,6 +1837,7 @@ export default function ContadoresPage() {
                           <button
                             onClick={() => setModalSenha(c)}
                             title="Redefinir senha"
+                            aria-label="Alterar senha"
                             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors"
                           >
                             <LockKeyhole size={12} />
@@ -1748,6 +1848,7 @@ export default function ContadoresPage() {
                           <button
                             onClick={() => setModalPlano(c)}
                             title="Alterar plano"
+                            aria-label="Gerenciar plano"
                             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border ${
                               c.planoNome
                                 ? 'text-violet-400 bg-violet-900/20 hover:bg-violet-900/40 border-violet-800/40'
@@ -1762,6 +1863,7 @@ export default function ContadoresPage() {
                           <button
                             onClick={() => setModalIa(c)}
                             title="Configurar IA do calendário fiscal"
+                            aria-label="Configurar IA"
                             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border ${
                               c.iaPersonalizada
                                 ? 'text-fuchsia-400 bg-fuchsia-900/20 hover:bg-fuchsia-900/40 border-fuchsia-800/40'
@@ -1776,6 +1878,7 @@ export default function ContadoresPage() {
                           <button
                             onClick={() => setModalAsaas(c)}
                             title="Configurar integração Asaas"
+                            aria-label="Configurar integração Asaas"
                             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border ${
                               c.asaasConfigurado
                                 ? 'text-emerald-400 bg-emerald-900/20 hover:bg-emerald-900/40 border-emerald-800/40'
@@ -1790,6 +1893,7 @@ export default function ContadoresPage() {
                           <button
                             onClick={() => setModalCora(c)}
                             title="Configurar integração Cora"
+                            aria-label="Configurar integração Cora"
                             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border ${
                               c.coraConfigurado
                                 ? 'text-blue-400 bg-blue-900/20 hover:bg-blue-900/40 border-blue-800/40'
@@ -1805,6 +1909,7 @@ export default function ContadoresPage() {
                             onClick={() => toggleStatus(c.id, c.isActive)}
                             disabled={toggling === c.id}
                             title={c.isActive ? 'Bloquear acesso' : 'Desbloquear acesso'}
+                            aria-label={c.isActive ? 'Bloquear acesso' : 'Desbloquear acesso'}
                             className={`
                               inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium
                               transition-colors disabled:opacity-50
