@@ -261,7 +261,11 @@ export class BullMQAdapter {
 
     // Scheduled jobs with empty payloads are dispatched by job.name
     if (job.name === 'verificar-lembretes') {
-      await verificarLembretesJob();
+      if (!this.emailService) {
+        this.logger.warn('[BullMQAdapter] emailService não injetado — verificar-lembretes ignorado.');
+        return;
+      }
+      await verificarLembretesJob(this.emailService);
       return;
     }
     if (job.name === 'gerar-obrigacoes-recorrentes') {

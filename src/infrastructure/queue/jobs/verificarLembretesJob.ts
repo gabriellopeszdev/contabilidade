@@ -1,10 +1,8 @@
 import { prisma } from '@/infrastructure/di/Container';
 import { lembreteObrigacaoHtml } from '@/infrastructure/email/templates/lembreteObrigacao';
-import { Resend } from 'resend';
+import type { IEmailService } from '@/domain/ports/IEmailService';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
-export async function verificarLembretesJob(): Promise<void> {
+export async function verificarLembretesJob(emailService: IEmailService): Promise<void> {
   const hoje = new Date();
   hoje.setHours(0, 0, 0, 0);
 
@@ -41,17 +39,17 @@ export async function verificarLembretesJob(): Promise<void> {
     const vencimentoStr = instancia.vencimento.toLocaleDateString('pt-BR');
 
     if (instancia.obrigacao.lembreteEmail && instancia.contador.email) {
-      await resend.emails.send({
-        from: process.env.RESEND_FROM_EMAIL ?? 'noreply@konto.app',
-        to: instancia.contador.email,
-        subject: `Lembrete: ${instancia.obrigacao.nome} vence em ${diasRestantes === 0 ? 'HOJE' : `${diasRestantes} dia(s)`}`,
-        html: lembreteObrigacaoHtml({
+      await emailService.enviar({
+        destinatario: instancia.contador.email,
+        assunto:      `Lembrete: ${instancia.obrigacao.nome} vence em ${diasRestantes === 0 ? 'HOJE' : `${diasRestantes} dia(s)`}`,
+        corpoHtml:    lembreteObrigacaoHtml({
           nomeContador:  instancia.contador.name,
           nomeObrigacao: instancia.obrigacao.nome,
           vencimento:    vencimentoStr,
           diasRestantes,
           appUrl:        process.env.NEXT_PUBLIC_APP_URL ?? '',
         }),
+        corpoTexto: `Olá ${instancia.contador.name}, a obrigação "${instancia.obrigacao.nome}" vence em ${vencimentoStr} (${diasRestantes === 0 ? 'HOJE' : `${diasRestantes} dia(s)`}).`,
       });
     }
 
