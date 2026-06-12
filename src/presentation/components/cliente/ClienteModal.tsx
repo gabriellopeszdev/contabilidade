@@ -290,7 +290,7 @@ export function ClienteModal({
               aria-invalid={!!erros.nome}
               aria-describedby={erros.nome ? 'erro-nome' : undefined}
               className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 dark:text-gray-100 placeholder:text-slate-400 dark:placeholder:text-gray-500
-                bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors
+                bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary transition-colors
                 ${erros.nome ? 'border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/20' : 'border-slate-300 dark:border-gray-600'}`}
             />
             {erros.nome && <p id="erro-nome" className="text-xs text-red-600">{erros.nome}</p>}
@@ -311,7 +311,7 @@ export function ClienteModal({
               aria-invalid={!!erros.email}
               aria-describedby={erros.email ? 'erro-email' : undefined}
               className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 dark:text-gray-100 placeholder:text-slate-400 dark:placeholder:text-gray-500
-                bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors
+                bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary transition-colors
                 ${erros.email ? 'border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/20' : 'border-slate-300 dark:border-gray-600'}`}
             />
             {erros.email && <p id="erro-email" className="text-xs text-red-600">{erros.email}</p>}
@@ -333,7 +333,7 @@ export function ClienteModal({
               aria-invalid={!!erros.cnpj}
               aria-describedby={erros.cnpj ? 'erro-cnpj' : undefined}
               className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 dark:text-gray-100 placeholder:text-slate-400 dark:placeholder:text-gray-500
-                bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors
+                bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary transition-colors
                 ${erros.cnpj ? 'border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/20' : 'border-slate-300 dark:border-gray-600'}`}
             />
             {erros.cnpj && <p id="erro-cnpj" className="text-xs text-red-600">{erros.cnpj}</p>}
@@ -352,7 +352,7 @@ export function ClienteModal({
               placeholder="(11) 99999-0000"
               maxLength={15}
               className="w-full rounded-lg border border-slate-300 dark:border-gray-600 px-3 py-2 text-sm text-slate-900 dark:text-gray-100
-                bg-white dark:bg-gray-800 placeholder:text-slate-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                bg-white dark:bg-gray-800 placeholder:text-slate-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
             />
           </div>
 
@@ -369,7 +369,7 @@ export function ClienteModal({
               placeholder="Ex: 6201-5/01"
               maxLength={10}
               className="w-full rounded-lg border border-slate-300 dark:border-gray-600 px-3 py-2 text-sm text-slate-900 dark:text-gray-100
-                bg-white dark:bg-gray-800 placeholder:text-slate-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                bg-white dark:bg-gray-800 placeholder:text-slate-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
             />
           </div>
 
@@ -383,7 +383,7 @@ export function ClienteModal({
               value={form.regimeTributario ?? ''}
               onChange={handleChange('regimeTributario')}
               className="w-full rounded-lg border border-slate-300 dark:border-gray-600 px-3 py-2 text-sm text-slate-900 dark:text-gray-100
-                bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors dark:[color-scheme:dark]"
+                bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary transition-colors dark:[color-scheme:dark]"
             >
               <option value="">Não informado</option>
               <option value="MEI">MEI</option>

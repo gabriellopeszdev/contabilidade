@@ -403,7 +403,7 @@ export default function CalendarioPage() {
                           ? 'text-gray-300 dark:text-gray-600 bg-gray-50/50 dark:bg-gray-800/50 border-transparent cursor-default'
                           : !selecionado
                           ? 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 border-transparent'
-                          : 'bg-blue-50 dark:bg-blue-900/20 border-blue-500 dark:border-blue-500 ring-1 ring-blue-500 dark:ring-blue-500',
+                          : 'bg-primary/5 dark:bg-primary/10 border-primary dark:border-primary ring-1 ring-primary dark:ring-primary',
                       ].join(' ')}
                     >
                       {/* Número do dia */}
@@ -637,9 +637,14 @@ export default function CalendarioPage() {
       {/* -------------------------------------------------------------------- */}
       {modalAberto && isDono && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 w-full max-w-md mx-4">
+          <div
+            className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 w-full max-w-md mx-4"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="modal-obrigacao-titulo"
+          >
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-700">
-              <h3 className="text-base font-bold text-gray-900 dark:text-gray-100">Nova Obrigação Fiscal</h3>
+              <h3 id="modal-obrigacao-titulo" className="text-base font-bold text-gray-900 dark:text-gray-100">Nova Obrigação Fiscal</h3>
               <button
                 onClick={() => setModalAberto(false)}
                 aria-label="Fechar modal"
