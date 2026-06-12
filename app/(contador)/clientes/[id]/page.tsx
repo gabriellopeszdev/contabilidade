@@ -33,6 +33,8 @@ import {
   Users,
 } from 'lucide-react';
 
+import { toast } from 'sonner';
+
 import { useAuth }       from '../../../../src/presentation/hooks/useAuth';
 import { usePlanoAtual } from '../../../../src/presentation/hooks/usePlanoAtual';
 import { ClienteDetalheReadOnly } from '../../../../src/presentation/components/cliente/ClienteDetalheReadOnly';
@@ -354,7 +356,7 @@ function ClienteDetalhesPageDono() {
 
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
-        alert(body.message ?? `Erro ao baixar: HTTP ${res.status}`);
+        toast.error(body.message ?? `Erro ao baixar: HTTP ${res.status}`);
         return;
       }
 
@@ -363,7 +365,7 @@ function ClienteDetalhesPageDono() {
       // Baixar via presigned URL do MinIO
       const fileRes = await fetch(url);
       if (!fileRes.ok) {
-        alert('Falha ao baixar o arquivo do storage.');
+        toast.error('Falha ao baixar o arquivo do storage.');
         return;
       }
 
@@ -382,7 +384,7 @@ function ClienteDetalhesPageDono() {
         mutate();
       }
     } catch (err) {
-      alert('Erro de conexão ao baixar o arquivo.');
+      toast.error('Erro de conexão ao baixar o arquivo.');
     } finally {
       setBaixandoId(null);
     }
@@ -405,7 +407,7 @@ function ClienteDetalhesPageDono() {
       const body = await res.json().catch(() => ({})) as { message?: string; linkAssinatura?: string; expiresAt?: string };
 
       if (!res.ok) {
-        alert(body.message ?? `Erro ao solicitar assinatura: HTTP ${res.status}`);
+        toast.error(body.message ?? `Erro ao solicitar assinatura: HTTP ${res.status}`);
         return;
       }
 
@@ -415,7 +417,7 @@ function ClienteDetalhesPageDono() {
         expiresAt: body.expiresAt ?? '',
       });
     } catch {
-      alert('Erro de conexão ao solicitar assinatura.');
+      toast.error('Erro de conexão ao solicitar assinatura.');
     } finally {
       setAssinandoId(null);
     }
@@ -448,14 +450,14 @@ function ClienteDetalhesPageDono() {
       const body = await res.json().catch(() => ({})) as { message?: string };
 
       if (!res.ok) {
-        alert(body.message ?? `Erro ao atualizar categoria: HTTP ${res.status}`);
+        toast.error(body.message ?? `Erro ao atualizar categoria: HTTP ${res.status}`);
         return false;
       }
 
       await mutate();
       return true;
     } catch {
-      alert('Erro de conexão ao atualizar categoria.');
+      toast.error('Erro de conexão ao atualizar categoria.');
       return false;
     } finally {
       setAtualizandoSetorId(null);
@@ -521,8 +523,7 @@ function ClienteDetalhesPageDono() {
       // Reset após sucesso
       setObrigacoesIa(null);
       setObrigacoesSelecionadas(new Set());
-      // Toast via alert simples (toast não importado nesta página)
-      alert(`${selecionadas.length} obrigação(ões) adicionada(s) ao calendário fiscal com sucesso!`);
+      toast.success(`${selecionadas.length} obrigação(ões) adicionada(s) ao calendário fiscal com sucesso!`);
     } catch {
       setIaErro('Erro ao adicionar obrigações. Tente novamente.');
     } finally {
@@ -891,6 +892,7 @@ function ClienteDetalhesPageDono() {
             {/* Input row */}
             <div className="flex items-end gap-2">
               <textarea
+                id="chat-input"
                 value={chatInput}
                 onChange={(e) => setChatInput(e.target.value)}
                 onKeyDown={(e) => {
@@ -901,6 +903,7 @@ function ClienteDetalhesPageDono() {
                 }}
                 placeholder="Pergunte algo sobre este cliente… (Enter para enviar)"
                 rows={2}
+                aria-label="Mensagem"
                 className="flex-1 px-3 py-2 text-sm rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-gray-800
                   text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500
                   focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none transition-colors"
@@ -913,6 +916,7 @@ function ClienteDetalhesPageDono() {
                   disabled:opacity-50 disabled:cursor-not-allowed transition-colors
                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                 title="Enviar mensagem"
+                aria-label="Enviar mensagem"
               >
                 {chatCarregando
                   ? <Loader2 size={16} className="animate-spin" />
@@ -1063,6 +1067,7 @@ function ClienteDetalhesPageDono() {
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
             placeholder="Buscar por nome do arquivo…"
+            aria-label="Buscar documento"
             className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-gray-800
               text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500
               focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
@@ -1076,6 +1081,7 @@ function ClienteDetalhesPageDono() {
           <select
             value={filtroSetor}
             onChange={(e) => setFiltroSetor(e.target.value as SetorTipo | '')}
+            aria-label="Filtrar por setor"
             className="px-3 py-2 text-xs font-medium rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-gray-800
               text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:[color-scheme:dark]"
           >
@@ -1089,6 +1095,7 @@ function ClienteDetalhesPageDono() {
           <select
             value={filtroLeitura}
             onChange={(e) => setFiltroLeitura(e.target.value as 'lido' | 'nao_lido' | '')}
+            aria-label="Filtrar por leitura"
             className="px-3 py-2 text-xs font-medium rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-gray-800
               text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:[color-scheme:dark]"
           >
@@ -1101,6 +1108,7 @@ function ClienteDetalhesPageDono() {
           <select
             value={filtroOrigem}
             onChange={(e) => setFiltroOrigem(e.target.value as Origem | '')}
+            aria-label="Filtrar por origem"
             className="px-3 py-2 text-xs font-medium rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-gray-800
               text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:[color-scheme:dark]"
           >
@@ -1238,6 +1246,7 @@ function ClienteDetalhesPageDono() {
                         onClick={() => handleDownload(doc)}
                         disabled={!!baixandoId || !!assinandoId}
                         title="Baixar arquivo"
+                        aria-label={`Baixar ${doc.fileName}`}
                         className="p-2 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50
                           disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       >
@@ -1253,6 +1262,7 @@ function ClienteDetalhesPageDono() {
                           onClick={() => handleSolicitarAssinatura(doc)}
                           disabled={!!baixandoId || !!assinandoId}
                           title="Solicitar assinatura"
+                          aria-label={`Solicitar assinatura de ${doc.fileName}`}
                           className="p-2 rounded-lg text-slate-400 hover:text-violet-600 hover:bg-violet-50
                             disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                         >
@@ -1270,6 +1280,7 @@ function ClienteDetalhesPageDono() {
                           <button
                             onClick={() => responsaveisPopoverId === doc.id ? setResponsaveisPopoverId(null) : abrirResponsaveisPopover(doc.id)}
                             title="Atribuir responsáveis"
+                            aria-label={`Atribuir responsáveis a ${doc.fileName}`}
                             className={[
                               'p-2 rounded-lg transition-colors',
                               responsaveisPopoverId === doc.id
@@ -1351,14 +1362,18 @@ function ClienteDetalhesPageDono() {
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
           onClick={() => setDocumentoDetalheId(null)}
+          onKeyDown={(e) => { if (e.key === 'Escape') setDocumentoDetalheId(null); }}
         >
           <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="modal-doc-titulo"
             className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-2xl border border-slate-200 dark:border-gray-700"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-gray-700">
               <div>
-                <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">Detalhes do Documento</h2>
+                <h2 id="modal-doc-titulo" className="text-sm font-bold text-slate-900 dark:text-slate-100">Detalhes do Documento</h2>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Clique em uma categoria para classificar o arquivo.</p>
               </div>
               <button
@@ -1459,8 +1474,12 @@ function ClienteDetalhesPageDono() {
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
           onClick={() => setModalAssinatura(null)}
+          onKeyDown={(e) => { if (e.key === 'Escape') setModalAssinatura(null); }}
         >
           <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="modal-assinatura-titulo"
             className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg border border-slate-200 dark:border-gray-700"
             onClick={(e) => e.stopPropagation()}
           >
@@ -1468,7 +1487,7 @@ function ClienteDetalhesPageDono() {
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-gray-700">
               <div className="flex items-center gap-2">
                 <PenLine size={18} className="text-violet-600" />
-                <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">Assinatura Solicitada</h2>
+                <h2 id="modal-assinatura-titulo" className="text-sm font-bold text-slate-900 dark:text-slate-100">Assinatura Solicitada</h2>
               </div>
               <button
                 onClick={() => setModalAssinatura(null)}
