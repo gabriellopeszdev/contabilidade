@@ -31,6 +31,7 @@ import {
   Lock,
   Plug,
   KeyRound,
+  Bell,
 } from 'lucide-react';
 
 import { useAuth } from '../../../src/presentation/hooks/useAuth';
@@ -40,7 +41,7 @@ import { validarEmail, validarTelefone, mascararTelefone } from '../../../src/ut
 // Tipos
 // =============================================================================
 
-type Aba = 'perfil' | 'seguranca' | 'escritorio' | 'white-label' | 'privacidade' | 'assinatura' | 'integracoes';
+type Aba = 'perfil' | 'seguranca' | 'escritorio' | 'white-label' | 'privacidade' | 'assinatura' | 'integracoes' | 'notificacoes';
 
 interface PerfilForm {
   nome:  string;
@@ -87,6 +88,7 @@ const ABAS: { id: Aba; label: string; icon: React.ReactNode }[] = [
   { id: 'privacidade',  label: 'Privacidade',  icon: <ShieldCheck size={18} /> },
   { id: 'assinatura',   label: 'Assinatura',   icon: <CreditCard  size={18} /> },
   { id: 'integracoes',  label: 'Integrações',  icon: <Plug        size={18} /> },
+  { id: 'notificacoes', label: 'Notificações', icon: <Bell        size={18} /> },
 ];
 
 // =============================================================================
@@ -228,6 +230,9 @@ export default function ConfiguracoesPage() {
               onSucesso={(msg) => mostrarToast('sucesso', msg)}
               onErro={(msg) => mostrarToast('erro', msg)}
             />
+          )}
+          {abaAtiva === 'notificacoes' && (
+            <NotificacoesTab token={token} />
           )}
         </>
       )}
@@ -2108,6 +2113,106 @@ function IntegracoesTab({
             )}
           </div>
         </>
+      )}
+    </div>
+  );
+}
+
+// =============================================================================
+// Tab: Notificações
+// =============================================================================
+
+function NotificacoesTab({ token }: { token: string | null }) {
+  const [notifEmailNovoDoc, setNotifEmailNovoDoc] = useState<boolean | null>(null);
+  const [carregando, setCarregando]               = useState(true);
+  const [salvando, setSalvando]                   = useState(false);
+  const [toastLocal, setToastLocal]               = useState<{ tipo: 'sucesso' | 'erro'; msg: string } | null>(null);
+
+  useEffect(() => {
+    if (!token) return;
+    fetch('/api/v1/auth/preferencias-notificacao', {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((r) => r.json())
+      .then((d) => setNotifEmailNovoDoc(d.notifEmailNovoDoc ?? true))
+      .catch(() => setNotifEmailNovoDoc(true))
+      .finally(() => setCarregando(false));
+  }, [token]);
+
+  const alternar = async (novoValor: boolean) => {
+    if (!token || salvando) return;
+    setSalvando(true);
+    setNotifEmailNovoDoc(novoValor);
+    try {
+      const res = await fetch('/api/v1/auth/preferencias-notificacao', {
+        method:  'PATCH',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ notifEmailNovoDoc: novoValor }),
+      });
+      if (!res.ok) throw new Error();
+      setToastLocal({ tipo: 'sucesso', msg: 'Preferência salva.' });
+    } catch {
+      setNotifEmailNovoDoc(!novoValor);
+      setToastLocal({ tipo: 'erro', msg: 'Erro ao salvar. Tente novamente.' });
+    } finally {
+      setSalvando(false);
+      setTimeout(() => setToastLocal(null), 3000);
+    }
+  };
+
+  if (carregando) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="animate-spin text-primary" size={28} />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Notificações por e-mail</h2>
+        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          Escolha quais eventos geram um e-mail para você.
+        </p>
+      </div>
+
+      <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 divide-y divide-slate-100 dark:divide-slate-700">
+        <div className="flex items-center justify-between px-4 py-4">
+          <div>
+            <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
+              Cliente enviou um documento
+            </p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              Receber e-mail quando um cliente fizer upload de arquivo.
+            </p>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={notifEmailNovoDoc ?? true}
+            aria-label="Receber e-mail quando cliente enviar documento"
+            disabled={salvando}
+            onClick={() => alternar(!(notifEmailNovoDoc ?? true))}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:opacity-50
+              ${(notifEmailNovoDoc ?? true) ? 'bg-primary' : 'bg-slate-300 dark:bg-slate-600'}`}
+          >
+            <span
+              className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform
+                ${(notifEmailNovoDoc ?? true) ? 'translate-x-6' : 'translate-x-1'}`}
+            />
+          </button>
+        </div>
+      </div>
+
+      {toastLocal && (
+        <div className={`fixed bottom-6 right-6 z-50 px-4 py-3 rounded-xl shadow-lg border text-sm font-medium
+          ${toastLocal.tipo === 'sucesso'
+            ? 'bg-green-50 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800'
+            : 'bg-red-50 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800'
+          }`}>
+          {toastLocal.msg}
+        </div>
       )}
     </div>
   );
