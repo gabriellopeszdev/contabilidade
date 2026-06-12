@@ -89,11 +89,16 @@ interface MetricCardProps {
   icone: React.ReactNode;
   cor:   string;
   carregando: boolean;
+  'aria-label'?: string;
 }
 
-function MetricCard({ label, valor, icone, cor, carregando }: MetricCardProps) {
+function MetricCard({ label, valor, icone, cor, carregando, 'aria-label': ariaLabel }: MetricCardProps) {
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-5 flex items-center gap-4">
+    <div
+      role="article"
+      aria-label={ariaLabel ?? `${label}: ${valor ?? 0}`}
+      className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-5 flex items-center gap-4"
+    >
       <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${cor}`}>
         {icone}
       </div>
@@ -114,17 +119,19 @@ function MetricCard({ label, valor, icone, cor, carregando }: MetricCardProps) {
 // =============================================================================
 
 interface QuickActionProps {
-  label:   string;
-  icone:   React.ReactNode;
-  cor:     string;
-  onClick: () => void;
+  label:      string;
+  icone:      React.ReactNode;
+  cor:        string;
+  onClick:    () => void;
+  ariaLabel?: string;
 }
 
-function QuickAction({ label, icone, cor, onClick }: QuickActionProps) {
+function QuickAction({ label, icone, cor, onClick, ariaLabel }: QuickActionProps) {
   return (
     <button
       type="button"
       onClick={onClick}
+      aria-label={ariaLabel ?? label}
       className={`
         flex items-center gap-3 px-5 py-3.5 rounded-xl text-sm font-semibold text-white
         transition-all shadow-sm hover:shadow-md active:scale-[0.98]
@@ -134,7 +141,7 @@ function QuickAction({ label, icone, cor, onClick }: QuickActionProps) {
     >
       {icone}
       {label}
-      <ArrowRight size={14} className="ml-auto opacity-70" />
+      <ArrowRight size={14} className="ml-auto opacity-70" aria-hidden="true" />
     </button>
   );
 }
@@ -230,7 +237,7 @@ function PlanUsageWidget({
     <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-5 space-y-4">
       {plan.isRestricted && (
         <div className="flex items-center gap-2 px-3 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
-          <AlertCircle size={14} className="text-red-500 shrink-0" />
+          <AlertCircle size={14} className="text-red-500 shrink-0" aria-hidden="true" />
           <p className="text-xs font-semibold text-red-700 dark:text-red-400">
             Assinatura suspensa ou cancelada
           </p>
@@ -239,7 +246,7 @@ function PlanUsageWidget({
 
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">Uso do Plano</h3>
-        <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-primary-50 text-primary dark:bg-primary/10 dark:text-primary-400">
+        <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-primary/5 text-primary dark:bg-primary/10 dark:text-primary-400">
           Plano {plan.planoNome}
         </span>
       </div>
@@ -288,7 +295,7 @@ function ObrigacoesCriticasWidget({ token }: { token: string | null }) {
   if (obrigacoes.length === 0) {
     return (
       <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-8 flex flex-col items-center justify-center gap-3 text-center">
-        <CheckCircle2 size={32} className="text-emerald-500" />
+        <CheckCircle2 size={32} className="text-emerald-500" aria-hidden="true" />
         <p className="text-sm text-gray-500 dark:text-gray-400">
           Sem obrigações críticas nos próximos 7 dias
         </p>
@@ -365,7 +372,7 @@ export function DashboardContadorDono({ token }: { token: string | null }) {
 
       {error ? (
         <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center gap-3">
-          <AlertCircle size={18} className="text-red-500 shrink-0" />
+          <AlertCircle size={18} className="text-red-500 shrink-0" aria-hidden="true" />
           <p className="text-sm text-red-700">Falha ao carregar métricas. Tente novamente.</p>
         </div>
       ) : (
@@ -395,7 +402,7 @@ export function DashboardContadorDono({ token }: { token: string | null }) {
             label="Clientes Ativos"
             valor={stats?.clientesAtivos}
             icone={<Users size={22} className="text-primary" />}
-            cor="bg-primary-50"
+            cor="bg-primary/5"
             carregando={isLoading}
           />
         </div>
@@ -406,13 +413,15 @@ export function DashboardContadorDono({ token }: { token: string | null }) {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <QuickAction
           label="Novo Upload em Lote"
-          icone={<Upload size={18} />}
+          ariaLabel="Ir para upload de documentos em lote"
+          icone={<Upload size={18} aria-hidden="true" />}
           cor="bg-primary hover:brightness-90 focus-visible:ring-primary"
           onClick={() => router.push('/lote')}
         />
         <QuickAction
           label="Adicionar Cliente"
-          icone={<UserPlus size={18} />}
+          ariaLabel="Ir para cadastro de novo cliente"
+          icone={<UserPlus size={18} aria-hidden="true" />}
           cor="bg-emerald-600 hover:bg-emerald-700 focus-visible:ring-emerald-500"
           onClick={() => router.push('/clientes')}
         />
@@ -420,7 +429,7 @@ export function DashboardContadorDono({ token }: { token: string | null }) {
 
       <section>
         <div className="flex items-center gap-2 mb-3">
-          <AlarmClock size={16} className="text-gray-400 dark:text-gray-500" />
+          <AlarmClock size={16} className="text-gray-400 dark:text-gray-500" aria-hidden="true" />
           <h2 className="text-sm font-bold text-gray-900 dark:text-gray-100">Obrigações Próximas</h2>
         </div>
         <ObrigacoesCriticasWidget token={token} />
@@ -431,12 +440,12 @@ export function DashboardContadorDono({ token }: { token: string | null }) {
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-6">
         <section>
           <div className="flex items-center gap-2 mb-3">
-            <ClipboardList size={16} className="text-gray-400 dark:text-gray-500" />
+            <ClipboardList size={16} className="text-gray-400 dark:text-gray-500" aria-hidden="true" />
             <h2 className="text-sm font-bold text-gray-900 dark:text-gray-100">Fluxo de Trabalho</h2>
           </div>
           <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-8 flex flex-col items-center justify-center gap-4 text-center">
             <div className="w-14 h-14 rounded-2xl bg-violet-50 dark:bg-violet-900/20 flex items-center justify-center">
-              <ClipboardList size={26} className="text-violet-600 dark:text-violet-400" />
+              <ClipboardList size={26} className="text-violet-600 dark:text-violet-400" aria-hidden="true" />
             </div>
             <div>
               <p className="text-base font-semibold text-gray-800 dark:text-gray-200">
@@ -449,10 +458,11 @@ export function DashboardContadorDono({ token }: { token: string | null }) {
             <button
               type="button"
               onClick={() => router.push('/kanban')}
+              aria-label="Abrir painel Kanban de tarefas"
               className="flex items-center gap-2 px-5 py-2.5 bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold rounded-xl transition-colors shadow-sm"
             >
               Abrir Kanban
-              <ArrowRight size={14} />
+              <ArrowRight size={14} aria-hidden="true" />
             </button>
           </div>
         </section>
