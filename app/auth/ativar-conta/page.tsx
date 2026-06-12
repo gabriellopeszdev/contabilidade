@@ -107,7 +107,7 @@ function AtivarContaContent() {
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8 max-w-md w-full">
         {/* Header */}
         <div className="text-center mb-6">
-          <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center mx-auto mb-4">
+          <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
             <KeyRound size={28} className="text-primary" />
           </div>
           <h1 className="text-xl font-bold text-gray-900">Ativar sua Conta</h1>
@@ -140,7 +140,6 @@ function AtivarContaContent() {
                 onClick={() => setMostrarSenha((v) => !v)}
                 aria-label={mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'}
                 className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                tabIndex={-1}
               >
                 {mostrarSenha ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
