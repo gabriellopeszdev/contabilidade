@@ -198,8 +198,8 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
 
   if (carregando) {
     return (
-      <div className="flex items-center justify-center h-screen bg-sky-50 dark:bg-gray-900">
-        <Loader2 size={32} className="animate-spin text-sky-600" />
+      <div className="flex items-center justify-center h-screen bg-gray-50 dark:bg-gray-900">
+        <Loader2 size={32} className="animate-spin text-primary" />
       </div>
     );
   }
@@ -353,7 +353,6 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
           <div className="hidden lg:flex items-center gap-2">
             <button
               onClick={toggleColapsada}
-              title={colapsada ? 'Expandir sidebar' : 'Recolher sidebar'}
               aria-label={colapsada ? 'Expandir sidebar' : 'Recolher sidebar'}
               className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
@@ -386,7 +385,6 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
             {/* Botão Central de Ajuda */}
             <button
               onClick={() => setHelpAberto(true)}
-              title="Ajuda & Tutoriais"
               aria-label="Ajuda & Tutoriais"
               className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
@@ -397,7 +395,6 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
             {darkMounted && (
               <button
                 onClick={toggleDark}
-                title={dark ? 'Modo claro' : 'Modo escuro'}
                 aria-label={dark ? 'Modo claro' : 'Modo escuro'}
                 className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               >
@@ -412,7 +409,6 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
                 className="relative min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                 aria-label={`Notificações${naoLidas > 0 ? ` — ${naoLidas} não lidas` : ''}`}
                 aria-expanded={notifAberto}
-                aria-haspopup="true"
               >
                 <Bell size={18} />
                 {naoLidas > 0 && (
@@ -446,14 +442,21 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
                       notificacoes.map((n) => (
                         <li
                           key={n.id}
-                          onClick={() => marcarComoLida(n.id)}
-                          className={`px-4 py-2.5 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${!n.lida ? 'bg-sky-50/40 dark:bg-sky-900/20' : ''}`}
+                          className={`${!n.lida ? 'bg-sky-50/40 dark:bg-sky-900/20' : ''}`}
                         >
-                          <p className="text-[11px] font-semibold text-gray-800 dark:text-gray-200">{n.titulo}</p>
-                          <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">{n.mensagem}</p>
-                          <p className="text-[9px] text-gray-300 dark:text-gray-600 mt-0.5">
-                            {n.createdAt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                          </p>
+                          <button
+                            type="button"
+                            onClick={() => marcarComoLida(n.id)}
+                            className="w-full text-left flex gap-3 p-3 hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors"
+                          >
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[11px] font-semibold text-gray-800 dark:text-gray-200">{n.titulo}</p>
+                              <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">{n.mensagem}</p>
+                              <p className="text-[9px] text-gray-300 dark:text-gray-600 mt-0.5">
+                                {n.createdAt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                              </p>
+                            </div>
+                          </button>
                         </li>
                       ))
                     )}
@@ -466,10 +469,9 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
             <div ref={userMenuRef} className="relative">
               <button
                 onClick={() => setUserMenuAberto((v) => !v)}
-                className="flex items-center gap-2 pl-2 pr-3 min-h-[44px] rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                aria-label="Menu do usuário"
+                className="flex items-center gap-2 pl-2 pr-3 min-h-[44px] min-w-[44px] rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                aria-label={`Menu de ${usuario.nome}`}
                 aria-expanded={userMenuAberto}
-                aria-haspopup="true"
               >
                 <div className="w-7 h-7 rounded-full bg-sky-100 dark:bg-sky-900/50 text-sky-700 dark:text-sky-400 flex items-center justify-center text-[10px] font-bold">
                   {iniciais}
