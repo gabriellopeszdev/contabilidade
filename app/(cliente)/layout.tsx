@@ -218,6 +218,14 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
   return (
     <div className="flex h-screen bg-sky-50/40 dark:bg-gray-950 overflow-hidden">
 
+      {/* Skip link */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:bg-primary focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:shadow-lg focus:outline-none"
+      >
+        Ir para o conteúdo
+      </a>
+
       {/* Overlay mobile */}
       {sidebarAberta && (
         <div
@@ -258,6 +266,7 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
               <button
                 className="ml-auto lg:hidden p-1 rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
                 onClick={() => setSidebarAberta(false)}
+                aria-label="Fechar menu"
               >
                 <X size={18} />
               </button>
@@ -288,12 +297,12 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
                         flex items-center rounded-lg text-sm font-medium transition-colors
                         ${colapsada ? 'justify-center py-2.5' : 'gap-3 px-3 py-2.5'}
                         ${ativo
-                          ? 'bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400'
+                          ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary'
                           : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
                         }
                       `}
                     >
-                      <span className={`shrink-0 ${ativo ? 'text-sky-600 dark:text-sky-400' : 'text-gray-400 dark:text-gray-500'}`}>
+                      <span className={`shrink-0 ${ativo ? 'text-primary' : 'text-gray-400 dark:text-gray-500'}`}>
                         {item.icon}
                       </span>
                       {!colapsada && item.label}
@@ -334,7 +343,7 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
         {/* Topbar */}
         <header className="h-14 bg-white dark:bg-gray-900 border-b border-sky-100 dark:border-gray-800 flex items-center justify-between px-4 sm:px-6 shrink-0 z-20">
           <button
-            className="lg:hidden p-2 -ml-2 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+            className="lg:hidden min-h-[44px] min-w-[44px] flex items-center justify-center -ml-2 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
             onClick={() => setSidebarAberta(true)}
             aria-label="Abrir menu"
           >
@@ -345,7 +354,8 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
             <button
               onClick={toggleColapsada}
               title={colapsada ? 'Expandir sidebar' : 'Recolher sidebar'}
-              className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              aria-label={colapsada ? 'Expandir sidebar' : 'Recolher sidebar'}
+              className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
               {colapsada ? <ChevronsRight size={18} /> : <ChevronsLeft size={18} />}
             </button>
@@ -377,7 +387,8 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
             <button
               onClick={() => setHelpAberto(true)}
               title="Ajuda & Tutoriais"
-              className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              aria-label="Ajuda & Tutoriais"
+              className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
               <HelpCircle size={18} />
             </button>
@@ -387,7 +398,8 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
               <button
                 onClick={toggleDark}
                 title={dark ? 'Modo claro' : 'Modo escuro'}
-                className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                aria-label={dark ? 'Modo claro' : 'Modo escuro'}
+                className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               >
                 {dark ? <Sun size={18} /> : <Moon size={18} />}
               </button>
@@ -397,8 +409,10 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
             <div ref={notifRef} className="relative">
               <button
                 onClick={() => setNotifAberto((v) => !v)}
-                className="relative p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                className="relative min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                 aria-label={`Notificações${naoLidas > 0 ? ` — ${naoLidas} não lidas` : ''}`}
+                aria-expanded={notifAberto}
+                aria-haspopup="true"
               >
                 <Bell size={18} />
                 {naoLidas > 0 && (
@@ -452,7 +466,10 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
             <div ref={userMenuRef} className="relative">
               <button
                 onClick={() => setUserMenuAberto((v) => !v)}
-                className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                className="flex items-center gap-2 pl-2 pr-3 min-h-[44px] rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                aria-label="Menu do usuário"
+                aria-expanded={userMenuAberto}
+                aria-haspopup="true"
               >
                 <div className="w-7 h-7 rounded-full bg-sky-100 dark:bg-sky-900/50 text-sky-700 dark:text-sky-400 flex items-center justify-center text-[10px] font-bold">
                   {iniciais}
@@ -483,7 +500,7 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
         </header>
 
         {/* Children */}
-        <main className="flex-1 overflow-y-auto">
+        <main id="main-content" className="flex-1 overflow-y-auto">
           {children}
         </main>
 
