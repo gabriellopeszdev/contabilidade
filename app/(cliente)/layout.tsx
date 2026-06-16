@@ -89,7 +89,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: 'Conta',
     items: [
-      { href: '/configuracoes', label: 'Configurações', icon: <Settings size={18} /> },
+      { href: '/conta', label: 'Configurações', icon: <Settings size={18} /> },
     ],
   },
   {
