@@ -83,11 +83,26 @@ function buildPrismaClient(): PrismaClient {
   // -------------------------------------------------------------------------
   const isDev = process.env.NODE_ENV === 'development';
 
-  const pool = new Pool({
-    connectionString:  process.env.DATABASE_URL,
-    max:               10,
-    idleTimeoutMillis: 30_000,
-  });
+  // Se POSTGRES_HOST estiver definido, usa opções separadas no Pool.
+  // Isso evita o bug do pg onde senha vazia na URL se torna `null`
+  // (pg faz `'' || null = null`) e o SASL lança "password must be a string".
+  // Caso contrário, usa DATABASE_URL diretamente (já validada pelo env.ts).
+  const pgPassword = process.env.POSTGRES_PASSWORD;
+  const pool = process.env.POSTGRES_HOST
+    ? new Pool({
+        user:     process.env.POSTGRES_USER || 'postgres',
+        ...(pgPassword ? { password: pgPassword } : {}),
+        host:     process.env.POSTGRES_HOST,
+        port:     parseInt(process.env.POSTGRES_PORT || '5432', 10),
+        database: process.env.POSTGRES_DB   || 'contabilidade',
+        max:               10,
+        idleTimeoutMillis: 30_000,
+      })
+    : new Pool({
+        connectionString: process.env.DATABASE_URL,
+        max:               10,
+        idleTimeoutMillis: 30_000,
+      });
 
   const adapter = new PrismaPg(pool);
 

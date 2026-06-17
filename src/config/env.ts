@@ -34,8 +34,17 @@ const envSchema = z.object({
 
   /** URL completa de conexão. Ex: postgresql://user:pass@host:5432/dbname */
   DATABASE_URL: z
-    .string({ required_error: 'DATABASE_URL é obrigatória.' })
-    .url('DATABASE_URL deve ser uma URL válida (postgresql://...).')
+    .string()
+    .optional()
+    .transform((val) => {
+      if (val) return val;
+      const user = process.env.POSTGRES_USER || 'postgres';
+      const password = process.env.POSTGRES_PASSWORD || '';
+      const host = process.env.POSTGRES_HOST || 'localhost';
+      const port = process.env.POSTGRES_PORT || '5432';
+      const db = process.env.POSTGRES_DB || 'contabilidade';
+      return `postgresql://${user}:${password}@${host}:${port}/${db}?schema=public`;
+    })
     .refine(
       (url) => url.startsWith('postgresql://') || url.startsWith('postgres://'),
       'DATABASE_URL deve começar com postgresql:// ou postgres://.',
@@ -126,11 +135,14 @@ function validarEnv() {
   return resultado.data;
 }
 
-/**
- * Objeto de ambiente validado e tipado.
- * Todas as propriedades estão garantidas em runtime — sem undefined inesperado.
- */
 export const env = validarEnv();
+
+// Garante que process.env.DATABASE_URL esteja definido para Prisma (migrations/CLI).
+// Só seta se o usuário não definiu explicitamente — quando POSTGRES_HOST está definido,
+// o Container.ts usa opções separadas e não depende desta variável.
+if (!process.env.DATABASE_URL && !process.env.POSTGRES_HOST) {
+  process.env.DATABASE_URL = env.DATABASE_URL;
+}
 
 /** Tipo inferido do schema — útil para typing em outras camadas. */
 export type Env = z.infer<typeof envSchema>;
