@@ -273,6 +273,9 @@ services:
       # Cora
       CORA_ENV: ${CORA_ENV:-sandbox}
       CORA_WEBHOOK_TOKEN: ${CORA_WEBHOOK_TOKEN:-}
+      # Asaas SaaS Billing
+      ASAAS_SAAS_API_KEY: ${ASAAS_SAAS_API_KEY}
+      ASAAS_SAAS_WEBHOOK_TOKEN: ${ASAAS_SAAS_WEBHOOK_TOKEN}
     ports:
       - "127.0.0.1:${APP_PORT:-4500}:4500"
     networks:
