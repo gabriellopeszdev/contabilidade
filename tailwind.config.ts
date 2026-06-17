@@ -26,10 +26,10 @@ const config: Config = {
         },
         // White Label — alimentadas por CSS vars injetadas pelo useTheme
         primary: {
-          DEFAULT: 'var(--color-primary, #2563eb)',
-          dark:    'var(--color-primary-dark, #1e3a8a)',
-          light:   'var(--color-primary-light, #dbeafe)',
-          50:      'var(--color-primary-50, #eff6ff)',
+          DEFAULT: 'rgb(var(--color-primary-rgb, 37 99 235) / <alpha-value>)',
+          dark:    'rgb(var(--color-primary-dark-rgb, 30 58 138) / <alpha-value>)',
+          light:   'rgb(var(--color-primary-light-rgb, 219 234 254) / <alpha-value>)',
+          50:      'rgb(var(--color-primary-50-rgb, 239 246 255) / <alpha-value>)',
         },
       },
       borderRadius: {

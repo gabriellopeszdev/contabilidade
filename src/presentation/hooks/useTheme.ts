@@ -58,15 +58,30 @@ function writeCache(logoUrl: string | null, nomeEscritorio: string): void {
   }
 }
 
+function hexToRgbString(hex: string): string {
+  const rgb = hexToRgb(hex);
+  if (!rgb) return '';
+  return `${rgb.r} ${rgb.g} ${rgb.b}`;
+}
+
 export function applyThemeCssVars(corPrimaria: string, corSecundaria?: string): void {
   const root = document.documentElement.style;
   root.setProperty('--color-primary',       corPrimaria);
   root.setProperty('--color-brand',         corPrimaria);
   root.setProperty('--color-primary-light', tint(corPrimaria, 0.85));
   root.setProperty('--color-primary-50',    tint(corPrimaria, 0.93));
+
+  // RGB versions for Tailwind opacity support
+  root.setProperty('--color-primary-rgb',       hexToRgbString(corPrimaria));
+  root.setProperty('--color-primary-light-rgb', hexToRgbString(tint(corPrimaria, 0.85)));
+  root.setProperty('--color-primary-50-rgb',    hexToRgbString(tint(corPrimaria, 0.93)));
+
   if (corSecundaria) {
     root.setProperty('--color-primary-dark', corSecundaria);
     root.setProperty('--color-brand-dark',   corSecundaria);
+    root.setProperty('--color-primary-dark-rgb', hexToRgbString(corSecundaria));
+  } else {
+    root.setProperty('--color-primary-dark-rgb', hexToRgbString('#1e3a8a'));
   }
 }
 

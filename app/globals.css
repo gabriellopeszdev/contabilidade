@@ -27,6 +27,11 @@
   --color-primary-dark:  #1e3a8a;
   --color-primary-light: #dbeafe;
   --color-primary-50:    #eff6ff;
+
+  --color-primary-rgb:       37 99 235;
+  --color-primary-dark-rgb:  30 58 138;
+  --color-primary-light-rgb: 219 234 254;
+  --color-primary-50-rgb:    239 246 255;
 }
 
 html.dark {
