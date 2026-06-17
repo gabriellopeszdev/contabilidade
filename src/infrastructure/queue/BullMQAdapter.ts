@@ -388,7 +388,25 @@ export class BullMQAdapter {
           destinatario: boleto.cliente.email,
           assunto:      `[Lembrete] Boleto de ${valorFmt} vence em ${vencimentoFmt}`,
           corpoHtml:    html,
-          corpoTexto:   `Olá ${boleto.cliente.name}, seu boleto de ${valorFmt} vence em ${vencimentoFmt}. Acesse: ${appUrl}/cliente/financeiro`,
+          corpoTexto:   [
+            `Olá, ${boleto.cliente.name}!`,
+            '',
+            'LEMBRETE DE VENCIMENTO DE BOLETO',
+            '─────────────────────────────────',
+            `Você tem um boleto de honorários com vencimento em ${vencimentoFmt}.`,
+            '',
+            `Escritório: ${boleto.escritorio.name}`,
+            `Referência: ${boleto.mesReferencia}`,
+            `Valor: ${valorFmt}`,
+            `Vencimento: ${vencimentoFmt}`,
+            '',
+            'Acesse o portal financeiro para mais detalhes:',
+            `${appUrl}/cliente/financeiro`,
+            '',
+            '─────────────────────────────────',
+            'FiscoHub · Você recebe este e-mail pois tem lembretes de boleto ativados.',
+            'Este é um e-mail automático — por favor não responda.',
+          ].join('\n'),
         });
 
         await this.prisma.boletoHonorario.update({

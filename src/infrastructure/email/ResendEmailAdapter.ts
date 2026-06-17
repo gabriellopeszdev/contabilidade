@@ -80,7 +80,22 @@ export class ResendEmailAdapter implements IEmailService {
       destinatario: params.email,
       assunto:      '[FiscoHub] Convite para acessar seu portal',
       corpoHtml,
-      corpoTexto:   `Olá, ${params.nome}! Ative sua conta em: ${params.link} (expira em 48h)`,
+      corpoTexto:   [
+        `Olá, ${params.nome}!`,
+        '',
+        'CONVITE PARA O PORTAL DO CLIENTE',
+        '─────────────────────────────────',
+        'Seu escritório de contabilidade criou um acesso exclusivo para você.',
+        '',
+        'Para criar sua senha e ativar sua conta, acesse o link abaixo:',
+        params.link,
+        '',
+        'ATENÇÃO: Este link expira em 48 horas. Após esse prazo, solicite um novo convite ao seu contador.',
+        '',
+        '─────────────────────────────────',
+        'Este é um e-mail automático — por favor não responda.',
+        `© ${new Date().getFullYear()} FiscoHub · Todos os direitos reservados.`,
+      ].join('\n'),
     });
   }
 
@@ -101,7 +116,20 @@ export class ResendEmailAdapter implements IEmailService {
       destinatario: params.email,
       assunto:      '[FiscoHub] Redefinição de senha',
       corpoHtml,
-      corpoTexto:   `Redefina sua senha acessando: ${params.link} (expira em 2h)`,
+      corpoTexto:   [
+        'REDEFINIÇÃO DE SENHA — FiscoHub',
+        '─────────────────────────────────',
+        'Se foi você quem solicitou, acesse o link abaixo para criar uma nova senha:',
+        params.link,
+        '',
+        'Caso não tenha feito esta solicitação, ignore este e-mail — sua senha permanece a mesma.',
+        '',
+        'ATENÇÃO: Por segurança, este link expira em 2 horas.',
+        '',
+        '─────────────────────────────────',
+        'Este é um e-mail automático — por favor não responda.',
+        `© ${new Date().getFullYear()} FiscoHub · Todos os direitos reservados.`,
+      ].join('\n'),
     });
   }
 
@@ -122,7 +150,23 @@ export class ResendEmailAdapter implements IEmailService {
       destinatario: params.emailCliente,
       assunto:      `Bem-vindo ao Portal — ${params.nomeEscritorio}`,
       corpoHtml,
-      corpoTexto:   `Bem-vindo, ${params.nomeCliente}! Acesse seu portal em: ${params.urlPortal}`,
+      corpoTexto:   [
+        `Bem-vindo, ${params.nomeCliente}!`,
+        '',
+        `ACESSO LIBERADO — ${params.nomeEscritorio}`,
+        '─────────────────────────────────',
+        'Seu acesso ao Portal de Documentos Fiscais foi criado com sucesso.',
+        'Por aqui você pode visualizar e baixar todos os documentos disponibilizados pelo seu contador.',
+        '',
+        'Acesse seu portal:',
+        params.urlPortal,
+        '',
+        'Em caso de dúvidas, entre em contato diretamente com o seu escritório de contabilidade.',
+        '',
+        '─────────────────────────────────',
+        'Este é um e-mail automático — por favor não responda.',
+        `© ${new Date().getFullYear()} FiscoHub · Todos os direitos reservados.`,
+      ].join('\n'),
     });
   }
 
@@ -139,7 +183,24 @@ export class ResendEmailAdapter implements IEmailService {
       destinatario: params.emailCliente,
       assunto:      `Assinatura solicitada: ${params.nomeDocumento}`,
       corpoHtml:    html,
-      corpoTexto:   `Acesse ${params.linkAssinatura} para assinar o documento ${params.nomeDocumento} (expira em ${params.expiracaoHoras}h)`,
+      corpoTexto:   [
+        `Olá, ${params.nomeCliente}!`,
+        '',
+        'DOCUMENTO AGUARDANDO SUA ASSINATURA',
+        '─────────────────────────────────',
+        'O escritório solicitou sua assinatura no seguinte documento:',
+        `"${params.nomeDocumento}"`,
+        '',
+        'Para visualizar e assinar, acesse:',
+        params.linkAssinatura,
+        '',
+        `ATENÇÃO: Este link expira em ${params.expiracaoHoras} horas.`,
+        'Se não reconhece esta solicitação, ignore este e-mail.',
+        '',
+        '─────────────────────────────────',
+        'Este é um e-mail automático — por favor não responda.',
+        `© ${new Date().getFullYear()} FiscoHub · Todos os direitos reservados.`,
+      ].join('\n'),
     });
   }
 
@@ -164,7 +225,21 @@ export class ResendEmailAdapter implements IEmailService {
       destinatario: params.emailSolicitante,
       assunto:      `[FiscoHub] Documento ${assinado ? 'assinado' : 'recusado'}: ${params.nomeDocumento}`,
       corpoHtml,
-      corpoTexto:   `O documento ${params.nomeDocumento} foi ${assinado ? 'assinado' : 'recusado'} por ${params.nomeSignatario}. Acesse: ${params.urlPortal}`,
+      corpoTexto:   [
+        `Olá, ${params.nomeSolicitante}!`,
+        '',
+        `DOCUMENTO ${assinado ? 'ASSINADO' : 'RECUSADO'}`,
+        '─────────────────────────────────',
+        `O documento "${params.nomeDocumento}" foi ${assinado ? 'assinado' : 'recusado'} por ${params.nomeSignatario}.`,
+        ...(params.motivoRecusa ? ['', `Motivo: ${params.motivoRecusa}`] : []),
+        '',
+        'Acesse o portal para mais detalhes:',
+        params.urlPortal,
+        '',
+        '─────────────────────────────────',
+        'Este é um e-mail automático — por favor não responda.',
+        `© ${new Date().getFullYear()} FiscoHub · Todos os direitos reservados.`,
+      ].join('\n'),
     });
   }
 
@@ -186,7 +261,22 @@ export class ResendEmailAdapter implements IEmailService {
       destinatario: params.emailCliente,
       assunto:      `${params.codigo} — Código de verificação FiscoHub`,
       corpoHtml,
-      corpoTexto:   `Código de verificação: ${params.codigo} (válido por 15 minutos). Não compartilhe.`,
+      corpoTexto:   [
+        `Olá, ${params.nomeCliente}!`,
+        '',
+        `CÓDIGO DE VERIFICAÇÃO — ${params.nomeDocumento}`,
+        '─────────────────────────────────',
+        'Use o código abaixo para confirmar sua identidade e assinar o documento:',
+        '',
+        `    ${params.codigo}`,
+        '',
+        'ATENÇÃO: Este código é válido por 15 minutos e só pode ser usado uma vez.',
+        'Não compartilhe com ninguém.',
+        '',
+        '─────────────────────────────────',
+        'Este é um e-mail automático — por favor não responda.',
+        `© ${new Date().getFullYear()} FiscoHub · Todos os direitos reservados.`,
+      ].join('\n'),
     });
   }
 
@@ -208,7 +298,23 @@ export class ResendEmailAdapter implements IEmailService {
       destinatario: params.emailContador,
       assunto:      `Novo documento recebido de ${params.nomeCliente}`,
       corpoHtml,
-      corpoTexto:   `${params.nomeCliente} enviou "${params.nomeArquivo}" (${params.setor}). Acesse: ${params.urlPortal}/kanban`,
+      corpoTexto:   [
+        `Olá, ${params.nomeContador}!`,
+        '',
+        'NOVO DOCUMENTO RECEBIDO',
+        '─────────────────────────────────',
+        `O cliente ${params.nomeCliente} enviou um novo documento para sua análise.`,
+        '',
+        `Arquivo: ${params.nomeArquivo}`,
+        `Setor: ${params.setor}`,
+        '',
+        'Acesse o painel para visualizar:',
+        `${params.urlPortal}/kanban`,
+        '',
+        '─────────────────────────────────',
+        'Este é um e-mail automático — por favor não responda.',
+        `© ${new Date().getFullYear()} FiscoHub · Todos os direitos reservados.`,
+      ].join('\n'),
     });
   }
 
@@ -230,7 +336,25 @@ export class ResendEmailAdapter implements IEmailService {
       destinatario: params.emailCliente,
       assunto:      `[FiscoHub] Novo documento disponível: ${params.nomeArquivo}`,
       corpoHtml,
-      corpoTexto:   `Olá, ${params.nomeCliente}! Novo documento: ${params.nomeArquivo} (${params.setor}). Acesse: ${params.urlPortal}`,
+      corpoTexto:   [
+        `Olá, ${params.nomeCliente}!`,
+        '',
+        'NOVO DOCUMENTO DISPONÍVEL',
+        '─────────────────────────────────',
+        'Seu escritório disponibilizou um novo documento no portal.',
+        '',
+        `Arquivo: ${params.nomeArquivo}`,
+        `Setor: ${params.setor}`,
+        '',
+        'Acesse para visualizar o documento:',
+        params.urlPortal,
+        '',
+        'Este documento foi disponibilizado pelo seu escritório de contabilidade.',
+        '',
+        '─────────────────────────────────',
+        'Este é um e-mail automático — por favor não responda.',
+        `© ${new Date().getFullYear()} FiscoHub · Todos os direitos reservados.`,
+      ].join('\n'),
     });
   }
 }

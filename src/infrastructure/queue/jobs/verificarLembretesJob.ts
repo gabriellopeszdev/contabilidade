@@ -49,7 +49,22 @@ export async function verificarLembretesJob(emailService: IEmailService): Promis
           diasRestantes,
           appUrl:        process.env.NEXT_PUBLIC_APP_URL ?? '',
         }),
-        corpoTexto: `Olá ${instancia.contador.name}, a obrigação "${instancia.obrigacao.nome}" vence em ${vencimentoStr} (${diasRestantes === 0 ? 'HOJE' : `${diasRestantes} dia(s)`}).`,
+        corpoTexto: [
+          `Olá, ${instancia.contador.name}!`,
+          '',
+          'LEMBRETE DE OBRIGAÇÃO FISCAL',
+          '─────────────────────────────────',
+          `A obrigação "${instancia.obrigacao.nome}" vence em ${diasRestantes === 0 ? 'HOJE' : `${diasRestantes} dia(s)`}.`,
+          '',
+          `Vencimento: ${vencimentoStr}`,
+          '',
+          'Acesse o calendário para gerenciar suas obrigações:',
+          `${process.env.NEXT_PUBLIC_APP_URL ?? ''}/calendario`,
+          '',
+          '─────────────────────────────────',
+          'FiscoHub · Você recebe este e-mail pois tem lembretes de obrigações ativados.',
+          'Este é um e-mail automático — por favor não responda.',
+        ].join('\n'),
       });
     }
 
