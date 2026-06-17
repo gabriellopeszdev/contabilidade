@@ -229,11 +229,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     jwtPayload.superiorId = superiorId;
   }
 
+  const expiresIn = process.env.JWT_EXPIRES_IN ?? '8h';
   const token = await new SignJWT(jwtPayload)
     .setProtectedHeader({ alg: 'HS256' })
     .setSubject(userId)
     .setIssuedAt()
-    .setExpirationTime('8h')
+    .setExpirationTime(expiresIn)
     .sign(new TextEncoder().encode(secret));
 
   // --------------------------------------------------------------------------

@@ -105,7 +105,15 @@ const CLIENT_KEY   = 'contabilidade_cliente_selecionado';
  */
 function sincronizarCookie(jwt: string | null): void {
   if (jwt) {
-    // Cookie expira junto com o JWT (8h default), path=/ para todas as rotas
+    try {
+      const { exp } = decodeJwt(jwt);
+      if (exp) {
+        const maxAge = Math.max(0, Math.floor(exp - Date.now() / 1000));
+        document.cookie = `${TOKEN_COOKIE}=${jwt}; path=/; max-age=${maxAge}; SameSite=Lax`;
+        return;
+      }
+    } catch {}
+    // Fallback para 8 horas (28800 segundos)
     document.cookie = `${TOKEN_COOKIE}=${jwt}; path=/; max-age=28800; SameSite=Lax`;
   } else {
     document.cookie = `${TOKEN_COOKIE}=; path=/; max-age=0; SameSite=Lax`;

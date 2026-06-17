@@ -123,11 +123,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: 'Conta ativada com sucesso! Faça login.' });
     }
 
+    const expiresIn = process.env.JWT_EXPIRES_IN ?? '8h';
     const jwt = await new SignJWT({ role: 'CLIENT', nome: cliente.name })
       .setProtectedHeader({ alg: 'HS256' })
       .setSubject(cliente.id)
       .setIssuedAt()
-      .setExpirationTime('8h')
+      .setExpirationTime(expiresIn)
       .sign(new TextEncoder().encode(jwtSecret));
 
     return NextResponse.json({
