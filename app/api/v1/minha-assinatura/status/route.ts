@@ -60,7 +60,28 @@ export const GET = withAuth(async (req: NextRequest, ctx: ResolvedRouteContext, 
       orderBy: { vencimento: 'asc' },
     });
 
-    const isBlocked = assinatura.status === 'INADIMPLENTE' || !!cobrancaVencida;
+    // 1. Permanente / Gratuito: se o valor mensal for 0, nunca bloqueia
+    const isPermanente = Number(assinatura.valorMensal) === 0;
+
+    let isBlocked = false;
+    let motivoBloqueio = 'inadimplencia';
+
+    if (!isPermanente) {
+      const temInadimplencia = assinatura.status === 'INADIMPLENTE' || !!cobrancaVencida;
+
+      // 2. Trial expira após 7 dias da data de início
+      let trialExpirado = false;
+      if (assinatura.status === 'TRIAL') {
+        const seteDiasEmMs = 7 * 24 * 60 * 60 * 1000;
+        const dataLimite = new Date(assinatura.dataInicio.getTime() + seteDiasEmMs);
+        if (Date.now() > dataLimite.getTime()) {
+          trialExpirado = true;
+          motivoBloqueio = 'trial_expirado';
+        }
+      }
+
+      isBlocked = temInadimplencia || trialExpirado;
+    }
 
     if (!isBlocked) {
       return NextResponse.json({ bloqueado: false });
@@ -78,7 +99,7 @@ export const GET = withAuth(async (req: NextRequest, ctx: ResolvedRouteContext, 
 
     return NextResponse.json({
       bloqueado: true,
-      motivo: 'inadimplencia',
+      motivo: motivoBloqueio,
       role: auth.role,
       vinculo: auth.vinculo,
       cobranca: faturaPendente ? {

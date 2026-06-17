@@ -32,6 +32,11 @@ import {
   Plug,
   KeyRound,
   Bell,
+  QrCode,
+  Copy,
+  ExternalLink,
+  RefreshCw,
+  DollarSign,
 } from 'lucide-react';
 
 import { useAuth } from '../../../src/presentation/hooks/useAuth';
@@ -221,6 +226,7 @@ export default function ConfiguracoesPage() {
           {abaAtiva === 'assinatura' && (
             <AssinaturaTab
               token={token}
+              dadosUsuario={dadosUsuario}
               onSucesso={(msg) => mostrarToast('sucesso', msg)}
               onErro={(msg) => mostrarToast('erro', msg)}
             />
@@ -1519,87 +1525,189 @@ function PrivacidadeTab({
 // Tab: Assinatura
 // =============================================================================
 
-interface PlanInfo {
-  planoNome:        string;
-  limiteClientes:   number;
-  limiteDocumentos: number;
-  features:         string[];
-  status:           string;
-  isRestricted:     boolean;
+// =============================================================================
+// Tab: Assinatura (SaaS Billing)
+// =============================================================================
+
+interface AssinaturaInfo {
+  id: string;
+  planoNome: string;
+  precoPlano: number;
+  valorMensal: number;
+  status: string;
+  diaVencimento: number;
+  dataInicio: string;
+  dataRenovacao: string;
+  billingType: string;
+  observacoes: string | null;
+  asaasSubscriptionId: string | null;
 }
 
-const STATUS_LABELS: Record<string, { label: string; cor: string }> = {
-  TRIAL:        { label: 'Trial',        cor: 'bg-primary-50 dark:bg-primary/10 text-primary-dark dark:text-primary' },
-  ATIVO:        { label: 'Ativo',        cor: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' },
-  INADIMPLENTE: { label: 'Inadimplente', cor: 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400' },
-  SUSPENSO:     { label: 'Suspenso',     cor: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' },
-  CANCELADO:    { label: 'Cancelado',    cor: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' },
-  SEM_PLANO:    { label: 'Sem plano',    cor: 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400' },
-};
-
-const FEATURE_LABELS: Record<string, string> = {
-  chat:                  'Chat com clientes',
-  calendario:            'Calendário de obrigações',
-  financeiro:            'Módulo financeiro',
-  assinatura_eletronica: 'Assinatura eletrônica',
-  relatorios:            'Relatórios avançados',
-  equipe:                'Gestão de equipe',
-  integracao_cora:       'Integração Cora',
-  ia:                    'Assistente IA',
-};
+interface CobrancaInfo {
+  id: string;
+  valor: number;
+  vencimento: string;
+  mesReferencia: string;
+  status: string;
+  asaasBoletoUrl: string | null;
+  asaasInvoiceUrl: string | null;
+  asaasPixPayload: string | null;
+  asaasBarcode: string | null;
+}
 
 function AssinaturaTab({
   token,
+  dadosUsuario,
   onSucesso,
   onErro,
 }: {
-  token:     string | null | undefined;
-  onSucesso: (msg: string) => void;
-  onErro:    (msg: string) => void;
+  token:        string | null | undefined;
+  dadosUsuario?: UsuarioAPI | null;
+  onSucesso:    (msg: string) => void;
+  onErro:       (msg: string) => void;
 }) {
-  const [plano, setPlano]               = useState<PlanInfo | null>(null);
-  const [carregando, setCarregando]     = useState(true);
-  const [confirmando, setConfirmando]   = useState(false);
-  const [textoConfirm, setTextoConfirm] = useState('');
-  const [cancelando, setCancelando]     = useState(false);
+  const [assinatura, setAssinatura] = useState<AssinaturaInfo | null>(null);
+  const [cobrancas, setCobrancas] = useState<CobrancaInfo[]>([]);
+  const [hasAssinatura, setHasAssinatura] = useState<boolean>(false);
+  const [carregando, setCarregando] = useState(true);
+  const [atualizando, setAtualizando] = useState(false);
 
-  const carregarPlano = useCallback(async () => {
+  // Pix/Boleto copy states
+  const [copiadoPixId, setCopiadoPixId] = useState<string | null>(null);
+  const [copiadoBarcodeId, setCopiadoBarcodeId] = useState<string | null>(null);
+
+  // Card form states
+  const [showCardForm, setShowCardForm] = useState(false);
+  const [salvandoCartao, setSalvandoCartao] = useState(false);
+  const [cartaoErro, setCartaoErro] = useState<string | null>(null);
+
+  // Credit card form inputs
+  const [holderName, setHolderName] = useState('');
+  const [number, setNumber] = useState('');
+  const [expiryMonth, setExpiryMonth] = useState('');
+  const [expiryYear, setExpiryYear] = useState('');
+  const [ccv, setCcv] = useState('');
+  
+  // Titular inputs (prefilled with user details)
+  const [name, setName] = useState(dadosUsuario?.name ?? '');
+  const [email, setEmail] = useState(dadosUsuario?.email ?? '');
+  const [cpfCnpj, setCpfCnpj] = useState('');
+  const [postalCode, setPostalCode] = useState('');
+  const [addressNumber, setAddressNumber] = useState('');
+  const [phone, setPhone] = useState(dadosUsuario?.phone ?? '');
+
+  // Sync with dadosUsuario if they load late
+  useEffect(() => {
+    if (dadosUsuario) {
+      if (!name) setName(dadosUsuario.name);
+      if (!email) setEmail(dadosUsuario.email);
+      if (!phone && dadosUsuario.phone) setPhone(dadosUsuario.phone);
+    }
+  }, [dadosUsuario]);
+
+  const carregarAssinatura = useCallback(async (silencioso = false) => {
     if (!token) return;
-    setCarregando(true);
+    if (!silencioso) setCarregando(true);
     try {
-      const res = await fetch('/api/v1/plano/atual', {
+      const res = await fetch('/api/v1/minha-assinatura', {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error();
       const data = await res.json();
-      setPlano(data.plan);
+      setHasAssinatura(data.hasAssinatura ?? false);
+      if (data.hasAssinatura) {
+        setAssinatura(data.assinatura);
+        setCobrancas(data.cobrancas || []);
+      }
     } catch {
-      onErro('Não foi possível carregar as informações do plano.');
+      onErro('Não foi possível carregar as informações do faturamento SaaS.');
     } finally {
-      setCarregando(false);
+      if (!silencioso) setCarregando(false);
     }
   }, [token, onErro]);
 
-  useEffect(() => { carregarPlano(); }, [carregarPlano]);
+  useEffect(() => {
+    carregarAssinatura();
+  }, [carregarAssinatura]);
 
-  const handleCancelar = async () => {
+  const copyToClipboard = (text: string, cobrancaId: string, type: 'pix' | 'barcode') => {
+    navigator.clipboard.writeText(text);
+    if (type === 'pix') {
+      setCopiadoPixId(cobrancaId);
+      setTimeout(() => setCopiadoPixId(null), 2000);
+    } else {
+      setCopiadoBarcodeId(cobrancaId);
+      setTimeout(() => setCopiadoBarcodeId(null), 2000);
+    }
+  };
+
+  const handleSaveCard = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!token) return;
-    setCancelando(true);
+
+    setSalvandoCartao(true);
+    setCartaoErro(null);
+
     try {
-      const res = await fetch('/api/v1/plano/cancelar', {
-        method:  'POST',
-        headers: { Authorization: `Bearer ${token}` },
+      const res = await fetch('/api/v1/minha-assinatura', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          holderName,
+          number,
+          expiryMonth,
+          expiryYear,
+          ccv,
+          name,
+          email,
+          cpfCnpj,
+          postalCode,
+          addressNumber,
+          phone,
+        }),
       });
+
       const data = await res.json();
-      if (!res.ok) { onErro(data.message ?? 'Erro ao cancelar assinatura.'); return; }
-      onSucesso('Assinatura cancelada. Seus dados permanecem no plano gratuito.');
-      setConfirmando(false);
-      setTextoConfirm('');
-      carregarPlano();
+
+      if (!res.ok) {
+        setCartaoErro(data.message ?? 'Falha ao salvar dados do cartão.');
+        return;
+      }
+
+      onSucesso('Cartão de crédito configurado com sucesso para pagamentos recorrentes!');
+      setShowCardForm(false);
+      
+      // Limpa formulário
+      setHolderName('');
+      setNumber('');
+      setExpiryMonth('');
+      setExpiryYear('');
+      setCcv('');
+      setCpfCnpj('');
+      setPostalCode('');
+      setAddressNumber('');
+      
+      // Recarrega assinatura
+      await carregarAssinatura();
     } catch {
-      onErro('Erro ao cancelar assinatura.');
+      setCartaoErro('Erro de rede ao salvar cartão. Verifique sua conexão.');
     } finally {
-      setCancelando(false);
+      setSalvandoCartao(false);
+    }
+  };
+
+  const handleSync = async () => {
+    setAtualizando(true);
+    try {
+      await carregarAssinatura(true);
+      onSucesso('Dados de faturamento atualizados!');
+    } catch {
+      onErro('Erro ao sincronizar.');
+    } finally {
+      setAtualizando(false);
     }
   };
 
@@ -1611,150 +1719,478 @@ function AssinaturaTab({
     );
   }
 
-  const statusInfo   = plano ? (STATUS_LABELS[plano.status] ?? STATUS_LABELS['SEM_PLANO']) : STATUS_LABELS['SEM_PLANO'];
-  const podeCancelar = plano && !plano.isRestricted && plano.status !== 'SEM_PLANO' && plano.status !== 'CANCELADO';
+  if (!hasAssinatura || !assinatura) {
+    return (
+      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-8 text-center space-y-4">
+        <AlertCircle size={40} className="mx-auto text-amber-500" />
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Faturamento SaaS Não Configurado</h3>
+        <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+          Seu escritório não possui uma assinatura parametrizada na plataforma FiscoHub. 
+          Entre em contato com nossa equipe administrativa para cadastrar seu plano e habilitar o faturamento.
+        </p>
+      </div>
+    );
+  }
+
+  const getStatusBadge = (status: string) => {
+    const labels: Record<string, { text: string, classes: string }> = {
+      TRIAL: { text: 'Período Trial', classes: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300' },
+      ATIVO: { text: 'Ativo', classes: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300' },
+      INADIMPLENTE: { text: 'Inadimplente', classes: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' },
+      SUSPENSO: { text: 'Suspenso', classes: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300' },
+      CANCELADO: { text: 'Cancelado', classes: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400' },
+    };
+    const item = labels[status] ?? { text: status, classes: 'bg-gray-100 text-gray-800' };
+    return <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${item.classes}`}>{item.text}</span>;
+  };
+
+  const formatBillingType = (type: string) => {
+    switch (type) {
+      case 'CREDIT_CARD': return 'Cartão de Crédito';
+      case 'BOLETO': return 'Boleto Bancário';
+      case 'PIX': return 'PIX';
+      default: return type;
+    }
+  };
+
+  const totalPendente = cobrancas.filter(c => c.status === 'PENDENTE' || c.status === 'VENCIDO').length;
 
   return (
     <div className="space-y-6">
-
-      {/* Plano atual */}
+      
+      {/* Detalhes do Plano */}
       <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-6 space-y-5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <CreditCard size={18} className="text-primary" />
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Plano Atual</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Assinatura do Escritório</h2>
           </div>
-          {plano && (
-            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${statusInfo.cor}`}>
-              {statusInfo.label}
-            </span>
-          )}
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={handleSync} 
+              disabled={atualizando}
+              className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg text-gray-500 hover:text-gray-800 transition-colors"
+              title="Atualizar dados de faturamento"
+            >
+              <RefreshCw size={16} className={atualizando ? 'animate-spin' : ''} />
+            </button>
+            {getStatusBadge(assinatura.status)}
+          </div>
         </div>
 
-        {!plano || plano.status === 'SEM_PLANO' ? (
-          <div className="text-center py-8 space-y-3">
-            <p className="text-sm text-gray-500 dark:text-gray-400">Você não possui uma assinatura ativa.</p>
-            <a
-              href="/cadastro"
-              className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
-            >
-              Ver planos disponíveis
-            </a>
+        {/* Trial message */}
+        {assinatura.status === 'TRIAL' && (
+          <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-900/40 rounded-xl p-4 text-sm text-amber-800 dark:text-amber-300 space-y-1">
+            <p className="font-semibold">Período de Demonstração (Trial)</p>
+            <p className="text-xs text-amber-700 dark:text-amber-400">
+              Você tem 7 dias grátis a contar da data de início ({new Date(assinatura.dataInicio).toLocaleDateString('pt-BR')}) para usar a plataforma livremente. 
+              Após 7 dias, caso não haja compensação de pagamento da assinatura, o acesso será temporariamente bloqueado.
+            </p>
           </div>
-        ) : (
-          <>
-            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{plano.planoNome}</p>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Clientes</p>
-                <p className="text-xl font-bold text-gray-900 dark:text-gray-100">
-                  {plano.limiteClientes === -1 ? 'Ilimitado' : plano.limiteClientes}
-                </p>
-              </div>
-              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Documentos</p>
-                <p className="text-xl font-bold text-gray-900 dark:text-gray-100">
-                  {plano.limiteDocumentos === -1 ? 'Ilimitado' : plano.limiteDocumentos.toLocaleString('pt-BR')}
-                </p>
-              </div>
-            </div>
-
-            <div>
-              <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Recursos incluídos</p>
-              <ul className="space-y-2">
-                {Object.entries(FEATURE_LABELS).map(([key, label]) => {
-                  const incluso = plano.features.includes(key);
-                  return (
-                    <li key={key} className="flex items-center gap-2 text-sm">
-                      {incluso
-                        ? <Check size={15} className="text-emerald-500 shrink-0" />
-                        : <Lock  size={15} className="text-gray-300 dark:text-gray-600 shrink-0" />
-                      }
-                      <span className={incluso ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}>
-                        {label}
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          </>
         )}
+
+        {/* Inadimplente alert */}
+        {(assinatura.status === 'INADIMPLENTE' || totalPendente > 0) && (
+          <div className="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/40 rounded-xl p-4 text-sm text-red-800 dark:text-red-300 space-y-1">
+            <p className="font-semibold">Atenção: Assinatura com faturas pendentes</p>
+            <p className="text-xs text-red-700 dark:text-red-400">
+              Identificamos faturas pendentes de pagamento. Regularize os débitos abaixo via PIX ou Boleto para evitar bloqueio automático ou reestabelecer o acesso dos seus contadores e clientes.
+            </p>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Plano Ativo</p>
+            <p className="text-lg font-bold text-gray-900 dark:text-gray-100">{assinatura.planoNome}</p>
+          </div>
+          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Valor da Mensalidade</p>
+            <p className="text-lg font-bold text-gray-900 dark:text-gray-100">
+              {assinatura.valorMensal === 0 ? 'Isento (Permanente)' : `R$ ${assinatura.valorMensal.toFixed(2)}`}
+            </p>
+          </div>
+          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Próximo Vencimento</p>
+            <p className="text-lg font-bold text-gray-900 dark:text-gray-100">
+              {assinatura.valorMensal === 0 ? '-' : new Date(assinatura.dataRenovacao).toLocaleDateString('pt-BR')}
+            </p>
+          </div>
+        </div>
+
+        <div className="text-sm border-t border-gray-100 dark:border-gray-800 pt-4 flex justify-between items-center text-gray-600 dark:text-gray-400">
+          <span>Forma de Cobrança Padrão: <strong>{formatBillingType(assinatura.billingType)}</strong></span>
+          {assinatura.diaVencimento && (
+            <span>Dia do Vencimento: <strong>Todo dia {assinatura.diaVencimento}</strong></span>
+          )}
+        </div>
       </div>
 
-      {/* Cancelamento */}
-      {podeCancelar && (
-        <div className="bg-white dark:bg-gray-900 rounded-xl border border-red-200 dark:border-red-900/40 p-6 space-y-4">
-          <div className="flex items-center gap-2">
-            <XCircle size={18} className="text-red-500" />
-            <h2 className="text-lg font-semibold text-red-900 dark:text-red-400">Cancelar Assinatura</h2>
+      {/* Cartão de Crédito Recorrente */}
+      {assinatura.valorMensal > 0 && (
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-6 space-y-5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <CreditCard size={18} className="text-violet-500" />
+              <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">Pagamento Recorrente via Cartão de Crédito</h3>
+            </div>
+            {assinatura.billingType === 'CREDIT_CARD' && (
+              <span className="text-xs bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300 font-semibold px-2.5 py-1 rounded-full">
+                Ativo no Cartão
+              </span>
+            )}
           </div>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Ao cancelar, você perde acesso aos recursos do plano <strong>{plano?.planoNome}</strong> imediatamente.
-            Seus dados permanecem disponíveis no plano gratuito (5 clientes, 100 documentos).
-          </p>
 
-          {!confirmando ? (
-            <button
-              onClick={() => setConfirmando(true)}
-              className="inline-flex items-center gap-2 rounded-lg border border-red-300 dark:border-red-800 px-4 py-2
-                         text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-            >
-              <XCircle size={14} />
-              Cancelar Assinatura
-            </button>
-          ) : (
-            <div className="space-y-3 bg-red-50/50 dark:bg-red-900/10 rounded-lg p-4 border border-red-100 dark:border-red-900/40">
-              <p className="text-sm text-red-700 dark:text-red-400 font-medium">
-                Para confirmar, digite{' '}
-                <code className="bg-red-100 dark:bg-red-900/30 px-1.5 py-0.5 rounded text-xs">CANCELAR ASSINATURA</code>{' '}
-                abaixo:
+          {assinatura.billingType === 'CREDIT_CARD' ? (
+            <div className="space-y-4">
+              <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                As cobranças mensais da sua assinatura SaaS FiscoHub são debitadas automaticamente em seu cartão de crédito cadastrado todo dia {assinatura.diaVencimento}.
               </p>
-              <input
-                type="text"
-                value={textoConfirm}
-                onChange={(e) => setTextoConfirm(e.target.value)}
-                className="w-full max-w-sm rounded-lg border border-red-300 dark:border-red-800 bg-white dark:bg-gray-800 px-3 py-2
-                           text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500
-                           focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-shadow"
-                placeholder="CANCELAR ASSINATURA"
-                autoComplete="off"
-              />
-              <div className="flex gap-2">
+              {!showCardForm ? (
                 <button
-                  onClick={handleCancelar}
-                  disabled={cancelando || textoConfirm !== 'CANCELAR ASSINATURA'}
-                  className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white
-                             shadow-sm hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  onClick={() => setShowCardForm(true)}
+                  className="inline-flex items-center gap-2 rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                 >
-                  {cancelando ? <Loader2 size={14} className="animate-spin" /> : <XCircle size={14} />}
-                  {cancelando ? 'Cancelando…' : 'Confirmar Cancelamento'}
+                  Alterar Cartão de Crédito Cadastrado
+                </button>
+              ) : null}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                Habilite o débito automático no cartão de crédito e evite interrupções no acesso do seu escritório por esquecimento no pagamento do boleto ou Pix.
+              </p>
+              {!showCardForm ? (
+                <button
+                  onClick={() => setShowCardForm(true)}
+                  className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:brightness-95 transition-all"
+                >
+                  Cadastrar Cartão de Crédito
+                </button>
+              ) : null}
+            </div>
+          )}
+
+          {/* Form Cartão de Crédito */}
+          {showCardForm && (
+            <form onSubmit={handleSaveCard} className="border border-gray-200 dark:border-gray-700 rounded-xl p-5 space-y-4 bg-gray-50/50 dark:bg-gray-800/20 animate-in fade-in slide-in-from-top-4 duration-300">
+              <div className="flex items-center justify-between pb-2 border-b border-gray-100 dark:border-gray-800">
+                <span className="font-bold text-sm text-gray-900 dark:text-gray-100">Cadastrar Novo Cartão</span>
+                <button
+                  type="button"
+                  onClick={() => setShowCardForm(false)}
+                  className="text-xs text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 font-semibold"
+                >
+                  Cancelar
+                </button>
+              </div>
+
+              {/* Grid dos campos do Cartão */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">Nome impresso no cartão</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="EX: JOAO S SILVA"
+                    value={holderName}
+                    onChange={(e) => setHolderName(e.target.value.toUpperCase())}
+                    className="w-full text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-primary focus:border-transparent transition-shadow"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">Número do cartão</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="0000 0000 0000 0000"
+                    value={number}
+                    onChange={(e) => setNumber(e.target.value)}
+                    className="w-full text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-primary focus:border-transparent transition-shadow"
+                  />
+                </div>
+                <div className="grid grid-cols-3 gap-2 sm:col-span-2">
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-gray-700 dark:text-gray-300 text-center block">Mês Exp.</label>
+                    <input
+                      type="text"
+                      required
+                      maxLength={2}
+                      placeholder="MM"
+                      value={expiryMonth}
+                      onChange={(e) => setExpiryMonth(e.target.value)}
+                      className="w-full text-sm text-center rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-2 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-primary focus:border-transparent transition-shadow"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-gray-700 dark:text-gray-300 text-center block">Ano Exp.</label>
+                    <input
+                      type="text"
+                      required
+                      maxLength={4}
+                      placeholder="AAAA"
+                      value={expiryYear}
+                      onChange={(e) => setExpiryYear(e.target.value)}
+                      className="w-full text-sm text-center rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-2 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-primary focus:border-transparent transition-shadow"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-gray-700 dark:text-gray-300 text-center block">CVV</label>
+                    <input
+                      type="text"
+                      required
+                      maxLength={4}
+                      placeholder="123"
+                      value={ccv}
+                      onChange={(e) => setCcv(e.target.value)}
+                      className="w-full text-sm text-center rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-2 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-primary focus:border-transparent transition-shadow"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-2 border-t border-gray-100 dark:border-gray-800">
+                <h4 className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wider">Dados de Faturamento do Titular</h4>
+              </div>
+
+              {/* Grid dos campos do Titular */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">Nome Completo</label>
+                  <input
+                    type="text"
+                    required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full text-xs rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-1.5 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-primary"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">E-mail</label>
+                  <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full text-xs rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-1.5 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-primary"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">CPF ou CNPJ</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Apenas números"
+                    value={cpfCnpj}
+                    onChange={(e) => setCpfCnpj(e.target.value)}
+                    className="w-full text-xs rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-1.5 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-primary"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">Telefone com DDD</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Ex: 11999998888"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="w-full text-xs rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-1.5 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-primary"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">CEP</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Apenas números"
+                    value={postalCode}
+                    onChange={(e) => setPostalCode(e.target.value)}
+                    className="w-full text-xs rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-1.5 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-primary"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">Número do endereço</label>
+                  <input
+                    type="text"
+                    required
+                    value={addressNumber}
+                    onChange={(e) => setAddressNumber(e.target.value)}
+                    className="w-full text-xs rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-1.5 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-primary"
+                  />
+                </div>
+              </div>
+
+              {cartaoErro && (
+                <p className="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-lg p-2.5 border border-red-100 dark:border-red-900/40">
+                  {cartaoErro}
+                </p>
+              )}
+
+              <div className="flex gap-2 pt-2">
+                <button
+                  type="submit"
+                  disabled={salvandoCartao}
+                  className="flex-1 flex items-center justify-center gap-2 rounded-lg bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white px-4 py-2.5 text-sm font-semibold transition-all shadow-sm"
+                >
+                  {salvandoCartao ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" />
+                      Salvando Cartão...
+                    </>
+                  ) : (
+                    <>
+                      <Check size={16} />
+                      Salvar Cartão de Crédito
+                    </>
+                  )}
                 </button>
                 <button
-                  onClick={() => { setConfirmando(false); setTextoConfirm(''); }}
-                  className="rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium
-                             text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  type="button"
+                  onClick={() => setShowCardForm(false)}
+                  className="border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all"
                 >
                   Voltar
                 </button>
               </div>
-            </div>
+            </form>
           )}
         </div>
       )}
 
-      {plano?.status === 'CANCELADO' && (
-        <div className="bg-red-50 dark:bg-red-900/10 rounded-xl border border-red-200 dark:border-red-900/40 p-5 space-y-3">
-          <p className="text-sm text-red-700 dark:text-red-400 font-medium">
-            Sua assinatura foi cancelada. Para reativar, contrate um novo plano.
-          </p>
-          <a
-            href="/cadastro"
-            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
-          >
-            Ver planos disponíveis
-          </a>
+      {/* Histórico de Faturas */}
+      {assinatura.valorMensal > 0 && (
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-6 space-y-4">
+          <div className="flex items-center gap-2">
+            <History size={18} className="text-primary" />
+            <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">Histórico de Faturas</h3>
+          </div>
+
+          {cobrancas.length === 0 ? (
+            <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-6">
+              Nenhuma fatura emitida encontrada.
+            </p>
+          ) : (
+            <div className="space-y-4">
+              {cobrancas.map((cob) => {
+                const isPendente = cob.status === 'PENDENTE' || cob.status === 'VENCIDO';
+                
+                const getStatusColor = (st: string) => {
+                  switch (st) {
+                    case 'PAGO': return 'text-emerald-700 bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400';
+                    case 'PENDENTE': return 'text-amber-700 bg-amber-100 dark:bg-amber-900/30 dark:text-amber-400';
+                    case 'VENCIDO': return 'text-red-700 bg-red-100 dark:bg-red-900/30 dark:text-red-400';
+                    case 'CANCELADO': return 'text-gray-700 bg-gray-100 dark:bg-gray-800 dark:text-gray-400';
+                    default: return 'text-gray-700 bg-gray-100';
+                  }
+                };
+
+                return (
+                  <div key={cob.id} className="border border-gray-200 dark:border-gray-800 rounded-xl p-4 space-y-3 bg-white dark:bg-gray-900/40">
+                    
+                    {/* Header da Fatura */}
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                      <div>
+                        <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider block">
+                          Referência: {cob.mesReferencia}
+                        </span>
+                        <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                          R$ {cob.valor.toFixed(2)}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                          Vence em: {new Date(cob.vencimento).toLocaleDateString('pt-BR')}
+                        </span>
+                        <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${getStatusColor(cob.status)}`}>
+                          {cob.status}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Ações de Pagamento para Faturas Pendentes/Vencidas */}
+                    {isPendente && (
+                      <div className="pt-3 border-t border-gray-100 dark:border-gray-800 space-y-3">
+                        <p className="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                          Opções de Pagamento (Liberação Imediata)
+                        </p>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {/* Pix Payload */}
+                          {cob.asaasPixPayload && (
+                            <div className="bg-violet-50/50 dark:bg-violet-900/5 rounded-lg p-3 border border-violet-100/50 dark:border-violet-900/30 flex flex-col justify-between space-y-2">
+                              <div>
+                                <span className="font-bold text-xs text-gray-900 dark:text-gray-100 flex items-center gap-1">
+                                  <QrCode size={13} className="text-violet-600" /> PIX
+                                </span>
+                                <span className="text-[10px] text-gray-400 block mt-0.5">Liberação automática em 2 minutos</span>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => copyToClipboard(cob.asaasPixPayload!, cob.id, 'pix')}
+                                className={`w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all border ${
+                                  copiadoPixId === cob.id 
+                                    ? 'bg-green-600 text-white border-green-600' 
+                                    : 'bg-violet-600 text-white border-violet-600 hover:bg-violet-700'
+                                }`}
+                              >
+                                {copiadoPixId === cob.id ? (
+                                  <>
+                                    <Check size={12} />
+                                    PIX Copiado!
+                                  </>
+                                ) : (
+                                  <>
+                                    <Copy size={12} />
+                                    Copiar PIX Copia e Cola
+                                  </>
+                                )}
+                              </button>
+                            </div>
+                          )}
+
+                          {/* Boleto Link & Barcode */}
+                          {cob.asaasBoletoUrl && (
+                            <div className="bg-blue-50/50 dark:bg-blue-900/5 rounded-lg p-3 border border-blue-100/50 dark:border-blue-900/30 flex flex-col justify-between space-y-2">
+                              <div>
+                                <span className="font-bold text-xs text-gray-900 dark:text-gray-100 flex items-center gap-1">
+                                  <FileText size={13} className="text-blue-600" /> Boleto Bancário
+                                </span>
+                                <span className="text-[10px] text-gray-400 block mt-0.5">Compensação em até 1 dia útil</span>
+                              </div>
+                              <div className="space-y-1.5">
+                                <a
+                                  href={cob.asaasBoletoUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="w-full flex items-center justify-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-xs font-semibold transition-all text-center"
+                                >
+                                  <ExternalLink size={12} />
+                                  Visualizar Boleto
+                                </a>
+                                {cob.asaasBarcode && (
+                                  <button
+                                    type="button"
+                                    onClick={() => copyToClipboard(cob.asaasBarcode!, cob.id, 'barcode')}
+                                    className={`w-full flex items-center justify-center gap-1 px-2 py-1 rounded text-[10px] font-medium transition-all border ${
+                                      copiadoBarcodeId === cob.id
+                                        ? 'bg-green-50 text-green-700 border-green-200'
+                                        : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:bg-gray-50'
+                                    }`}
+                                  >
+                                    {copiadoBarcodeId === cob.id ? 'Linha Digitável Copiada!' : 'Copiar Código de Barras'}
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
     </div>
