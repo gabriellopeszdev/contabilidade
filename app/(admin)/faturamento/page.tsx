@@ -22,7 +22,6 @@ import {
 } from 'lucide-react';
 
 import { useAuth } from '../../../src/presentation/hooks/useAuth';
-import { logger } from '../../../src/utils/logger';
 
 // =============================================================================
 // Tipos
@@ -260,7 +259,7 @@ export default function FaturamentoPage() {
       const data = await res.json() as DadosCobrancas;
       setCobrancasData(data);
     } catch (e) {
-      logger.error('Erro ao carregar faturas emitidas', e instanceof Error ? e : undefined);
+      console.error('Erro ao carregar faturas emitidas', e instanceof Error ? e : undefined);
     }
   }, [token]);
 
