@@ -124,6 +124,12 @@ const NAV_GRUPOS_CLIENTE: NavGrupoCliente[] = [
     ],
   },
   {
+    label: 'Conta',
+    items: [
+      { href: '/conta', label: 'Configurações', icon: <Settings size={18} /> },
+    ],
+  },
+  {
     label: 'Suporte',
     items: [
       { href: '/ajuda', label: 'Ajuda', icon: <HelpCircle size={18} /> },

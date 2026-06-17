@@ -223,7 +223,7 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
   const statusWs = STATUS_CONFIG[status];
 
   return (
-    <div className="flex h-screen bg-sky-50/40 dark:bg-gray-950 overflow-hidden">
+    <div className="flex h-screen bg-primary-50/40 dark:bg-gray-950 overflow-hidden">
 
       {/* Skip link */}
       <a
@@ -248,13 +248,13 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
         className={`
           fixed lg:static inset-y-0 left-0 z-50
           ${colapsada ? 'w-16' : 'w-64'}
-          bg-white dark:bg-gray-900 border-r border-sky-100 dark:border-gray-800
+          bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800
           flex flex-col transition-all duration-300 ease-in-out
           ${sidebarAberta ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}
       >
         {/* Logo */}
-        <div className={`h-16 flex items-center border-b border-sky-100 dark:border-gray-800 shrink-0 ${colapsada ? 'justify-center' : 'gap-3 px-5'}`}>
+        <div className={`h-16 flex items-center border-b border-gray-100 dark:border-gray-800 shrink-0 ${colapsada ? 'justify-center' : 'gap-3 px-5'}`}>
           {logoUrl ? (
             <img src={logoUrl} alt="Logo" className="w-8 h-8 rounded-lg object-contain shrink-0" />
           ) : (
@@ -322,13 +322,13 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
         </nav>
 
         {/* Status WS + Perfil */}
-        <div className={`border-t border-sky-100 dark:border-gray-800 py-3 shrink-0 space-y-2 ${colapsada ? 'px-2' : 'px-3'}`}>
+        <div className={`border-t border-gray-100 dark:border-gray-800 py-3 shrink-0 space-y-2 ${colapsada ? 'px-2' : 'px-3'}`}>
           <div className={`flex items-center gap-2 ${colapsada ? 'justify-center py-1' : 'px-3 py-1.5'}`}>
             <span title={colapsada ? statusWs.label : undefined} className={`w-2 h-2 rounded-full shrink-0 ${statusWs.cor}`} />
             {!colapsada && <span className="text-[11px] text-gray-500 dark:text-gray-400">{statusWs.label}</span>}
           </div>
 
-          <div className={`flex items-center rounded-lg bg-sky-50/60 dark:bg-gray-800 ${colapsada ? 'justify-center p-2' : 'gap-3 px-3 py-2'}`}>
+          <div className={`flex items-center rounded-lg bg-primary-50/60 dark:bg-gray-800 ${colapsada ? 'justify-center p-2' : 'gap-3 px-3 py-2'}`}>
             <div title={colapsada ? usuario.nome : undefined} className="w-8 h-8 rounded-full bg-primary-light text-primary-dark flex items-center justify-center text-xs font-bold shrink-0">
               {iniciais}
             </div>
@@ -348,7 +348,7 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
 
         {/* Topbar */}
-        <header className="h-14 bg-white dark:bg-gray-900 border-b border-sky-100 dark:border-gray-800 flex items-center justify-between px-4 sm:px-6 shrink-0 z-20">
+        <header className="h-14 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between px-4 sm:px-6 shrink-0 z-20">
           <button
             className="lg:hidden min-h-[44px] min-w-[44px] flex items-center justify-center -ml-2 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
             onClick={() => setSidebarAberta(true)}
@@ -449,7 +449,7 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
                       notificacoes.map((n) => (
                         <li
                           key={n.id}
-                          className={`${!n.lida ? 'bg-sky-50/40 dark:bg-sky-900/20' : ''}`}
+                          className={`${!n.lida ? 'bg-primary-50 dark:bg-primary/10' : ''}`}
                         >
                           <button
                             type="button"
