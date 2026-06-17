@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { SignJWT } from 'jose';
+import { SignJWT, jwtVerify } from 'jose';
 
 import { prisma }               from '../../../../../src/infrastructure/di/Container';
 import { logger }               from '../../../../../src/utils/logger';
@@ -198,16 +198,34 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    const tempToken = await new SignJWT({
-      sub: userId,
-      type: 'TEMP_2FA',
-      role,
-    })
-      .setProtectedHeader({ alg: 'HS256' })
-      .setExpirationTime('5m')
-      .sign(new TextEncoder().encode(secret));
+    // Verifica se existe o cookie de "lembrar 2FA" neste dispositivo
+    const rememberCookie = request.cookies.get(`fiscohub_2fa_remember_${userId}`)?.value;
+    let skip2FA = false;
 
-    return NextResponse.json({ requires2FA: true, tempToken }, { status: 200 });
+    if (rememberCookie) {
+      try {
+        const key = new TextEncoder().encode(secret);
+        const { payload } = await jwtVerify(rememberCookie, key);
+        if (payload.sub === userId && payload.type === '2FA_REMEMBER') {
+          skip2FA = true;
+        }
+      } catch {
+        // Token de lembrança expirado ou inválido
+      }
+    }
+
+    if (!skip2FA) {
+      const tempToken = await new SignJWT({
+        sub: userId,
+        type: 'TEMP_2FA',
+        role,
+      })
+        .setProtectedHeader({ alg: 'HS256' })
+        .setExpirationTime('5m')
+        .sign(new TextEncoder().encode(secret));
+
+      return NextResponse.json({ requires2FA: true, tempToken }, { status: 200 });
+    }
   }
 
   // --------------------------------------------------------------------------

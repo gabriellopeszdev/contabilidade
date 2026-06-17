@@ -44,5 +44,19 @@ export async function POST(req: NextRequest) {
     .setExpirationTime(expiresIn)
     .sign(key);
 
-  return NextResponse.json({ token });
+  const rememberToken = await new SignJWT({ sub: payload.sub, type: '2FA_REMEMBER' })
+    .setProtectedHeader({ alg: 'HS256' })
+    .setExpirationTime('30d')
+    .sign(key);
+
+  const response = NextResponse.json({ token });
+  response.cookies.set(`fiscohub_2fa_remember_${payload.sub}`, rememberToken, {
+    path: '/',
+    maxAge: 30 * 24 * 60 * 60, // 30 dias
+    sameSite: 'lax',
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+  });
+
+  return response;
 }
