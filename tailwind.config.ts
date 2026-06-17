@@ -13,6 +13,9 @@ const config: Config = {
     extend: {
       // Escalas de cores consistentes com o design system do dashboard
       colors: {
+        gray: {
+          950: '#030712',
+        },
         brand: {
           50:  '#eff6ff',
           100: '#dbeafe',

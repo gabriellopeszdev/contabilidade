@@ -240,7 +240,7 @@ export default function FinanceiroLayout({ children }: { children: React.ReactNo
   // ============================================================
   if (isVisaoCliente) {
     return (
-      <div className="flex h-screen bg-primary-50/40 dark:bg-gray-950 overflow-hidden">
+      <div className="flex h-screen bg-gray-50 dark:bg-gray-950 overflow-hidden">
         {sidebarAberta && (
           <div className="fixed inset-0 bg-black/40 z-40 lg:hidden" onClick={() => setSidebarAberta(false)} />
         )}

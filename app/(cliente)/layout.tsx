@@ -223,7 +223,7 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
   const statusWs = STATUS_CONFIG[status];
 
   return (
-    <div className="flex h-screen bg-primary-50/40 dark:bg-gray-950 overflow-hidden">
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-950 overflow-hidden">
 
       {/* Skip link */}
       <a
@@ -328,7 +328,7 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
             {!colapsada && <span className="text-[11px] text-gray-500 dark:text-gray-400">{statusWs.label}</span>}
           </div>
 
-          <div className={`flex items-center rounded-lg bg-primary-50/60 dark:bg-gray-800 ${colapsada ? 'justify-center p-2' : 'gap-3 px-3 py-2'}`}>
+          <div className={`flex items-center rounded-lg bg-gray-100 dark:bg-gray-800 ${colapsada ? 'justify-center p-2' : 'gap-3 px-3 py-2'}`}>
             <div title={colapsada ? usuario.nome : undefined} className="w-8 h-8 rounded-full bg-primary-light text-primary-dark flex items-center justify-center text-xs font-bold shrink-0">
               {iniciais}
             </div>
