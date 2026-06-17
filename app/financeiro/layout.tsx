@@ -234,16 +234,16 @@ export default function FinanceiroLayout({ children }: { children: React.ReactNo
   // ============================================================
   if (isVisaoCliente) {
     return (
-      <div className="flex h-screen bg-sky-50/40 dark:bg-gray-950 overflow-hidden">
+      <div className="flex h-screen bg-primary-50/40 dark:bg-gray-950 overflow-hidden">
         {sidebarAberta && (
           <div className="fixed inset-0 bg-black/40 z-40 lg:hidden" onClick={() => setSidebarAberta(false)} />
         )}
 
-        <aside className={`fixed lg:static inset-y-0 left-0 z-50 ${colapsada ? 'w-16' : 'w-64'} bg-white dark:bg-gray-900 border-r border-sky-100 dark:border-gray-800 flex flex-col transition-all duration-300 ease-in-out ${sidebarAberta ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
-          <div className={`h-16 flex items-center border-b border-sky-100 dark:border-gray-800 shrink-0 ${colapsada ? 'justify-center' : 'gap-3 px-4'}`}>
+        <aside className={`fixed lg:static inset-y-0 left-0 z-50 ${colapsada ? 'w-16' : 'w-64'} bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 flex flex-col transition-all duration-300 ease-in-out ${sidebarAberta ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
+          <div className={`h-16 flex items-center border-b border-gray-100 dark:border-gray-800 shrink-0 ${colapsada ? 'justify-center' : 'gap-3 px-4'}`}>
             {logoUrl
               ? <img src={logoUrl} alt="Logo" className="w-8 h-8 rounded-lg object-contain shrink-0" />
-              : <div className="w-8 h-8 rounded-lg bg-sky-600 flex items-center justify-center shrink-0"><Building2 size={16} className="text-white" /></div>
+              : <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shrink-0"><Building2 size={16} className="text-white" /></div>
             }
             {!colapsada && (
               <>
@@ -274,8 +274,8 @@ export default function FinanceiroLayout({ children }: { children: React.ReactNo
                       const ativo = pathname === item.href || pathname.startsWith(item.href + '/');
                       return (
                         <Link key={item.href} href={item.href} onClick={() => setSidebarAberta(false)} title={colapsada ? item.label : undefined}
-                          className={`flex items-center rounded-lg text-sm font-medium transition-colors ${colapsada ? 'justify-center py-2.5' : 'gap-3 px-3 py-2.5'} ${ativo ? 'bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'}`}>
-                          <span className={`shrink-0 ${ativo ? 'text-sky-600 dark:text-sky-400' : 'text-gray-400 dark:text-gray-500'}`}>{item.icon}</span>
+                          className={`flex items-center rounded-lg text-sm font-medium transition-colors ${colapsada ? 'justify-center py-2.5' : 'gap-3 px-3 py-2.5'} ${ativo ? 'bg-primary-50 text-primary dark:bg-primary/20 dark:text-primary' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'}`}>
+                          <span className={`shrink-0 ${ativo ? 'text-primary' : 'text-gray-400 dark:text-gray-500'}`}>{item.icon}</span>
                           {!colapsada && item.label}
                         </Link>
                       );
@@ -285,13 +285,13 @@ export default function FinanceiroLayout({ children }: { children: React.ReactNo
               ))}
           </nav>
 
-          <div className={`border-t border-sky-100 dark:border-gray-800 py-3 shrink-0 space-y-2 ${colapsada ? 'px-2' : 'px-3'}`}>
+          <div className={`border-t border-gray-100 dark:border-gray-800 py-3 shrink-0 space-y-2 ${colapsada ? 'px-2' : 'px-3'}`}>
             <div className={`flex items-center gap-2 ${colapsada ? 'justify-center py-1' : 'px-3 py-1'}`}>
               <span className={`w-2 h-2 rounded-full shrink-0 ${statusWs.cor}`} />
               {!colapsada && <span className="text-[11px] text-gray-500 dark:text-gray-400">{statusWs.label}</span>}
             </div>
-            <div className={`flex items-center rounded-lg bg-sky-50/60 dark:bg-gray-800 ${colapsada ? 'justify-center p-2' : 'gap-3 px-3 py-2'}`}>
-              <div title={colapsada ? usuario.nome : undefined} className="w-8 h-8 rounded-full bg-sky-100 dark:bg-sky-900/40 text-sky-700 dark:text-sky-400 flex items-center justify-center text-xs font-bold shrink-0">{iniciais}</div>
+            <div className={`flex items-center rounded-lg bg-primary-50/60 dark:bg-gray-800 ${colapsada ? 'justify-center p-2' : 'gap-3 px-3 py-2'}`}>
+              <div title={colapsada ? usuario.nome : undefined} className="w-8 h-8 rounded-full bg-primary-light text-primary-dark flex items-center justify-center text-xs font-bold shrink-0">{iniciais}</div>
               {!colapsada && (
                 <div className="min-w-0 flex-1">
                   <p className="text-xs font-semibold text-gray-900 dark:text-gray-100 truncate">{usuario.nome}</p>
@@ -303,7 +303,7 @@ export default function FinanceiroLayout({ children }: { children: React.ReactNo
         </aside>
 
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          <header className="h-14 bg-white dark:bg-gray-900 border-b border-sky-100 dark:border-gray-800 flex items-center justify-between px-4 sm:px-6 shrink-0 z-20">
+          <header className="h-14 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between px-4 sm:px-6 shrink-0 z-20">
             <button className="lg:hidden p-2 -ml-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800" onClick={() => setSidebarAberta(true)} aria-label="Abrir menu"><Menu size={20} /></button>
             <div className="hidden lg:flex items-center gap-2">
               <button onClick={toggleColapsada} className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">{colapsada ? <ChevronsRight size={18} /> : <ChevronsLeft size={18} />}</button>
@@ -336,7 +336,7 @@ export default function FinanceiroLayout({ children }: { children: React.ReactNo
                     <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-100 dark:border-gray-800">
                       <span className="text-xs font-bold text-gray-900 dark:text-gray-100">Notificações</span>
                       <div className="flex gap-3">
-                        {naoLidas > 0 && <button onClick={marcarTodasLidas} className="text-[10px] text-sky-600 hover:underline">Marcar todas como lidas</button>}
+                        {naoLidas > 0 && <button onClick={marcarTodasLidas} className="text-[10px] text-primary hover:underline">Marcar todas como lidas</button>}
                         {notificacoes.length > 0 && <button onClick={limpar} className="text-[10px] text-gray-400 hover:text-red-500">Limpar</button>}
                       </div>
                     </div>
@@ -344,7 +344,7 @@ export default function FinanceiroLayout({ children }: { children: React.ReactNo
                       {notificacoes.length === 0
                         ? <li className="py-8 text-center text-xs text-gray-400 dark:text-gray-500">Nenhuma notificação</li>
                         : notificacoes.map((n) => (
-                          <li key={n.id} onClick={() => marcarComoLida(n.id)} className={`px-4 py-2.5 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${!n.lida ? 'bg-sky-50/40 dark:bg-sky-900/20' : ''}`}>
+                          <li key={n.id} onClick={() => marcarComoLida(n.id)} className={`px-4 py-2.5 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${!n.lida ? 'bg-primary-50 dark:bg-primary/10' : ''}`}>
                             <p className="text-[11px] font-semibold text-gray-800 dark:text-gray-200">{n.titulo}</p>
                             <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">{n.mensagem}</p>
                             <p className="text-[9px] text-gray-300 dark:text-gray-600 mt-0.5">{n.createdAt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
@@ -357,7 +357,7 @@ export default function FinanceiroLayout({ children }: { children: React.ReactNo
               </div>
               <div ref={userMenuRef} className="relative">
                 <button onClick={() => setUserMenuAberto((v) => !v)} className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                  <div className="w-7 h-7 rounded-full bg-sky-100 dark:bg-sky-900/40 text-sky-700 dark:text-sky-400 flex items-center justify-center text-[10px] font-bold">{iniciais}</div>
+                  <div className="w-7 h-7 rounded-full bg-primary-light text-primary-dark flex items-center justify-center text-[10px] font-bold">{iniciais}</div>
                   <span className="hidden sm:block text-xs font-medium text-gray-700 dark:text-gray-300 max-w-[120px] truncate">{usuario.nome}</span>
                   <ChevronDown size={14} className="text-gray-400" />
                 </button>
@@ -444,8 +444,8 @@ export default function FinanceiroLayout({ children }: { children: React.ReactNo
 
                   return (
                     <Link key={item.href} href={item.href} onClick={() => setSidebarAberta(false)}
-                      className={`flex items-center rounded-lg text-sm font-medium transition-colors ${colapsada ? 'justify-center py-2.5' : 'gap-3 px-3 py-2.5'} ${ativo ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'}`}>
-                      <span className={`shrink-0 ${ativo ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'}`}>{item.icon}</span>
+                      className={`flex items-center rounded-lg text-sm font-medium transition-colors ${colapsada ? 'justify-center py-2.5' : 'gap-3 px-3 py-2.5'} ${ativo ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'}`}>
+                      <span className={`shrink-0 ${ativo ? 'text-primary' : 'text-gray-400 dark:text-gray-500'}`}>{item.icon}</span>
                       {!colapsada && item.label}
                     </Link>
                   );
@@ -461,7 +461,7 @@ export default function FinanceiroLayout({ children }: { children: React.ReactNo
             {!colapsada && <span className="text-[11px] text-gray-500 dark:text-gray-400">{statusWs.label}</span>}
           </div>
           <div className={`flex items-center rounded-lg bg-gray-50 dark:bg-gray-800 ${colapsada ? 'justify-center p-2' : 'gap-3 px-3 py-2'}`}>
-            <div title={colapsada ? usuario.nome : undefined} className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 flex items-center justify-center text-xs font-bold shrink-0">{iniciais}</div>
+            <div title={colapsada ? usuario.nome : undefined} className="w-8 h-8 rounded-full bg-primary-light text-primary-dark flex items-center justify-center text-xs font-bold shrink-0">{iniciais}</div>
             {!colapsada && (
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-semibold text-gray-900 dark:text-gray-100 truncate">{usuario.nome}</p>
@@ -531,7 +531,7 @@ export default function FinanceiroLayout({ children }: { children: React.ReactNo
 
             <div ref={userMenuRef} className="relative">
               <button onClick={() => setUserMenuAberto((v) => !v)} className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                <div className="w-7 h-7 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 flex items-center justify-center text-[10px] font-bold">{iniciais}</div>
+                <div className="w-7 h-7 rounded-full bg-primary-light text-primary-dark flex items-center justify-center text-[10px] font-bold">{iniciais}</div>
                 <span className="hidden sm:block text-xs font-medium text-gray-700 dark:text-gray-300 max-w-[120px] truncate">{usuario.nome}</span>
                 <ChevronDown size={14} className="text-gray-400" />
               </button>
