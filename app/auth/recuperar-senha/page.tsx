@@ -41,7 +41,7 @@ export default function RecuperarSenhaPage() {
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900">
       <div className="w-full max-w-sm">
         <div className="flex flex-col items-center mb-8">
-          <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-600 shadow-lg mb-4">
+          <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-primary shadow-lg mb-4">
             <Building2 size={32} className="text-white" />
           </div>
           <h1 className="text-2xl font-bold text-white tracking-tight">Recuperar senha</h1>
@@ -100,7 +100,7 @@ export default function RecuperarSenhaPage() {
           )}
 
           <div className="mt-5 text-center">
-            <Link href="/" className="text-xs text-blue-600 hover:underline">
+            <Link href="/" className="text-xs text-primary hover:underline">
               ← Voltar para o login
             </Link>
           </div>

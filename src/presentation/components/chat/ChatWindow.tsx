@@ -180,7 +180,7 @@ export const ChatWindow = forwardRef<ChatWindowHandle, ChatWindowProps>(function
   if (semSala) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center bg-gray-50/50 dark:bg-gray-950/50 text-center px-8">
-        <div className="w-16 h-16 rounded-2xl bg-primary-50 flex items-center justify-center mb-4">
+        <div className="w-16 h-16 rounded-2xl bg-primary/10 dark:bg-primary/20 flex items-center justify-center mb-4">
           <MessageSquare size={28} className="text-primary" />
         </div>
         <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-1">
@@ -340,13 +340,13 @@ export const ChatWindow = forwardRef<ChatWindowHandle, ChatWindowProps>(function
       <div className="px-4 py-3 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shrink-0">
         {/* Attachment preview */}
         {anexo && (
-          <div className="flex items-center gap-2 px-2 py-1.5 mb-2 bg-primary-50 border border-primary/20 rounded-lg">
+          <div className="flex items-center gap-2 px-2 py-1.5 mb-2 bg-primary/10 dark:bg-primary/20 border border-primary/20 rounded-lg">
             {anexo.nome.toLowerCase().endsWith('.xml') ? (
               <FileCode2 size={14} className="text-primary shrink-0" />
             ) : (
               <FileText size={14} className="text-primary shrink-0" />
             )}
-            <span className="text-xs text-primary-dark truncate flex-1">{anexo.nome}</span>
+            <span className="text-xs text-primary-dark dark:text-primary truncate flex-1">{anexo.nome}</span>
             <button
               type="button"
               onClick={() => setAnexo(null)}

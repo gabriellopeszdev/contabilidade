@@ -106,9 +106,9 @@ export function DashboardContadorFuncionario({ token, setores }: Props) {
       </div>
 
       {/* Banner informativo */}
-      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-center gap-3">
-        <ShieldCheck size={18} className="text-blue-500 shrink-0" />
-        <p className="text-sm text-blue-700">
+      <div className="bg-primary/10 dark:bg-primary/10 border border-primary/20 rounded-xl p-4 flex items-center gap-3">
+        <ShieldCheck size={18} className="text-primary shrink-0" />
+        <p className="text-sm text-primary dark:text-primary">
           Você está visualizando dados dos setores que possui acesso.
         </p>
       </div>

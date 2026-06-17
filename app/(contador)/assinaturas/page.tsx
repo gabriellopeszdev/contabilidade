@@ -103,7 +103,7 @@ export default function AssinaturasPage() {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
-          <FileSignature size={24} className="text-blue-600" />
+          <FileSignature size={24} className="text-primary" />
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Assinaturas</h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">Gerencie solicitações de assinatura eletrônica</p>
@@ -129,7 +129,7 @@ export default function AssinaturasPage() {
               onClick={() => setFiltro(filtro === s ? 'TODOS' : s)}
               className={`p-4 rounded-xl border text-left transition-all ${
                 filtro === s
-                  ? 'ring-2 ring-blue-500 ' + cfg.cor
+                  ? 'ring-2 ring-primary ' + cfg.cor
                   : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
               }`}
             >
@@ -149,7 +149,7 @@ export default function AssinaturasPage() {
             onClick={() => setFiltro(f.value)}
             className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
               filtro === f.value
-                ? 'bg-blue-600 text-white'
+                ? 'bg-primary text-white'
                 : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
             }`}
           >
@@ -161,7 +161,7 @@ export default function AssinaturasPage() {
       {/* Estado de carregamento */}
       {carregando && (
         <div className="flex items-center justify-center py-16">
-          <Loader2 size={24} className="animate-spin text-blue-600" />
+          <Loader2 size={24} className="animate-spin text-primary" />
         </div>
       )}
 
@@ -235,7 +235,7 @@ export default function AssinaturasPage() {
                           {(a.status === 'PENDENTE' || a.status === 'EXPIRADO') && (
                             <button
                               onClick={() => abrirLinkAssinatura(a.tokenAssinatura)}
-                              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-primary dark:text-primary border border-primary/30 dark:border-primary/30 rounded-lg hover:bg-primary-50 dark:hover:bg-primary/10 transition-colors"
                             >
                               <ExternalLink size={12} />
                               Ver link
@@ -280,7 +280,7 @@ export default function AssinaturasPage() {
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center gap-2">
-                <ShieldCheck size={18} className="text-blue-600" />
+                <ShieldCheck size={18} className="text-primary" />
                 <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Auditoria de Assinatura</h2>
               </div>
               <button onClick={() => setDrawerAssinatura(null)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
@@ -342,7 +342,7 @@ export default function AssinaturasPage() {
               {/* Provider */}
               <div>
                 <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-2">Provedor de Assinatura</p>
-                <span className="text-xs px-2 py-1 rounded bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-medium border border-blue-200 dark:border-blue-800">
+                <span className="text-xs px-2 py-1 rounded bg-primary-50 dark:bg-primary/10 text-primary-dark dark:text-primary font-medium border border-primary/30 dark:border-primary/30">
                   {drawerAssinatura.provider === 'INTERNO' ? 'Sistema Interno' : drawerAssinatura.provider === 'DOCSEAL' ? 'DocSeal' : 'SignatureAPI'}
                 </span>
                 {drawerAssinatura.docsealSubmissionId && (

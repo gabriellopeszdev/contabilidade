@@ -125,8 +125,8 @@ export function FiltroClienteCombobox({
       {!open ? (
         value ? (
           /* Chip com cliente selecionado */
-          <div className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-blue-300 dark:border-blue-700
-                          bg-blue-50 dark:bg-blue-900/20 text-xs font-medium text-blue-700 dark:text-blue-400 max-w-[220px]">
+          <div className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-primary dark:border-primary
+                          bg-primary-50 dark:bg-primary/10 text-xs font-medium text-primary-dark dark:text-primary max-w-[220px]">
             <Building2 size={13} className="shrink-0" />
             <span className="truncate cursor-pointer flex-1" onClick={abrir}>{value.nome}</span>
             <button
@@ -162,12 +162,12 @@ export function FiltroClienteCombobox({
             onChange={e => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Nome ou CNPJ…"
-            className="w-52 pl-8 pr-7 py-2 text-xs rounded-lg border border-blue-400 dark:border-blue-600
+            className="w-52 pl-8 pr-7 py-2 text-xs rounded-lg border border-primary dark:border-primary
                        bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100
                        placeholder:text-gray-400 dark:placeholder:text-gray-500
-                       focus:outline-none focus:ring-2 focus:ring-blue-400"
+                       focus:outline-none focus:ring-2 focus:ring-primary"
           />
-          {loading && <Loader2 size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-blue-500 animate-spin" />}
+          {loading && <Loader2 size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-primary animate-spin" />}
         </div>
       )}
 
@@ -190,8 +190,8 @@ export function FiltroClienteCombobox({
                 onClick={() => selecionar(c)}
                 onMouseEnter={() => setActiveIndex(i)}
                 className={`flex items-center gap-2.5 px-3 py-2 cursor-pointer transition-colors
-                  ${activeIndex === i ? 'bg-blue-50 dark:bg-blue-900/20' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}
-                  ${value?.id === c.id ? 'ring-1 ring-inset ring-blue-300 dark:ring-blue-700' : ''}`}
+                  ${activeIndex === i ? 'bg-primary-50 dark:bg-primary/10' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}
+                  ${value?.id === c.id ? 'ring-1 ring-inset ring-primary dark:ring-primary/50' : ''}`}
               >
                 <Building2 size={13} className="text-gray-400 dark:text-gray-500 shrink-0" />
                 <div className="flex-1 min-w-0">

@@ -121,9 +121,9 @@ export function ClientesReadOnly() {
       </div>
 
       {/* Banner informativo */}
-      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 flex items-center gap-3 mb-5">
-        <ShieldCheck size={18} className="text-blue-500 shrink-0" />
-        <p className="text-sm text-blue-700 dark:text-blue-400">
+      <div className="bg-primary-50 dark:bg-primary/10 border border-primary/30 dark:border-primary/20 rounded-xl p-4 flex items-center gap-3 mb-5">
+        <ShieldCheck size={18} className="text-primary shrink-0" />
+        <p className="text-sm text-primary dark:text-primary">
           Modo visualização — você pode consultar clientes e documentos de {setoresLabel}.
         </p>
       </div>
@@ -139,7 +139,7 @@ export function ClientesReadOnly() {
             placeholder="Buscar por nome, CNPJ ou e-mail…"
             className="w-full pl-9 pr-4 py-2.5 text-sm rounded-lg border border-slate-300 dark:border-gray-600 bg-white dark:bg-gray-800
               text-slate-900 dark:text-gray-100 placeholder:text-slate-400 dark:placeholder:text-gray-500
-              focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+              focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
           />
         </div>
       </div>
@@ -153,7 +153,7 @@ export function ClientesReadOnly() {
         </div>
       ) : isLoading ? (
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-700 shadow-sm p-12 flex flex-col items-center gap-3">
-          <Loader2 size={28} className="animate-spin text-blue-500" />
+          <Loader2 size={28} className="animate-spin text-primary" />
           <p className="text-sm text-slate-500 dark:text-gray-400">Carregando clientes…</p>
         </div>
       ) : filtrados.length === 0 ? (
@@ -189,7 +189,7 @@ export function ClientesReadOnly() {
 
                   {/* Avatar + Nome + Telefone */}
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="shrink-0 w-9 h-9 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400
+                    <div className="shrink-0 w-9 h-9 rounded-full bg-primary-light text-primary-dark
                       flex items-center justify-center text-xs font-bold">
                       {iniciais(c.nome)}
                     </div>
@@ -197,7 +197,7 @@ export function ClientesReadOnly() {
                       <button
                         type="button"
                         onClick={() => router.push(`/clientes/${c.id}`)}
-                        className="text-sm font-semibold text-slate-900 dark:text-gray-100 truncate hover:text-blue-600 dark:hover:text-blue-400
+                        className="text-sm font-semibold text-slate-900 dark:text-gray-100 truncate hover:text-primary dark:hover:text-primary
                           transition-colors text-left"
                       >
                         {c.nome}

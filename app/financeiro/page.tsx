@@ -352,7 +352,7 @@ export default function FinanceiroPage() {
   if (authCarregando) {
     return (
       <div className="flex items-center justify-center py-32">
-        <Loader2 className="animate-spin text-blue-600" size={32} />
+        <Loader2 className="animate-spin text-primary" size={32} />
       </div>
     );
   }
@@ -417,7 +417,7 @@ export default function FinanceiroPage() {
 
         {/* Título */}
         <div className="flex items-center gap-2">
-          <DollarSign size={20} className="text-sky-600" />
+          <DollarSign size={20} className="text-primary" />
           <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">Meus Boletos</h2>
         </div>
 
@@ -471,7 +471,7 @@ export default function FinanceiroPage() {
                           <div className="flex items-center justify-center gap-1.5 flex-wrap">
                             <button
                               onClick={() => handleDownload(b)}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/20 hover:bg-sky-100 dark:hover:bg-sky-900/30 transition-colors"
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-primary-dark dark:text-primary bg-primary-50 dark:bg-primary/10 hover:bg-primary-50 dark:hover:bg-primary/20 transition-colors"
                               title={b.asaasBoletoUrl ? 'Ver boleto no Asaas' : 'Baixar PDF'}
                             >
                               {b.asaasBoletoUrl ? <ExternalLink size={14} /> : <Download size={14} />}
@@ -552,7 +552,7 @@ export default function FinanceiroPage() {
       {/* Toolbar */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <DollarSign size={20} className="text-blue-600" />
+          <DollarSign size={20} className="text-primary" />
           <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">Honorários</h2>
         </div>
 
@@ -563,7 +563,7 @@ export default function FinanceiroPage() {
             <select
               value={filtroStatus}
               onChange={(e) => { setFiltroStatus(e.target.value); setPage(1); }}
-              className="pl-9 pr-8 py-2 text-xs rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none dark:[color-scheme:dark]"
+              className="pl-9 pr-8 py-2 text-xs rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-primary focus:border-transparent appearance-none dark:[color-scheme:dark]"
             >
               <option value="">Todos os status</option>
               <option value="PENDENTE">Pendente</option>
@@ -599,7 +599,7 @@ export default function FinanceiroPage() {
           {isDono && isVisaoContador && (
             <button
               onClick={() => { setErros({}); setFormErro(''); setModalAberto(true); }}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-white text-xs font-semibold hover:bg-primary-dark transition-colors"
             >
               <Plus size={14} />
               Novo Honorário
@@ -654,7 +654,7 @@ export default function FinanceiroPage() {
                           {/* Ver/baixar boleto */}
                           <button
                             onClick={() => handleDownload(b)}
-                            className="p-1.5 rounded-lg text-gray-400 dark:text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                            className="p-1.5 rounded-lg text-gray-400 dark:text-gray-500 hover:text-primary hover:bg-primary-50 dark:hover:bg-primary/10 transition-colors"
                             title={b.asaasBoletoUrl ? 'Ver boleto no Asaas' : 'Baixar PDF'}
                           >
                             {b.asaasBoletoUrl ? <ExternalLink size={15} /> : <Download size={15} />}
@@ -796,7 +796,7 @@ export default function FinanceiroPage() {
                     value={formValor}
                     onChange={(e) => { setFormValor(e.target.value); setErros((p) => ({ ...p, valor: '' })); }}
                     placeholder="1500.00"
-                    className={`w-full px-3 py-2 text-sm rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500 ${erros.valor ? 'border-red-500 bg-red-50/30' : 'border-gray-200 dark:border-gray-600'}`}
+                    className={`w-full px-3 py-2 text-sm rounded-lg border focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500 ${erros.valor ? 'border-red-500 bg-red-50/30' : 'border-gray-200 dark:border-gray-600'}`}
                   />
                   {erros.valor && <p className="mt-1 text-xs text-red-600">{erros.valor}</p>}
                 </div>
@@ -808,7 +808,7 @@ export default function FinanceiroPage() {
                     type="date"
                     value={formVencimento}
                     onChange={(e) => { setFormVencimento(e.target.value); setErros((p) => ({ ...p, vencimento: '' })); }}
-                    className={`w-full px-3 py-2 text-sm rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-gray-100 ${erros.vencimento ? 'border-red-500 bg-red-50/30' : 'border-gray-200 dark:border-gray-600'}`}
+                    className={`w-full px-3 py-2 text-sm rounded-lg border focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-800 dark:text-gray-100 ${erros.vencimento ? 'border-red-500 bg-red-50/30' : 'border-gray-200 dark:border-gray-600'}`}
                   />
                   {erros.vencimento && <p className="mt-1 text-xs text-red-600">{erros.vencimento}</p>}
                 </div>
@@ -821,7 +821,7 @@ export default function FinanceiroPage() {
                   type="month"
                   value={formMes}
                   onChange={(e) => { setFormMes(e.target.value); setErros((p) => ({ ...p, mesReferencia: '' })); }}
-                  className={`w-full px-3 py-2 text-sm rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-gray-100 ${erros.mesReferencia ? 'border-red-500 bg-red-50/30' : 'border-gray-200 dark:border-gray-600'}`}
+                  className={`w-full px-3 py-2 text-sm rounded-lg border focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-800 dark:text-gray-100 ${erros.mesReferencia ? 'border-red-500 bg-red-50/30' : 'border-gray-200 dark:border-gray-600'}`}
                 />
                 {erros.mesReferencia && <p className="mt-1 text-xs text-red-600">{erros.mesReferencia}</p>}
               </div>
@@ -833,14 +833,14 @@ export default function FinanceiroPage() {
                   value={formDescricao}
                   onChange={(e) => setFormDescricao(e.target.value)}
                   placeholder="Honorários contábeis, folha de pagamento, etc."
-                  className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
               </div>
 
               {/* Aviso geração automática */}
-              <div className="flex items-start gap-2 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800">
-                <Sparkles size={15} className="text-blue-500 shrink-0 mt-0.5" />
-                <p className="text-xs text-blue-700 dark:text-blue-400">
+              <div className="flex items-start gap-2 p-3 rounded-lg bg-primary-50 dark:bg-primary/10 border border-primary/20 dark:border-primary/20">
+                <Sparkles size={15} className="text-primary shrink-0 mt-0.5" />
+                <p className="text-xs text-primary-dark dark:text-primary">
                   Se a integração Asaas estiver configurada, um boleto bancário real será emitido. Caso contrário, um PDF será gerado automaticamente.
                 </p>
               </div>
@@ -857,7 +857,7 @@ export default function FinanceiroPage() {
               <button
                 onClick={handleSubmit}
                 disabled={submitting}
-                className="flex items-center gap-1.5 px-5 py-2 text-xs font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-60"
+                className="flex items-center gap-1.5 px-5 py-2 text-xs font-semibold text-white bg-primary rounded-lg hover:bg-primary-dark transition-colors disabled:opacity-60"
               >
                 {submitting ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
                 {submitting ? 'Gerando…' : 'Gerar Boleto'}

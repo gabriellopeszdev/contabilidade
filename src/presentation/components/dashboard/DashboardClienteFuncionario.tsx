@@ -45,7 +45,7 @@ function getSetorConfig(setor: SetorDocumento) {
 }
 
 const ORIGEM_CONFIG: Record<Origem, { label: string; icone: typeof Upload; classes: string }> = {
-  UPLOAD_CLIENTE:  { label: 'Enviado pela empresa',     icone: Upload,   classes: 'text-blue-600   bg-blue-50' },
+  UPLOAD_CLIENTE:  { label: 'Enviado pela empresa',     icone: Upload,   classes: 'text-primary bg-primary/10 dark:bg-primary/20' },
   UPLOAD_CONTADOR: { label: 'Enviado pelo escritório',  icone: Download, classes: 'text-emerald-600 bg-emerald-50' },
 };
 
@@ -140,9 +140,9 @@ export default function DashboardClienteFuncionario() {
       <BannerBoletosCliente token={token} />
 
       {/* Banner informativo */}
-      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-center gap-3">
-        <ShieldCheck size={18} className="text-blue-500 shrink-0" />
-        <p className="text-sm text-blue-700">
+      <div className="bg-primary/10 dark:bg-primary/10 border border-primary/20 rounded-xl p-4 flex items-center gap-3">
+        <ShieldCheck size={18} className="text-primary shrink-0" />
+        <p className="text-sm text-primary dark:text-primary">
           Você está visualizando documentos dos setores que possui acesso.
         </p>
       </div>
@@ -174,7 +174,7 @@ export default function DashboardClienteFuncionario() {
             placeholder="Buscar por nome do arquivo…"
             className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-slate-300 dark:border-gray-600 bg-white dark:bg-gray-900
               text-slate-900 dark:text-gray-100 placeholder:text-slate-400 dark:placeholder:text-gray-500
-              focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+              focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
           />
         </div>
 
@@ -185,7 +185,7 @@ export default function DashboardClienteFuncionario() {
             value={setor ?? ''}
             onChange={(e) => setSetor((e.target.value || undefined) as SetorFiltro | undefined)}
             className="px-3 py-2 text-xs font-medium rounded-lg border border-slate-300 dark:border-gray-600 bg-white dark:bg-gray-900
-              text-slate-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:[color-scheme:dark]"
+              text-slate-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary dark:[color-scheme:dark]"
           >
             <option value="">Todos os Setores</option>
             <option value="FISCAL">Fiscal</option>
@@ -197,7 +197,7 @@ export default function DashboardClienteFuncionario() {
             value={filtroLeitura}
             onChange={(e) => setFiltroLeitura(e.target.value as 'lido' | 'nao_lido' | '')}
             className="px-3 py-2 text-xs font-medium rounded-lg border border-slate-300 dark:border-gray-600 bg-white dark:bg-gray-900
-              text-slate-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:[color-scheme:dark]"
+              text-slate-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary dark:[color-scheme:dark]"
           >
             <option value="">Todos</option>
             <option value="nao_lido">Não lidos</option>
@@ -208,7 +208,7 @@ export default function DashboardClienteFuncionario() {
             value={filtroOrigem}
             onChange={(e) => setFiltroOrigem(e.target.value as Origem | '')}
             className="px-3 py-2 text-xs font-medium rounded-lg border border-slate-300 dark:border-gray-600 bg-white dark:bg-gray-900
-              text-slate-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:[color-scheme:dark]"
+              text-slate-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary dark:[color-scheme:dark]"
           >
             <option value="">Todas as Origens</option>
             <option value="UPLOAD_CLIENTE">Enviado pela empresa</option>
@@ -220,7 +220,7 @@ export default function DashboardClienteFuncionario() {
       {/* Tabela */}
       {carregando && documentos.length === 0 ? (
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-700 shadow-sm p-12 flex flex-col items-center gap-3">
-          <Loader2 size={24} className="animate-spin text-blue-500" />
+          <Loader2 size={24} className="animate-spin text-primary" />
           <p className="text-sm text-slate-500 dark:text-gray-400">Carregando documentos…</p>
         </div>
       ) : erro ? (
@@ -277,7 +277,7 @@ export default function DashboardClienteFuncionario() {
                           </p>
                           {!doc.readStatus && (
                             <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold
-                              bg-blue-500 text-white leading-none tracking-wide animate-pulse">
+                              bg-primary text-white leading-none tracking-wide animate-pulse">
                               NOVO
                             </span>
                           )}
@@ -303,7 +303,7 @@ export default function DashboardClienteFuncionario() {
                         font-bold uppercase border ${
                           doc.fileType === 'PDF'
                             ? 'bg-red-50 text-red-600 border-red-200'
-                            : 'bg-sky-50 text-sky-600 border-sky-200'
+                            : 'bg-primary/10 dark:bg-primary/20 text-primary border-primary/30'
                         }`}>
                         {doc.fileType}
                       </span>
@@ -345,7 +345,7 @@ export default function DashboardClienteFuncionario() {
                         onClick={() => handleBaixar(doc.id)}
                         disabled={isBaixando}
                         title="Baixar arquivo"
-                        className="p-2 rounded-lg text-slate-400 dark:text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-sky-900/20
+                        className="p-2 rounded-lg text-slate-400 dark:text-gray-500 hover:text-primary hover:bg-primary-50 dark:hover:bg-primary/10
                           disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       >
                         {isBaixando ? (

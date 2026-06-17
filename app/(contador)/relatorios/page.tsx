@@ -151,7 +151,7 @@ export default function RelatoriosPage() {
 
       {/* Header */}
       <div className="flex items-center gap-3">
-        <FileBarChart size={24} className="text-blue-600" />
+        <FileBarChart size={24} className="text-primary" />
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Relatórios</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">Visualize, filtre e exporte dados do escritório</p>
@@ -167,7 +167,7 @@ export default function RelatoriosPage() {
               onClick={() => trocarAba(a.id)}
               className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
                 abaAtiva === a.id
-                  ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+                  ? 'border-primary text-primary dark:text-primary'
                   : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:border-gray-300 dark:hover:border-gray-600'
               }`}
             >
@@ -236,7 +236,7 @@ export default function RelatoriosPage() {
             </button>
             <button
               onClick={() => exportar('excel')}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white text-sm font-medium rounded-lg transition-colors"
             >
               <Download size={14} />
               Excel

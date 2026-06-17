@@ -54,15 +54,15 @@ const COR_SETOR: Record<SetorTipo, string> = {
 };
 
 const COR_SETOR_INATIVO: Record<SetorTipo, string> = {
-  FISCAL:   'hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-700 dark:text-blue-400 border-blue-300 dark:border-blue-700',
-  PESSOAL:  'hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-700 dark:text-blue-400 border-blue-300 dark:border-blue-700',
+  FISCAL:   'hover:bg-primary-50 dark:hover:bg-primary/10 text-primary dark:text-primary border-primary dark:border-primary/50',
+  PESSOAL:  'hover:bg-primary-50 dark:hover:bg-primary/10 text-primary dark:text-primary border-primary dark:border-primary/50',
   CONTABIL: 'hover:bg-emerald-50 dark:hover:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-700',
 };
 
 function iconeArquivo(nome: string): React.ReactNode {
   const ext = nome.split('.').pop()?.toLowerCase();
   if (ext === 'pdf') return <FileText  size={18} className="text-red-500   shrink-0" />;
-  if (ext === 'xml') return <FileCode  size={18} className="text-blue-500  shrink-0" />;
+  if (ext === 'xml') return <FileCode  size={18} className="text-primary  shrink-0" />;
   return                    <FileQuestion size={18} className="text-gray-400 shrink-0" />;
 }
 
@@ -102,8 +102,8 @@ function ItemArquivo({ arquivo, indice, onRemover, desabilitado }: ItemArquivoPr
       ),
     },
     enviando: {
-      bg:    'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800',
-      icone: <Loader2 size={18} className="text-blue-500 shrink-0 animate-spin" />,
+      bg:    'bg-primary-50 dark:bg-primary/10 border-primary/30 dark:border-primary/30',
+      icone: <Loader2 size={18} className="text-primary shrink-0 animate-spin" />,
       extra: null,
     },
     sucesso: {
@@ -331,7 +331,7 @@ export function UploadLoteDropzone({
             disabled={enviando || concluido}
             className="rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-1.5 text-sm text-gray-700 dark:text-gray-200
                        bg-white dark:bg-gray-800
-                       focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+                       focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary
                        disabled:opacity-50 disabled:bg-gray-100 dark:disabled:bg-gray-700"
           />
         </div>
@@ -353,23 +353,23 @@ export function UploadLoteDropzone({
           onKeyDown={(e) => e.key === 'Enter' && !enviando && inputRef.current?.click()}
           className={`relative rounded-2xl border-2 border-dashed cursor-pointer transition-all
                       flex flex-col items-center justify-center gap-3 py-12 px-6 text-center
-                      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400
+                      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary
                       ${enviando
                         ? 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 cursor-not-allowed pointer-events-none'
                         : isDragOver
-                          ? 'border-blue-400 bg-blue-50 dark:bg-blue-900/20 scale-[1.01]'
-                          : 'border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 hover:border-blue-400 hover:bg-blue-50 dark:hover:border-blue-500 dark:hover:bg-blue-900/20'
+                          ? 'border-primary bg-primary-50 dark:bg-primary/10 scale-[1.01]'
+                          : 'border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 hover:border-primary hover:bg-primary-50 dark:hover:border-primary dark:hover:bg-primary/10'
                       }`}
         >
           <UploadCloud
             size={44}
             className={`transition-colors ${
-              isDragOver ? 'text-blue-500' : 'text-gray-400'
+              isDragOver ? 'text-primary' : 'text-gray-400'
             }`}
           />
           <div>
             <p className={`text-base font-semibold transition-colors ${
-              isDragOver ? 'text-blue-700 dark:text-blue-400' : 'text-gray-700 dark:text-gray-200'
+              isDragOver ? 'text-primary dark:text-primary' : 'text-gray-700 dark:text-gray-200'
             }`}>
               {isDragOver
                 ? 'Solte os arquivos aqui'
@@ -377,7 +377,7 @@ export function UploadLoteDropzone({
             </p>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
               ou{' '}
-              <span className="text-blue-600 dark:text-blue-400 font-medium underline underline-offset-2">
+              <span className="text-primary font-medium underline underline-offset-2">
                 clique para selecionar
               </span>
               {' '}— máx. 10 MB por arquivo, até 50 arquivos
@@ -443,15 +443,15 @@ export function UploadLoteDropzone({
       {enviando && (
         <div aria-live="polite" role="status" aria-label={`Upload em progresso: ${progresso}%`}>
           <div className="flex items-center justify-between mb-1.5">
-            <span className="text-sm font-medium text-blue-700 flex items-center gap-2">
+            <span className="text-sm font-medium text-primary flex items-center gap-2">
               <Loader2 size={14} className="animate-spin" />
               Enviando {totalValidos} arquivo{totalValidos !== 1 ? 's' : ''}…
             </span>
-            <span className="text-sm font-semibold text-blue-700">{progresso}%</span>
+            <span className="text-sm font-semibold text-primary">{progresso}%</span>
           </div>
           <div className="h-2.5 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
             <div
-              className="h-full rounded-full bg-blue-500 transition-all duration-200 ease-out"
+              className="h-full rounded-full bg-primary transition-all duration-200 ease-out"
               style={{ width: `${progresso}%` }}
             />
           </div>

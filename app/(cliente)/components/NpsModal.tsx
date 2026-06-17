@@ -39,7 +39,7 @@ export function NpsModal({ token, onFechar }: NpsModalProps) {
 
       {enviado ? (
         <div className="py-4 text-center">
-          <p className="font-semibold text-sky-600 dark:text-sky-400">Obrigado pelo feedback!</p>
+          <p className="font-semibold text-primary dark:text-primary">Obrigado pelo feedback!</p>
         </div>
       ) : (
         <>
@@ -55,7 +55,7 @@ export function NpsModal({ token, onFechar }: NpsModalProps) {
                 onClick={() => setScore(i)}
                 className={`flex-1 py-1.5 rounded text-xs font-medium transition-colors ${
                   score === i
-                    ? 'bg-sky-600 text-white'
+                    ? 'bg-primary text-white'
                     : 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
                 }`}
               >
@@ -79,7 +79,7 @@ export function NpsModal({ token, onFechar }: NpsModalProps) {
           <button
             onClick={enviar}
             disabled={score === null}
-            className="w-full bg-sky-600 text-white py-2 rounded-lg font-medium disabled:opacity-50 hover:bg-sky-700 transition-colors"
+            className="w-full bg-primary text-white py-2 rounded-lg font-medium disabled:opacity-50 hover:bg-primary-dark transition-colors"
           >
             Enviar feedback
           </button>

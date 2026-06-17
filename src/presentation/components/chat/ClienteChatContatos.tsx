@@ -55,7 +55,7 @@ export function ClienteChatContatos({ rooms, roomAtual, carregando, onSelectRoom
     <div className="flex flex-col h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 w-64 shrink-0">
       {/* Header */}
       <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800 flex items-center gap-2 shrink-0">
-        <Users size={15} className="text-sky-600" />
+        <Users size={15} className="text-primary" />
         <h2 className="text-sm font-bold text-gray-900 dark:text-gray-100">Seu Escritório</h2>
       </div>
 
@@ -63,7 +63,7 @@ export function ClienteChatContatos({ rooms, roomAtual, carregando, onSelectRoom
       <div className="flex-1 overflow-y-auto">
         {carregando ? (
           <div className="flex items-center justify-center py-10">
-            <div className="w-5 h-5 border-2 border-sky-500 border-t-transparent rounded-full animate-spin" />
+            <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
           </div>
         ) : ordenadas.length === 0 ? (
           <p className="text-xs text-gray-400 text-center py-10 px-4">
@@ -84,7 +84,7 @@ export function ClienteChatContatos({ rooms, roomAtual, carregando, onSelectRoom
                     className={`
                       w-full flex items-start gap-3 px-4 py-3 text-left transition-colors
                       ${ativo
-                        ? 'bg-sky-50 dark:bg-sky-900/20 border-l-2 border-sky-500 dark:border-sky-400'
+                        ? 'bg-primary-50 dark:bg-primary/10 border-l-2 border-primary dark:border-primary'
                         : 'hover:bg-gray-50 dark:hover:bg-gray-800 border-l-2 border-transparent'
                       }
                     `}
@@ -101,7 +101,7 @@ export function ClienteChatContatos({ rooms, roomAtual, carregando, onSelectRoom
                         w-10 h-10 rounded-full flex items-center justify-center
                         text-xs font-bold shrink-0
                         ${room.membroTipo === 'CONTADOR'
-                          ? ativo ? 'bg-sky-200 dark:bg-sky-800 text-sky-800 dark:text-sky-200' : 'bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400'
+                          ? ativo ? 'bg-primary-light text-primary-dark' : 'bg-primary-light text-primary-dark'
                           : ativo ? 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
                         }
                       `}>
@@ -112,7 +112,7 @@ export function ClienteChatContatos({ rooms, roomAtual, carregando, onSelectRoom
                     {/* Info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-1">
-                        <p className={`text-xs font-semibold truncate ${ativo ? 'text-sky-900 dark:text-sky-300' : 'text-gray-900 dark:text-gray-100'}`}>
+                        <p className={`text-xs font-semibold truncate ${ativo ? 'text-primary-dark dark:text-primary' : 'text-gray-900 dark:text-gray-100'}`}>
                           {nome}
                         </p>
                         <div className="flex items-center gap-1 shrink-0">
@@ -122,7 +122,7 @@ export function ClienteChatContatos({ rooms, roomAtual, carregando, onSelectRoom
                             </span>
                           )}
                           {room.naoLidas > 0 && (
-                            <span className="min-w-[18px] h-[18px] rounded-full bg-sky-500 text-white text-[9px] font-bold flex items-center justify-center px-1">
+                            <span className="min-w-[18px] h-[18px] rounded-full bg-primary text-white text-[9px] font-bold flex items-center justify-center px-1">
                               {room.naoLidas > 99 ? '99+' : room.naoLidas}
                             </span>
                           )}

@@ -57,13 +57,13 @@ interface ConfigAba {
 
 const ABAS: ConfigAba[] = [
   { label: 'Todos',    valor: undefined,   cor: 'bg-slate-100 text-slate-700'  },
-  { label: 'Fiscal',   valor: 'FISCAL',    cor: 'bg-blue-100 text-blue-700'    },
+  { label: 'Fiscal',   valor: 'FISCAL',    cor: 'bg-primary-light text-primary-dark' },
   { label: 'Pessoal',  valor: 'PESSOAL',   cor: 'bg-violet-100 text-violet-700'},
   { label: 'Contábil', valor: 'CONTABIL',  cor: 'bg-emerald-100 text-emerald-700'},
 ];
 
 const COR_SETOR: Record<SetorFiltro, string> = {
-  FISCAL:   'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 ring-1 ring-blue-200 dark:ring-blue-800',
+  FISCAL:   'bg-primary-50 dark:bg-primary/10 text-primary-dark dark:text-primary ring-1 ring-primary/30 dark:ring-primary/20',
   PESSOAL:  'bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400 ring-1 ring-violet-200 dark:ring-violet-800',
   CONTABIL: 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 ring-1 ring-emerald-200 dark:ring-emerald-800',
 };
@@ -210,7 +210,7 @@ function DocumentoLinha({ doc, baixando, onBaixar, modoSelecao, selecionado, onT
       <div
         className={`flex items-center gap-3 px-4 py-3.5 transition-colors
           ${modoSelecao && selecionado
-            ? 'bg-primary-50'
+            ? 'bg-primary/10 dark:bg-primary/20'
             : 'hover:bg-slate-50 dark:hover:bg-gray-800'
           }`}
       >

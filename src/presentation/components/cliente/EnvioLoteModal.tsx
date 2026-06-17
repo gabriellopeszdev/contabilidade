@@ -163,7 +163,7 @@ export function EnvioLoteModal({ arquivos, categoriaId, onFechar, onSucesso }: P
                       : item.estado === 'erro'
                         ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
                         : item.estado === 'enviando'
-                          ? 'bg-sky-50 dark:bg-sky-900/20 border-sky-200 dark:border-sky-800'
+                          ? 'bg-primary-50 dark:bg-primary/10 border-primary/30 dark:border-primary/20'
                           : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700'
                     }`}
                 >
@@ -172,7 +172,7 @@ export function EnvioLoteModal({ arquivos, categoriaId, onFechar, onSucesso }: P
                     flex items-center justify-center">
                     {isPDF
                       ? <FileText  size={14} className="text-red-500" />
-                      : <FileCode2 size={14} className="text-sky-500" />
+                      : <FileCode2 size={14} className="text-primary" />
                     }
                   </div>
 
@@ -198,7 +198,7 @@ export function EnvioLoteModal({ arquivos, categoriaId, onFechar, onSucesso }: P
                       </button>
                     )}
                     {item.estado === 'enviando' && (
-                      <Loader2 size={16} className="animate-spin text-sky-500" aria-hidden="true" />
+                      <Loader2 size={16} className="animate-spin text-primary" aria-hidden="true" />
                     )}
                     {item.estado === 'sucesso' && (
                       <CheckCircle2 size={16} className="text-emerald-500" aria-hidden="true" />
@@ -233,8 +233,8 @@ export function EnvioLoteModal({ arquivos, categoriaId, onFechar, onSucesso }: P
           {concluido ? (
             <button
               onClick={totalErro === 0 ? onSucesso : onFechar}
-              className="flex-1 py-2.5 text-sm font-semibold text-white bg-sky-600 rounded-xl
-                hover:bg-sky-700 transition-colors flex items-center justify-center gap-2"
+              className="flex-1 py-2.5 text-sm font-semibold text-white bg-primary rounded-xl
+                hover:bg-primary-dark transition-colors flex items-center justify-center gap-2"
             >
               {totalErro > 0 ? 'Fechar' : 'Concluído'}
             </button>
@@ -251,8 +251,8 @@ export function EnvioLoteModal({ arquivos, categoriaId, onFechar, onSucesso }: P
               <button
                 onClick={handleEnviar}
                 disabled={enviando || itens.length === 0}
-                className="flex-1 py-2.5 text-sm font-semibold text-white bg-sky-600 rounded-xl
-                  hover:bg-sky-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed
+                className="flex-1 py-2.5 text-sm font-semibold text-white bg-primary rounded-xl
+                  hover:bg-primary-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed
                   flex items-center justify-center gap-2"
               >
                 {enviando

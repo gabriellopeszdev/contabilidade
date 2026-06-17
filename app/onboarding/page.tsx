@@ -78,7 +78,7 @@ export default function OnboardingPage() {
   if (carregando || !usuario || verificando) {
     return (
       <div className="flex items-center justify-center h-screen bg-gray-50 dark:bg-gray-950">
-        <Loader2 size={32} className="animate-spin text-blue-600" />
+        <Loader2 size={32} className="animate-spin text-primary" />
       </div>
     );
   }
@@ -208,17 +208,17 @@ export default function OnboardingPage() {
                   <div className="flex flex-col items-center gap-1.5 shrink-0">
                     <div className={`
                       w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-200
-                      ${concluido ? 'bg-blue-600 text-white' : ativo ? 'bg-blue-600 text-white ring-4 ring-blue-100 dark:ring-blue-900/40' : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'}
+                      ${concluido ? 'bg-primary text-white' : ativo ? 'bg-primary text-white ring-4 ring-primary/20 dark:ring-primary/20' : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'}
                     `}>
                       {concluido ? <CheckCircle2 size={14} /> : num}
                     </div>
-                    <span className={`text-[10px] font-medium whitespace-nowrap ${ativo ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'}`}>
+                    <span className={`text-[10px] font-medium whitespace-nowrap ${ativo ? 'text-primary dark:text-primary' : 'text-gray-400 dark:text-gray-500'}`}>
                       {label}
                     </span>
                   </div>
                   {/* Linha conectora entre etapas */}
                   {i < PASSOS_LABELS.length - 1 && (
-                    <div className={`flex-1 h-0.5 mt-4 mx-1 transition-colors duration-300 ${concluido ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'}`} />
+                    <div className={`flex-1 h-0.5 mt-4 mx-1 transition-colors duration-300 ${concluido ? 'bg-primary' : 'bg-gray-200 dark:bg-gray-700'}`} />
                   )}
                 </React.Fragment>
               );
@@ -232,8 +232,8 @@ export default function OnboardingPage() {
           {/* ── Passo 1: Boas-vindas ── */}
           {passo === 1 && (
             <div className="text-center space-y-6">
-              <div className="w-20 h-20 rounded-2xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mx-auto">
-                <Zap size={36} className="text-blue-600 dark:text-blue-400" />
+              <div className="w-20 h-20 rounded-2xl bg-primary-50 dark:bg-primary/10 flex items-center justify-center mx-auto">
+                <Zap size={36} className="text-primary dark:text-primary" />
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
@@ -250,8 +250,8 @@ export default function OnboardingPage() {
                   { icon: <CreditCard size={18} />, label: 'Pagamentos' },
                   { icon: <CheckCircle2 size={18} />, label: 'Pronto!' },
                 ].map((item) => (
-                  <div key={item.label} className="flex flex-col items-center gap-2 p-3 rounded-xl bg-blue-50 dark:bg-blue-900/20">
-                    <span className="text-blue-600 dark:text-blue-400">{item.icon}</span>
+                  <div key={item.label} className="flex flex-col items-center gap-2 p-3 rounded-xl bg-primary-50 dark:bg-primary/10">
+                    <span className="text-primary dark:text-primary">{item.icon}</span>
                     <span className="text-xs font-medium text-gray-600 dark:text-gray-400">{item.label}</span>
                   </div>
                 ))}
@@ -263,8 +263,8 @@ export default function OnboardingPage() {
           {passo === 2 && (
             <div className="space-y-6">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
-                  <Building2 size={20} className="text-blue-600 dark:text-blue-400" />
+                <div className="w-10 h-10 rounded-xl bg-primary-50 dark:bg-primary/10 flex items-center justify-center shrink-0">
+                  <Building2 size={20} className="text-primary dark:text-primary" />
                 </div>
                 <div>
                   <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">Seu Escritório</h2>
@@ -285,7 +285,7 @@ export default function OnboardingPage() {
                     onChange={(e) => { setNomeEscritorio(e.target.value); setErro(null); }}
                     placeholder="Ex: Contabilidade Silva & Associados"
                     autoFocus
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"
                   />
                 </div>
                 <div>
@@ -297,7 +297,7 @@ export default function OnboardingPage() {
                     value={cnpj}
                     onChange={(e) => { setCnpj(formatarCnpj(e.target.value)); setErro(null); }}
                     placeholder="00.000.000/0000-00"
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"
                   />
                 </div>
               </div>
@@ -326,23 +326,23 @@ export default function OnboardingPage() {
                   onClick={() => { setIntegracao('asaas'); setErro(null); }}
                   className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 text-left transition-colors ${
                     integracao === 'asaas'
-                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                      : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-700'
+                      ? 'border-primary bg-primary-50 dark:bg-primary/10'
+                      : 'border-gray-200 dark:border-gray-700 hover:border-primary dark:hover:border-primary'
                   }`}
                 >
-                  <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center shrink-0">
-                    <Zap size={20} className="text-blue-600" />
+                  <div className="w-10 h-10 rounded-xl bg-primary-50 dark:bg-primary/20 flex items-center justify-center shrink-0">
+                    <Zap size={20} className="text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-gray-900 dark:text-gray-100">Asaas</p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">Boletos, PIX e cartão de crédito</p>
                   </div>
-                  {integracao === 'asaas' && <CheckCircle2 size={18} className="text-blue-600 shrink-0" />}
+                  {integracao === 'asaas' && <CheckCircle2 size={18} className="text-primary shrink-0" />}
                 </button>
 
                 {/* Asaas key input */}
                 {integracao === 'asaas' && (
-                  <div className="pl-3 border-l-2 border-blue-200 dark:border-blue-800 ml-2 space-y-1">
+                  <div className="pl-3 border-l-2 border-primary/30 dark:border-primary/30 ml-2 space-y-1">
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                       Chave API do Asaas <span className="text-red-500">*</span>
                     </label>
@@ -352,7 +352,7 @@ export default function OnboardingPage() {
                       onChange={(e) => { setAsaasKey(e.target.value); setErro(null); }}
                       placeholder="$aact_..."
                       autoFocus
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition font-mono text-sm"
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition font-mono text-sm"
                     />
                     <p className="text-xs text-gray-400">
                       Acesse: Asaas → Configurações → Chaves API
@@ -437,7 +437,7 @@ export default function OnboardingPage() {
             <button
               onClick={handleProximo}
               disabled={salvando}
-              className="flex items-center gap-2 px-7 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-7 py-3 rounded-xl bg-primary hover:bg-primary-dark text-white text-sm font-semibold transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {salvando ? (
                 <>

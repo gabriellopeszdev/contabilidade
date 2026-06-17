@@ -107,7 +107,7 @@ function TelaSucesso({ nome }: { nome: string }) {
             <span className="absolute inset-0 flex items-center justify-center text-sm font-bold text-emerald-600">{segundos}</span>
           </div>
           <p className="text-xs text-gray-400">Redirecionando em {segundos}s…</p>
-          <button onClick={() => { window.location.href = '/documentos'; }} className="text-xs text-blue-600 hover:underline">Ir agora</button>
+          <button onClick={() => { window.location.href = '/documentos'; }} className="text-xs text-primary hover:underline">Ir agora</button>
         </div>
       </div>
     </div>
@@ -250,7 +250,7 @@ function SignaturePad({ onConfirm }: { onConfirm: (dataUrl: string) => void }) {
         <button
           onClick={confirm}
           disabled={!hasDrawn}
-          className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2.5 text-sm font-semibold rounded-xl transition-colors disabled:opacity-40 flex items-center justify-center gap-2"
+          className="flex-1 bg-primary hover:bg-primary-dark text-white py-2.5 text-sm font-semibold rounded-xl transition-colors disabled:opacity-40 flex items-center justify-center gap-2"
         >
           Continuar →
         </button>
@@ -350,7 +350,7 @@ function PdfPositioner({
           </p>
           <button
             onClick={() => onConfirm({ page: 999, xPct: 0.5, yPct: 0.82, widthPct: 0.4 })}
-            className="w-full bg-blue-600 text-white py-3 rounded-xl text-sm font-semibold"
+            className="w-full bg-primary text-white py-3 rounded-xl text-sm font-semibold"
           >
             Colocar no final do documento
           </button>
@@ -374,7 +374,7 @@ function PdfPositioner({
           <ArrowLeft size={18} />
         </button>
         <div className="flex-1 min-w-0">
-          <p className="text-[11px] font-medium text-blue-600 uppercase tracking-wide">Etapa 2 de 3</p>
+          <p className="text-[11px] font-medium text-primary uppercase tracking-wide">Etapa 2 de 3</p>
           <p className="text-sm font-semibold text-gray-800">Posicionar assinatura</p>
         </div>
         <div className="shrink-0 bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5">
@@ -383,9 +383,9 @@ function PdfPositioner({
       </header>
 
       {/* Controls */}
-      <div className="bg-blue-50 border-b border-blue-100 px-4 py-2.5 flex items-center gap-3 shrink-0">
-        <Move size={13} className="text-blue-500 shrink-0" />
-        <p className="text-xs text-blue-700 flex-1">Clique no documento para posicionar</p>
+      <div className="bg-primary/10 dark:bg-primary/10 border-b border-primary/20 px-4 py-2.5 flex items-center gap-3 shrink-0">
+        <Move size={13} className="text-primary shrink-0" />
+        <p className="text-xs text-primary flex-1">Clique no documento para posicionar</p>
         <ZoomIn size={13} className="text-slate-400 shrink-0" />
         <input
           type="range"
@@ -401,7 +401,7 @@ function PdfPositioner({
       <div className="flex-1 overflow-y-auto p-3 space-y-3">
         {loading ? (
           <div className="flex flex-col items-center justify-center py-24 gap-3">
-            <Loader2 size={28} className="animate-spin text-blue-500" />
+            <Loader2 size={28} className="animate-spin text-primary" />
             <p className="text-xs text-slate-400">Carregando documento...</p>
           </div>
         ) : pages.map((page, idx) => (
@@ -423,7 +423,7 @@ function PdfPositioner({
               {/* Signature preview at selected position */}
               {selectedPage === idx && pos !== null && (
                 <div
-                  className="absolute pointer-events-none border-2 border-blue-500 rounded bg-white/50 shadow"
+                  className="absolute pointer-events-none border-2 border-primary rounded bg-white/50 shadow"
                   style={{
                     left:        `${pos.xPct * 100}%`,
                     top:         `${pos.yPct * 100}%`,
@@ -448,13 +448,13 @@ function PdfPositioner({
       {/* Action buttons */}
       <div className="bg-white border-t border-slate-200 p-4 space-y-2 shrink-0">
         {currentPlacement && (
-          <p className="text-xs text-blue-600 text-center">
+          <p className="text-xs text-primary text-center">
             Assinatura posicionada na página {currentPlacement.page + 1}
           </p>
         )}
         <button
           onClick={() => onConfirm(loading ? null : currentPlacement)}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2"
+          className="w-full bg-primary hover:bg-primary-dark text-white py-3 rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2"
         >
           {currentPlacement
             ? <><CheckCircle2 size={15} /> Confirmar posição</>
@@ -611,10 +611,10 @@ export default function AssinarPage() {
   if (passo === 'carregando') return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50">
       <div className="text-center space-y-3">
-        <div className="w-14 h-14 rounded-2xl bg-blue-600 flex items-center justify-center mx-auto">
+        <div className="w-14 h-14 rounded-2xl bg-primary flex items-center justify-center mx-auto">
           <Building2 size={28} className="text-white" />
         </div>
-        <Loader2 size={20} className="animate-spin text-blue-500 mx-auto" />
+        <Loader2 size={20} className="animate-spin text-primary mx-auto" />
         <p className="text-sm text-gray-400">Carregando documento...</p>
       </div>
     </div>
@@ -629,10 +629,10 @@ export default function AssinarPage() {
     <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <div className="w-14 h-14 rounded-2xl bg-blue-600 flex items-center justify-center mx-auto mb-4">
+          <div className="w-14 h-14 rounded-2xl bg-primary flex items-center justify-center mx-auto mb-4">
             <Building2 size={26} className="text-white" />
           </div>
-          <p className="text-xs font-semibold text-blue-600 uppercase tracking-widest mb-1">FiscoHub · Assinatura Eletrônica</p>
+          <p className="text-xs font-semibold text-primary uppercase tracking-widest mb-1">FiscoHub · Assinatura Eletrônica</p>
           <h1 className="text-xl font-bold text-gray-900">Verificar identidade</h1>
           <p className="text-sm text-gray-500 mt-1">Para assinar, confirme seu acesso por e-mail</p>
         </div>
@@ -647,8 +647,8 @@ export default function AssinarPage() {
             </div>
           </div>
 
-          <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 text-center">
-            <Mail size={20} className="text-blue-500 mx-auto mb-2" />
+          <div className="bg-primary/10 dark:bg-primary/10 border border-primary/20 rounded-xl p-4 text-center">
+            <Mail size={20} className="text-primary mx-auto mb-2" />
             <p className="text-sm text-gray-700">
               Enviaremos um código de 6 dígitos para o e-mail cadastrado para verificar sua identidade.
             </p>
@@ -664,7 +664,7 @@ export default function AssinarPage() {
           <button
             onClick={enviarOtp}
             disabled={enviandoOtp}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            className="w-full bg-primary hover:bg-primary-dark text-white py-3 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {enviandoOtp
               ? <><Loader2 size={15} className="animate-spin" /> Enviando...</>
@@ -681,7 +681,7 @@ export default function AssinarPage() {
     <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <div className="w-14 h-14 rounded-2xl bg-blue-600 flex items-center justify-center mx-auto mb-4">
+          <div className="w-14 h-14 rounded-2xl bg-primary flex items-center justify-center mx-auto mb-4">
             <KeyRound size={26} className="text-white" />
           </div>
           <h1 className="text-xl font-bold text-gray-900">Digite o código</h1>
@@ -704,7 +704,7 @@ export default function AssinarPage() {
               onChange={(e) => { setOtp(e.target.value.replace(/\D/g, '')); setErroOtp(''); }}
               onKeyDown={(e) => { if (e.key === 'Enter') verificarOtp(); }}
               placeholder="000000"
-              className="w-full border-2 border-slate-200 focus:border-blue-500 rounded-xl px-4 py-4 text-center text-3xl font-bold tracking-[0.5em] focus:outline-none transition"
+              className="w-full border-2 border-slate-200 focus:border-primary rounded-xl px-4 py-4 text-center text-3xl font-bold tracking-[0.5em] focus:outline-none transition"
               disabled={verificando}
             />
             <p className="text-xs text-slate-400 text-center mt-2">Válido por 15 minutos</p>
@@ -720,7 +720,7 @@ export default function AssinarPage() {
           <button
             onClick={verificarOtp}
             disabled={verificando || otp.length < 6}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            className="w-full bg-primary hover:bg-primary-dark text-white py-3 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {verificando
               ? <><Loader2 size={15} className="animate-spin" /> Verificando...</>
@@ -735,7 +735,7 @@ export default function AssinarPage() {
               <button
                 onClick={enviarOtp}
                 disabled={enviandoOtp}
-                className="text-xs text-blue-600 hover:underline disabled:opacity-50"
+                className="text-xs text-primary hover:underline disabled:opacity-50"
               >
                 {enviandoOtp ? 'Enviando...' : 'Reenviar código'}
               </button>
@@ -751,10 +751,10 @@ export default function AssinarPage() {
     <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
       <div className="w-full max-w-lg">
         <div className="text-center mb-6">
-          <div className="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center mx-auto mb-4">
+          <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center mx-auto mb-4">
             <PenLine size={22} className="text-white" />
           </div>
-          <p className="text-xs font-semibold text-blue-600 uppercase tracking-widest mb-1">Etapa 1 de 3</p>
+          <p className="text-xs font-semibold text-primary uppercase tracking-widest mb-1">Etapa 1 de 3</p>
           <h1 className="text-xl font-bold text-gray-900">Desenhe sua assinatura</h1>
           <p className="text-sm text-gray-500 mt-1">Use o mouse ou o dedo para assinar no campo abaixo</p>
         </div>
@@ -786,11 +786,11 @@ export default function AssinarPage() {
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col" style={{ fontFamily: 'system-ui, sans-serif' }}>
       <header className="bg-white border-b border-slate-200 px-4 py-3 flex items-center gap-3">
-        <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-blue-600 shrink-0">
+        <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-primary shrink-0">
           <Building2 size={18} className="text-white" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-[11px] font-medium text-blue-600 uppercase tracking-wide">Etapa 3 de 3 · FiscoHub</p>
+          <p className="text-[11px] font-medium text-primary uppercase tracking-wide">Etapa 3 de 3 · FiscoHub</p>
           <p className="text-sm font-semibold text-gray-800 truncate">{info?.nomeDocumento}</p>
         </div>
         <div className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 rounded-lg px-2.5 py-1 shrink-0">
@@ -818,7 +818,7 @@ export default function AssinarPage() {
                 />
                 {signatureDataUrl && (
                   <div
-                    className="absolute border-2 border-blue-400 rounded bg-white/20 shadow"
+                    className="absolute border-2 border-primary rounded bg-white/20 shadow"
                     style={{
                       left:        `${placement.xPct * 100}%`,
                       top:         `${placement.yPct * 100}%`,
@@ -833,7 +833,7 @@ export default function AssinarPage() {
               </div>
               <button
                 onClick={() => setPasso('posicionar')}
-                className="text-xs text-blue-600 bg-white/80 hover:bg-white rounded-full px-3 py-1 shadow-sm flex items-center gap-1 transition-colors"
+                className="text-xs text-primary bg-white/80 hover:bg-white rounded-full px-3 py-1 shadow-sm flex items-center gap-1 transition-colors"
               >
                 <Move size={11} /> Alterar posição
               </button>
@@ -871,7 +871,7 @@ export default function AssinarPage() {
                     </label>
                     <button
                       onClick={() => setPasso('desenhar')}
-                      className="text-xs text-blue-500 hover:underline flex items-center gap-1"
+                      className="text-xs text-primary hover:underline flex items-center gap-1"
                     >
                       <RotateCcw size={10} /> Refazer
                     </button>
@@ -906,7 +906,7 @@ export default function AssinarPage() {
                     onChange={(e) => { setNome(e.target.value); setErroForm(''); }}
                     placeholder="Digite seu nome completo"
                     disabled={passo === 'loading_sign'}
-                    className="w-full border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition disabled:opacity-50"
+                    className="w-full border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition disabled:opacity-50"
                   />
                 </div>
 
@@ -915,7 +915,7 @@ export default function AssinarPage() {
                     type="checkbox"
                     checked={aceito}
                     onChange={(e) => { setAceito(e.target.checked); setErroForm(''); }}
-                    className="mt-0.5 w-4 h-4 rounded accent-blue-600"
+                    className="mt-0.5 w-4 h-4 rounded accent-primary"
                     disabled={passo === 'loading_sign'}
                   />
                   <span className="text-xs text-slate-500 leading-relaxed">
@@ -938,7 +938,7 @@ export default function AssinarPage() {
                     { icon: CheckCircle2, label: 'Hash SHA-256' },
                   ].map(({ icon: Icon, label }) => (
                     <div key={label} className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2">
-                      <Icon size={12} className="text-blue-500 shrink-0" />
+                      <Icon size={12} className="text-primary shrink-0" />
                       <span className="text-[11px] text-slate-500">{label}</span>
                     </div>
                   ))}
@@ -949,7 +949,7 @@ export default function AssinarPage() {
                 <button
                   onClick={assinar}
                   disabled={passo === 'loading_sign'}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50 flex items-center justify-center gap-2 shadow-sm"
+                  className="w-full bg-primary hover:bg-primary-dark text-white py-3 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50 flex items-center justify-center gap-2 shadow-sm"
                 >
                   {passo === 'loading_sign'
                     ? <><Loader2 size={15} className="animate-spin" /> Processando...</>

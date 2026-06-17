@@ -103,7 +103,7 @@ export function ChatSidebar({
                     className={`
                       w-full flex items-start gap-3 px-4 py-3 text-left transition-colors
                       ${ativo
-                        ? 'bg-primary-50 border-l-2 border-primary'
+                        ? 'bg-primary/10 dark:bg-primary/20 border-l-2 border-primary'
                         : 'hover:bg-gray-50 dark:hover:bg-gray-800 border-l-2 border-transparent'
                       }
                     `}
@@ -119,7 +119,7 @@ export function ChatSidebar({
                     {/* Info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
-                        <p className={`text-xs font-semibold truncate ${ativo ? 'text-primary-dark' : 'text-gray-900 dark:text-gray-100'}`}>
+                        <p className={`text-xs font-semibold truncate ${ativo ? 'text-primary-dark dark:text-primary' : 'text-gray-900 dark:text-gray-100'}`}>
                           {room.clienteNome}
                         </p>
                         {room.ultimaMensagem && (

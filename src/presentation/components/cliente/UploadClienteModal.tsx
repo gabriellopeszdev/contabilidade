@@ -172,8 +172,8 @@ export function UploadClienteModal({ aberto, onFechar, onSucesso }: UploadClient
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-sky-50">
-              <Upload size={20} className="text-sky-600" />
+            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10 dark:bg-primary/20">
+              <Upload size={20} className="text-primary" />
             </div>
             <div>
               <h3 className="text-base font-bold text-gray-900">Enviar Documento</h3>
@@ -203,11 +203,11 @@ export function UploadClienteModal({ aberto, onFechar, onSucesso }: UploadClient
                 onClick={() => setSetor(s.value)}
                 className={`rounded-lg border px-3 py-2.5 text-center transition-all disabled:opacity-50
                   ${setor === s.value
-                    ? 'border-sky-500 bg-sky-50 ring-2 ring-sky-200'
+                    ? 'border-primary bg-primary/10 dark:bg-primary/20 ring-2 ring-primary/30'
                     : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
                   }`}
               >
-                <p className={`text-sm font-semibold ${setor === s.value ? 'text-sky-700' : 'text-gray-900'}`}>
+                <p className={`text-sm font-semibold ${setor === s.value ? 'text-primary-dark' : 'text-gray-900'}`}>
                   {s.label}
                 </p>
                 <p className="text-[10px] text-gray-400 mt-0.5 leading-tight">{s.desc}</p>
@@ -225,10 +225,10 @@ export function UploadClienteModal({ aberto, onFechar, onSucesso }: UploadClient
           className={`relative rounded-xl border-2 border-dashed p-6 text-center cursor-pointer
                       transition-all
                       ${dragAtivo
-                        ? 'border-sky-400 bg-sky-50'
+                        ? 'border-primary bg-primary/10 dark:bg-primary/20'
                         : arquivo
                           ? 'border-emerald-300 bg-emerald-50/40'
-                          : 'border-gray-300 bg-gray-50 hover:border-sky-300 hover:bg-sky-50/30'
+                          : 'border-gray-300 bg-gray-50 hover:border-primary hover:bg-primary-50/30'
                       }
                       ${enviando ? 'pointer-events-none opacity-50' : ''}`}
         >
@@ -272,7 +272,7 @@ export function UploadClienteModal({ aberto, onFechar, onSucesso }: UploadClient
               <CloudUpload size={32} className="text-gray-400" />
               <div>
                 <p className="text-sm font-medium text-gray-700">
-                  Arraste um arquivo aqui ou <span className="text-sky-600 underline">clique para selecionar</span>
+                  Arraste um arquivo aqui ou <span className="text-primary underline">clique para selecionar</span>
                 </p>
                 <p className="text-xs text-gray-400 mt-1">
                   PDF ou XML &middot; Máximo {MAX_SIZE_MB} MB
@@ -303,10 +303,10 @@ export function UploadClienteModal({ aberto, onFechar, onSucesso }: UploadClient
           type="button"
           onClick={handleEnviar}
           disabled={!arquivo || enviando}
-          className="w-full py-2.5 px-4 text-sm font-semibold text-white bg-sky-600
-                     rounded-xl hover:bg-sky-700 transition-colors shadow-sm
+          className="w-full py-2.5 px-4 text-sm font-semibold text-white bg-primary
+                     rounded-xl hover:bg-primary-dark transition-colors shadow-sm
                      disabled:opacity-50 disabled:cursor-not-allowed
-                     focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500
+                     focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary
                      flex items-center justify-center gap-2"
         >
           {enviando ? (

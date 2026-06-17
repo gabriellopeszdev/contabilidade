@@ -175,7 +175,7 @@ export default function DashboardClienteDono() {
                   flex items-center gap-2 px-4 py-2.5 text-sm font-semibold border-b-2
                   transition-colors focus-visible:outline-none
                   ${ativo
-                    ? 'border-sky-600 text-sky-700 dark:text-sky-400'
+                    ? 'border-primary text-primary dark:text-primary'
                     : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
                   }
                 `}
@@ -204,7 +204,7 @@ export default function DashboardClienteDono() {
             placeholder="Buscar por nome do arquivo…"
             className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-slate-300 dark:border-gray-600 bg-white dark:bg-gray-900
               text-slate-900 dark:text-gray-100 placeholder:text-slate-400 dark:placeholder:text-gray-500
-              focus:outline-none focus:ring-2 focus:ring-sky-500 transition-colors"
+              focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
           />
         </div>
 
@@ -215,7 +215,7 @@ export default function DashboardClienteDono() {
             value={setor ?? ''}
             onChange={(e) => { setSetor((e.target.value || undefined) as SetorFiltro | undefined); setPage(1); }}
             className="px-3 py-2 text-xs font-medium rounded-lg border border-slate-300 dark:border-gray-600 bg-white dark:bg-gray-900
-              text-slate-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-sky-500 dark:[color-scheme:dark]"
+              text-slate-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary dark:[color-scheme:dark]"
           >
             <option value="">Todos os Setores</option>
             <option value="FISCAL">Fiscal</option>
@@ -227,7 +227,7 @@ export default function DashboardClienteDono() {
             value={filtroOrigem}
             onChange={(e) => setFiltroOrigem(e.target.value as Origem | '')}
             className="px-3 py-2 text-xs font-medium rounded-lg border border-slate-300 dark:border-gray-600 bg-white dark:bg-gray-900
-              text-slate-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-sky-500 dark:[color-scheme:dark]"
+              text-slate-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary dark:[color-scheme:dark]"
           >
             <option value="">Todas as Origens</option>
             <option value="UPLOAD_CLIENTE">Enviado por mim</option>
@@ -239,7 +239,7 @@ export default function DashboardClienteDono() {
       {/* ── Conteúdo da aba ─────────────────────────────────────────────────── */}
       {carregando && documentos.length === 0 ? (
         <div className="flex flex-col items-center gap-3 py-16">
-          <Loader2 size={24} className="animate-spin text-sky-500" />
+          <Loader2 size={24} className="animate-spin text-primary" />
           <p className="text-sm text-slate-500">Carregando documentos…</p>
         </div>
       ) : erro ? (
@@ -289,7 +289,7 @@ export default function DashboardClienteDono() {
                   key={doc.id}
                   className={`
                     bg-white dark:bg-gray-900 rounded-2xl border flex flex-col transition-shadow hover:shadow-md
-                    ${!doc.readStatus ? 'border-sky-200 dark:border-sky-900/30 shadow-sm' : 'border-gray-200 dark:border-gray-700'}
+                    ${!doc.readStatus ? 'border-primary/30 dark:border-primary/20 shadow-sm' : 'border-gray-200 dark:border-gray-700'}
                   `}
                 >
                   {/* Cabeçalho do card */}
@@ -312,7 +312,7 @@ export default function DashboardClienteDono() {
                       )}
                       {!doc.readStatus && (
                         <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px]
-                          font-bold bg-blue-500 text-white leading-none animate-pulse">
+                          font-bold bg-primary text-white leading-none animate-pulse">
                           NOVO
                         </span>
                       )}
@@ -370,8 +370,8 @@ export default function DashboardClienteDono() {
                         disabled={isBaixando || isMarcando}
                         title="Baixar arquivo"
                         className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium
-                          text-gray-500 dark:text-gray-400 hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-900/20 border border-gray-200 dark:border-gray-700
-                          hover:border-sky-200 dark:hover:border-sky-900/30 disabled:opacity-40 transition-colors"
+                          text-gray-500 dark:text-gray-400 hover:text-primary hover:bg-primary-50 dark:hover:bg-primary/10 border border-gray-200 dark:border-gray-700
+                          hover:border-primary/30 dark:hover:border-primary/20 disabled:opacity-40 transition-colors"
                       >
                         {isBaixando
                           ? <Loader2 size={12} className="animate-spin" />

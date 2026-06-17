@@ -33,7 +33,7 @@ const PRIORIDADE_CONFIG: Record<
   { label: string; classes: string }
 > = {
   LOW:    { label: 'Baixa',   classes: 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-600'    },
-  MEDIUM: { label: 'Média',   classes: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800'    },
+  MEDIUM: { label: 'Média',   classes: 'bg-primary-light text-primary-dark dark:text-primary border-primary/30 dark:border-primary/30'    },
   HIGH:   { label: 'Alta',    classes: 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-800' },
   URGENT: { label: 'Urgente', classes: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800'     },
 };
@@ -121,11 +121,11 @@ export function KanbanCard({ tarefa, isOverlay = false, funcionarios, onAtribuir
         'transition-all duration-150 select-none',
         // Estado de arraste: o card original fica translúcido
         isDragging && !isOverlay
-          ? 'opacity-40 shadow-none border-dashed border-blue-300'
-          : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-md',
+          ? 'opacity-40 shadow-none border-dashed border-primary'
+          : 'border-gray-200 dark:border-gray-700 hover:border-primary dark:hover:border-primary hover:shadow-md',
         // Overlay: sombra maior e leve rotação para sensação de "lift"
         isOverlay
-          ? 'shadow-2xl border-blue-400 rotate-1 cursor-grabbing'
+          ? 'shadow-2xl border-primary rotate-1 cursor-grabbing'
           : '',
         // DONE: visual muted, sem cursor de arraste
         isDone
@@ -147,7 +147,7 @@ export function KanbanCard({ tarefa, isOverlay = false, funcionarios, onAtribuir
                      cursor-grab active:cursor-grabbing rounded-l-xl
                      hover:bg-gray-50 dark:hover:bg-gray-800 focus-visible:opacity-100
                      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset
-                     focus-visible:ring-blue-400"
+                     focus-visible:ring-primary"
         >
           <GripVertical size={14} className="text-gray-400" />
         </div>

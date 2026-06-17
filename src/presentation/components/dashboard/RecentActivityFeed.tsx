@@ -45,7 +45,7 @@ async function fetcher([url, token]: [string, string]): Promise<{ atividades: At
 // =============================================================================
 
 const ACTION_ICONS: Record<string, { icon: LucideIcon; cor: string }> = {
-  DOWNLOAD:     { icon: Download,  cor: 'text-blue-500 bg-blue-50 dark:bg-blue-900/20' },
+  DOWNLOAD:     { icon: Download,  cor: 'text-primary bg-primary-50 dark:bg-primary/10' },
   VIEW:         { icon: Eye,       cor: 'text-violet-500 bg-violet-50 dark:bg-violet-900/20' },
   UPLOAD_BATCH: { icon: Upload,    cor: 'text-emerald-500 bg-emerald-50 dark:bg-emerald-900/20' },
   LOGIN:        { icon: LogIn,     cor: 'text-green-500 bg-green-50 dark:bg-green-900/20' },

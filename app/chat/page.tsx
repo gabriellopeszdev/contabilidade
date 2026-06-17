@@ -89,7 +89,7 @@ export default function ChatPage() {
   if (carregando || !usuario) {
     return (
       <div className="flex items-center justify-center h-full">
-        <Loader2 size={24} className="animate-spin text-blue-600" />
+        <Loader2 size={24} className="animate-spin text-primary" />
       </div>
     );
   }

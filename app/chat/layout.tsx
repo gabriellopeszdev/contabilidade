@@ -280,7 +280,7 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
                       const ativo = pathname === item.href || pathname.startsWith(item.href + '/');
                       return (
                         <Link key={item.href} href={item.href} onClick={() => setSidebarAberta(false)} title={colapsada ? item.label : undefined}
-                          className={`flex items-center rounded-lg text-sm font-medium transition-colors ${colapsada ? 'justify-center py-2.5' : 'gap-3 px-3 py-2.5'} ${ativo ? 'bg-primary-50 text-primary dark:bg-primary/20 dark:text-primary' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'}`}>
+                          className={`flex items-center rounded-lg text-sm font-medium transition-colors ${colapsada ? 'justify-center py-2.5' : 'gap-3 px-3 py-2.5'} ${ativo ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'}`}>
                           <span className={`shrink-0 ${ativo ? 'text-primary' : 'text-gray-400 dark:text-gray-500'}`}>{item.icon}</span>
                           {!colapsada && item.label}
                         </Link>

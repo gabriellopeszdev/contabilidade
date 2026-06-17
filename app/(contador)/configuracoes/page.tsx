@@ -1529,7 +1529,7 @@ interface PlanInfo {
 }
 
 const STATUS_LABELS: Record<string, { label: string; cor: string }> = {
-  TRIAL:        { label: 'Trial',        cor: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400' },
+  TRIAL:        { label: 'Trial',        cor: 'bg-primary-50 dark:bg-primary/10 text-primary-dark dark:text-primary' },
   ATIVO:        { label: 'Ativo',        cor: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' },
   INADIMPLENTE: { label: 'Inadimplente', cor: 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400' },
   SUSPENSO:     { label: 'Suspenso',     cor: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' },
@@ -1941,8 +1941,8 @@ function IntegracoesTab({
           }`}>
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center shrink-0">
-                  <KeyRound size={18} className="text-blue-600 dark:text-blue-400" />
+                <div className="w-10 h-10 rounded-xl bg-primary-50 dark:bg-primary/10 flex items-center justify-center shrink-0">
+                  <KeyRound size={18} className="text-primary dark:text-primary" />
                 </div>
                 <div>
                   <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Asaas</h2>

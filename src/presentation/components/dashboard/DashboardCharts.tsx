@@ -236,7 +236,7 @@ export function DashboardCharts({ token }: DashboardChartsProps) {
       {/* ------------------------------------------------------------------ */}
       <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-5">
         <div className="flex items-center gap-2 mb-4">
-          <TrendingUp size={15} className="text-blue-500" />
+          <TrendingUp size={15} className="text-primary" />
           <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">Documentos / Mês</h3>
         </div>
 

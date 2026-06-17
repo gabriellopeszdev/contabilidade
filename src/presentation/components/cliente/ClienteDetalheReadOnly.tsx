@@ -126,7 +126,7 @@ function getSetorConfig(setor: SetorDocumento) {
 }
 
 const ORIGEM_CONFIG: Record<Origem, { label: string; icone: typeof Upload; classes: string }> = {
-  UPLOAD_CLIENTE:  { label: 'Enviado pelo cliente',    icone: Upload,   classes: 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30' },
+  UPLOAD_CLIENTE:  { label: 'Enviado pelo cliente',    icone: Upload,   classes: 'text-primary dark:text-primary bg-primary-50 dark:bg-primary/10' },
   UPLOAD_CONTADOR: { label: 'Enviado pelo escritório', icone: Download, classes: 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30' },
 };
 
@@ -227,7 +227,7 @@ export function ClienteDetalheReadOnly() {
       <div>
         <Link
           href="/clientes"
-          className="inline-flex items-center gap-1.5 text-sm text-slate-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400
+          className="inline-flex items-center gap-1.5 text-sm text-slate-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary
             transition-colors mb-4"
         >
           <ArrowLeft size={15} />
@@ -235,16 +235,16 @@ export function ClienteDetalheReadOnly() {
         </Link>
 
         {/* Banner read-only */}
-        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 flex items-center gap-3 mb-4">
-          <ShieldCheck size={18} className="text-blue-500 shrink-0" />
-          <p className="text-sm text-blue-700 dark:text-blue-400">
+        <div className="bg-primary-50 dark:bg-primary/10 border border-primary/30 dark:border-primary/20 rounded-xl p-4 flex items-center gap-3 mb-4">
+          <ShieldCheck size={18} className="text-primary shrink-0" />
+          <p className="text-sm text-primary dark:text-primary">
             Modo visualização — documentos filtrados por {setoresLabel}.
           </p>
         </div>
 
         {isLoading && !cliente ? (
           <div className="h-20 flex items-center gap-3">
-            <Loader2 size={20} className="animate-spin text-blue-500" />
+            <Loader2 size={20} className="animate-spin text-primary" />
             <span className="text-sm text-slate-500 dark:text-gray-400">Carregando prontuário…</span>
           </div>
         ) : error ? (
@@ -258,7 +258,7 @@ export function ClienteDetalheReadOnly() {
         ) : cliente ? (
           <div className="bg-white dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-700 shadow-sm p-5 sm:p-6">
             <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-              <div className="shrink-0 w-14 h-14 rounded-2xl bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400
+              <div className="shrink-0 w-14 h-14 rounded-2xl bg-primary-light text-primary-dark
                 flex items-center justify-center text-lg font-bold">
                 {iniciais(cliente.nome)}
               </div>
@@ -310,7 +310,7 @@ export function ClienteDetalheReadOnly() {
             placeholder="Buscar por nome do arquivo…"
             className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-slate-300 dark:border-gray-600 bg-white dark:bg-gray-800
               text-slate-900 dark:text-gray-100 placeholder:text-slate-400 dark:placeholder:text-gray-500
-              focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+              focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
           />
         </div>
 
@@ -320,7 +320,7 @@ export function ClienteDetalheReadOnly() {
             value={filtroSetor}
             onChange={(e) => setFiltroSetor(e.target.value as SetorTipo | '')}
             className="px-3 py-2 text-xs font-medium rounded-lg border border-slate-300 dark:border-gray-600 bg-white dark:bg-gray-800
-              text-slate-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:[color-scheme:dark]"
+              text-slate-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary dark:[color-scheme:dark]"
           >
             <option value="">Todos os Setores</option>
             <option value="FISCAL">Fiscal</option>
@@ -331,7 +331,7 @@ export function ClienteDetalheReadOnly() {
             value={filtroLeitura}
             onChange={(e) => setFiltroLeitura(e.target.value as 'lido' | 'nao_lido' | '')}
             className="px-3 py-2 text-xs font-medium rounded-lg border border-slate-300 dark:border-gray-600 bg-white dark:bg-gray-800
-              text-slate-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:[color-scheme:dark]"
+              text-slate-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary dark:[color-scheme:dark]"
           >
             <option value="">Todos</option>
             <option value="nao_lido">Não lidos</option>
@@ -341,7 +341,7 @@ export function ClienteDetalheReadOnly() {
             value={filtroOrigem}
             onChange={(e) => setFiltroOrigem(e.target.value as Origem | '')}
             className="px-3 py-2 text-xs font-medium rounded-lg border border-slate-300 dark:border-gray-600 bg-white dark:bg-gray-800
-              text-slate-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:[color-scheme:dark]"
+              text-slate-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary dark:[color-scheme:dark]"
           >
             <option value="">Todas as Origens</option>
             <option value="UPLOAD_CLIENTE">Enviado pelo Cliente</option>
@@ -353,7 +353,7 @@ export function ClienteDetalheReadOnly() {
       {/* Lista de Documentos */}
       {isLoading && documentos.length === 0 ? (
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-700 shadow-sm p-12 flex flex-col items-center gap-3">
-          <Loader2 size={24} className="animate-spin text-blue-500" />
+          <Loader2 size={24} className="animate-spin text-primary" />
           <p className="text-sm text-slate-500 dark:text-gray-400">Carregando documentos…</p>
         </div>
       ) : docsFiltrados.length === 0 ? (
@@ -419,7 +419,7 @@ export function ClienteDetalheReadOnly() {
                         font-bold uppercase border ${
                           doc.fileType === 'PDF'
                             ? 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 border-red-200 dark:border-red-800'
-                            : 'bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400 border-sky-200 dark:border-sky-800'
+                            : 'bg-primary-50 dark:bg-primary/10 text-primary dark:text-primary border-primary/30 dark:border-primary/20'
                         }`}>
                         {doc.fileType}
                       </span>
@@ -461,7 +461,7 @@ export function ClienteDetalheReadOnly() {
                         onClick={() => handleDownload(doc)}
                         disabled={baixandoId === doc.id}
                         title="Baixar arquivo"
-                        className="p-2 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20
+                        className="p-2 rounded-lg text-slate-400 hover:text-primary hover:bg-primary-50 dark:hover:bg-primary/10
                           disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       >
                         {baixandoId === doc.id ? (

@@ -61,8 +61,8 @@ const COLUNAS: ColConfig[] = [
     estado:    'PROCESSING',
     label:     'Em Execução',
     icone:     Zap,
-    corBorda:  'border-blue-200 dark:border-blue-800',
-    corHeader: 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300',
+    corBorda:  'border-primary/30 dark:border-primary/30',
+    corHeader: 'bg-primary-light text-primary-dark dark:text-primary',
   },
   {
     estado:    'REVIEW',
@@ -307,7 +307,7 @@ export function KanbanBoard({ token, clienteId, onErro }: KanbanBoardProps) {
             value={filtroCliente}
             onChange={(e) => setFiltroCliente(e.target.value)}
             className="text-[11px] font-medium text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded-lg
-                       px-2.5 py-1 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400
+                       px-2.5 py-1 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary
                        max-w-[180px] dark:[color-scheme:dark]"
           >
             <option value="">Todos os clientes</option>

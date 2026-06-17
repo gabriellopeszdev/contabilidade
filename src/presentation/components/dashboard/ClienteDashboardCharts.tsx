@@ -131,7 +131,7 @@ export function ClienteDashboardCharts({ token }: { token: string | null }) {
       {/* Docs por Mês */}
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
         <div className="flex items-center gap-2 mb-4">
-          <TrendingUp size={15} className="text-sky-500" />
+          <TrendingUp size={15} className="text-primary" />
           <h3 className="text-sm font-bold text-gray-900">Documentos / Mês</h3>
         </div>
 

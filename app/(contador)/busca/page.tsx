@@ -100,7 +100,7 @@ export default function BuscaPage() {
           value={q}
           onChange={(e) => handleChange(e.target.value)}
           placeholder="Digite para pesquisar… (mín. 2 caracteres)"
-          className="w-full pl-11 pr-10 py-3 border border-gray-200 dark:border-gray-700 rounded-xl text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full pl-11 pr-10 py-3 border border-gray-200 dark:border-gray-700 rounded-xl text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
         />
         {q && (
           <button
@@ -129,7 +129,7 @@ export default function BuscaPage() {
                   onClick={() => handleFiltroSetor(value)}
                   className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
                     isActive
-                      ? 'bg-blue-600 text-white'
+                      ? 'bg-primary text-white'
                       : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
                   }`}
                 >
@@ -151,7 +151,7 @@ export default function BuscaPage() {
                   onClick={() => handleFiltroTipo(value)}
                   className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
                     isActive
-                      ? 'bg-blue-600 text-white'
+                      ? 'bg-primary text-white'
                       : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
                   }`}
                 >
@@ -212,7 +212,7 @@ export default function BuscaPage() {
                         {d.fileType}
                       </span>
                       {downloadingId === d.id
-                        ? <Loader2 size={13} className="animate-spin text-blue-500" />
+                        ? <Loader2 size={13} className="animate-spin text-primary" />
                         : <Download size={13} className="text-gray-400" />
                       }
                     </div>
@@ -269,7 +269,7 @@ export default function BuscaPage() {
                       <p className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">{o.nome}</p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">{o.descricao || o.tipo}</p>
                     </div>
-                    <span className="ml-4 text-xs bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 px-2 py-0.5 rounded shrink-0">
+                    <span className="ml-4 text-xs bg-primary-50 dark:bg-primary/10 text-primary-dark dark:text-primary px-2 py-0.5 rounded shrink-0">
                       {o.tipo}
                     </span>
                   </Link>

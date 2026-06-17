@@ -284,9 +284,9 @@ export default function EnviarPage() {
       </div>
 
       {/* Aviso informativo */}
-      <div className="flex items-start gap-3 rounded-xl bg-primary-50 border border-primary/20 px-4 py-3">
+      <div className="flex items-start gap-3 rounded-xl bg-primary/10 dark:bg-primary/10 border border-primary/20 px-4 py-3">
         <CheckCircle2 size={16} className="text-primary shrink-0 mt-0.5" />
-        <p className="text-sm text-primary-dark">
+        <p className="text-sm text-primary dark:text-primary">
           Após enviar, seu contador recebe uma notificação automática. Você não precisa ligar nem mandar mensagem.
         </p>
       </div>

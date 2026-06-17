@@ -95,8 +95,8 @@ export function SectorSelectModal({ arquivo, onFechar, onSucesso }: Props) {
           </button>
         </div>
 
-        <div className="rounded-lg px-3 py-2.5 bg-sky-50 dark:bg-sky-900/20 border border-sky-200 dark:border-sky-800">
-          <p className="text-xs text-sky-700 dark:text-sky-400">
+        <div className="rounded-lg px-3 py-2.5 bg-primary-50 dark:bg-primary/10 border border-primary/30 dark:border-primary/20">
+          <p className="text-xs text-primary-dark dark:text-primary">
             Seu contador fará a classificação do documento (Fiscal, Pessoal ou Contábil) após o envio.
           </p>
         </div>
@@ -124,11 +124,11 @@ export function SectorSelectModal({ arquivo, onFechar, onSucesso }: Props) {
           type="button"
           onClick={handleEnviar}
           disabled={enviando || sucesso}
-          className="w-full py-2.5 text-sm font-semibold text-white bg-sky-600 rounded-xl
-                     hover:bg-sky-700 active:bg-sky-800 transition-colors
+          className="w-full py-2.5 text-sm font-semibold text-white bg-primary rounded-xl
+                     hover:bg-primary-dark active:bg-primary-dark transition-colors
                      disabled:opacity-50 disabled:cursor-not-allowed
                      flex items-center justify-center gap-2
-                     focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
+                     focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
           {enviando ? (
             <><Loader2 size={15} className="animate-spin" /> Enviando…</>
