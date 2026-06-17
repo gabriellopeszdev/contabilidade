@@ -1745,11 +1745,12 @@ function AssinaturaTab({
   };
 
   const formatBillingType = (type: string) => {
+    if (assinatura.valorMensal === 0) return 'Isento';
     switch (type) {
       case 'CREDIT_CARD': return 'Cartão de Crédito';
       case 'BOLETO': return 'Boleto Bancário';
       case 'PIX': return 'PIX';
-      default: return type;
+      default: return type === 'UNDEFINED' ? 'Não Definida' : type;
     }
   };
 
