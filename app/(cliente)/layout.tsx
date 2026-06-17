@@ -258,7 +258,7 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
           {logoUrl ? (
             <img src={logoUrl} alt="Logo" className="w-8 h-8 rounded-lg object-contain shrink-0" />
           ) : (
-            <div className="w-8 h-8 rounded-lg bg-sky-600 flex items-center justify-center shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shrink-0">
               <Building2 size={16} className="text-white" />
             </div>
           )}
@@ -329,7 +329,7 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
           </div>
 
           <div className={`flex items-center rounded-lg bg-sky-50/60 dark:bg-gray-800 ${colapsada ? 'justify-center p-2' : 'gap-3 px-3 py-2'}`}>
-            <div title={colapsada ? usuario.nome : undefined} className="w-8 h-8 rounded-full bg-sky-100 dark:bg-sky-900/50 text-sky-700 dark:text-sky-400 flex items-center justify-center text-xs font-bold shrink-0">
+            <div title={colapsada ? usuario.nome : undefined} className="w-8 h-8 rounded-full bg-primary-light text-primary-dark flex items-center justify-center text-xs font-bold shrink-0">
               {iniciais}
             </div>
             {!colapsada && (
@@ -431,7 +431,7 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
                     <span className="text-xs font-bold text-gray-900 dark:text-gray-100">Notificações</span>
                     <div className="flex gap-3">
                       {naoLidas > 0 && (
-                        <button onClick={marcarTodasLidas} className="text-[10px] text-sky-600 hover:underline">
+                        <button onClick={marcarTodasLidas} className="text-[10px] text-primary hover:underline">
                           Marcar todas como lidas
                         </button>
                       )}
@@ -480,7 +480,7 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
                 aria-label={`Menu de ${usuario.nome}`}
                 aria-expanded={userMenuAberto}
               >
-                <div className="w-7 h-7 rounded-full bg-sky-100 dark:bg-sky-900/50 text-sky-700 dark:text-sky-400 flex items-center justify-center text-[10px] font-bold">
+                <div className="w-7 h-7 rounded-full bg-primary-light text-primary-dark flex items-center justify-center text-[10px] font-bold">
                   {iniciais}
                 </div>
                 <span className="hidden sm:block text-xs font-medium text-gray-700 dark:text-gray-300 max-w-[120px] truncate">

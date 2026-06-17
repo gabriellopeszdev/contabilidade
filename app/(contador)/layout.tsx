@@ -363,7 +363,7 @@ export default function ContadorLayout({ children }: { children: React.ReactNode
           </div>
 
           <div className={`flex items-center rounded-lg bg-gray-50 dark:bg-gray-800 ${colapsada ? 'justify-center p-2' : 'gap-3 px-3 py-2'}`}>
-            <div title={colapsada ? usuario.nome : undefined} className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 flex items-center justify-center text-xs font-bold shrink-0">
+            <div title={colapsada ? usuario.nome : undefined} className="w-8 h-8 rounded-full bg-primary-light text-primary-dark flex items-center justify-center text-xs font-bold shrink-0">
               {iniciais}
             </div>
             {!colapsada && (
@@ -514,7 +514,7 @@ export default function ContadorLayout({ children }: { children: React.ReactNode
                 aria-label={`Menu do usuário — ${usuario.nome}`}
                 className="flex items-center gap-2 pl-2 pr-3 min-h-[44px] rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               >
-                <div className="w-7 h-7 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 flex items-center justify-center text-[10px] font-bold">
+                <div className="w-7 h-7 rounded-full bg-primary-light text-primary-dark flex items-center justify-center text-[10px] font-bold">
                   {iniciais}
                 </div>
                 <span className="hidden sm:block text-xs font-medium text-gray-700 dark:text-gray-300 max-w-[120px] truncate">

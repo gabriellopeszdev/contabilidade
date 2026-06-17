@@ -210,7 +210,7 @@ function DocumentoLinha({ doc, baixando, onBaixar, modoSelecao, selecionado, onT
       <div
         className={`flex items-center gap-3 px-4 py-3.5 transition-colors
           ${modoSelecao && selecionado
-            ? 'bg-blue-50 dark:bg-blue-900/20'
+            ? 'bg-primary-50'
             : 'hover:bg-slate-50 dark:hover:bg-gray-800'
           }`}
       >
@@ -220,7 +220,7 @@ function DocumentoLinha({ doc, baixando, onBaixar, modoSelecao, selecionado, onT
             type="button"
             onClick={() => onToggle?.(doc.id)}
             aria-label={selecionado ? `Desmarcar ${doc.fileName}` : `Selecionar ${doc.fileName}`}
-            className="shrink-0 text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+            className="shrink-0 text-primary hover:text-primary-dark transition-colors"
           >
             {selecionado ? <CheckSquare size={18} /> : <Square size={18} />}
           </button>
@@ -238,7 +238,7 @@ function DocumentoLinha({ doc, baixando, onBaixar, modoSelecao, selecionado, onT
 
             {!doc.readStatus && (
               <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold
-                               bg-blue-500 text-white leading-none tracking-wide animate-pulse">
+                               bg-primary text-white leading-none tracking-wide animate-pulse">
                 NOVO
               </span>
             )}
@@ -368,7 +368,7 @@ function DocumentoLinha({ doc, baixando, onBaixar, modoSelecao, selecionado, onT
                     href={`/api/v1/documentos/${doc.id}/versoes/${v.versao}/download`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline text-xs flex items-center gap-1"
+                    className="text-primary hover:underline text-xs flex items-center gap-1"
                   >
                     <Download size={11} /> Baixar
                   </a>
@@ -545,9 +545,9 @@ export function DocumentosTable({
               className={`
                 flex-shrink-0 px-4 py-3 text-sm font-medium border-b-2 transition-colors
                 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset
-                focus-visible:ring-blue-500
+                focus-visible:ring-primary
                 ${ativo
-                  ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+                  ? 'border-primary text-primary'
                   : 'border-transparent text-slate-500 dark:text-gray-400 hover:text-slate-700 dark:hover:text-gray-200 hover:border-slate-300 dark:hover:border-gray-600'
                 }
               `}
@@ -602,7 +602,7 @@ export function DocumentosTable({
         </div>
       ) : carregando ? (
         <div className="py-12 flex flex-col items-center gap-3">
-          <Loader2 size={28} className="animate-spin text-blue-500" />
+          <Loader2 size={28} className="animate-spin text-primary" />
           <p className="text-sm text-slate-500 dark:text-gray-400">Carregando documentos…</p>
         </div>
       ) : documentos.length === 0 ? (
@@ -673,7 +673,7 @@ export function DocumentosTable({
                               bg-slate-800 dark:bg-gray-950 text-white rounded-xl shadow-xl
                               border border-slate-700 dark:border-gray-800">
                 <span className="text-sm font-medium flex items-center gap-2">
-                  <PackageOpen size={16} className="text-blue-400 shrink-0" />
+                  <PackageOpen size={16} className="text-primary-light shrink-0" />
                   {selecionados.size} arquivo{selecionados.size !== 1 ? 's' : ''} selecionado{selecionados.size !== 1 ? 's' : ''}
                 </span>
                 <div className="flex items-center gap-2">
@@ -692,7 +692,7 @@ export function DocumentosTable({
                     onClick={handleBaixarLote}
                     disabled={baixandoLote}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold
-                               bg-blue-600 hover:bg-blue-500 transition-colors
+                               bg-primary hover:brightness-90 transition-colors
                                disabled:opacity-60 disabled:cursor-not-allowed"
                   >
                     {baixandoLote

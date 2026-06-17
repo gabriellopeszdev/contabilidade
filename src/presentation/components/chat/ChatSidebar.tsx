@@ -56,7 +56,7 @@ export function ChatSidebar({
       {/* Header */}
       <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800">
         <h2 className="text-sm font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2 mb-3">
-          <MessageSquare size={16} className="text-blue-600" />
+          <MessageSquare size={16} className="text-primary" />
           Chat
         </h2>
         {/* Campo de busca */}
@@ -67,7 +67,7 @@ export function ChatSidebar({
             value={busca}
             onChange={(e) => onBuscaChange(e.target.value)}
             placeholder="Buscar cliente..."
-            className="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-400 focus:border-blue-400"
+            className="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
           />
         </div>
       </div>
@@ -76,7 +76,7 @@ export function ChatSidebar({
       <div className="flex-1 overflow-y-auto">
         {carregando ? (
           <div className="flex items-center justify-center py-12">
-            <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+            <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
           </div>
         ) : filtradas.length === 0 ? (
           <div className="py-12 text-center">
@@ -103,7 +103,7 @@ export function ChatSidebar({
                     className={`
                       w-full flex items-start gap-3 px-4 py-3 text-left transition-colors
                       ${ativo
-                        ? 'bg-blue-50 dark:bg-blue-900/20 border-l-2 border-blue-600 dark:border-blue-500'
+                        ? 'bg-primary-50 border-l-2 border-primary'
                         : 'hover:bg-gray-50 dark:hover:bg-gray-800 border-l-2 border-transparent'
                       }
                     `}
@@ -111,7 +111,7 @@ export function ChatSidebar({
                     {/* Avatar */}
                     <div className={`
                       w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold shrink-0
-                      ${ativo ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'}
+                      ${ativo ? 'bg-primary-light text-primary-dark' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'}
                     `}>
                       {iniciais}
                     </div>
@@ -119,7 +119,7 @@ export function ChatSidebar({
                     {/* Info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
-                        <p className={`text-xs font-semibold truncate ${ativo ? 'text-blue-900 dark:text-blue-300' : 'text-gray-900 dark:text-gray-100'}`}>
+                        <p className={`text-xs font-semibold truncate ${ativo ? 'text-primary-dark' : 'text-gray-900 dark:text-gray-100'}`}>
                           {room.clienteNome}
                         </p>
                         {room.ultimaMensagem && (

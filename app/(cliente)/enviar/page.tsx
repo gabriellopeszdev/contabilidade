@@ -284,9 +284,9 @@ export default function EnviarPage() {
       </div>
 
       {/* Aviso informativo */}
-      <div className="flex items-start gap-3 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/50 px-4 py-3">
-        <CheckCircle2 size={16} className="text-blue-500 shrink-0 mt-0.5" />
-        <p className="text-sm text-blue-700 dark:text-blue-300">
+      <div className="flex items-start gap-3 rounded-xl bg-primary-50 border border-primary/20 px-4 py-3">
+        <CheckCircle2 size={16} className="text-primary shrink-0 mt-0.5" />
+        <p className="text-sm text-primary-dark">
           Após enviar, seu contador recebe uma notificação automática. Você não precisa ligar nem mandar mensagem.
         </p>
       </div>
@@ -300,7 +300,7 @@ export default function EnviarPage() {
 
         {loadingHistorico ? (
           <div className="py-10 flex justify-center">
-            <div role="status" aria-label="Carregando" className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin">
+            <div role="status" aria-label="Carregando" className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin">
               <span className="sr-only">Carregando...</span>
             </div>
           </div>

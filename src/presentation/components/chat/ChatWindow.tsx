@@ -180,8 +180,8 @@ export const ChatWindow = forwardRef<ChatWindowHandle, ChatWindowProps>(function
   if (semSala) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center bg-gray-50/50 dark:bg-gray-950/50 text-center px-8">
-        <div className="w-16 h-16 rounded-2xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center mb-4">
-          <MessageSquare size={28} className="text-blue-400" />
+        <div className="w-16 h-16 rounded-2xl bg-primary-50 flex items-center justify-center mb-4">
+          <MessageSquare size={28} className="text-primary" />
         </div>
         <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-1">
           Selecione uma conversa
@@ -202,7 +202,7 @@ export const ChatWindow = forwardRef<ChatWindowHandle, ChatWindowProps>(function
     <div className="flex-1 flex flex-col min-h-0 bg-gray-50/30 dark:bg-gray-950/50">
       {/* Header */}
       <div className="px-4 py-3 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 flex items-center gap-3 shrink-0">
-        <div className="w-9 h-9 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 flex items-center justify-center text-xs font-bold">
+        <div className="w-9 h-9 rounded-full bg-primary-light text-primary-dark flex items-center justify-center text-xs font-bold">
           {nomeDestinatario
             .split(' ')
             .filter(Boolean)
@@ -213,7 +213,7 @@ export const ChatWindow = forwardRef<ChatWindowHandle, ChatWindowProps>(function
         <div>
           <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{nomeDestinatario}</p>
           {typing && (
-            <p className="text-[10px] text-blue-600 animate-pulse">
+            <p className="text-[10px] text-primary animate-pulse">
               {typing.nome} está digitando…
             </p>
           )}
@@ -244,7 +244,7 @@ export const ChatWindow = forwardRef<ChatWindowHandle, ChatWindowProps>(function
 
         {carregando && mensagens.length === 0 ? (
           <div className="flex items-center justify-center py-12">
-            <Loader2 size={20} className="animate-spin text-blue-500" />
+            <Loader2 size={20} className="animate-spin text-primary" />
           </div>
         ) : mensagens.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -340,17 +340,17 @@ export const ChatWindow = forwardRef<ChatWindowHandle, ChatWindowProps>(function
       <div className="px-4 py-3 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shrink-0">
         {/* Attachment preview */}
         {anexo && (
-          <div className="flex items-center gap-2 px-2 py-1.5 mb-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+          <div className="flex items-center gap-2 px-2 py-1.5 mb-2 bg-primary-50 border border-primary/20 rounded-lg">
             {anexo.nome.toLowerCase().endsWith('.xml') ? (
-              <FileCode2 size={14} className="text-blue-500 shrink-0" />
+              <FileCode2 size={14} className="text-primary shrink-0" />
             ) : (
-              <FileText size={14} className="text-blue-500 shrink-0" />
+              <FileText size={14} className="text-primary shrink-0" />
             )}
-            <span className="text-xs text-blue-700 dark:text-blue-300 truncate flex-1">{anexo.nome}</span>
+            <span className="text-xs text-primary-dark truncate flex-1">{anexo.nome}</span>
             <button
               type="button"
               onClick={() => setAnexo(null)}
-              className="text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 shrink-0"
+              className="text-primary/60 hover:text-primary shrink-0"
             >
               <X size={14} />
             </button>
