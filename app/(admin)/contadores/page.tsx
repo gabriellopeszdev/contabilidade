@@ -33,7 +33,7 @@ interface ContadorDTO {
   id:               string;
   name:             string;
   email:            string;
-  crc:              string;
+  crc:              string | null;
   isActive:         boolean;
   totalClientes:    number;
   nomeEscritorio:   string | null;
@@ -57,6 +57,7 @@ interface PlanoDTO {
 }
 
 interface NovoContadorForm {
+  tipo:            'AUTONOMO' | 'EMPRESA';
   name:            string;
   email:           string;
   crc:             string;
@@ -68,6 +69,7 @@ interface NovoContadorForm {
 }
 
 const FORM_INICIAL: NovoContadorForm = {
+  tipo:            'AUTONOMO',
   name:            '',
   email:           '',
   crc:             '',
@@ -136,7 +138,13 @@ function ModalCriarContador({ onClose, onCriado, token }: ModalCriarContadorProp
     const novosErros: string[] = [];
     if (!form.name.trim())            novosErros.push('Nome é obrigatório.');
     if (!form.email.trim())           novosErros.push('E-mail é obrigatório.');
-    if (!form.crc.trim())             novosErros.push('CRC é obrigatório.');
+    
+    if (form.tipo === 'AUTONOMO') {
+      if (!form.crc.trim())           novosErros.push('CRC é obrigatório para Contador Autônomo.');
+    } else {
+      if (!form.cnpjEscritorio.trim()) novosErros.push('CNPJ do escritório é obrigatório para Empresa.');
+    }
+    
     if (form.senhaProvisoria.length < 8) novosErros.push('Senha deve ter ao menos 8 caracteres.');
     if (!form.nomeEscritorio.trim())  novosErros.push('Nome do escritório é obrigatório.');
     if (novosErros.length > 0) { setErros(novosErros); return; }
@@ -150,9 +158,10 @@ function ModalCriarContador({ onClose, onCriado, token }: ModalCriarContadorProp
           'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({
+          tipo:            form.tipo,
           name:            form.name.trim(),
           email:           form.email.trim().toLowerCase(),
-          crc:             form.crc.trim().toUpperCase(),
+          crc:             form.tipo === 'AUTONOMO' ? form.crc.trim().toUpperCase() : (form.crc.trim().toUpperCase() || undefined),
           senhaProvisoria: form.senhaProvisoria,
           nomeEscritorio:  form.nomeEscritorio.trim(),
           cnpjEscritorio:  form.cnpjEscritorio.trim() || undefined,
@@ -173,7 +182,7 @@ function ModalCriarContador({ onClose, onCriado, token }: ModalCriarContadorProp
         id:               data.id!,
         name:             data.name!,
         email:            data.email!,
-        crc:              data.crc!,
+        crc:              data.crc ?? null,
         isActive:         true,
         totalClientes:    0,
         nomeEscritorio:   form.nomeEscritorio.trim(),
@@ -236,6 +245,37 @@ function ModalCriarContador({ onClose, onCriado, token }: ModalCriarContadorProp
             </div>
           )}
 
+          {/* Tipo de Perfil */}
+          <div>
+            <label className="block text-[11px] font-medium text-slate-400 mb-1.5">
+              Tipo de Perfil *
+            </label>
+            <div className="flex gap-4">
+              <label className="flex items-center gap-2 text-sm text-white cursor-pointer">
+                <input
+                  type="radio"
+                  name="tipo"
+                  value="AUTONOMO"
+                  checked={form.tipo === 'AUTONOMO'}
+                  onChange={() => setForm((f) => ({ ...f, tipo: 'AUTONOMO' }))}
+                  className="accent-violet-500"
+                />
+                Contador Autônomo
+              </label>
+              <label className="flex items-center gap-2 text-sm text-white cursor-pointer">
+                <input
+                  type="radio"
+                  name="tipo"
+                  value="EMPRESA"
+                  checked={form.tipo === 'EMPRESA'}
+                  onChange={() => setForm((f) => ({ ...f, tipo: 'EMPRESA' }))}
+                  className="accent-violet-500"
+                />
+                Empresa de Contabilidade
+              </label>
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 gap-3">
             <div className="col-span-2">
               <label htmlFor="criar-nome" className="block text-[11px] font-medium text-slate-400 mb-1">
@@ -265,7 +305,9 @@ function ModalCriarContador({ onClose, onCriado, token }: ModalCriarContadorProp
             </div>
 
             <div>
-              <label htmlFor="criar-crc" className="block text-[11px] font-medium text-slate-400 mb-1">CRC *</label>
+              <label htmlFor="criar-crc" className="block text-[11px] font-medium text-slate-400 mb-1">
+                {form.tipo === 'AUTONOMO' ? 'CRC *' : 'CRC (opcional)'}
+              </label>
               <input
                 id="criar-crc"
                 name="crc"
@@ -307,8 +349,7 @@ function ModalCriarContador({ onClose, onCriado, token }: ModalCriarContadorProp
 
             <div className="col-span-2">
               <label htmlFor="criar-cnpj" className="block text-[11px] font-medium text-slate-400 mb-1">
-                CNPJ do escritório
-                <span className="text-slate-600 ml-1">(opcional)</span>
+                {form.tipo === 'EMPRESA' ? 'CNPJ do escritório *' : 'CNPJ do escritório (opcional)'}
               </label>
               <input
                 id="criar-cnpj"
@@ -397,12 +438,12 @@ interface ModalEditarContadorProps {
 
 function ModalEditarContador({ contador, onClose, onSalvo, token }: ModalEditarContadorProps) {
   const [form, setForm] = useState({
-    name:           contador.name,
-    email:          contador.email,
-    crc:            contador.crc,
-    nomeEscritorio: contador.nomeEscritorio ?? '',
-    cnpjEscritorio: contador.cnpjEscritorio ?? '',
-    providerAssinatura: contador.providerAssinatura ?? 'INTERNO',
+    name:           contador.name as string,
+    email:          contador.email as string,
+    crc:            (contador.crc ?? '') as string,
+    nomeEscritorio: (contador.nomeEscritorio ?? '') as string,
+    cnpjEscritorio: (contador.cnpjEscritorio ?? '') as string,
+    providerAssinatura: (contador.providerAssinatura ?? 'INTERNO') as string,
   });
   const [erros,    setErros]    = useState<Record<string, string>>({});
   const [enviando, setEnviando] = useState(false);
@@ -435,7 +476,7 @@ function ModalEditarContador({ contador, onClose, onSalvo, token }: ModalEditarC
       onSalvo({
         name:           form.name,
         email:          form.email,
-        crc:            form.crc.toUpperCase(),
+        crc:            form.crc.trim() ? form.crc.trim().toUpperCase() : null,
         nomeEscritorio: form.nomeEscritorio,
         cnpjEscritorio: form.cnpjEscritorio || null,
         providerAssinatura: form.providerAssinatura as any,
@@ -1529,7 +1570,7 @@ export default function ContadoresPage() {
     return (
       c.name.toLowerCase().includes(q)          ||
       c.email.toLowerCase().includes(q)         ||
-      c.crc.toLowerCase().includes(q)           ||
+      (c.crc ?? '').toLowerCase().includes(q)   ||
       (c.nomeEscritorio ?? '').toLowerCase().includes(q)
     );
   });
@@ -1548,7 +1589,7 @@ export default function ContadoresPage() {
         <ModalCriarContador
           token={token ?? ''}
           onClose={() => setModalAberto(false)}
-          onCriado={(novo) => {
+          onCriado={(novo: ContadorDTO) => {
             setContadores((prev) => [novo, ...prev]);
             setModalAberto(false);
           }}
@@ -1757,9 +1798,13 @@ export default function ContadoresPage() {
 
                       {/* CRC */}
                       <td className="px-4 py-3.5 hidden md:table-cell">
-                        <span className="text-xs font-mono text-slate-300 bg-slate-800 px-2 py-0.5 rounded">
-                          {c.crc}
-                        </span>
+                        {c.crc ? (
+                          <span className="text-xs font-mono text-slate-300 bg-slate-800 px-2 py-0.5 rounded">
+                            {c.crc}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-slate-500">—</span>
+                        )}
                       </td>
 
                       {/* Clientes */}
