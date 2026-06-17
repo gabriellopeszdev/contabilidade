@@ -58,6 +58,18 @@ function writeCache(logoUrl: string | null, nomeEscritorio: string): void {
   }
 }
 
+export function applyThemeCssVars(corPrimaria: string, corSecundaria?: string): void {
+  const root = document.documentElement.style;
+  root.setProperty('--color-primary',       corPrimaria);
+  root.setProperty('--color-brand',         corPrimaria);
+  root.setProperty('--color-primary-light', tint(corPrimaria, 0.85));
+  root.setProperty('--color-primary-50',    tint(corPrimaria, 0.93));
+  if (corSecundaria) {
+    root.setProperty('--color-primary-dark', corSecundaria);
+    root.setProperty('--color-brand-dark',   corSecundaria);
+  }
+}
+
 export function useTheme(token: string | null | undefined): ThemeBrand {
   const [brand, setBrand] = useState<ThemeBrand>({ logoUrl: null, nomeEscritorio: '', loaded: false });
 
@@ -89,17 +101,8 @@ export function useTheme(token: string | null | undefined): ThemeBrand {
         const data = await res.json();
         const { corPrimaria, corSecundaria, logoUrl, nomeEscritorio } = data.config ?? {};
 
-        const root = document.documentElement.style;
-
         if (corPrimaria) {
-          root.setProperty('--color-primary', corPrimaria);
-          root.setProperty('--color-brand', corPrimaria);
-          root.setProperty('--color-primary-light', tint(corPrimaria, 0.85));
-          root.setProperty('--color-primary-50', tint(corPrimaria, 0.93));
-        }
-        if (corSecundaria) {
-          root.setProperty('--color-primary-dark', corSecundaria);
-          root.setProperty('--color-brand-dark', corSecundaria);
+          applyThemeCssVars(corPrimaria, corSecundaria);
         }
 
         if (!cancelled) {

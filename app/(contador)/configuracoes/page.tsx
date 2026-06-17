@@ -35,6 +35,7 @@ import {
 } from 'lucide-react';
 
 import { useAuth } from '../../../src/presentation/hooks/useAuth';
+import { applyThemeCssVars } from '../../../src/presentation/hooks/useTheme';
 import { validarEmail, validarTelefone, mascararTelefone } from '../../../src/utils/validators';
 
 // =============================================================================
@@ -1035,8 +1036,7 @@ function WhiteLabelTab({
       });
       const data = await res.json();
       if (!res.ok) { onErro(data.message ?? 'Erro ao salvar.'); return; }
-      // Aplicar tema dinamicamente
-      document.documentElement.style.setProperty('--color-brand', config.corPrimaria);
+      applyThemeCssVars(config.corPrimaria, config.corSecundaria);
       onSucesso('Configuração White Label salva!');
     } catch {
       onErro('Erro de conexão.');
