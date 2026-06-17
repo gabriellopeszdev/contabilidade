@@ -14,7 +14,7 @@ export interface UsuarioContadorProps {
   name: string;
   email: Email;
   passwordHash: SenhaHash;
-  crc: CRC;
+  crc: CRC | null;
   clienteIds: string[];
   phone: string | null;
   avatarUrl: string | null;
@@ -224,7 +224,7 @@ export class UsuarioContador extends AggregateRoot {
   get name(): string { return this._props.name; }
   get email(): Email { return this._props.email; }
   get passwordHash(): SenhaHash { return this._passwordHash; }
-  get crc(): CRC { return this._props.crc; }
+  get crc(): CRC | null { return this._props.crc; }
   get phone(): string | null { return this._phone; }
   get avatarUrl(): string | null { return this._avatarUrl; }
   get lastLoginAt(): Date | null { return this._lastLoginAt; }

@@ -85,17 +85,53 @@ export const GET = withAuth(async (_req: NextRequest, _ctx: RouteContext) => {
 // =============================================================================
 
 const CriarContadorSchema = z.object({
+  tipo:            z.enum(['AUTONOMO', 'EMPRESA']),
   name:            z.string().min(2, 'Nome deve ter ao menos 2 caracteres.').max(255),
   email:           z.string().email('E-mail inválido.').toLowerCase(),
-  crc:             z.string()
-                     .min(5, 'CRC inválido.')
-                     .max(30)
-                     .regex(/^CRC-[A-Z]{2}\/\d{1,9}$/i, 'CRC deve estar no formato CRC-UF/NUMERO (ex: CRC-SP/123456).'),
+  crc:             z.string().optional().or(z.literal('')),
   senhaProvisoria: z.string().min(8, 'Senha deve ter ao menos 8 caracteres.'),
   nomeEscritorio:  z.string().min(2, 'Nome do escritório deve ter ao menos 2 caracteres.').max(255),
-  cnpjEscritorio:  z.string().length(14, 'CNPJ deve ter 14 dígitos.').optional(),
+  cnpjEscritorio:  z.string().optional().or(z.literal('')),
   planoId:         z.string().uuid().optional(),
   providerAssinatura: z.enum(['INTERNO', 'DOCSEAL', 'SIGNATUREAPI']).optional(),
+}).superRefine((data, ctx) => {
+  if (data.tipo === 'AUTONOMO') {
+    if (!data.crc || !data.crc.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['crc'],
+        message: 'CRC é obrigatório para Contador Autônomo.',
+      });
+    } else if (!/^CRC-[A-Z]{2}\/\d{1,9}$/i.test(data.crc)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['crc'],
+        message: 'CRC deve estar no formato CRC-UF/NUMERO (ex: CRC-SP/123456).',
+      });
+    }
+  } else if (data.tipo === 'EMPRESA') {
+    if (!data.cnpjEscritorio || !data.cnpjEscritorio.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['cnpjEscritorio'],
+        message: 'CNPJ do escritório é obrigatório para Empresa de Contabilidade.',
+      });
+    } else if (data.cnpjEscritorio.replace(/\D/g, '').length !== 14) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['cnpjEscritorio'],
+        message: 'CNPJ do escritório deve ter exatamente 14 dígitos.',
+      });
+    }
+
+    if (data.crc && data.crc.trim() && !/^CRC-[A-Z]{2}\/\d{1,9}$/i.test(data.crc)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['crc'],
+        message: 'CRC deve estar no formato CRC-UF/NUMERO (ex: CRC-SP/123456).',
+      });
+    }
+  }
 });
 
 const hasher = new BcryptPasswordHasher();
@@ -117,7 +153,10 @@ export const POST = withAuth(async (req: NextRequest, _ctx: RouteContext) => {
     return NextResponse.json({ message: 'Dados inválidos.', erros }, { status: 422 });
   }
 
-  const { name, email, crc, senhaProvisoria, nomeEscritorio, cnpjEscritorio, planoId, providerAssinatura } = parse.data;
+  const { tipo, name, email, crc, senhaProvisoria, nomeEscritorio, cnpjEscritorio, planoId, providerAssinatura } = parse.data;
+
+  const crcValue = crc && crc.trim() ? crc.trim().toUpperCase() : null;
+  const cnpjValue = cnpjEscritorio && cnpjEscritorio.trim() ? cnpjEscritorio.replace(/\D/g, '') : null;
 
   // --------------------------------------------------------------------------
   // 2. Verificar unicidade de e-mail e CRC
@@ -125,7 +164,9 @@ export const POST = withAuth(async (req: NextRequest, _ctx: RouteContext) => {
   try {
     const [emailExiste, crcExiste] = await Promise.all([
       prisma.usuarioContador.findFirst({ where: { email, deletedAt: null } }),
-      prisma.usuarioContador.findFirst({ where: { crc,   deletedAt: null } }),
+      crcValue
+        ? prisma.usuarioContador.findFirst({ where: { crc: crcValue, deletedAt: null } })
+        : Promise.resolve(null),
     ]);
 
     if (emailExiste) {
@@ -153,7 +194,7 @@ export const POST = withAuth(async (req: NextRequest, _ctx: RouteContext) => {
         data: {
           name,
           email,
-          crc:          crc.toUpperCase(),
+          crc:          crcValue,
           passwordHash,
           isActive:     true,
           isAdmin:      false,
@@ -164,7 +205,7 @@ export const POST = withAuth(async (req: NextRequest, _ctx: RouteContext) => {
         data: {
           contadorId:     novoContador.id,
           nomeEscritorio,
-          cnpjEscritorio: cnpjEscritorio ?? null,
+          cnpjEscritorio: cnpjValue,
           providerAssinatura: providerAssinatura ?? 'INTERNO',
         },
       });
