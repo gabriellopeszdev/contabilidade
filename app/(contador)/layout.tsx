@@ -43,6 +43,7 @@ import { useSessionTimer }  from '../../src/presentation/hooks/useSessionTimer';
 import { useDarkMode }      from '../../src/presentation/hooks/useDarkMode';
 import { usePlanoAtual }    from '../../src/presentation/hooks/usePlanoAtual';
 import { InstitutionalFooter } from '../../src/presentation/components/lgpd/InstitutionalFooter';
+import { ModalBloqueioInadimplencia } from '../../src/presentation/components/billing/ModalBloqueioInadimplencia';
 import { OnboardingChecklist } from './components/OnboardingChecklist';
 import { NpsModal } from './components/NpsModal';
 import { HelpTutorialModal } from './components/HelpTutorialModal';
@@ -130,6 +131,35 @@ export default function ContadorLayout({ children }: { children: React.ReactNode
   const router   = useRouter();
 
   const { usuario, token, carregando, logout, getToken, isDono, isContador } = useAuth();
+
+  const [bloqueioSaaS, setBloqueioSaaS] = useState<{
+    bloqueado: boolean;
+    cobranca: any | null;
+  } | null>(null);
+
+  const checkFaturamentoStatus = useCallback(async () => {
+    if (!token) return true;
+    try {
+      const res = await fetch('/api/v1/minha-assinatura/status', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) return true;
+      const data = await res.json();
+      setBloqueioSaaS({
+        bloqueado: Boolean(data.bloqueado),
+        cobranca: data.cobranca ?? null,
+      });
+      return !data.bloqueado;
+    } catch {
+      return true;
+    }
+  }, [token]);
+
+  useEffect(() => {
+    if (!carregando && token) {
+      checkFaturamentoStatus();
+    }
+  }, [carregando, token, checkFaturamentoStatus]);
   const { dark, toggle: toggleDark, mounted: darkMounted } = useDarkMode();
 
   const [sidebarAberta,  setSidebarAberta]  = useState(false);
@@ -552,6 +582,12 @@ export default function ContadorLayout({ children }: { children: React.ReactNode
       <OnboardingChecklist />
       <NpsModal />
       <HelpTutorialModal aberto={helpAberto} onClose={() => setHelpAberto(false)} />
+      {bloqueioSaaS?.bloqueado && (
+        <ModalBloqueioInadimplencia
+          cobranca={bloqueioSaaS.cobranca}
+          onCheckStatus={checkFaturamentoStatus}
+        />
+      )}
     </div>
     </>
   );
