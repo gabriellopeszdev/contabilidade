@@ -199,6 +199,7 @@ model UsuarioContador {
   boletosEmitidos BoletoHonorario[]
   assinaturas   AssinaturaHonorario[]
   assinaturaSaaS  AssinaturaSaaS?
+  cobrancasSaas   CobrancaSaaS[]
   chatIaMensagens ChatIaMensagem[]
 
   @@index([email])
@@ -828,15 +829,52 @@ model AssinaturaSaaS {
   diaVencimento Int                  @default(10) @map("dia_vencimento")
   valorMensal   Decimal              @map("valor_mensal") @db.Decimal(10, 2)
   observacoes   String?              @db.VarChar(500)
+  // Asaas — Dados de cobrança SaaS da plataforma
+  asaasCustomerId     String?  @unique @map("asaas_customer_id")     @db.VarChar(100)
+  asaasSubscriptionId String?  @unique @map("asaas_subscription_id") @db.VarChar(100)
+  billingType         String   @default("UNDEFINED") @map("billing_type") @db.VarChar(20)
   createdAt     DateTime             @default(now()) @map("created_at") @db.Timestamptz
   updatedAt     DateTime             @updatedAt @map("updated_at") @db.Timestamptz
 
   escritorio UsuarioContador @relation(fields: [escritorioId], references: [id], onDelete: Cascade)
   plano      PlanoSaaS       @relation(fields: [planoId], references: [id])
+  cobrancas  CobrancaSaaS[]
 
   @@index([planoId])
   @@index([status])
   @@map("assinatura_saas")
+}
+
+// =============================================================================
+// CobrancaSaaS — Cada fatura mensal gerada para um escritório
+//
+// Registra as cobranças individuais do plano SaaS. Cada vez que o Asaas gera
+// uma nova parcela da assinatura, o webhook cria um registro aqui.
+// =============================================================================
+
+model CobrancaSaaS {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  assinaturaId    String   @map("assinatura_id") @db.Uuid
+  escritorioId    String   @map("escritorio_id") @db.Uuid
+  valor           Decimal  @db.Decimal(10, 2)
+  vencimento      DateTime @db.Date
+  mesReferencia   String   @map("mes_referencia") @db.VarChar(7)
+  status          String   @default("PENDENTE") @db.VarChar(20)
+  asaasPaymentId  String?  @unique @map("asaas_payment_id") @db.VarChar(100)
+  asaasBoletoUrl  String?  @map("asaas_boleto_url") @db.VarChar(500)
+  asaasInvoiceUrl String?  @map("asaas_invoice_url") @db.VarChar(500)
+  asaasPixPayload String?  @map("asaas_pix_payload") @db.Text
+  asaasBarcode    String?  @map("asaas_barcode") @db.VarChar(200)
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  assinatura AssinaturaSaaS  @relation(fields: [assinaturaId], references: [id])
+  escritorio UsuarioContador @relation(fields: [escritorioId], references: [id])
+
+  @@index([escritorioId, status])
+  @@index([asaasPaymentId])
+  @@index([assinaturaId])
+  @@map("cobranca_saas")
 }
 
 // =============================================================================
