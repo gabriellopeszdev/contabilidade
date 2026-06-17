@@ -149,17 +149,17 @@ export default function DashboardClienteFuncionario() {
 
       {/* Resumo */}
       <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
-        <div className="text-center px-4 py-2.5 rounded-xl bg-amber-50 border border-amber-200">
-          <p className="text-lg font-bold text-amber-700">{pendentes}</p>
-          <p className="text-[10px] font-medium text-amber-600 uppercase tracking-wide">Pendentes</p>
+        <div className="text-center px-4 py-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/30">
+          <p className="text-lg font-bold text-amber-700 dark:text-amber-400">{pendentes}</p>
+          <p className="text-[10px] font-medium text-amber-600 dark:text-amber-500 uppercase tracking-wide">Pendentes</p>
         </div>
-        <div className="text-center px-4 py-2.5 rounded-xl bg-emerald-50 border border-emerald-200">
-          <p className="text-lg font-bold text-emerald-700">{lidos}</p>
-          <p className="text-[10px] font-medium text-emerald-600 uppercase tracking-wide">Lidos</p>
+        <div className="text-center px-4 py-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/30">
+          <p className="text-lg font-bold text-emerald-700 dark:text-emerald-400">{lidos}</p>
+          <p className="text-[10px] font-medium text-emerald-600 dark:text-emerald-500 uppercase tracking-wide">Lidos</p>
         </div>
-        <div className="text-center px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200">
-          <p className="text-lg font-bold text-slate-700">{total}</p>
-          <p className="text-[10px] font-medium text-slate-500 uppercase tracking-wide">Total</p>
+        <div className="text-center px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/50">
+          <p className="text-lg font-bold text-slate-700 dark:text-slate-300">{total}</p>
+          <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">Total</p>
         </div>
       </div>
 
@@ -390,9 +390,9 @@ export default function DashboardClienteFuncionario() {
       )}
 
       {/* Aviso legal */}
-      <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 flex items-start gap-3">
-        <ShieldCheck size={16} className="text-emerald-600 mt-0.5 shrink-0" />
-        <div className="text-xs text-emerald-800 space-y-0.5">
+      <div className="rounded-xl border border-emerald-200 dark:border-emerald-900/30 bg-emerald-50 dark:bg-emerald-950/20 px-4 py-3 flex items-start gap-3">
+        <ShieldCheck size={16} className="text-emerald-600 dark:text-emerald-400 mt-0.5 shrink-0" />
+        <div className="text-xs text-emerald-800 dark:text-emerald-300 space-y-0.5">
           <p className="font-semibold">Documentos protegidos por lei</p>
           <p>
             Seus documentos são armazenados com segurança por no mínimo{' '}

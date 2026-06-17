@@ -659,13 +659,13 @@ function ClienteDetalhesPageDono() {
               {/* Resumo */}
               {resumo && (
                 <div className="flex items-center gap-3 sm:gap-4 shrink-0">
-                  <div className="text-center px-3 py-2 rounded-xl bg-amber-50 border border-amber-200">
-                    <p className="text-lg font-bold text-amber-700">{resumo.pendentes}</p>
-                    <p className="text-[10px] font-medium text-amber-600 uppercase tracking-wide">Pendentes</p>
+                  <div className="text-center px-3 py-2 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/30">
+                    <p className="text-lg font-bold text-amber-700 dark:text-amber-400">{resumo.pendentes}</p>
+                    <p className="text-[10px] font-medium text-amber-600 dark:text-amber-500 uppercase tracking-wide">Pendentes</p>
                   </div>
-                  <div className="text-center px-3 py-2 rounded-xl bg-emerald-50 border border-emerald-200">
-                    <p className="text-lg font-bold text-emerald-700">{resumo.lidos}</p>
-                    <p className="text-[10px] font-medium text-emerald-600 uppercase tracking-wide">Lidos</p>
+                  <div className="text-center px-3 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/30">
+                    <p className="text-lg font-bold text-emerald-700 dark:text-emerald-400">{resumo.lidos}</p>
+                    <p className="text-[10px] font-medium text-emerald-600 dark:text-emerald-500 uppercase tracking-wide">Lidos</p>
                   </div>
                   <div className="text-center px-3 py-2 rounded-xl bg-slate-50 dark:bg-gray-800 border border-slate-200 dark:border-gray-700">
                     <p className="text-lg font-bold text-slate-700 dark:text-slate-300">{resumo.total}</p>
