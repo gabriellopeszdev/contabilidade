@@ -379,29 +379,29 @@ export function DashboardContadorDono({ token }: { token: string | null }) {
           <MetricCard
             label="Novos Documentos (24h)"
             valor={stats?.novosDocumentosRecebidos}
-            icone={<Inbox size={22} className="text-emerald-600" />}
-            cor="bg-emerald-50"
+            icone={<Inbox size={22} className="text-emerald-600 dark:text-emerald-400" />}
+            cor="bg-emerald-50 dark:bg-emerald-950/20"
             carregando={isLoading}
           />
           <MetricCard
             label="Tarefas Pendentes"
             valor={stats?.tarefasPendentes}
-            icone={<ClipboardList size={22} className="text-violet-600" />}
-            cor="bg-violet-50"
+            icone={<ClipboardList size={22} className="text-violet-600 dark:text-violet-400" />}
+            cor="bg-violet-50 dark:bg-violet-950/20"
             carregando={isLoading}
           />
           <MetricCard
             label="Documentos Não Lidos"
             valor={stats?.documentosNaoLidos}
-            icone={<FileText size={22} className="text-amber-600" />}
-            cor="bg-amber-50"
+            icone={<FileText size={22} className="text-amber-600 dark:text-amber-400" />}
+            cor="bg-amber-50 dark:bg-amber-950/20"
             carregando={isLoading}
           />
           <MetricCard
             label="Clientes Ativos"
             valor={stats?.clientesAtivos}
-            icone={<Users size={22} className="text-primary" />}
-            cor="bg-primary/5"
+            icone={<Users size={22} className="text-primary dark:text-primary" />}
+            cor="bg-primary/5 dark:bg-primary/10"
             carregando={isLoading}
           />
         </div>
