@@ -58,12 +58,12 @@ export function ClientHelpTutorialModal({ aberto, onClose }: ClientHelpTutorialM
       <div className="absolute inset-0" onClick={onClose} />
 
       {/* Modal Container */}
-      <div className="relative w-full max-w-6xl h-[650px] max-h-[92vh] bg-white dark:bg-gray-900 border border-sky-100 dark:border-gray-800 rounded-2xl shadow-2xl flex flex-col overflow-hidden z-10 animate-in fade-in zoom-in-95 duration-200">
+      <div className="relative w-full max-w-6xl h-[650px] max-h-[92vh] bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl shadow-2xl flex flex-col overflow-hidden z-10 animate-in fade-in zoom-in-95 duration-200">
         
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-sky-50 dark:border-gray-800 shrink-0 bg-white dark:bg-gray-900 z-10">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800 shrink-0 bg-white dark:bg-gray-900 z-10">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400 rounded-xl">
+            <div className="p-2 bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary rounded-xl">
               <Sparkles size={20} className="animate-pulse" />
             </div>
             <div>
@@ -84,7 +84,7 @@ export function ClientHelpTutorialModal({ aberto, onClose }: ClientHelpTutorialM
         <div className="flex-1 flex flex-col md:flex-row min-h-0">
           
           {/* Sidebar Menu */}
-          <aside className="w-full md:w-72 border-b md:border-b-0 md:border-r border-sky-50 dark:border-gray-800 bg-sky-50/20 dark:bg-gray-900/50 p-4 space-y-1 overflow-x-auto md:overflow-y-auto shrink-0 flex md:flex-col gap-2 md:gap-0">
+          <aside className="w-full md:w-72 border-b md:border-b-0 md:border-r border-gray-100 dark:border-gray-800 bg-primary/5 dark:bg-gray-900/50 p-4 space-y-1 overflow-x-auto md:overflow-y-auto shrink-0 flex md:flex-col gap-2 md:gap-0">
             {TABS.map((tab) => {
               const ativa = tabAtiva === tab.id;
               return (
@@ -93,8 +93,8 @@ export function ClientHelpTutorialModal({ aberto, onClose }: ClientHelpTutorialM
                   onClick={() => setTabAtiva(tab.id)}
                   className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all shrink-0 md:shrink-1 ${
                     ativa
-                      ? 'bg-sky-600 text-white shadow-md shadow-sky-500/10'
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-sky-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-200'
+                      ? 'bg-primary text-white shadow-md shadow-primary/10'
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-primary/10 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-200'
                   }`}
                 >
                   <span className={`shrink-0 ${ativa ? 'text-white' : 'text-gray-400 dark:text-gray-500'}`}>
@@ -114,7 +114,7 @@ export function ClientHelpTutorialModal({ aberto, onClose }: ClientHelpTutorialM
             {tabAtiva === 'visao-geral' && (
               <div className="space-y-6">
                 <div className="space-y-2">
-                  <span className="px-2.5 py-1 text-xs font-semibold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/20 rounded-full">Boas-vindas</span>
+                  <span className="px-2.5 py-1 text-xs font-semibold text-primary dark:text-primary bg-primary/10 dark:bg-primary/10 rounded-full">Boas-vindas</span>
                   <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Seu canal direto com a contabilidade</h3>
                   <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-sm">
                     Este portal foi criado para dar total transparência e agilidade à relação com o seu escritório contábil. Por meio deste canal, você pode baixar suas guias de impostos, assinar documentos eletronicamente com validade jurídica, enviar comprovantes e XMLs, e conversar com seu contador em tempo real.
@@ -122,13 +122,13 @@ export function ClientHelpTutorialModal({ aberto, onClose }: ClientHelpTutorialM
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="p-4 border border-sky-100 dark:border-gray-800 rounded-xl space-y-2 bg-sky-50/10 dark:bg-gray-800/30">
+                  <div className="p-4 border border-primary/20 dark:border-gray-800 rounded-xl space-y-2 bg-primary/5 dark:bg-gray-800/30">
                     <h4 className="font-semibold text-gray-900 dark:text-gray-100 text-sm">Central de Avisos</h4>
                     <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
                       Na página inicial, você acompanha avisos urgentes deixados pela contabilidade e notificações de novas guias prontas para pagamento.
                     </p>
                   </div>
-                  <div className="p-4 border border-sky-100 dark:border-gray-800 rounded-xl space-y-2 bg-sky-50/10 dark:bg-gray-800/30">
+                  <div className="p-4 border border-primary/20 dark:border-gray-800 rounded-xl space-y-2 bg-primary/5 dark:bg-gray-800/30">
                     <h4 className="font-semibold text-gray-900 dark:text-gray-100 text-sm">Acesso a Prazos</h4>
                     <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
                       Fique de olho na lista de tarefas e documentos pendentes para manter a conformidade da sua empresa em dia.
@@ -149,7 +149,7 @@ export function ClientHelpTutorialModal({ aberto, onClose }: ClientHelpTutorialM
             {tabAtiva === 'meus-documentos' && (
               <div className="space-y-6">
                 <div className="space-y-2">
-                  <span className="px-2.5 py-1 text-xs font-semibold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/20 rounded-full">Download de Guias</span>
+                  <span className="px-2.5 py-1 text-xs font-semibold text-primary dark:text-primary bg-primary/10 dark:bg-primary/10 rounded-full">Download de Guias</span>
                   <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Acesso a Guias e Relatórios</h3>
                   <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-sm">
                     No menu <strong>Meus Documentos</strong>, você encontra todas as guias de impostos, folhas de pagamento, relatórios contábeis e demonstrativos financeiros que a contabilidade preparou para sua empresa.
@@ -158,7 +158,7 @@ export function ClientHelpTutorialModal({ aberto, onClose }: ClientHelpTutorialM
 
                 <div className="space-y-4">
                   <div className="flex gap-4 p-4 border border-gray-100 dark:border-gray-800 rounded-xl bg-gray-50/20 dark:bg-gray-800/10">
-                    <div className="p-2 bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400 rounded-lg shrink-0 h-9 flex items-center justify-center">
+                    <div className="p-2 bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary rounded-lg shrink-0 h-9 flex items-center justify-center">
                       <FileText size={16} />
                     </div>
                     <div className="space-y-1">
@@ -173,7 +173,7 @@ export function ClientHelpTutorialModal({ aberto, onClose }: ClientHelpTutorialM
                   </div>
 
                   <div className="flex gap-4 p-4 border border-gray-100 dark:border-gray-800 rounded-xl bg-gray-50/20 dark:bg-gray-800/10">
-                    <div className="p-2 bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400 rounded-lg shrink-0 h-9 flex items-center justify-center">
+                    <div className="p-2 bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary rounded-lg shrink-0 h-9 flex items-center justify-center">
                       <CheckCircle2 size={16} />
                     </div>
                     <div className="space-y-1">
@@ -191,26 +191,26 @@ export function ClientHelpTutorialModal({ aberto, onClose }: ClientHelpTutorialM
             {tabAtiva === 'enviar-arquivo' && (
               <div className="space-y-6">
                 <div className="space-y-2">
-                  <span className="px-2.5 py-1 text-xs font-semibold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/20 rounded-full">Envio de Arquivos</span>
+                  <span className="px-2.5 py-1 text-xs font-semibold text-primary dark:text-primary bg-primary/10 dark:bg-primary/10 rounded-full">Envio de Arquivos</span>
                   <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Como enviar arquivos ao contador</h3>
                   <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-sm">
                     Sempre que precisar enviar extratos bancários, XMLs de notas que não foram emitidas pelo sistema, contratos assinados ou outros arquivos de suporte, você usará o menu <strong>Enviar Arquivo</strong>.
                   </p>
                 </div>
 
-                <div className="p-4 border border-sky-100 dark:border-sky-800 rounded-xl bg-sky-50/10 dark:bg-sky-900/10 space-y-4">
+                <div className="p-4 border border-primary/20 dark:border-primary/30 rounded-xl bg-primary/5 dark:bg-primary/10 space-y-4">
                   <h4 className="font-semibold text-gray-900 dark:text-gray-100 text-sm">Instruções de Envio</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
                     <div className="p-3 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-lg space-y-1">
-                      <span className="font-bold text-sky-600 dark:text-sky-400">1. Formatos Aceitos</span>
+                      <span className="font-bold text-primary dark:text-primary">1. Formatos Aceitos</span>
                       <p className="text-gray-500 dark:text-gray-400 leading-relaxed">O sistema aceita exclusivamente arquivos <strong>PDF</strong> e <strong>XML</strong>.</p>
                     </div>
                     <div className="p-3 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-lg space-y-1">
-                      <span className="font-bold text-sky-600 dark:text-sky-400">2. Limites de Tamanho</span>
+                      <span className="font-bold text-primary dark:text-primary">2. Limites de Tamanho</span>
                       <p className="text-gray-500 dark:text-gray-400 leading-relaxed">Cada arquivo individual deve ter no máximo <strong>10 Megabytes (MB)</strong>.</p>
                     </div>
                     <div className="p-3 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-lg space-y-1">
-                      <span className="font-bold text-sky-600 dark:text-sky-400">3. Classificação Automática</span>
+                      <span className="font-bold text-primary dark:text-primary">3. Classificação Automática</span>
                       <p className="text-gray-500 dark:text-gray-400 leading-relaxed">Seus envios caem em uma caixa de entrada do contador, que é notificado e realiza a organização deles.</p>
                     </div>
                   </div>
@@ -312,7 +312,7 @@ export function ClientHelpTutorialModal({ aberto, onClose }: ClientHelpTutorialM
                   </p>
                 </div>
 
-                <div className="p-4 border border-sky-100 dark:border-gray-800 rounded-xl bg-sky-50/10 dark:bg-sky-900/10 space-y-2">
+                <div className="p-4 border border-primary/20 dark:border-gray-800 rounded-xl bg-primary/5 dark:bg-primary/10 space-y-2">
                   <h4 className="font-semibold text-gray-900 dark:text-gray-100 text-sm">Adicionando Colaboradores</h4>
                   <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
                     No menu <strong>Minha Equipe</strong>, você pode cadastrar o e-mail de colaboradores da sua empresa e definir suas senhas. Eles terão acesso ao portal para enviar notas fiscais, baixar contracheques ou acompanhar o financeiro, conforme as necessidades operacionais da sua empresa.
@@ -325,13 +325,13 @@ export function ClientHelpTutorialModal({ aberto, onClose }: ClientHelpTutorialM
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-3 border-t border-sky-50 dark:border-gray-800 flex justify-between items-center bg-gray-50 dark:bg-gray-900/50 shrink-0">
+        <div className="px-6 py-3 border-t border-primary/10 dark:border-gray-800 flex justify-between items-center bg-gray-50 dark:bg-gray-900/50 shrink-0">
           <span className="text-[10px] text-gray-400 dark:text-gray-500">
             FiscoHub — Portal do Cliente
           </span>
           <button
             onClick={onClose}
-            className="px-4 py-1.5 bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold rounded-lg shadow transition-colors"
+            className="px-4 py-1.5 bg-primary hover:bg-primary-dark text-white text-xs font-semibold rounded-lg shadow transition-colors"
           >
             Entendido, fechar
           </button>

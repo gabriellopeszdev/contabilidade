@@ -268,8 +268,8 @@ export default function ChatIAPage() {
         ) : messages.length === 0 ? (
           /* Empty state */
           <div className="flex flex-col items-center justify-center h-full text-center py-12">
-            <div className="w-16 h-16 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center mb-4">
-              <Bot size={32} className="text-blue-500 dark:text-blue-400" />
+            <div className="w-16 h-16 rounded-full bg-primary/10 dark:bg-primary/10 flex items-center justify-center mb-4">
+              <Bot size={32} className="text-primary dark:text-primary" />
             </div>
             <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xs leading-relaxed">
               Olá! Sou seu assistente contábil. Faça uma pergunta sobre obrigações fiscais,
@@ -301,7 +301,7 @@ export default function ChatIAPage() {
                       {/* Avatar */}
                       <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 mb-0.5 ${
                         msg.role === 'user'
-                          ? 'bg-blue-500'
+                          ? 'bg-primary'
                           : 'bg-gradient-to-br from-blue-500 to-purple-600'
                       }`}>
                         {msg.role === 'user'
@@ -314,7 +314,7 @@ export default function ChatIAPage() {
                       <div className={`flex flex-col gap-0.5 max-w-[75%] ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
                         <div className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
                           msg.role === 'user'
-                            ? 'bg-blue-500 text-white rounded-tr-sm'
+                            ? 'bg-primary text-white rounded-tr-sm'
                             : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-tl-sm'
                         }`}>
                           {msg.content.split('\n').map((line, i, arr) => (
@@ -375,7 +375,7 @@ export default function ChatIAPage() {
             disabled={carregando || carregandoHist}
             placeholder="Digite sua pergunta contábil… (Enter para enviar, Shift+Enter para nova linha)"
             rows={1}
-            className="w-full resize-none px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors disabled:opacity-60"
+            className="w-full resize-none px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors disabled:opacity-60"
             style={{ maxHeight: '120px', overflowY: 'auto' }}
           />
         </div>
@@ -383,7 +383,7 @@ export default function ChatIAPage() {
         <button
           type="submit"
           disabled={carregando || carregandoHist || !input.trim()}
-          className="h-10 w-10 rounded-xl bg-blue-500 hover:bg-blue-600 disabled:bg-gray-200 dark:disabled:bg-gray-800 disabled:text-gray-400 dark:disabled:text-gray-600 text-white flex items-center justify-center transition-colors shrink-0"
+          className="h-10 w-10 rounded-xl bg-primary hover:bg-primary-dark disabled:bg-gray-200 dark:disabled:bg-gray-800 disabled:text-gray-400 dark:disabled:text-gray-600 text-white flex items-center justify-center transition-colors shrink-0"
           aria-label="Enviar mensagem"
         >
           {carregando

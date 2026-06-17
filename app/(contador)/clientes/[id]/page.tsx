@@ -174,7 +174,7 @@ function getSetorConfig(setor: SetorDocumento) {
 }
 
 const ORIGEM_CONFIG: Record<Origem, { label: string; icone: typeof Upload; classes: string }> = {
-  UPLOAD_CLIENTE:  { label: 'Enviado pelo cliente',  icone: Upload,   classes: 'text-blue-600   bg-blue-50' },
+  UPLOAD_CLIENTE:  { label: 'Enviado pelo cliente',  icone: Upload,   classes: 'text-primary   bg-primary/10' },
   UPLOAD_CONTADOR: { label: 'Enviado pelo escritório', icone: Download, classes: 'text-emerald-600 bg-emerald-50' },
 };
 
@@ -633,7 +633,7 @@ function ClienteDetalhesPageDono() {
           <div className="bg-white dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-700 shadow-sm p-5 sm:p-6">
             <div className="flex flex-col sm:flex-row sm:items-center gap-4">
               {/* Avatar */}
-              <div className="shrink-0 w-14 h-14 rounded-2xl bg-blue-100 text-blue-700
+              <div className="shrink-0 w-14 h-14 rounded-2xl bg-primary-light text-primary-dark
                 flex items-center justify-center text-lg font-bold">
                 {iniciais(cliente.nome)}
               </div>
@@ -784,7 +784,7 @@ function ClienteDetalhesPageDono() {
                         </span>
                       )}
                       <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold
-                        bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
+                        bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border border-primary/20 dark:border-primary/30">
                         Dia {ob.diaVencimento}
                       </span>
                     </div>
@@ -830,7 +830,7 @@ function ClienteDetalhesPageDono() {
       <div className="bg-white dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-700 shadow-sm p-5 sm:p-6">
         {/* Header */}
         <div className="flex items-center gap-2 mb-1">
-          <MessageSquare size={16} className="text-blue-500" />
+          <MessageSquare size={16} className="text-primary" />
           <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">
             Chat por Cliente
           </h2>
@@ -1174,7 +1174,7 @@ function ClienteDetalhesPageDono() {
                         className="min-w-0 text-left group/doc"
                         title="Abrir detalhes do documento"
                       >
-                        <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate group-hover/doc:text-blue-700 dark:group-hover/doc:text-blue-300" title={doc.fileName}>
+                        <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate group-hover/doc:text-primary-dark dark:group-hover/doc:text-primary" title={doc.fileName}>
                           {doc.fileName}
                         </p>
                         <div className="flex items-center gap-1.5 mt-0.5 text-xs text-slate-400 dark:text-slate-500">

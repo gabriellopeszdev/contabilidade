@@ -118,7 +118,7 @@ export function OnboardingChecklist() {
       <button
         onClick={() => setAberto(true)}
         className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-2.5 rounded-xl
-          bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold shadow-lg transition-colors"
+          bg-primary hover:bg-primary-dark text-white text-sm font-semibold shadow-lg transition-colors"
       >
         <Sparkles size={15} />
         Primeiros passos
@@ -140,7 +140,7 @@ export function OnboardingChecklist() {
       {/* Header */}
       <div className="px-4 py-3 flex items-center justify-between border-b border-gray-100 dark:border-gray-800">
         <div className="flex items-center gap-2">
-          <Sparkles size={15} className="text-blue-500" />
+          <Sparkles size={15} className="text-primary" />
           <div>
             <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">Primeiros passos</p>
             <p className="text-xs text-gray-400 dark:text-gray-500">
@@ -160,7 +160,7 @@ export function OnboardingChecklist() {
       {/* Barra de progresso */}
       <div className="h-1 bg-gray-100 dark:bg-gray-800">
         <div
-          className="h-1 bg-blue-600 transition-all duration-500"
+          className="h-1 bg-primary transition-all duration-500"
           style={{ width: `${progressoPct}%` }}
         />
       </div>
@@ -179,19 +179,19 @@ export function OnboardingChecklist() {
             <button
               onClick={() => !p.concluido && void marcarConcluido(p.id)}
               disabled={p.concluido || carregando}
-              className="mt-0.5 shrink-0 text-gray-300 dark:text-gray-600 hover:text-blue-500 dark:hover:text-blue-400
+              className="mt-0.5 shrink-0 text-gray-300 dark:text-gray-600 hover:text-primary dark:hover:text-primary
                 disabled:cursor-default transition-colors"
               title={p.concluido ? 'Concluído' : 'Marcar como concluído'}
             >
               {p.concluido
-                ? <CheckCircle2 size={18} className="text-blue-500" />
+                ? <CheckCircle2 size={18} className="text-primary" />
                 : <Circle size={18} />
               }
             </button>
             <div className="flex-1 min-w-0">
               <Link
                 href={p.href}
-                className={`text-sm font-medium leading-tight hover:text-blue-600 dark:hover:text-blue-400 transition-colors ${
+                className={`text-sm font-medium leading-tight hover:text-primary dark:hover:text-primary transition-colors ${
                   p.concluido
                     ? 'text-gray-400 dark:text-gray-500 line-through'
                     : 'text-gray-800 dark:text-gray-200'

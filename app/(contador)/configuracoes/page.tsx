@@ -2025,8 +2025,8 @@ function IntegracoesTab({
           }`}>
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-violet-50 dark:bg-violet-900/20 flex items-center justify-center shrink-0">
-                  <KeyRound size={18} className="text-violet-600 dark:text-violet-400" />
+                <div className="w-10 h-10 rounded-xl bg-primary/10 dark:bg-primary/10 flex items-center justify-center shrink-0">
+                  <KeyRound size={18} className="text-primary dark:text-primary" />
                 </div>
                 <div>
                   <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Cora</h2>

@@ -75,7 +75,7 @@ export function HelpTutorialModal({ aberto, onClose }: HelpTutorialModalProps) {
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800 shrink-0 bg-white dark:bg-gray-900 z-10">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl">
+            <div className="p-2 bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary rounded-xl">
               <Sparkles size={20} className="animate-pulse" />
             </div>
             <div>
@@ -105,7 +105,7 @@ export function HelpTutorialModal({ aberto, onClose }: HelpTutorialModalProps) {
                   onClick={() => setTabAtiva(tab.id)}
                   className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all shrink-0 md:shrink-1 ${
                     ativa
-                      ? 'bg-blue-600 text-white shadow-md shadow-blue-500/10'
+                      ? 'bg-primary text-white shadow-md shadow-primary/10'
                       : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-200'
                   }`}
                 >
@@ -126,7 +126,7 @@ export function HelpTutorialModal({ aberto, onClose }: HelpTutorialModalProps) {
             {tabAtiva === 'visao-geral' && (
               <div className="space-y-6">
                 <div className="space-y-2">
-                  <span className="px-2.5 py-1 text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 rounded-full">Painel Principal</span>
+                  <span className="px-2.5 py-1 text-xs font-semibold text-primary dark:text-primary bg-primary/10 dark:bg-primary/10 rounded-full">Painel Principal</span>
                   <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Visão Geral & Dashboard</h3>
                   <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-sm">
                     O <strong>Dashboard</strong> é o ponto de partida do seu dia a dia. Ele consolida métricas críticas do escritório para que você tenha visibilidade instantânea sem precisar navegar por várias telas.
@@ -148,7 +148,7 @@ export function HelpTutorialModal({ aberto, onClose }: HelpTutorialModalProps) {
                   </div>
                 </div>
 
-                <div className="p-4 border border-blue-100 dark:border-blue-900/30 bg-blue-50/30 dark:bg-blue-950/10 rounded-xl">
+                <div className="p-4 border border-primary/20 dark:border-primary/30 bg-primary/10 dark:bg-primary/5 rounded-xl">
                   <h4 className="font-semibold text-gray-950 dark:text-gray-200 text-xs uppercase tracking-wider mb-2">Fluxo do Dashboard</h4>
                   <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
                     Sempre que novos XMLs são importados ou tarefas do Kanban mudam de status, o Dashboard recalcula e atualiza as estatísticas em tempo real, permitindo análises precisas da capacidade e entrega do escritório.
@@ -214,22 +214,22 @@ export function HelpTutorialModal({ aberto, onClose }: HelpTutorialModalProps) {
                   </p>
                 </div>
 
-                <div className="p-4 border border-blue-50 dark:border-blue-900/20 bg-blue-50/10 dark:bg-blue-950/5 rounded-xl space-y-4">
+                <div className="p-4 border border-primary/20 dark:border-primary/20 bg-primary/10 dark:bg-primary/5 rounded-xl space-y-4">
                   <div className="flex items-center gap-3">
-                    <Upload className="text-blue-500 shrink-0" size={20} />
+                    <Upload className="text-primary shrink-0" size={20} />
                     <h4 className="font-semibold text-gray-900 dark:text-gray-100 text-sm">Como funciona o fluxo de triagem automática?</h4>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
                     <div className="p-3 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-lg space-y-1">
-                      <span className="font-bold text-blue-600 dark:text-blue-400">1. Drag & Drop</span>
+                      <span className="font-bold text-primary dark:text-primary">1. Drag & Drop</span>
                       <p className="text-gray-500 dark:text-gray-400 leading-relaxed">Você arrasta múltiplos arquivos XML ou ZIP contendo as notas para a área de upload.</p>
                     </div>
                     <div className="p-3 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-lg space-y-1">
-                      <span className="font-bold text-blue-600 dark:text-blue-400">2. Mapeamento por CNPJ</span>
+                      <span className="font-bold text-primary dark:text-primary">2. Mapeamento por CNPJ</span>
                       <p className="text-gray-500 dark:text-gray-400 leading-relaxed">O sistema abre cada XML, identifica o CNPJ do emitente ou destinatário e o vincula ao cliente correspondente cadastrado no sistema.</p>
                     </div>
                     <div className="p-3 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-lg space-y-1">
-                      <span className="font-bold text-blue-600 dark:text-blue-400">3. Deduplicação</span>
+                      <span className="font-bold text-primary dark:text-primary">3. Deduplicação</span>
                       <p className="text-gray-500 dark:text-gray-400 leading-relaxed">Notas com chaves de acesso já existentes no banco de dados são rejeitadas silenciosamente, impedindo dados duplicados.</p>
                     </div>
                   </div>
@@ -279,8 +279,8 @@ export function HelpTutorialModal({ aberto, onClose }: HelpTutorialModalProps) {
                   </div>
                 </div>
 
-                <div className="p-4 bg-blue-50/50 dark:bg-blue-950/10 border border-blue-100/30 rounded-xl flex gap-3 items-start">
-                  <Shield className="text-blue-500 shrink-0 mt-0.5" size={16} />
+                <div className="p-4 bg-primary/10 dark:bg-primary/5 border border-primary/20 rounded-xl flex gap-3 items-start">
+                  <Shield className="text-primary shrink-0 mt-0.5" size={16} />
                   <div className="space-y-1">
                     <h5 className="font-semibold text-gray-900 dark:text-gray-200 text-xs">Hierarquia de Permissões</h5>
                     <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
@@ -322,7 +322,7 @@ export function HelpTutorialModal({ aberto, onClose }: HelpTutorialModalProps) {
                   </div>
                 </div>
 
-                <div className="p-4 bg-blue-50/50 dark:bg-blue-950/10 border border-blue-100/30 rounded-xl">
+                <div className="p-4 bg-primary/10 dark:bg-primary/5 border border-primary/20 rounded-xl">
                   <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
                     <strong>Integração com Clientes:</strong> Cada tarefa pode ser associada a um cliente específico e ter um responsável da equipe designado, facilitando a filtragem por cliente ou colaborador dentro do quadro.
                   </p>
@@ -411,8 +411,8 @@ export function HelpTutorialModal({ aberto, onClose }: HelpTutorialModalProps) {
                 </div>
 
                 <div className="space-y-4">
-                  <div className="flex gap-4 p-4 border border-blue-100 dark:border-blue-900/30 rounded-xl bg-blue-50/30 dark:bg-blue-950/10">
-                    <div className="p-2 bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-lg shrink-0 h-9 flex items-center justify-center">
+                  <div className="flex gap-4 p-4 border border-primary/20 dark:border-primary/30 rounded-xl bg-primary/10 dark:bg-primary/5">
+                    <div className="p-2 bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary rounded-lg shrink-0 h-9 flex items-center justify-center">
                       <CheckCircle2 size={18} />
                     </div>
                     <div className="space-y-1">
@@ -440,17 +440,17 @@ export function HelpTutorialModal({ aberto, onClose }: HelpTutorialModalProps) {
                   <h4 className="font-semibold text-gray-900 dark:text-gray-100 text-xs uppercase tracking-wider">Como funciona o fluxo?</h4>
                   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between text-xs gap-3 text-gray-600 dark:text-gray-400">
                     <div className="flex items-center gap-2">
-                      <span className="w-5 h-5 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full flex items-center justify-center font-bold">1</span>
+                      <span className="w-5 h-5 bg-primary/10 dark:bg-primary/20 text-primary-dark dark:text-primary rounded-full flex items-center justify-center font-bold">1</span>
                       <span>Você envia o documento do cliente</span>
                     </div>
                     <ArrowRight className="hidden sm:block text-gray-300" size={14} />
                     <div className="flex items-center gap-2">
-                      <span className="w-5 h-5 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full flex items-center justify-center font-bold">2</span>
+                      <span className="w-5 h-5 bg-primary/10 dark:bg-primary/20 text-primary-dark dark:text-primary rounded-full flex items-center justify-center font-bold">2</span>
                       <span>O cliente recebe notificação e assina</span>
                     </div>
                     <ArrowRight className="hidden sm:block text-gray-300" size={14} />
                     <div className="flex items-center gap-2">
-                      <span className="w-5 h-5 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full flex items-center justify-center font-bold">3</span>
+                      <span className="w-5 h-5 bg-primary/10 dark:bg-primary/20 text-primary-dark dark:text-primary rounded-full flex items-center justify-center font-bold">3</span>
                       <span>O documento assinado volta para o sistema</span>
                     </div>
                   </div>
@@ -528,7 +528,7 @@ export function HelpTutorialModal({ aberto, onClose }: HelpTutorialModalProps) {
           </span>
           <button
             onClick={onClose}
-            className="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow transition-colors"
+            className="px-4 py-1.5 bg-primary hover:bg-primary-dark text-white text-xs font-semibold rounded-lg shadow transition-colors"
           >
             Entendido, fechar
           </button>

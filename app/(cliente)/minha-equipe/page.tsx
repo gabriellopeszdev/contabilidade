@@ -212,7 +212,7 @@ export default function EquipeClientePage() {
       <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-            <Users size={20} className="text-sky-500" />
+            <Users size={20} className="text-primary" />
             Minha Equipe
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
@@ -221,7 +221,7 @@ export default function EquipeClientePage() {
         </div>
         <button
           onClick={abrirCriar}
-          className="flex items-center gap-2 px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white text-sm font-semibold
+          className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white text-sm font-semibold
             rounded-xl transition-colors shadow-sm"
         >
           <Plus size={16} />
@@ -256,8 +256,8 @@ export default function EquipeClientePage() {
       ) : membros.length === 0 ? (
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700
           shadow-sm p-14 flex flex-col items-center gap-3 text-center">
-          <div className="w-14 h-14 rounded-2xl bg-sky-50 dark:bg-sky-900/20 flex items-center justify-center">
-            <Users size={26} className="text-sky-400" />
+          <div className="w-14 h-14 rounded-2xl bg-primary/10 dark:bg-primary/10 flex items-center justify-center">
+            <Users size={26} className="text-primary" />
           </div>
           <p className="text-sm font-semibold text-gray-600 dark:text-gray-400">Nenhum membro cadastrado</p>
           <p className="text-xs text-gray-400 dark:text-gray-500 max-w-xs">
@@ -265,7 +265,7 @@ export default function EquipeClientePage() {
           </p>
           <button
             onClick={abrirCriar}
-            className="mt-2 flex items-center gap-2 px-4 py-2 bg-sky-600 hover:bg-sky-700
+            className="mt-2 flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark
               text-white text-sm font-semibold rounded-xl transition-colors"
           >
             <Plus size={15} />
@@ -294,8 +294,8 @@ export default function EquipeClientePage() {
 
                   {/* Info */}
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="shrink-0 w-9 h-9 rounded-full bg-sky-100 dark:bg-sky-900/40
-                      text-sky-700 dark:text-sky-400 flex items-center justify-center text-xs font-bold">
+                    <div className="shrink-0 w-9 h-9 rounded-full bg-primary-light
+                      text-primary-dark flex items-center justify-center text-xs font-bold">
                       {iniciais}
                     </div>
                     <div className="min-w-0">
@@ -331,8 +331,8 @@ export default function EquipeClientePage() {
                     <button
                       onClick={() => abrirEditar(m)}
                       title="Editar"
-                      className="p-2 rounded-lg text-gray-400 hover:text-sky-600 hover:bg-sky-50
-                        dark:hover:bg-sky-900/20 transition-colors"
+                      className="p-2 rounded-lg text-gray-400 hover:text-primary hover:bg-primary/10
+                        dark:hover:bg-primary/10 transition-colors"
                     >
                       <Pencil size={15} />
                     </button>
@@ -404,7 +404,7 @@ export default function EquipeClientePage() {
                   placeholder="Ex: Maria Silva"
                   className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600
                     bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100
-                    placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500 transition-colors"
+                    placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
                 />
               </div>
 
@@ -421,7 +421,7 @@ export default function EquipeClientePage() {
                     placeholder="email@empresa.com.br"
                     className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600
                       bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100
-                      placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500 transition-colors"
+                      placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
                   />
                 </div>
               )}
@@ -439,7 +439,7 @@ export default function EquipeClientePage() {
                     placeholder="Mínimo 8 caracteres"
                     className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600
                       bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100
-                      placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500 transition-colors"
+                      placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
                   />
                 </div>
               )}
@@ -457,7 +457,7 @@ export default function EquipeClientePage() {
                   maxLength={15}
                   className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600
                     bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100
-                    placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500 transition-colors"
+                    placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
                 />
               </div>
 
@@ -474,7 +474,7 @@ export default function EquipeClientePage() {
                     type="button"
                     onClick={() => setAtivoModal((v) => !v)}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus-visible:outline-none
-                      ${ativoModal ? 'bg-sky-500' : 'bg-gray-300 dark:bg-gray-600'}`}
+                      ${ativoModal ? 'bg-primary' : 'bg-gray-300 dark:bg-gray-600'}`}
                   >
                     <span className={`inline-block h-4 w-4 rounded-full bg-white shadow transform transition-transform
                       ${ativoModal ? 'translate-x-6' : 'translate-x-1'}`} />
@@ -498,13 +498,13 @@ export default function EquipeClientePage() {
                         className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 text-sm font-medium
                           transition-all focus-visible:outline-none
                           ${ativo
-                            ? 'border-sky-500 bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400'
-                            : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:border-sky-300'
+                            ? 'border-primary bg-primary/10 dark:bg-primary/20 text-primary-dark dark:text-primary'
+                            : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:border-primary'
                           }`}
                       >
-                        <span className={ativo ? 'text-sky-600 dark:text-sky-400' : 'text-gray-400'}>{s.icon}</span>
+                        <span className={ativo ? 'text-primary dark:text-primary' : 'text-gray-400'}>{s.icon}</span>
                         {s.label}
-                        {ativo && <CheckCircle2 size={13} className="ml-auto text-sky-500 shrink-0" />}
+                        {ativo && <CheckCircle2 size={13} className="ml-auto text-primary shrink-0" />}
                       </button>
                     );
                   })}
@@ -535,8 +535,8 @@ export default function EquipeClientePage() {
               <button
                 onClick={handleSalvar}
                 disabled={salvando}
-                className="flex-1 py-2.5 text-sm font-semibold text-white bg-sky-600 rounded-xl
-                  hover:bg-sky-700 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                className="flex-1 py-2.5 text-sm font-semibold text-white bg-primary rounded-xl
+                  hover:bg-primary-dark disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
               >
                 {salvando
                   ? <><Loader2 size={15} className="animate-spin" /> Salvando…</>

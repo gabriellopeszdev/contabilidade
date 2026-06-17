@@ -51,11 +51,11 @@ const CATEGORIAS: Categoria[] = [
     accept:   '.xml',
     cor: {
       gradient:    'from-blue-500 to-blue-600',
-      iconBg:      'bg-blue-100 dark:bg-blue-900/40',
-      iconTxt:     'text-blue-600 dark:text-blue-400',
+      iconBg:      'bg-primary/10 dark:bg-primary/20',
+      iconTxt:     'text-primary',
       cardBg:      'bg-white dark:bg-gray-900',
-      cardBorder:  'border-blue-100 dark:border-blue-900/50',
-      cardHover:   'hover:border-blue-400 hover:shadow-blue-100 dark:hover:border-blue-600',
+      cardBorder:  'border-primary/20 dark:border-primary/20',
+      cardHover:   'hover:border-primary hover:shadow-primary/10 dark:hover:border-primary',
     },
   },
   {
@@ -115,11 +115,11 @@ const CATEGORIAS: Categoria[] = [
     accept:   '.pdf,.xls,.xlsx',
     cor: {
       gradient:    'from-violet-500 to-violet-600',
-      iconBg:      'bg-violet-100 dark:bg-violet-900/40',
-      iconTxt:     'text-violet-600 dark:text-violet-400',
+      iconBg:      'bg-primary/10 dark:bg-primary/20',
+      iconTxt:     'text-primary',
       cardBg:      'bg-white dark:bg-gray-900',
-      cardBorder:  'border-violet-100 dark:border-violet-900/50',
-      cardHover:   'hover:border-violet-400 hover:shadow-violet-100 dark:hover:border-violet-600',
+      cardBorder:  'border-primary/20 dark:border-primary/20',
+      cardHover:   'hover:border-primary hover:shadow-primary/10 dark:hover:border-primary',
     },
   },
   {

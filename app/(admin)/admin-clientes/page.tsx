@@ -349,8 +349,8 @@ export default function AdminClientesPage() {
                           SignatureAPI
                         </span>
                       ) : c.providerAssinatura === 'DOCSEAL' ? (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full border text-blue-400 bg-blue-900/30 border-blue-700/40">
-                          <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+                        <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full border text-primary bg-primary/20 border-primary/30">
+                          <span className="w-1.5 h-1.5 rounded-full bg-primary" />
                           DocSeal
                         </span>
                       ) : (

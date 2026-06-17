@@ -81,7 +81,7 @@ function TipoBadge({ tipo }: { tipo: 'entrada' | 'saida' }) {
       Entrada
     </span>
   ) : (
-    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary-dark dark:bg-primary/20 dark:text-primary">
       Saída
     </span>
   );
@@ -112,8 +112,8 @@ function ModalDetalheNFe({ resultado, onFechar }: { resultado: ResultadoArquivo;
         {/* Header */}
         <div className="flex items-start justify-between p-5 border-b border-gray-100 dark:border-gray-800 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-              <FileText size={18} className="text-blue-600 dark:text-blue-400" />
+            <div className="w-9 h-9 rounded-lg bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
+              <FileText size={18} className="text-primary dark:text-primary" />
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -157,7 +157,7 @@ function ModalDetalheNFe({ resultado, onFechar }: { resultado: ResultadoArquivo;
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="p-4 rounded-xl border border-gray-200 dark:border-gray-700">
               <div className="flex items-center gap-2 mb-3">
-                <Building2 size={14} className="text-blue-500" />
+                <Building2 size={14} className="text-primary" />
                 <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Emitente</p>
               </div>
               <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{d.emitente.nome || '—'}</p>
@@ -192,10 +192,10 @@ function ModalDetalheNFe({ resultado, onFechar }: { resultado: ResultadoArquivo;
                 { label: 'IPI',       value: d.impostos.ipi },
                 { label: 'Desconto',  value: d.impostos.desconto, red: true },
               ].map(({ label, value, highlight, red }, i, arr) => (
-                <div key={label} className={`flex items-center justify-between px-4 py-2.5 ${i < arr.length - 1 ? 'border-b border-gray-100 dark:border-gray-800' : ''} ${highlight ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}>
+                <div key={label} className={`flex items-center justify-between px-4 py-2.5 ${i < arr.length - 1 ? 'border-b border-gray-100 dark:border-gray-800' : ''} ${highlight ? 'bg-primary/10 dark:bg-primary/10' : ''}`}>
                   <span className="text-xs font-medium text-gray-500 dark:text-gray-400">{label}</span>
                   <span className={`text-sm font-bold ${
-                    highlight ? 'text-blue-700 dark:text-blue-300'
+                    highlight ? 'text-primary-dark dark:text-primary'
                     : red && value > 0 ? 'text-red-600 dark:text-red-400'
                     : 'text-gray-800 dark:text-gray-200'
                   }`}>
@@ -369,8 +369,8 @@ export default function NfePage() {
       {/* ------------------------------------------------------------------ */}
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-            <FileCode2 size={18} className="text-blue-600 dark:text-blue-400" />
+          <div className="w-9 h-9 rounded-lg bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
+            <FileCode2 size={18} className="text-primary dark:text-primary" />
           </div>
           <div>
             <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">NF-e dos Clientes</h1>
@@ -404,7 +404,7 @@ export default function NfePage() {
           className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700
             bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100
             placeholder:text-gray-400 dark:placeholder:text-gray-500
-            focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+            focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
         />
       </div>
 
@@ -426,7 +426,7 @@ export default function NfePage() {
       {/* ------------------------------------------------------------------ */}
       {carregando ? (
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-16 flex flex-col items-center gap-3">
-          <Loader2 size={28} className="animate-spin text-blue-500" />
+          <Loader2 size={28} className="animate-spin text-primary" />
           <p className="text-sm text-gray-500 dark:text-gray-400">Carregando NF-es…</p>
         </div>
       ) : xmlsFiltrados.length === 0 ? (
@@ -445,7 +445,7 @@ export default function NfePage() {
           {busca && (
             <button
               onClick={() => setBusca('')}
-              className="text-xs font-medium text-blue-600 dark:text-blue-400 hover:underline"
+              className="text-xs font-medium text-primary dark:text-primary hover:underline"
             >
               Limpar busca
             </button>
@@ -474,8 +474,8 @@ export default function NfePage() {
                     {/* Cliente */}
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
-                          <Building2 size={13} className="text-blue-600 dark:text-blue-400" />
+                        <div className="w-7 h-7 rounded-lg bg-primary/10 dark:bg-primary/20 flex items-center justify-center shrink-0">
+                          <Building2 size={13} className="text-primary dark:text-primary" />
                         </div>
                         <div>
                           <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{item.cliente.name}</p>
@@ -508,8 +508,8 @@ export default function NfePage() {
                           onClick={() => void handleVisualizar(item)}
                           disabled={visualizandoId === item.id || baixandoId === item.id}
                           className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium
-                            text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400
-                            border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-700
+                            text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary
+                            border border-gray-200 dark:border-gray-700 hover:border-primary dark:hover:border-primary
                             rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           {visualizandoId === item.id
@@ -525,7 +525,7 @@ export default function NfePage() {
                           onClick={() => void handleBaixar(item)}
                           disabled={baixandoId === item.id || visualizandoId === item.id}
                           className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white
-                            bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors
+                            bg-primary hover:bg-primary-dark rounded-lg transition-colors
                             disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           {baixandoId === item.id

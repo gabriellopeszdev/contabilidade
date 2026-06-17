@@ -490,7 +490,7 @@ export default function FinanceiroPage() {
                             {b.asaasPixCopiaECola && (
                               <button
                                 onClick={() => copiarTexto(b.asaasPixCopiaECola!)}
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-violet-700 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/20 hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-colors"
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-primary-dark dark:text-primary bg-primary/10 dark:bg-primary/10 hover:bg-primary/10 dark:hover:bg-primary/10 transition-colors"
                                 title="Copiar PIX copia e cola"
                               >
                                 <QrCode size={14} />
@@ -675,7 +675,7 @@ export default function FinanceiroPage() {
                           {b.asaasPixCopiaECola && (
                             <button
                               onClick={() => copiarTexto(b.asaasPixCopiaECola!)}
-                              className="p-1.5 rounded-lg text-gray-400 dark:text-gray-500 hover:text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-colors"
+                              className="p-1.5 rounded-lg text-gray-400 dark:text-gray-500 hover:text-primary hover:bg-primary/10 dark:hover:bg-primary/10 transition-colors"
                               title="Copiar PIX copia e cola"
                             >
                               <QrCode size={15} />

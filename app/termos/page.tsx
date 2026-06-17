@@ -26,11 +26,11 @@ export const metadata = {
 function SectionHeader({ icon, numero, titulo }: { icon: React.ReactNode; numero: string; titulo: string }) {
   return (
     <div className="flex items-center gap-3 pt-2">
-      <div className="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
+      <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
         {icon}
       </div>
       <h2 className="text-base font-bold text-gray-900">
-        <span className="text-blue-600">{numero}.</span> {titulo}
+        <span className="text-primary">{numero}.</span> {titulo}
       </h2>
     </div>
   );
@@ -47,7 +47,7 @@ function InfoCard({ children }: { children: React.ReactNode }) {
 function ListItem({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex items-start gap-2.5">
-      <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0 mt-2" />
+      <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0 mt-2" />
       <span>{children}</span>
     </div>
   );
@@ -111,12 +111,12 @@ export default function TermosPage() {
 
           {/* 1. Aceitação */}
           <section className="space-y-3">
-            <SectionHeader icon={<Handshake size={18} className="text-blue-600" />} numero="1" titulo="Aceitação dos Termos" />
+            <SectionHeader icon={<Handshake size={18} className="text-primary" />} numero="1" titulo="Aceitação dos Termos" />
             <InfoCard>
               <p>
                 Ao acessar e utilizar o sistema <strong>FiscoHub</strong>, você concorda com
                 estes Termos de Uso e com a nossa{' '}
-                <Link href="/privacidade" className="text-blue-600 hover:underline font-medium">
+                <Link href="/privacidade" className="text-primary hover:underline font-medium">
                   Política de Privacidade
                 </Link>
                 . Caso não concorde, não utilize o sistema.
@@ -126,7 +126,7 @@ export default function TermosPage() {
 
           {/* 2. Descrição */}
           <section className="space-y-3">
-            <SectionHeader icon={<Monitor size={18} className="text-blue-600" />} numero="2" titulo="Descrição do Serviço" />
+            <SectionHeader icon={<Monitor size={18} className="text-primary" />} numero="2" titulo="Descrição do Serviço" />
             <InfoCard>
               <p>
                 O sistema é uma plataforma self-hosted de gestão contábil que permite o upload,
@@ -138,7 +138,7 @@ export default function TermosPage() {
 
           {/* 3. Cadastro */}
           <section className="space-y-3">
-            <SectionHeader icon={<UserCog size={18} className="text-blue-600" />} numero="3" titulo="Cadastro e Conta" />
+            <SectionHeader icon={<UserCog size={18} className="text-primary" />} numero="3" titulo="Cadastro e Conta" />
             <InfoCard>
               <div className="space-y-2">
                 <ListItem>Você é responsável pela veracidade dos dados fornecidos no cadastro.</ListItem>
@@ -150,7 +150,7 @@ export default function TermosPage() {
 
           {/* 4. Uso Adequado */}
           <section className="space-y-3">
-            <SectionHeader icon={<ShieldAlert size={18} className="text-blue-600" />} numero="4" titulo="Uso Adequado" />
+            <SectionHeader icon={<ShieldAlert size={18} className="text-primary" />} numero="4" titulo="Uso Adequado" />
             <InfoCard>
               <p className="mb-3">O usuário compromete-se a:</p>
               <ul className="space-y-2">
@@ -161,7 +161,7 @@ export default function TermosPage() {
                   'Não utilizar meios automatizados para sobrecarga do sistema.',
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-2">
-                    <span className="w-5 h-5 rounded-full bg-blue-100 text-blue-600 text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="w-5 h-5 rounded-full bg-primary/10 text-primary text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">
                       {i + 1}
                     </span>
                     <span>{item}</span>
@@ -173,7 +173,7 @@ export default function TermosPage() {
 
           {/* 5. Documentos Fiscais */}
           <section className="space-y-3">
-            <SectionHeader icon={<FileCheck size={18} className="text-blue-600" />} numero="5" titulo="Documentos Fiscais" />
+            <SectionHeader icon={<FileCheck size={18} className="text-primary" />} numero="5" titulo="Documentos Fiscais" />
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pl-12">
               {[
                 { emoji: '📋', titulo: 'Responsabilidade', desc: 'Os documentos enviados são de responsabilidade do remetente.' },
@@ -193,7 +193,7 @@ export default function TermosPage() {
 
           {/* 6. Propriedade Intelectual */}
           <section className="space-y-3">
-            <SectionHeader icon={<Copyright size={18} className="text-blue-600" />} numero="6" titulo="Propriedade Intelectual" />
+            <SectionHeader icon={<Copyright size={18} className="text-primary" />} numero="6" titulo="Propriedade Intelectual" />
             <InfoCard>
               <p>
                 O sistema, incluindo sua interface, código-fonte e documentação, é protegido pela
@@ -205,7 +205,7 @@ export default function TermosPage() {
 
           {/* 7. Limitação */}
           <section className="space-y-3">
-            <SectionHeader icon={<AlertTriangle size={18} className="text-blue-600" />} numero="7" titulo="Limitação de Responsabilidade" />
+            <SectionHeader icon={<AlertTriangle size={18} className="text-primary" />} numero="7" titulo="Limitação de Responsabilidade" />
             <div className="pl-12">
               <div className="bg-amber-50 rounded-xl border border-amber-200 p-4 flex items-start gap-3">
                 <AlertTriangle size={20} className="text-amber-600 shrink-0 mt-0.5" />
@@ -220,7 +220,7 @@ export default function TermosPage() {
 
           {/* 8. Modificações */}
           <section className="space-y-3">
-            <SectionHeader icon={<RefreshCw size={18} className="text-blue-600" />} numero="8" titulo="Modificações" />
+            <SectionHeader icon={<RefreshCw size={18} className="text-primary" />} numero="8" titulo="Modificações" />
             <InfoCard>
               <p>
                 Reservamo-nos o direito de modificar estes termos a qualquer momento. Alterações
@@ -232,7 +232,7 @@ export default function TermosPage() {
 
           {/* 9. Legislação */}
           <section className="space-y-3">
-            <SectionHeader icon={<Gavel size={18} className="text-blue-600" />} numero="9" titulo="Legislação Aplicável" />
+            <SectionHeader icon={<Gavel size={18} className="text-primary" />} numero="9" titulo="Legislação Aplicável" />
             <InfoCard>
               <p>
                 Estes termos são regidos pela legislação brasileira, em especial pelo{' '}
@@ -247,7 +247,7 @@ export default function TermosPage() {
         <div className="mt-12 pt-6 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
+            className="inline-flex items-center gap-1.5 text-sm text-primary hover:text-primary-dark font-medium transition-colors"
           >
             <ArrowLeft size={14} />
             Voltar ao sistema

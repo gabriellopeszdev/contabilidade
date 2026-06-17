@@ -28,7 +28,7 @@ const FAQ_ITEMS: FAQItem[] = [
     pergunta: 'Como envio documentos para o meu contador?',
     resposta:
       'Acesse a página "Enviar Arquivo" no menu lateral. Clique no botão "Enviar Documento", arraste ou selecione seus arquivos PDF ou XML (até 10 MB cada) e confirme o envio. Seu contador será notificado automaticamente e fará a classificação do documento depois.',
-    icone: <Upload size={18} className="text-blue-500" />,
+    icone: <Upload size={18} className="text-primary" />,
   },
   {
     pergunta: 'Como baixo os documentos que o contador enviou?',
@@ -86,21 +86,21 @@ interface AccordionItemProps {
 
 function AccordionItem({ item, aberto, onClick }: AccordionItemProps) {
   return (
-    <div className={`border rounded-xl transition-all ${aberto ? 'border-sky-200 dark:border-sky-900/30 bg-sky-50/30 dark:bg-sky-900/10' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900'}`}>
+    <div className={`border rounded-xl transition-all ${aberto ? 'border-primary/20 dark:border-primary/30 bg-primary/10 dark:bg-primary/10' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900'}`}>
       <button
         type="button"
         onClick={onClick}
         className="w-full flex items-center gap-3 px-5 py-4 text-left focus-visible:outline-none
-                   focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-inset rounded-xl"
+                   focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset rounded-xl"
         aria-expanded={aberto}
       >
         <span className="shrink-0">{item.icone}</span>
-        <span className={`flex-1 text-sm font-semibold ${aberto ? 'text-sky-800 dark:text-sky-400' : 'text-gray-800 dark:text-gray-200'}`}>
+        <span className={`flex-1 text-sm font-semibold ${aberto ? 'text-primary-dark dark:text-primary' : 'text-gray-800 dark:text-gray-200'}`}>
           {item.pergunta}
         </span>
         <ChevronDown
           size={16}
-          className={`shrink-0 text-gray-400 dark:text-gray-500 transition-transform duration-200 ${aberto ? 'rotate-180 text-sky-500 dark:text-sky-400' : ''}`}
+          className={`shrink-0 text-gray-400 dark:text-gray-500 transition-transform duration-200 ${aberto ? 'rotate-180 text-primary dark:text-primary' : ''}`}
         />
       </button>
 
@@ -127,8 +127,8 @@ export default function AjudaPage() {
 
       {/* Cabeçalho */}
       <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-sky-100 dark:bg-sky-900/30 mb-4">
-          <HelpCircle size={28} className="text-sky-600 dark:text-sky-400" />
+        <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/10 dark:bg-primary/20 mb-4">
+          <HelpCircle size={28} className="text-primary dark:text-primary" />
         </div>
         <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">Central de Ajuda</h1>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -151,8 +151,8 @@ export default function AjudaPage() {
       {/* Card de contato */}
       <div className="mt-8 bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">
         <div className="flex items-start gap-4">
-          <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-sky-50 dark:bg-sky-900/20 shrink-0">
-            <Mail size={20} className="text-sky-600 dark:text-sky-400" />
+          <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10 dark:bg-primary/10 shrink-0">
+            <Mail size={20} className="text-primary dark:text-primary" />
           </div>
           <div>
             <h2 className="text-sm font-bold text-gray-900 dark:text-gray-100">Não encontrou o que procura?</h2>

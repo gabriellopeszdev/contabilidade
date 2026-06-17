@@ -801,8 +801,8 @@ function ModalCora({ contador, onClose, onSalvo, token }: ModalCoraProps) {
 
         <div className="px-6 py-5 space-y-4">
           {/* Status atual */}
-          <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs ${contador.coraConfigurado ? 'bg-blue-900/30 text-blue-300 border border-blue-700/40' : 'bg-slate-800 text-slate-400 border border-slate-700'}`}>
-            <span className={`w-2 h-2 rounded-full ${contador.coraConfigurado ? 'bg-blue-400' : 'bg-slate-500'}`} />
+          <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs ${contador.coraConfigurado ? 'bg-primary/20 text-primary border border-primary/30' : 'bg-slate-800 text-slate-400 border border-slate-700'}`}>
+            <span className={`w-2 h-2 rounded-full ${contador.coraConfigurado ? 'bg-primary' : 'bg-slate-500'}`} />
             {contador.coraConfigurado ? 'Cora configurado — boletos reais ativos' : 'Sem credenciais — usando PDF local (fallback)'}
           </div>
 
@@ -832,7 +832,7 @@ function ModalCora({ contador, onClose, onSalvo, token }: ModalCoraProps) {
               value={clientId}
               onChange={(e) => { setClientId(e.target.value); limparMsgs(); }}
               placeholder="seu-client-id-cora"
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 font-mono"
+              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-primary font-mono"
             />
           </div>
 
@@ -847,7 +847,7 @@ function ModalCora({ contador, onClose, onSalvo, token }: ModalCoraProps) {
               onChange={(e) => { setCertificatePem(e.target.value); limparMsgs(); }}
               placeholder={'-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----'}
               rows={4}
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-blue-500 font-mono resize-none"
+              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-primary font-mono resize-none"
             />
           </div>
 
@@ -862,7 +862,7 @@ function ModalCora({ contador, onClose, onSalvo, token }: ModalCoraProps) {
               onChange={(e) => { setPrivateKeyPem(e.target.value); limparMsgs(); }}
               placeholder={'-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----'}
               rows={4}
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-blue-500 font-mono resize-none"
+              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-primary font-mono resize-none"
             />
           </div>
         </div>
@@ -889,7 +889,7 @@ function ModalCora({ contador, onClose, onSalvo, token }: ModalCoraProps) {
             type="button"
             onClick={handleSalvar}
             disabled={salvando || !clientId.trim() || !certificatePem.trim() || !privateKeyPem.trim()}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-500 disabled:opacity-50 rounded-lg transition-colors"
+            className="flex-1 flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-dark disabled:opacity-50 rounded-lg transition-colors"
           >
             {salvando ? <Loader2 size={14} className="animate-spin" /> : <KeyRound size={14} />}
             {salvando ? 'Validando…' : 'Salvar credenciais'}
@@ -1152,7 +1152,7 @@ function ModalIa({ contador, onClose, onSalvo, token }: ModalIaProps) {
 
 const STATUS_OPTS = ['TRIAL', 'ATIVO', 'INADIMPLENTE', 'SUSPENSO', 'CANCELADO'] as const;
 const STATUS_CORES: Record<string, string> = {
-  TRIAL:        'text-blue-400',
+  TRIAL:        'text-primary',
   ATIVO:        'text-emerald-400',
   INADIMPLENTE: 'text-orange-400',
   SUSPENSO:     'text-yellow-400',
@@ -1787,8 +1787,8 @@ export default function ContadoresPage() {
                             Asaas
                           </span>
                         ) : c.coraConfigurado ? (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full border text-blue-400 bg-blue-900/30 border-blue-700/40">
-                            <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+                          <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full border text-primary bg-primary/20 border-primary/30">
+                            <span className="w-1.5 h-1.5 rounded-full bg-primary" />
                             Cora
                           </span>
                         ) : (
@@ -1807,8 +1807,8 @@ export default function ContadoresPage() {
                             SignatureAPI
                           </span>
                         ) : c.providerAssinatura === 'DOCSEAL' ? (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full border text-blue-400 bg-blue-900/30 border-blue-700/40">
-                            <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+                          <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full border text-primary bg-primary/20 border-primary/30">
+                            <span className="w-1.5 h-1.5 rounded-full bg-primary" />
                             DocSeal
                           </span>
                         ) : (
@@ -1896,7 +1896,7 @@ export default function ContadoresPage() {
                             aria-label="Configurar integração Cora"
                             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border ${
                               c.coraConfigurado
-                                ? 'text-blue-400 bg-blue-900/20 hover:bg-blue-900/40 border-blue-800/40'
+                                ? 'text-primary bg-primary/10 hover:bg-primary/20 border-primary/30'
                                 : 'text-slate-400 bg-slate-800 hover:bg-slate-700 border-slate-700'
                             }`}
                           >

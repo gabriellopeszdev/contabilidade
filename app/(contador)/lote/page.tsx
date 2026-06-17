@@ -35,7 +35,7 @@ function Toast({ notificacao, onFechar }: ToastProps) {
     notificacao.tipo === 'novoDocumentoUpload' ? (
       <CheckCircle2 size={18} className="text-emerald-500 shrink-0" />
     ) : (
-      <Info          size={18} className="text-blue-500   shrink-0" />
+      <Info          size={18} className="text-primary   shrink-0" />
     );
 
   return (
@@ -119,8 +119,8 @@ export default function LotePage() {
           className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 sm:p-8"
         >
           <div className="flex items-center gap-3 mb-6">
-            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/30">
-              <Upload size={20} className="text-blue-600 dark:text-blue-400" />
+            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10 dark:bg-primary/20">
+              <Upload size={20} className="text-primary dark:text-primary" />
             </div>
             <div>
               <h2 id="titulo-upload" className="text-lg font-bold text-gray-900 dark:text-gray-100">
@@ -152,9 +152,9 @@ export default function LotePage() {
         </section>
 
         {/* Informações de suporte */}
-        <div className="mt-6 rounded-xl border border-blue-100 dark:border-blue-900/50 bg-blue-50 dark:bg-blue-900/20 px-5 py-4 flex gap-3">
-          <AlertTriangle size={16} className="text-blue-500 mt-0.5 shrink-0" />
-          <div className="text-xs text-blue-700 dark:text-blue-400 space-y-0.5">
+        <div className="mt-6 rounded-xl border border-primary/20 dark:border-primary/30 bg-primary/10 dark:bg-primary/10 px-5 py-4 flex gap-3">
+          <AlertTriangle size={16} className="text-primary mt-0.5 shrink-0" />
+          <div className="text-xs text-primary-dark dark:text-primary space-y-0.5">
             <p className="font-semibold">Retenção obrigatória por lei</p>
             <p>
               Documentos fiscais devem ser retidos por no mínimo 5 anos conforme o{' '}

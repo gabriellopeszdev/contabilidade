@@ -616,7 +616,7 @@ export default function CalendarioPage() {
             <h3 className="text-xs font-bold text-gray-700 dark:text-gray-300 mb-2">Legenda</h3>
             <div className="space-y-1.5">
               <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
+                <span className="w-2.5 h-2.5 rounded-full bg-primary" />
                 <span className="text-[11px] text-gray-600 dark:text-gray-400">Obrigação Fiscal</span>
               </div>
               <div className="flex items-center gap-2">

@@ -391,7 +391,7 @@ function ClientesPageDono({ token }: { token: string | null }) {
                       {/* Avatar + Nome */}
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-3 min-w-0">
-                          <div className="shrink-0 w-9 h-9 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400
+                          <div className="shrink-0 w-9 h-9 rounded-full bg-primary-light text-primary-dark
                             flex items-center justify-center text-xs font-bold">
                             {iniciais(c.nome)}
                           </div>

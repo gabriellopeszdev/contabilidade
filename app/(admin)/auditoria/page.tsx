@@ -74,7 +74,7 @@ function acao_badge(actionType: string) {
   const colors: Record<string, string> = {
     LOGIN:        'text-emerald-400 bg-emerald-900/30 border-emerald-700/40',
     LOGOUT:       'text-slate-400  bg-slate-800/50    border-slate-700/40',
-    DOWNLOAD:     'text-blue-400   bg-blue-900/30     border-blue-700/40',
+    DOWNLOAD:     'text-primary    bg-primary/20      border-primary/30',
     UPLOAD_BATCH: 'text-violet-400 bg-violet-900/30   border-violet-700/40',
     VIEW:         'text-amber-400  bg-amber-900/30    border-amber-700/40',
     STATE_CHANGE: 'text-orange-400 bg-orange-900/30   border-orange-700/40',

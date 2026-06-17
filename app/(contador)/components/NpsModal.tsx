@@ -49,7 +49,7 @@ export function NpsModal() {
             onClick={() => setScore(i)}
             className={`flex-1 py-1.5 rounded text-xs font-medium transition-colors ${
               score === i
-                ? 'bg-blue-600 text-white'
+                ? 'bg-primary text-white'
                 : 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
             }`}
           >
@@ -68,7 +68,7 @@ export function NpsModal() {
       <button
         onClick={enviar}
         disabled={score === null}
-        className="w-full bg-blue-600 text-white py-2 rounded-lg font-medium disabled:opacity-50 hover:bg-blue-700 transition-colors"
+        className="w-full bg-primary text-white py-2 rounded-lg font-medium disabled:opacity-50 hover:bg-primary-dark transition-colors"
       >
         Enviar feedback
       </button>

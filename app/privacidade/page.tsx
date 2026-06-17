@@ -24,11 +24,11 @@ export const metadata = {
 function SectionHeader({ icon, numero, titulo }: { icon: React.ReactNode; numero: string; titulo: string }) {
   return (
     <div className="flex items-center gap-3 pt-2">
-      <div className="w-9 h-9 rounded-xl bg-violet-100 flex items-center justify-center shrink-0">
+      <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
         {icon}
       </div>
       <h2 className="text-base font-bold text-gray-900">
-        <span className="text-violet-600">{numero}.</span> {titulo}
+        <span className="text-primary">{numero}.</span> {titulo}
       </h2>
     </div>
   );
@@ -100,7 +100,7 @@ export default function PrivacidadePage() {
 
           {/* 1. Introdução */}
           <section className="space-y-3">
-            <SectionHeader icon={<Shield size={18} className="text-violet-600" />} numero="1" titulo="Introdução" />
+            <SectionHeader icon={<Shield size={18} className="text-primary" />} numero="1" titulo="Introdução" />
             <InfoCard>
               <p>
                 Esta Política de Privacidade descreve como o sistema <strong>FiscoHub</strong>{' '}
@@ -115,15 +115,15 @@ export default function PrivacidadePage() {
 
           {/* 2. Dados Coletados */}
           <section className="space-y-3">
-            <SectionHeader icon={<Database size={18} className="text-violet-600" />} numero="2" titulo="Dados Coletados" />
+            <SectionHeader icon={<Database size={18} className="text-primary" />} numero="2" titulo="Dados Coletados" />
             <p className="text-sm text-gray-600 pl-12">
               Coletamos os seguintes dados pessoais estritamente necessários para a prestação do serviço:
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pl-12">
               <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="w-6 h-6 rounded-lg bg-sky-100 flex items-center justify-center">
-                    <Users size={13} className="text-sky-600" />
+                  <div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Users size={13} className="text-primary" />
                   </div>
                   <h3 className="text-xs font-bold text-gray-900">Usuários Clientes</h3>
                 </div>
@@ -149,8 +149,8 @@ export default function PrivacidadePage() {
               </div>
               <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="w-6 h-6 rounded-lg bg-violet-100 flex items-center justify-center">
-                    <FileText size={13} className="text-violet-600" />
+                  <div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <FileText size={13} className="text-primary" />
                   </div>
                   <h3 className="text-xs font-bold text-gray-900">Documentos Fiscais</h3>
                 </div>
@@ -161,7 +161,7 @@ export default function PrivacidadePage() {
 
           {/* 3. Finalidade */}
           <section className="space-y-3">
-            <SectionHeader icon={<Scale size={18} className="text-violet-600" />} numero="3" titulo="Finalidade do Tratamento" />
+            <SectionHeader icon={<Scale size={18} className="text-primary" />} numero="3" titulo="Finalidade do Tratamento" />
             <InfoCard>
               <p className="mb-3">Os dados são tratados exclusivamente para:</p>
               <ul className="space-y-2">
@@ -172,7 +172,7 @@ export default function PrivacidadePage() {
                   'Comunicação sobre atividades relacionadas aos documentos.',
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-2">
-                    <span className="w-5 h-5 rounded-full bg-violet-100 text-violet-600 text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="w-5 h-5 rounded-full bg-primary/10 text-primary text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">
                       {i + 1}
                     </span>
                     <span>{item}</span>
@@ -184,7 +184,7 @@ export default function PrivacidadePage() {
 
           {/* 4. Base Legal */}
           <section className="space-y-3">
-            <SectionHeader icon={<Scale size={18} className="text-violet-600" />} numero="4" titulo="Base Legal" />
+            <SectionHeader icon={<Scale size={18} className="text-primary" />} numero="4" titulo="Base Legal" />
             <InfoCard>
               <p>
                 O tratamento dos dados se fundamenta no <strong>consentimento do titular</strong> (Art. 7º, I, LGPD),
@@ -197,7 +197,7 @@ export default function PrivacidadePage() {
 
           {/* 5. Segurança */}
           <section className="space-y-3">
-            <SectionHeader icon={<Lock size={18} className="text-violet-600" />} numero="5" titulo="Armazenamento e Segurança" />
+            <SectionHeader icon={<Lock size={18} className="text-primary" />} numero="5" titulo="Armazenamento e Segurança" />
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pl-12">
               {[
                 { emoji: '🔒', titulo: 'Criptografia TLS', desc: 'Documentos armazenados em servidor próprio com criptografia em trânsito.' },
@@ -218,7 +218,7 @@ export default function PrivacidadePage() {
 
           {/* 6. Compartilhamento */}
           <section className="space-y-3">
-            <SectionHeader icon={<Users size={18} className="text-violet-600" />} numero="6" titulo="Compartilhamento de Dados" />
+            <SectionHeader icon={<Users size={18} className="text-primary" />} numero="6" titulo="Compartilhamento de Dados" />
             <div className="pl-12">
               <div className="bg-emerald-50 rounded-xl border border-emerald-200 p-4 flex items-start gap-3">
                 <ShieldCheck size={20} className="text-emerald-600 shrink-0 mt-0.5" />
@@ -232,7 +232,7 @@ export default function PrivacidadePage() {
 
           {/* 7. Direitos */}
           <section className="space-y-3">
-            <SectionHeader icon={<UserCheck size={18} className="text-violet-600" />} numero="7" titulo="Direitos do Titular" />
+            <SectionHeader icon={<UserCheck size={18} className="text-primary" />} numero="7" titulo="Direitos do Titular" />
             <InfoCard>
               <p className="mb-3">Conforme a LGPD, você tem direito a:</p>
               <div className="space-y-2">
@@ -244,12 +244,12 @@ export default function PrivacidadePage() {
                   'Revogar o consentimento a qualquer momento.',
                 ].map((item, i) => (
                   <div key={i} className="flex items-start gap-2.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-violet-400 shrink-0 mt-2" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0 mt-2" />
                     <span>{item}</span>
                   </div>
                 ))}
               </div>
-              <p className="mt-4 text-xs text-gray-500 bg-violet-50 rounded-lg px-3 py-2 border border-violet-100">
+              <p className="mt-4 text-xs text-gray-500 bg-primary/10 rounded-lg px-3 py-2 border border-primary/20">
                 Estes direitos podem ser exercidos através da seção <strong>&quot;Privacidade&quot;</strong> nas
                 configurações da sua conta.
               </p>
@@ -258,7 +258,7 @@ export default function PrivacidadePage() {
 
           {/* 8. Retenção */}
           <section className="space-y-3">
-            <SectionHeader icon={<Clock size={18} className="text-violet-600" />} numero="8" titulo="Retenção de Dados" />
+            <SectionHeader icon={<Clock size={18} className="text-primary" />} numero="8" titulo="Retenção de Dados" />
             <div className="pl-12">
               <div className="bg-amber-50 rounded-xl border border-amber-200 p-4 flex items-start gap-3">
                 <Clock size={20} className="text-amber-600 shrink-0 mt-0.5" />
@@ -277,7 +277,7 @@ export default function PrivacidadePage() {
 
           {/* 9. Contato */}
           <section className="space-y-3">
-            <SectionHeader icon={<Mail size={18} className="text-violet-600" />} numero="9" titulo="Contato" />
+            <SectionHeader icon={<Mail size={18} className="text-primary" />} numero="9" titulo="Contato" />
             <InfoCard>
               <p>
                 Para dúvidas sobre esta política ou exercício de direitos, entre em contato
@@ -292,7 +292,7 @@ export default function PrivacidadePage() {
         <div className="mt-12 pt-6 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 text-sm text-violet-600 hover:text-violet-700 font-medium transition-colors"
+            className="inline-flex items-center gap-1.5 text-sm text-primary hover:text-primary-dark font-medium transition-colors"
           >
             <ArrowLeft size={14} />
             Voltar ao sistema

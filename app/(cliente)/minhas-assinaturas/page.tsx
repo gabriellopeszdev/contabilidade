@@ -177,7 +177,7 @@ export default function AssinaturasPage() {
       {/* Conteúdo das tabs */}
       {loading ? (
         <div className="py-16 flex justify-center">
-          <div className="w-5 h-5 border-2 border-sky-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
         </div>
       ) : tabAtiva === 'pendentes' ? (
         <div className="space-y-3">
@@ -214,7 +214,7 @@ export default function AssinaturasPage() {
                     href={item.linkAssinatura}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold transition-colors"
+                    className="shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary hover:bg-primary-dark text-white text-xs font-semibold transition-colors"
                   >
                     <PenLine size={13} />
                     Assinar agora
@@ -285,10 +285,10 @@ export default function AssinaturasPage() {
       )}
 
       {/* Seção de envio de comprovante */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-sky-200 dark:border-sky-900/50 p-5">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-primary/20 dark:border-primary/30 p-5">
         <div className="flex items-start gap-3 mb-4">
-          <div className="w-10 h-10 rounded-xl bg-sky-50 dark:bg-sky-900/20 flex items-center justify-center shrink-0">
-            <Upload size={18} className="text-sky-600 dark:text-sky-400" />
+          <div className="w-10 h-10 rounded-xl bg-primary/10 dark:bg-primary/10 flex items-center justify-center shrink-0">
+            <Upload size={18} className="text-primary dark:text-primary" />
           </div>
           <div>
             <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">Enviar documento assinado</p>
@@ -310,7 +310,7 @@ export default function AssinaturasPage() {
           type="button"
           disabled={enviando}
           onClick={() => inputRef.current?.click()}
-          className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-sky-600 hover:bg-sky-700 disabled:opacity-60 disabled:cursor-not-allowed text-white text-sm font-semibold transition-colors"
+          className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-primary hover:bg-primary-dark disabled:opacity-60 disabled:cursor-not-allowed text-white text-sm font-semibold transition-colors"
         >
           {enviando ? (
             <>

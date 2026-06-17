@@ -148,7 +148,7 @@ export default function InicioPagina() {
         </div>
         {novosDoContador > 0 && (
           <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full
-            bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 text-xs font-semibold text-blue-700 dark:text-blue-400">
+            bg-primary/10 dark:bg-primary/20 border border-primary/20 dark:border-primary/30 text-xs font-semibold text-primary-dark dark:text-primary">
             <Bell size={13} className="animate-pulse" />
             {novosDoContador} novo{novosDoContador > 1 ? 's' : ''} do contador
           </div>
@@ -161,14 +161,14 @@ export default function InicioPagina() {
         {/* Novos documentos */}
         <div className={`rounded-2xl border p-4 space-y-3 transition-colors
           ${novosDoContador > 0
-            ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-900/30'
+            ? 'bg-primary/10 dark:bg-primary/20 border-primary/20 dark:border-primary/30'
             : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700'
           }`}>
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-blue-100 dark:bg-blue-900/40">
-            <Bell size={16} className="text-blue-600 dark:text-blue-400" />
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-primary/20 dark:bg-primary/20">
+            <Bell size={16} className="text-primary dark:text-primary" />
           </div>
           <div>
-            <p className={`text-2xl font-bold ${novosDoContador > 0 ? 'text-blue-700 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'}`}>
+            <p className={`text-2xl font-bold ${novosDoContador > 0 ? 'text-primary-dark dark:text-primary' : 'text-gray-700 dark:text-gray-300'}`}>
               {docsCarregando ? '—' : novosDoContador}
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 leading-tight">
@@ -230,8 +230,8 @@ export default function InicioPagina() {
             : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700'
           }`}>
           <div className={`w-9 h-9 rounded-xl flex items-center justify-center
-            ${diasAteVencer !== null && diasAteVencer <= 5 ? 'bg-amber-100 dark:bg-amber-900/40' : 'bg-sky-100 dark:bg-sky-900/40'}`}>
-            <CalendarClock size={16} className={diasAteVencer !== null && diasAteVencer <= 5 ? 'text-amber-600 dark:text-amber-400' : 'text-sky-500 dark:text-sky-400'} />
+            ${diasAteVencer !== null && diasAteVencer <= 5 ? 'bg-amber-100 dark:bg-amber-900/40' : 'bg-primary/10 dark:bg-primary/20'}`}>
+            <CalendarClock size={16} className={diasAteVencer !== null && diasAteVencer <= 5 ? 'text-amber-600 dark:text-amber-400' : 'text-primary dark:text-primary'} />
           </div>
           <div>
             <p className={`text-2xl font-bold
@@ -291,7 +291,7 @@ export default function InicioPagina() {
               </div>
               <Link
                 href="/documentos"
-                className="flex items-center gap-1 text-xs text-primary dark:text-sky-400 hover:underline font-medium shrink-0"
+                className="flex items-center gap-1 text-xs text-primary dark:text-primary hover:underline font-medium shrink-0"
               >
                 Ver todos <ChevronRight size={13} />
               </Link>
@@ -331,7 +331,7 @@ export default function InicioPagina() {
                     <li
                       key={doc.id}
                       className={`flex items-center gap-3 px-5 py-3.5 transition-colors
-                        ${!doc.readStatus ? 'hover:bg-blue-50/40 dark:hover:bg-blue-900/10' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`}
+                        ${!doc.readStatus ? 'hover:bg-primary/10 dark:hover:bg-primary/10' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`}
                     >
                       {/* Ícone colorido pelo setor */}
                       <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0
@@ -344,7 +344,7 @@ export default function InicioPagina() {
                               doc.sector === 'FISCAL'   ? 'text-indigo-500' :
                               doc.sector === 'PESSOAL'  ? 'text-violet-500' :
                               doc.sector === 'CONTABIL' ? 'text-teal-500'   : 'text-gray-400'} />
-                          : <FileCode2 size={15} className="text-sky-400" />
+                          : <FileCode2 size={15} className="text-primary" />
                         }
                       </div>
 
@@ -356,7 +356,7 @@ export default function InicioPagina() {
                           </p>
                           {!doc.readStatus && (
                             <span className="shrink-0 inline-flex items-center px-1.5 py-0.5 rounded text-[9px]
-                              font-bold bg-blue-500 text-white leading-none">
+                              font-bold bg-primary text-white leading-none">
                               NOVO
                             </span>
                           )}
@@ -396,7 +396,7 @@ export default function InicioPagina() {
                           disabled={isBaixando || isMarcando}
                           title="Baixar"
                           aria-label="Baixar"
-                          className="p-2 rounded-lg text-gray-300 dark:text-gray-600 hover:text-sky-500 hover:bg-sky-50 dark:hover:bg-sky-900/20
+                          className="p-2 rounded-lg text-gray-300 dark:text-gray-600 hover:text-primary hover:bg-primary/10 dark:hover:bg-primary/10
                             disabled:opacity-40 transition-colors"
                         >
                           {isBaixando ? <Loader2 size={14} className="animate-spin" aria-hidden="true" /> : <Download size={14} aria-hidden="true" />}
@@ -427,14 +427,14 @@ export default function InicioPagina() {
           <Link
             href="/enviar"
             className="block bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700
-              hover:border-sky-300 dark:hover:border-sky-700 hover:shadow-md transition-all duration-200 group overflow-hidden"
+              hover:border-primary dark:hover:border-primary hover:shadow-md transition-all duration-200 group overflow-hidden"
           >
             <div className="px-4 pt-4 pb-2 flex items-center justify-between">
               <h3 className="text-sm font-bold text-gray-800 dark:text-gray-200">Enviar Documento</h3>
-              <ChevronRight size={15} className="text-gray-300 dark:text-gray-600 group-hover:text-sky-400 transition-colors" />
+              <ChevronRight size={15} className="text-gray-300 dark:text-gray-600 group-hover:text-primary transition-colors" />
             </div>
-            <div className="mx-4 mb-4 rounded-xl border-2 border-dashed border-sky-200 dark:border-sky-800
-              bg-sky-50/40 dark:bg-sky-900/10 group-hover:border-sky-400 group-hover:bg-sky-50 dark:group-hover:bg-sky-900/20
+            <div className="mx-4 mb-4 rounded-xl border-2 border-dashed border-primary/20 dark:border-primary/30
+              bg-primary/10 dark:bg-primary/10 group-hover:border-primary group-hover:bg-primary/10 dark:group-hover:bg-primary/10
               transition-all duration-200 flex flex-col items-center justify-center gap-2 py-7 text-center">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-500 to-sky-600 flex items-center justify-center
                 group-hover:scale-110 transition-transform duration-200">
@@ -453,8 +453,8 @@ export default function InicioPagina() {
 
             <Link href="/documentos"
               className="flex items-center gap-3 w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700
-                bg-white dark:bg-gray-900 text-sm font-medium text-gray-700 dark:text-gray-300 hover:border-sky-300 hover:bg-sky-50/40 dark:hover:bg-sky-900/10
-                hover:text-sky-700 dark:hover:text-sky-400 transition-colors group"
+                bg-white dark:bg-gray-900 text-sm font-medium text-gray-700 dark:text-gray-300 hover:border-primary hover:bg-primary/10 dark:hover:bg-primary/10
+                hover:text-primary-dark dark:hover:text-primary transition-colors group"
             >
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-sky-500 to-sky-600 flex items-center justify-center shrink-0 group-hover:brightness-110 transition-all">
                 <History size={14} className="text-white" />
@@ -463,7 +463,7 @@ export default function InicioPagina() {
                 <p className="text-xs font-semibold leading-tight">Histórico de Documentos</p>
                 <p className="text-[10px] text-gray-400 dark:text-gray-500">Ver todos os arquivos recebidos</p>
               </div>
-              <ChevronRight size={13} className="text-gray-300 dark:text-gray-600 group-hover:text-sky-400 shrink-0" />
+              <ChevronRight size={13} className="text-gray-300 dark:text-gray-600 group-hover:text-primary shrink-0" />
             </Link>
 
             <Link href="/chat"
