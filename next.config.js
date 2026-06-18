@@ -39,14 +39,16 @@ const nextConfig = {
 
   // Cabeçalhos de segurança básicos para um SaaS self-hosted
   async headers() {
+    const isProd = process.env.NODE_ENV === 'production';
     return [
-      {
-        // Assets estáticos do Next.js têm hash no nome — cache imutável de 1 ano
+      // Cache imutável de 1 ano só em produção — em dev o Next.js precisa controlar
+      // esse header para o HMR funcionar corretamente.
+      ...(isProd ? [{
         source: '/_next/static/(.*)',
         headers: [
           { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
         ],
-      },
+      }] : []),
       {
         source: '/(.*)',
         headers: [
