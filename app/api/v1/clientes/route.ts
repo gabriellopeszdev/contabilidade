@@ -257,7 +257,7 @@ export const POST = withAuth(async (req, _ctx, auth) => {
     // Cria ou restaura cliente + vinculação na mesma transação
     const cliente = await prisma.$transaction(async (tx) => {
       let clienteData: {
-        id: string; name: string; email: string; cnpj: string;
+        id: string; name: string; email: string; cnpj: string | null;
         phone: string | null; avatarUrl: string | null; isActive: boolean; createdAt: Date;
       };
 
