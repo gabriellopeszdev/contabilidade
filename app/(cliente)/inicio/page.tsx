@@ -292,7 +292,7 @@ export default function InicioPagina() {
     <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
 
       {/* ── Saudação + Mini-stats ─────────────────────────────────────────── */}
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 px-5 py-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
             {saudacao}, {primeiroNome}!
@@ -413,7 +413,7 @@ export default function InicioPagina() {
       )}
 
       {/* ── Grid principal ────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 items-stretch">
 
         {/* ============================================================== */}
         {/* COLUNA ESQUERDA — "Do seu Contador"                             */}
@@ -441,7 +441,7 @@ export default function InicioPagina() {
           )}
 
           {/* Documentos do contador */}
-          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col h-full">
             <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
               <div>
                 <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">Do seu Contador</h3>
@@ -465,9 +465,9 @@ export default function InicioPagina() {
 
             {/* Nenhum documento ainda */}
             {!docsCarregando && docsDoContador.length === 0 && (
-              <div className="flex flex-col items-center gap-2 py-12 text-center">
-                <div className="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                  <FileText size={22} className="text-gray-300 dark:text-gray-600" />
+              <div className="flex flex-col items-center gap-2 py-8 text-center">
+                <div className="w-10 h-10 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                  <FileText size={18} className="text-gray-300 dark:text-gray-600" />
                 </div>
                 <p className="text-sm font-semibold text-gray-500 dark:text-gray-400">Nenhum documento ainda</p>
                 <p className="text-xs text-gray-400 dark:text-gray-500 max-w-xs">
@@ -590,7 +590,7 @@ export default function InicioPagina() {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-3">
             {CATEGORIAS.map((cat) => {
               const Icon = cat.icon;
               return (
@@ -600,20 +600,23 @@ export default function InicioPagina() {
                   onClick={() => handleCardClick(cat)}
                   className={`
                     group relative flex flex-col items-center text-center
-                    rounded-xl border-2 p-3
+                    rounded-xl border-2 p-4
                     transition-all duration-200 cursor-pointer
                     hover:shadow-md hover:-translate-y-0.5 active:scale-95
                     ${cat.cor.cardBg} ${cat.cor.cardBorder} ${cat.cor.cardHover}
                   `}
                 >
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center mb-2 transition-transform duration-200 group-hover:scale-110 bg-gradient-to-br ${cat.cor.gradient}`}>
-                    <Icon size={15} className="text-white" aria-hidden="true" />
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-2.5 transition-transform duration-200 group-hover:scale-110 bg-gradient-to-br ${cat.cor.gradient}`}>
+                    <Icon size={18} className="text-white" aria-hidden="true" />
                   </div>
-                  <p className="text-[11px] font-bold text-gray-900 dark:text-gray-100 leading-tight mb-0.5">
+                  <p className="text-xs font-bold text-gray-900 dark:text-gray-100 leading-tight mb-1">
                     {cat.label}
                   </p>
-                  <p className="text-[10px] text-gray-500 dark:text-gray-400 leading-tight">
+                  <p className="text-[11px] text-gray-500 dark:text-gray-400 leading-tight mb-1.5">
                     {cat.descricao}
+                  </p>
+                  <p className="text-[10px] text-gray-400 dark:text-gray-600 leading-tight font-medium">
+                    {cat.exemplos}
                   </p>
                 </button>
               );
