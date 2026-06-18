@@ -49,7 +49,7 @@ export const GET = withAuth(async (req, ctx, auth) => {
   const linhas = relacoes.map((r) => ({
     id:         r.clienteId,
     name:       r.cliente.name,
-    cnpj:       r.cliente.cnpj,
+    cnpj:       r.cliente.cnpj ?? '-',
     email:      r.cliente.email,
     phone:      r.cliente.phone ?? '-',
     ativo:      r.cliente.isActive ? 'Sim' : 'Não',
