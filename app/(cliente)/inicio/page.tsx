@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link          from 'next/link';
 import {
   CloudUpload, FileText, Download, CheckCircle, CheckCircle2,
-  Loader2, AlertTriangle, DollarSign, MessageSquare, History,
+  Loader2, AlertTriangle, DollarSign,
   ChevronRight, FileCode2, Bell, Send, CalendarClock,
   Landmark, Receipt, Calculator, Users as UsersIcon, FolderOpen, X,
   AlertCircle, Clock
@@ -390,54 +390,6 @@ export default function InicioPagina() {
         onChange={handleFileChange}
       />
 
-      {/* ── Enviar Documentos (Categorias de Upload) ────────────────────── */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-5 space-y-4">
-        <div>
-          <h3 className="text-base font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-            <CloudUpload size={18} className="text-primary" />
-            O que você precisa enviar hoje para o contador?
-          </h3>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-            Selecione a categoria correspondente para escolher e enviar seus arquivos.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          {CATEGORIAS.map((cat) => {
-            const Icon = cat.icon;
-            return (
-              <button
-                key={cat.id}
-                type="button"
-                onClick={() => handleCardClick(cat)}
-                className={`
-                  group relative flex flex-col items-center text-center
-                  rounded-xl border-2 p-3 sm:p-4
-                  transition-all duration-200 cursor-pointer
-                  hover:shadow-md hover:-translate-y-0.5 active:scale-95
-                  ${cat.cor.cardBg} ${cat.cor.cardBorder} ${cat.cor.cardHover}
-                `}
-              >
-                {/* Ícone com gradiente */}
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 transition-transform duration-200 group-hover:scale-110 bg-gradient-to-br ${cat.cor.gradient}`}>
-                  <Icon size={18} className="text-white" aria-hidden="true" />
-                </div>
-
-                {/* Título */}
-                <p className="text-xs font-bold text-gray-900 dark:text-gray-100 leading-tight mb-1">
-                  {cat.label}
-                </p>
-
-                {/* Descrição */}
-                <p className="text-[10px] text-gray-500 dark:text-gray-400 leading-tight">
-                  {cat.descricao}
-                </p>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
       {/* Modal de envio */}
       {arquivosModal.length > 0 && (
         <EnvioLoteModal
@@ -462,12 +414,12 @@ export default function InicioPagina() {
       )}
 
       {/* ── Grid principal ────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 items-start">
 
         {/* ============================================================== */}
         {/* COLUNA ESQUERDA — "Do seu Contador"                             */}
         {/* ============================================================== */}
-        <section className="lg:col-span-2 space-y-4">
+        <section className="lg:col-span-3 space-y-4 order-2 lg:order-1">
 
           {/* Alerta de boletos vencidos — compacto, não alarmante */}
           {!boletosCarregando && boletosVencidos.length > 0 && (
@@ -626,58 +578,47 @@ export default function InicioPagina() {
         </section>
 
         {/* ============================================================== */}
-        {/* COLUNA DIREITA — Envio + Ações                                  */}
+        {/* COLUNA DIREITA — Upload Compacto                                 */}
         {/* ============================================================== */}
-        <aside className="space-y-4">
+        <aside className="lg:col-span-2 space-y-3 order-1 lg:order-2">
+          <div>
+            <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+              <CloudUpload size={16} className="text-primary" />
+              Enviar para o Contador
+            </h3>
+            <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
+              Selecione a categoria do arquivo
+            </p>
+          </div>
 
-          {/* Ações Rápidas */}
-          <div className="space-y-2">
-            <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest px-1">Ações Rápidas</p>
-
-            <Link href="/documentos"
-              className="flex items-center gap-3 w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700
-                bg-white dark:bg-gray-900 text-sm font-medium text-gray-700 dark:text-gray-300 hover:border-primary hover:bg-primary/10 dark:hover:bg-primary/10
-                hover:text-primary-dark dark:hover:text-primary transition-colors group"
-            >
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-sky-500 to-sky-600 flex items-center justify-center shrink-0 group-hover:brightness-110 transition-all">
-                <History size={14} className="text-white" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-xs font-semibold leading-tight">Documentos do Contador</p>
-                <p className="text-[10px] text-gray-400 dark:text-gray-500">Arquivos recebidos do escritório</p>
-              </div>
-              <ChevronRight size={13} className="text-gray-300 dark:text-gray-600 group-hover:text-primary shrink-0" />
-            </Link>
-
-            <Link href="/enviar"
-              className="flex items-center gap-3 w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700
-                bg-white dark:bg-gray-900 text-sm font-medium text-gray-700 dark:text-gray-300 hover:border-emerald-300 hover:bg-emerald-50/40 dark:hover:bg-emerald-900/10
-                hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors group"
-            >
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shrink-0 group-hover:brightness-110 transition-all">
-                <Clock size={14} className="text-white" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-xs font-semibold leading-tight">Histórico de Envios</p>
-                <p className="text-[10px] text-gray-400 dark:text-gray-500">Ver todos os arquivos enviados por você</p>
-              </div>
-              <ChevronRight size={13} className="text-gray-300 dark:text-gray-600 group-hover:text-emerald-400 shrink-0" />
-            </Link>
-
-            <Link href="/chat"
-              className="flex items-center gap-3 w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700
-                bg-white dark:bg-gray-900 text-sm font-medium text-gray-700 dark:text-gray-300 hover:border-violet-300 hover:bg-violet-50/40 dark:hover:bg-violet-900/10
-                hover:text-violet-700 dark:hover:text-violet-400 transition-colors group"
-            >
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center shrink-0 group-hover:brightness-110 transition-all">
-                <MessageSquare size={14} className="text-white" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-xs font-semibold leading-tight">Falar com o Contador</p>
-                <p className="text-[10px] text-gray-400 dark:text-gray-500">Envie uma mensagem agora</p>
-              </div>
-              <ChevronRight size={13} className="text-gray-300 dark:text-gray-600 group-hover:text-violet-400 shrink-0" />
-            </Link>
+          <div className="grid grid-cols-2 gap-2">
+            {CATEGORIAS.map((cat) => {
+              const Icon = cat.icon;
+              return (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => handleCardClick(cat)}
+                  className={`
+                    group relative flex flex-col items-center text-center
+                    rounded-xl border-2 p-3
+                    transition-all duration-200 cursor-pointer
+                    hover:shadow-md hover:-translate-y-0.5 active:scale-95
+                    ${cat.cor.cardBg} ${cat.cor.cardBorder} ${cat.cor.cardHover}
+                  `}
+                >
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center mb-2 transition-transform duration-200 group-hover:scale-110 bg-gradient-to-br ${cat.cor.gradient}`}>
+                    <Icon size={15} className="text-white" aria-hidden="true" />
+                  </div>
+                  <p className="text-[11px] font-bold text-gray-900 dark:text-gray-100 leading-tight mb-0.5">
+                    {cat.label}
+                  </p>
+                  <p className="text-[10px] text-gray-500 dark:text-gray-400 leading-tight">
+                    {cat.descricao}
+                  </p>
+                </button>
+              );
+            })}
           </div>
         </aside>
       </div>
