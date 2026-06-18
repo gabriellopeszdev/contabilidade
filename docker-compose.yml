@@ -235,6 +235,9 @@ services:
         condition: service_healthy
       docseal:
         condition: service_started
+    env_file:
+      - path: .env
+        required: false
     environment:
       NODE_ENV: production
       # Sobrescreve os hosts para os nomes dos serviços internos do Docker
@@ -273,9 +276,7 @@ services:
       # Cora
       CORA_ENV: ${CORA_ENV:-sandbox}
       CORA_WEBHOOK_TOKEN: ${CORA_WEBHOOK_TOKEN:-}
-      # Asaas SaaS Billing
-      ASAAS_SAAS_API_KEY: ${ASAAS_SAAS_API_KEY}
-      ASAAS_SAAS_WEBHOOK_TOKEN: ${ASAAS_SAAS_WEBHOOK_TOKEN}
+      # Asaas SaaS Billing — lidos via env_file (valor começa com $, interpolação quebraria)
     ports:
       - "127.0.0.1:${APP_PORT:-4500}:4500"
     networks:
