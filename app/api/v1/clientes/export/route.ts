@@ -41,7 +41,7 @@ export const GET = withAuth(async (_req, _ctx, auth) => {
       return [
         c.name,
         c.email,
-        c.cnpj,
+        c.cnpj ?? '',
         c.activatedAt ? 'Ativo' : 'Pendente',
         c.activatedAt ? c.activatedAt.toISOString() : '',
         c.createdAt.toISOString(),
