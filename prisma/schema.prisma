@@ -112,7 +112,10 @@ model UsuarioCliente {
   email        String    @unique @db.VarChar(255)
   passwordHash String?   @map("password_hash") @db.VarChar(255)
   // CNPJ: 14 dígitos sem formatação (validação feita na entidade de domínio)
-  cnpj             String    @unique @db.Char(14)
+  // Unique parcial via índice raw (ver migration 20260618000000):
+  //   WHERE deleted_at IS NULL AND cnpj IS NOT NULL
+  // Permite reutilizar o CNPJ após soft-delete sem travar novos cadastros.
+  cnpj             String?   @db.Char(14)
   phone            String?   @db.VarChar(20)
   avatarUrl        String?   @map("avatar_url") @db.VarChar(500)
   cnae             String?   @db.VarChar(10)
