@@ -579,48 +579,52 @@ export default function InicioPagina() {
         {/* ============================================================== */}
         {/* COLUNA DIREITA — Upload Compacto                                 */}
         {/* ============================================================== */}
-        <aside className="lg:col-span-2 space-y-3 order-1 lg:order-2">
-          <div>
-            <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-              <CloudUpload size={16} className="text-primary" />
-              Enviar para o Contador
-            </h3>
-            <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
-              Selecione a categoria do arquivo
-            </p>
-          </div>
+        <aside className="lg:col-span-2 order-1 lg:order-2">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col h-full">
+            <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                  <CloudUpload size={15} className="text-primary" />
+                  Enviar para o Contador
+                </h3>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                  Selecione a categoria do arquivo
+                </p>
+              </div>
+            </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            {CATEGORIAS.map((cat) => {
-              const Icon = cat.icon;
-              return (
-                <button
-                  key={cat.id}
-                  type="button"
-                  onClick={() => handleCardClick(cat)}
-                  className={`
-                    group relative flex flex-col items-center text-center
-                    rounded-xl border-2 p-4
-                    transition-all duration-200 cursor-pointer
-                    hover:shadow-md hover:-translate-y-0.5 active:scale-95
-                    ${cat.cor.cardBg} ${cat.cor.cardBorder} ${cat.cor.cardHover}
-                  `}
-                >
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-2.5 transition-transform duration-200 group-hover:scale-110 bg-gradient-to-br ${cat.cor.gradient}`}>
-                    <Icon size={18} className="text-white" aria-hidden="true" />
-                  </div>
-                  <p className="text-xs font-bold text-gray-900 dark:text-gray-100 leading-tight mb-1">
-                    {cat.label}
-                  </p>
-                  <p className="text-[11px] text-gray-500 dark:text-gray-400 leading-tight mb-1.5">
-                    {cat.descricao}
-                  </p>
-                  <p className="text-[10px] text-gray-400 dark:text-gray-600 leading-tight font-medium">
-                    {cat.exemplos}
-                  </p>
-                </button>
-              );
-            })}
+            <div className="p-4 grid grid-cols-2 gap-3 flex-1">
+              {CATEGORIAS.map((cat) => {
+                const Icon = cat.icon;
+                return (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => handleCardClick(cat)}
+                    className={`
+                      group relative flex flex-col items-center text-center
+                      rounded-xl border-2 p-4
+                      transition-all duration-200 cursor-pointer
+                      hover:shadow-md hover:-translate-y-0.5 active:scale-95
+                      ${cat.cor.cardBg} ${cat.cor.cardBorder} ${cat.cor.cardHover}
+                    `}
+                  >
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-2.5 transition-transform duration-200 group-hover:scale-110 bg-gradient-to-br ${cat.cor.gradient}`}>
+                      <Icon size={18} className="text-white" aria-hidden="true" />
+                    </div>
+                    <p className="text-xs font-bold text-gray-900 dark:text-gray-100 leading-tight mb-1">
+                      {cat.label}
+                    </p>
+                    <p className="text-[11px] text-gray-500 dark:text-gray-400 leading-tight mb-1.5">
+                      {cat.descricao}
+                    </p>
+                    <p className="text-[10px] text-gray-400 dark:text-gray-600 leading-tight font-medium">
+                      {cat.exemplos}
+                    </p>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </aside>
       </div>
