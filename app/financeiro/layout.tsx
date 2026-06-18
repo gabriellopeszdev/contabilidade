@@ -93,14 +93,15 @@ interface NavGrupoCliente { label?: string; donoOnly?: boolean; items: NavItem[]
 const NAV_GRUPOS_CLIENTE: NavGrupoCliente[] = [
   {
     items: [
-      { href: '/inicio', label: 'Início', icon: <Home size={18} /> },
+      { href: '/inicio', label: 'Início',  icon: <Home            size={18} /> },
+      { href: '/painel', label: 'Painel',  icon: <LayoutDashboard size={18} /> },
     ],
   },
   {
     label: 'Documentos',
     items: [
       { href: '/documentos',         label: 'Meus Documentos', icon: <FileText size={18} /> },
-      { href: '/enviar',             label: 'Enviar Arquivo',  icon: <Upload   size={18} /> },
+      { href: '/enviar',             label: 'Histórico de Envios',  icon: <Clock   size={18} /> },
       { href: '/minhas-assinaturas', label: 'Assinaturas',     icon: <PenLine  size={18} /> },
     ],
   },
