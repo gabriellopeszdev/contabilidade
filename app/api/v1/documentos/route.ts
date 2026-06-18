@@ -186,13 +186,35 @@ export async function GET(request: NextRequest) {
 
   // Monta o filtro final (setor único ou múltiplos para EMPLOYEE)
   // TODOS → sem restrição de setor (gerente vê tudo)
-  const filtroFinal: Record<string, unknown> = {};
+  const filtroFinal: Record<string, any> = {};
   if (temAcessoTotal) {
     // Nenhum filtro de setor — traz documentos de todos os setores
   } else if (sector) {
     filtroFinal.sector = sector;
   } else if (payload.role === 'EMPLOYEE' && setoresPermitidos && setoresPermitidos.length > 1) {
     filtroFinal.setores = setoresPermitidos;
+  }
+
+  // Filtro de termo de busca
+  const termo = searchParams.get('termo');
+  if (termo) {
+    filtroFinal.termo = termo;
+  }
+
+  // Filtro de origem
+  const origemParam = searchParams.get('origem')?.toUpperCase();
+  if (origemParam === 'UPLOAD_CLIENTE' || origemParam === 'UPLOAD_CONTADOR') {
+    const funcionarios = await prisma.funcionario.findMany({
+      where: { clienteId },
+      select: { id: true },
+    });
+    const clientUserIds = [clienteId, ...funcionarios.map(f => f.id)];
+
+    if (origemParam === 'UPLOAD_CLIENTE') {
+      filtroFinal.uploadedByIds = clientUserIds;
+    } else {
+      filtroFinal.uploadedByNotIds = clientUserIds;
+    }
   }
 
   // -------------------------------------------------------------------------

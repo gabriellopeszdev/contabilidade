@@ -347,6 +347,16 @@ export class PrismaDocumentoRepository implements IDocumentoRepository {
       };
     }
 
+    if (filtros.uploadedById) {
+      where.uploadedById = filtros.uploadedById;
+    }
+    if (filtros.uploadedByIds && filtros.uploadedByIds.length > 0) {
+      where.uploadedById = { in: filtros.uploadedByIds };
+    }
+    if (filtros.uploadedByNotIds && filtros.uploadedByNotIds.length > 0) {
+      where.uploadedById = { notIn: filtros.uploadedByNotIds };
+    }
+
     return where;
   }
 }

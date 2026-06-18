@@ -88,6 +88,19 @@ function buildPrismaClient(): PrismaClient {
   // (pg faz `'' || null = null`) e o SASL lança "password must be a string".
   // Caso contrário, usa DATABASE_URL diretamente (já validada pelo env.ts).
   const pgPassword = process.env.POSTGRES_PASSWORD;
+
+  if (isDev) {
+    if (process.env.POSTGRES_HOST) {
+      console.log(
+        `[DB] Conectando via opções separadas → host=${process.env.POSTGRES_HOST} porta=${process.env.POSTGRES_PORT ?? '5432'} db=${process.env.POSTGRES_DB ?? 'contabilidade'} user=${process.env.POSTGRES_USER ?? 'postgres'} senha=${pgPassword ? '***' : '(vazia)'}`,
+      );
+    } else {
+      const url = process.env.DATABASE_URL ?? '(não definida)';
+      const safe = url.replace(/:([^:@]+)@/, ':***@');
+      console.log(`[DB] Conectando via DATABASE_URL → ${safe}`);
+    }
+  }
+
   const pool = process.env.POSTGRES_HOST
     ? new Pool({
         user:     process.env.POSTGRES_USER || 'postgres',
@@ -103,6 +116,22 @@ function buildPrismaClient(): PrismaClient {
         max:               10,
         idleTimeoutMillis: 30_000,
       });
+
+  if (isDev) {
+    pool.query(
+      `SELECT current_database() AS db, current_user AS usuario, inet_server_addr() AS servidor, COUNT(*) AS total_usuarios
+       FROM "Usuario"`,
+    )
+      .then((res) => {
+        const r = res.rows[0];
+        console.log(
+          `[DB] Conexão OK → banco=${r.db} usuario_pg=${r.usuario} servidor=${r.servidor ?? '(local)'} total_usuarios_tabela=${r.total_usuarios}`,
+        );
+      })
+      .catch((err: Error) => {
+        console.error(`[DB] Falha no SELECT de teste → ${err.message}`);
+      });
+  }
 
   const adapter = new PrismaPg(pool);
 

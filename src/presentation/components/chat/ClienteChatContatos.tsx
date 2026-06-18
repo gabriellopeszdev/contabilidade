@@ -84,8 +84,8 @@ export function ClienteChatContatos({ rooms, roomAtual, carregando, onSelectRoom
                     className={`
                       w-full flex items-start gap-3 px-4 py-3 text-left transition-colors
                       ${ativo
-                        ? 'bg-primary-50 dark:bg-primary/10 border-l-2 border-primary dark:border-primary'
-                        : 'hover:bg-gray-50 dark:hover:bg-gray-800 border-l-2 border-transparent'
+                        ? 'bg-gray-100 dark:bg-gray-800 border-l-2 border-primary'
+                        : 'hover:bg-gray-50 dark:hover:bg-gray-800/60 border-l-2 border-transparent'
                       }
                     `}
                   >

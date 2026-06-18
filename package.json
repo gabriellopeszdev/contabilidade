@@ -4,8 +4,10 @@
   "private": true,
   "scripts": {
     "postinstall": "prisma generate",
+    "tunnel": "docker compose stop postgres && ssh -fNL 5433:localhost:5434 root@72.61.37.230 -o ExitOnForwardFailure=yes && echo '✔ Túnel DB ativo → localhost:5433' || echo '✘ Falha ao abrir túnel'",
     "predev": "docker compose up -d postgres redis minio minio_init",
     "dev": "cross-env NODE_ENV=development tsx watch server.ts",
+    "dev:tunnel": "docker compose up -d redis minio minio_init && cross-env NODE_ENV=development tsx watch server.ts",
     "build": "next build",
     "start": "tsx server.ts",
     "db:setup": "prisma migrate deploy && prisma db seed",

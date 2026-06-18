@@ -47,10 +47,17 @@ export interface UseDocumentosClienteReturn {
   setor:           SetorFiltro | undefined;
   setSetor:        (s: SetorFiltro | undefined) => void;
   setPage:         (p: number) => void;
+  termo:           string | undefined;
+  setTermo:        (t: string | undefined) => void;
   baixarDocumento: (id: string) => Promise<void>;
   /** IDs dos documentos com download em andamento (spinner no botão). */
   baixandoIds:     Set<string>;
   revalidar:       () => void;
+}
+
+export interface UseDocumentosClienteOptions {
+  origem?: 'UPLOAD_CLIENTE' | 'UPLOAD_CONTADOR';
+  initialPerPage?: number;
 }
 
 // =============================================================================
@@ -63,37 +70,47 @@ export interface UseDocumentosClienteReturn {
 //   2. Chama GET /api/v1/documentos/:id/download
 //      → O backend registra a leitura (audit log + evento WebSocket para o contador)
 //      → Retorna a Presigned URL do MinIO (válida 5 min)
+//      → Opcionalmente filtra por origem ou termo de busca
 //   3. Abre a URL em nova aba (browser baixa direto do MinIO)
 //   4. Em caso de falha: rollback via SWR revalidation
 //
 // OTIMIZAÇÕES SWR:
 //   - `revalidateOnFocus: false` → documentos mudam raramente; não recarrega ao focar
 //   - `dedupingInterval: 10000` → evita refetch duplicado em 10s
-//   - Chave muda com setor/página → SWR mantém cache separado por filtro
+//   - Chave muda com setor/página/origem/termo → SWR mantém cache separado por filtro
 // =============================================================================
 
-export function useDocumentosCliente(): UseDocumentosClienteReturn {
+export function useDocumentosCliente(options?: UseDocumentosClienteOptions): UseDocumentosClienteReturn {
   const { token, getToken } = useAuth();
 
   const [setor, setSetorState] = useState<SetorFiltro | undefined>(undefined);
   const [page,  setPageState]  = useState(1);
+  const [termo, setTermoState] = useState<string | undefined>(undefined);
   const [baixandoIds, setBaixandoIds] = useState<Set<string>>(new Set());
+
+  const setTermo = useCallback((t: string | undefined) => {
+    setTermoState(t);
+    setPageState(1);
+  }, []);
 
   // -------------------------------------------------------------------------
   // SWR key e fetcher
   //
-  // A chave muda quando: token, setor ou page mudam → dispara novo fetch.
+  // A chave muda quando: token, setor, page, termo ou opções mudam → dispara novo fetch.
   // `null` quando não autenticado → SWR suspende (não faz request).
   // -------------------------------------------------------------------------
 
   const buildUrl = useCallback(() => {
+    const perPageVal = options?.initialPerPage ?? 20;
     const params = new URLSearchParams({
       page:    String(page),
-      perPage: '20',
+      perPage: String(perPageVal),
     });
     if (setor) params.set('sector', setor);
+    if (termo) params.set('termo', termo);
+    if (options?.origem) params.set('origem', options.origem);
     return `/api/v1/documentos?${params.toString()}`;
-  }, [setor, page]);
+  }, [setor, page, termo, options?.origem, options?.initialPerPage]);
 
   const swrKey = token ? [buildUrl(), token] : null;
 
@@ -218,6 +235,8 @@ export function useDocumentosCliente(): UseDocumentosClienteReturn {
     setor,
     setSetor,
     setPage,
+    termo,
+    setTermo,
     baixarDocumento,
     baixandoIds,
     revalidar,

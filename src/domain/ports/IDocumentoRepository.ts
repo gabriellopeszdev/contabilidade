@@ -21,6 +21,12 @@ export interface FiltroDocumento {
   competenciaFim?: Date;
   /** Busca por nome de arquivo (full-text search parcial). */
   termo?: string;
+  /** Filtra por quem fez o upload. */
+  uploadedById?: string;
+  /** Filtra por lista de IDs de quem fez o upload. */
+  uploadedByIds?: string[];
+  /** Exclui IDs específicos da listagem. */
+  uploadedByNotIds?: string[];
 }
 
 // ---------------------------------------------------------------------------
