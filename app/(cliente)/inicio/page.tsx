@@ -8,7 +8,6 @@ import {
   Loader2, AlertTriangle, DollarSign,
   ChevronRight, FileCode2, Bell, Send, CalendarClock,
   Landmark, Receipt, Calculator, Users as UsersIcon, FolderOpen, X,
-  AlertCircle, Clock
 } from 'lucide-react';
 
 import { useAuth }              from '../../../src/presentation/hooks/useAuth';
