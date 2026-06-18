@@ -56,9 +56,9 @@ async function fetcher([url, token]: [string, string]): Promise<ClienteChartsDat
 function PieTooltip({ active, payload }: { active?: boolean; payload?: Array<{ name: string; value: number }> }) {
   if (!active || !payload?.[0]) return null;
   return (
-    <div className="bg-white border border-gray-200 rounded-lg shadow-lg px-3 py-2">
-      <p className="text-xs font-semibold text-gray-800">{payload[0].name}</p>
-      <p className="text-sm font-bold text-gray-900">{payload[0].value} doc{payload[0].value !== 1 ? 's' : ''}</p>
+    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg px-3 py-2">
+      <p className="text-xs font-semibold text-gray-800 dark:text-gray-200">{payload[0].name}</p>
+      <p className="text-sm font-bold text-gray-900 dark:text-gray-100">{payload[0].value} doc{payload[0].value !== 1 ? 's' : ''}</p>
     </div>
   );
 }
@@ -66,9 +66,9 @@ function PieTooltip({ active, payload }: { active?: boolean; payload?: Array<{ n
 function BarTooltip({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number }>; label?: string }) {
   if (!active || !payload?.[0]) return null;
   return (
-    <div className="bg-white border border-gray-200 rounded-lg shadow-lg px-3 py-2">
-      <p className="text-xs text-gray-500">{label}</p>
-      <p className="text-sm font-bold text-gray-900">{payload[0].value} documento{payload[0].value !== 1 ? 's' : ''}</p>
+    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg px-3 py-2">
+      <p className="text-xs text-gray-500 dark:text-gray-400">{label}</p>
+      <p className="text-sm font-bold text-gray-900 dark:text-gray-100">{payload[0].value} documento{payload[0].value !== 1 ? 's' : ''}</p>
     </div>
   );
 }
@@ -115,8 +115,8 @@ export function ClienteDashboardCharts({ token }: { token: string | null }) {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {[0, 1].map((i) => (
-          <div key={i} className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 h-72 flex items-center justify-center">
-            <RefreshCw size={20} className="animate-spin text-gray-300" />
+          <div key={i} className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6 h-72 flex items-center justify-center">
+            <RefreshCw size={20} className="animate-spin text-gray-300 dark:text-gray-600" />
           </div>
         ))}
       </div>
@@ -129,10 +129,10 @@ export function ClienteDashboardCharts({ token }: { token: string | null }) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       {/* Docs por Mês */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-5">
         <div className="flex items-center gap-2 mb-4">
           <TrendingUp size={15} className="text-primary" />
-          <h3 className="text-sm font-bold text-gray-900">Documentos / Mês</h3>
+          <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">Documentos / Mês</h3>
         </div>
 
         <ResponsiveContainer width="100%" height={220}>
@@ -146,11 +146,11 @@ export function ClienteDashboardCharts({ token }: { token: string | null }) {
       </div>
 
       {/* Docs por Setor */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-5">
         <div className="flex items-center gap-2 mb-4">
           <BarChart3 size={15} className="text-violet-500" />
-          <h3 className="text-sm font-bold text-gray-900">Por Setor</h3>
-          <span className="ml-auto text-xs text-gray-400">{totalPorSetor} total</span>
+          <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">Por Setor</h3>
+          <span className="ml-auto text-xs text-gray-400 dark:text-gray-500">{totalPorSetor} total</span>
         </div>
 
         {totalPorSetor === 0 ? (
