@@ -264,9 +264,8 @@ export default function FaturamentoPage() {
   }, [token]);
 
   useEffect(() => {
-    if (tabAtiva === 'assinaturas') {
-      carregarDados();
-    } else {
+    carregarDados();
+    if (tabAtiva === 'cobrancas') {
       carregarCobrancas();
     }
   }, [tabAtiva, carregarDados, carregarCobrancas]);
@@ -768,9 +767,10 @@ export default function FaturamentoPage() {
 
               {/* Ação */}
               <div>
-                <label className="block text-xs font-semibold text-slate-400 mb-1">Ação de Faturamento</label>
+                <label className="block text-xs font-semibold text-slate-400 mb-1">Ação de Faturamento *</label>
                 <div className="relative">
                   <select
+                    required
                     value={manualBillingForm.action}
                     onChange={(e) => setManualBillingForm(f => ({ ...f, action: e.target.value as any }))}
                     className="w-full appearance-none bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-violet-500"
@@ -784,9 +784,10 @@ export default function FaturamentoPage() {
 
               {/* Meio de Pagamento */}
               <div>
-                <label className="block text-xs font-semibold text-slate-400 mb-1">Meio de Pagamento Padrão</label>
+                <label className="block text-xs font-semibold text-slate-400 mb-1">Meio de Pagamento Padrão *</label>
                 <div className="relative">
                   <select
+                    required
                     value={manualBillingForm.billingType}
                     onChange={(e) => setManualBillingForm(f => ({ ...f, billingType: e.target.value as any }))}
                     className="w-full appearance-none bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-violet-500"
@@ -828,10 +829,11 @@ export default function FaturamentoPage() {
               )}
 
               <div>
-                <label className="block text-xs font-semibold text-slate-400 mb-1">Descrição / Notas Internas</label>
+                <label className="block text-xs font-semibold text-slate-400 mb-1">Descrição / Notas Internas *</label>
                 <input
                   type="text"
-                  placeholder="Mensalidade ou ajuste financeiro..."
+                  required
+                  placeholder="Ex: Mensalidade junho/2026"
                   value={manualBillingForm.descricao}
                   onChange={(e) => setManualBillingForm(f => ({ ...f, descricao: e.target.value }))}
                   className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-violet-500"

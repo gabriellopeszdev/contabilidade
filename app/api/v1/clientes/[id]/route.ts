@@ -186,6 +186,19 @@ export const PUT = withAuth(async (req, ctx, auth) => {
       },
     });
   } catch (err) {
+    if (
+      err instanceof Error &&
+      'code' in err &&
+      err.code === 'P2002' &&
+      'meta' in err
+    ) {
+      const meta = err.meta as { modelName?: string; target?: string[] };
+      const campo = meta.target?.includes('cnpj') ? 'CNPJ' : 'E-mail';
+      return NextResponse.json(
+        { message: `${campo} já está em uso por outro cliente.` },
+        { status: 409 },
+      );
+    }
     logger.error('[PUT /clientes/:id] Erro', err instanceof Error ? err : undefined);
     return NextResponse.json(
       { message: 'Erro interno do servidor.' },
