@@ -465,7 +465,7 @@ export default function InicioPagina() {
 
             {/* Nenhum documento ainda */}
             {!docsCarregando && docsDoContador.length === 0 && (
-              <div className="flex flex-col items-center gap-2 py-8 text-center">
+              <div className="flex-1 flex flex-col items-center justify-center gap-2 py-8 text-center">
                 <div className="w-10 h-10 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
                   <FileText size={18} className="text-gray-300 dark:text-gray-600" />
                 </div>
