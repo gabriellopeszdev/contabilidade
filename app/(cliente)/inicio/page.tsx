@@ -301,7 +301,7 @@ export default function InicioPagina() {
           <p className="text-sm text-gray-400 dark:text-gray-500 mt-0.5">{dataFormatada}</p>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:flex lg:items-center gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:flex lg:flex-wrap lg:items-center gap-2">
           {/* Novos docs */}
           <div className={`flex items-center gap-2.5 px-3 py-2 rounded-xl border transition-colors ${
             novosDoContador > 0
@@ -349,7 +349,7 @@ export default function InicioPagina() {
 
           {/* Enviados */}
           <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl border bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
-            <Send size={14} className="text-emerald-500 shrink-0" />
+            <Send size={14} className={`shrink-0 ${enviadosMes > 0 ? 'text-emerald-500' : 'text-gray-400'}`} />
             <div>
               <p className="text-sm font-bold leading-none text-gray-700 dark:text-gray-300">
                 {docsCarregando ? '—' : enviadosMes}
