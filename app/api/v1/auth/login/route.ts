@@ -84,6 +84,24 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   // --------------------------------------------------------------------------
+  // 1.5. Rate limit por e-mail — 5 tentativas em 15 min (mais restritivo que por IP)
+  // --------------------------------------------------------------------------
+  const rlEmail = await checkRateLimit(`login:email:${email}`, 5, 15 * 60);
+  if (!rlEmail.allowed) {
+    return NextResponse.json(
+      { message: 'Muitas tentativas para este e-mail. Tente novamente em alguns minutos.' },
+      {
+        status: 429,
+        headers: {
+          'Retry-After':           String(rlEmail.resetInSec),
+          'X-RateLimit-Limit':     '5',
+          'X-RateLimit-Remaining': '0',
+        },
+      },
+    );
+  }
+
+  // --------------------------------------------------------------------------
   // 2. Busca do usuário — tenta Contador primeiro, depois Cliente
   // --------------------------------------------------------------------------
   type UserRole = 'ACCOUNTANT' | 'CLIENT' | 'ADMIN' | 'EMPLOYEE';
