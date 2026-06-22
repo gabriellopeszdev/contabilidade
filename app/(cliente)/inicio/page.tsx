@@ -218,13 +218,17 @@ export default function InicioPagina() {
   // ── Boletos ─────────────────────────────────────────────────────────────────
   const [boletos,           setBoletos]           = useState<Boleto[]>([]);
   const [boletosCarregando, setBoletosCarregando] = useState(true);
+  const [boletosErro,       setBoletosErro]       = useState(false);
 
   useEffect(() => {
     if (!token) return;
     fetch('/api/v1/financeiro/boletos?limit=50', { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => r.json())
+      .then(r => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
       .then(d => setBoletos(d.boletos ?? []))
-      .catch(() => {})
+      .catch(() => setBoletosErro(true))
       .finally(() => setBoletosCarregando(false));
   }, [token]);
 
@@ -271,8 +275,15 @@ export default function InicioPagina() {
   const [marcandoIds, setMarcandoIds] = useState<Set<string>>(new Set());
   const marcarComoLido = useCallback(async (id: string) => {
     setMarcandoIds(p => new Set([...p, id]));
-    try { await fetch(`/api/v1/documentos/${id}/download`, { headers: { Authorization: `Bearer ${token}` } }); }
-    finally { setMarcandoIds(p => { const n = new Set(p); n.delete(id); return n; }); revalidar(); }
+    try {
+      await fetch(`/api/v1/documentos/${id}/lido`, {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    } finally {
+      setMarcandoIds(p => { const n = new Set(p); n.delete(id); return n; });
+      revalidar();
+    }
   }, [token, revalidar]);
 
   // ── Guard ───────────────────────────────────────────────────────────────────
@@ -419,6 +430,11 @@ export default function InicioPagina() {
         {/* COLUNA ESQUERDA — "Do seu Contador"                             */}
         {/* ============================================================== */}
         <section className="lg:col-span-3 space-y-4 order-2 lg:order-1">
+
+          {/* Erro ao carregar boletos */}
+          {boletosErro && (
+            <p className="text-xs text-red-400">Não foi possível carregar os boletos.</p>
+          )}
 
           {/* Alerta de boletos vencidos — compacto, não alarmante */}
           {!boletosCarregando && boletosVencidos.length > 0 && (

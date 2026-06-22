@@ -1,4 +1,4 @@
-import { prisma } from '@/infrastructure/di/Container';
+import { prisma, redisPublisher } from '@/infrastructure/di/Container';
 
 export const FEATURES = {
   CHAT:                  'chat',
@@ -33,21 +33,38 @@ const SEM_PLANO: PlanInfo = {
 };
 
 export async function getPlanInfo(contadorId: string): Promise<PlanInfo> {
+  const cacheKey = `plan:${contadorId}`;
+
+  try {
+    const cached = await redisPublisher.get(cacheKey);
+    if (cached) return JSON.parse(cached) as PlanInfo;
+  } catch {
+    // Redis indisponível — continua sem cache
+  }
+
   const assinatura = await prisma.assinaturaSaaS.findUnique({
     where:   { escritorioId: contadorId },
     include: { plano: true },
   });
 
-  if (!assinatura) return SEM_PLANO;
+  const info: PlanInfo = assinatura
+    ? {
+        planoNome:        assinatura.plano.nome,
+        limiteClientes:   assinatura.plano.limiteClientes,
+        limiteDocumentos: assinatura.plano.limiteDocumentos,
+        features:         assinatura.plano.features,
+        status:           assinatura.status,
+        isRestricted:     ['CANCELADO', 'SUSPENSO'].includes(assinatura.status),
+      }
+    : SEM_PLANO;
 
-  return {
-    planoNome:        assinatura.plano.nome,
-    limiteClientes:   assinatura.plano.limiteClientes,
-    limiteDocumentos: assinatura.plano.limiteDocumentos,
-    features:         assinatura.plano.features,
-    status:           assinatura.status,
-    isRestricted:     ['CANCELADO', 'SUSPENSO'].includes(assinatura.status),
-  };
+  try {
+    await redisPublisher.set(cacheKey, JSON.stringify(info), 'EX', 300); // 5 min
+  } catch {
+    // Redis indisponível — ignora
+  }
+
+  return info;
 }
 
 export function hasFeature(plan: PlanInfo, feature: PlanFeature): boolean {
@@ -56,10 +73,12 @@ export function hasFeature(plan: PlanInfo, feature: PlanFeature): boolean {
 }
 
 export async function checkClienteLimit(contadorId: string): Promise<{ allowed: boolean; current: number; limit: number }> {
-  const plan = await getPlanInfo(contadorId);
+  const [plan, current] = await Promise.all([
+    getPlanInfo(contadorId),
+    prisma.contadorCliente.count({ where: { contadorId } }),
+  ]);
+
   if (plan.isRestricted) return { allowed: false, current: 0, limit: 0 };
   if (plan.limiteClientes === -1) return { allowed: true, current: 0, limit: -1 };
-
-  const current = await prisma.contadorCliente.count({ where: { contadorId } });
   return { allowed: current < plan.limiteClientes, current, limit: plan.limiteClientes };
 }
