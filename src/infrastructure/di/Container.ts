@@ -108,12 +108,12 @@ function buildPrismaClient(): PrismaClient {
         host:     process.env.POSTGRES_HOST,
         port:     parseInt(process.env.POSTGRES_PORT || '5432', 10),
         database: process.env.POSTGRES_DB   || 'contabilidade',
-        max:               10,
+        max:               parseInt(process.env.DB_POOL_SIZE ?? '10', 10),
         idleTimeoutMillis: 30_000,
       })
     : new Pool({
         connectionString: process.env.DATABASE_URL,
-        max:               10,
+        max:               parseInt(process.env.DB_POOL_SIZE ?? '10', 10),
         idleTimeoutMillis: 30_000,
       });
 

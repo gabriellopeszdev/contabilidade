@@ -74,7 +74,7 @@ services:
       --auto-aof-rewrite-percentage 100
       --auto-aof-rewrite-min-size 64mb
       --maxmemory ${REDIS_MAXMEMORY:-256mb}
-      --maxmemory-policy noeviction
+      --maxmemory-policy allkeys-lru
       --loglevel notice
     volumes:
       - ${DATA_DIR:-./.data}/redis:/data
@@ -92,7 +92,7 @@ services:
   # Porta 9000: API S3  |  Porta 9001: Console Admin Web
   # ---------------------------------------------------------------------------
   minio:
-    image: minio/minio:latest
+    image: minio/minio:RELEASE.2025-04-22T22-12-26Z
     container_name: contabilidade_minio
     restart: unless-stopped
     environment:
@@ -125,7 +125,7 @@ services:
   # e sai. O Docker o marca como "exited 0" e não reinicia.
   # ---------------------------------------------------------------------------
   minio_init:
-    image: minio/mc:latest
+    image: minio/mc:RELEASE.2025-04-16T18-13-26Z
     container_name: contabilidade_minio_init
     restart: on-failure
     depends_on:
@@ -167,7 +167,7 @@ services:
   #   5. Defina DOCSEAL_API_KEY no .env e reinicie o container app
   # ---------------------------------------------------------------------------
   docseal:
-    image: docuseal/docuseal:latest
+    image: docuseal/docuseal:1.8.5
     container_name: contabilidade_docseal
     restart: unless-stopped
     environment:
