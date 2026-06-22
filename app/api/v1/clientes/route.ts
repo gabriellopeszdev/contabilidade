@@ -7,6 +7,7 @@ import { prisma, emailService } from '../../../../src/infrastructure/di/Containe
 import { logger }        from '../../../../src/utils/logger';
 import { checkClienteLimit } from '../../../../src/utils/planLimits';
 import { checkRateLimit } from '../../../../src/utils/rateLimiter';
+import { validarCnpj } from '../../../../src/utils/validators';
 
 // =============================================================================
 // Configuração do runtime
@@ -22,28 +23,6 @@ export const dynamic = 'force-dynamic';
 const INVITE_EXPIRY_HOURS = 48;
 
 // =============================================================================
-// Validação do CNPJ (algoritmo oficial da Receita Federal — inline)
-// =============================================================================
-
-function cnpjValido(digitos: string): boolean {
-  if (digitos.length !== 14) return false;
-  if (/^(\d)\1{13}$/.test(digitos)) return false;
-
-  const calcDV = (parcial: string, pesos: number[]): number => {
-    const soma = parcial.split('').reduce((a, d, i) => a + parseInt(d, 10) * pesos[i], 0);
-    const resto = soma % 11;
-    return resto < 2 ? 0 : 11 - resto;
-  };
-
-  const p1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
-  const p2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
-
-  if (parseInt(digitos[12], 10) !== calcDV(digitos.slice(0, 12), p1)) return false;
-  if (parseInt(digitos[13], 10) !== calcDV(digitos.slice(0, 13), p2)) return false;
-  return true;
-}
-
-// =============================================================================
 // Schema de criação de cliente
 // =============================================================================
 
@@ -54,7 +33,7 @@ const criarClienteSchema = z.object({
     .string()
     .transform((v) => v.replace(/\D/g, ''))
     .refine((v) => v.length === 14, 'CNPJ deve conter 14 dígitos.')
-    .refine(cnpjValido, 'CNPJ com dígitos verificadores inválidos.'),
+    .refine(validarCnpj, 'CNPJ com dígitos verificadores inválidos.'),
   phone:            z.string().max(20).optional(),
   cnae:             z.string().max(10).optional(),
   regimeTributario: z.string().max(50).optional(),

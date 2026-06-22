@@ -24,6 +24,7 @@ import {
 import { IA_PROVIDERS, type IaProvider } from '../../../src/utils/aiProviders';
 
 import { useAuth } from '../../../src/presentation/hooks/useAuth';
+import type { ProviderAssinatura } from '@prisma/client';
 
 // =============================================================================
 // Tipos
@@ -189,7 +190,7 @@ function ModalCriarContador({ onClose, onCriado, token }: ModalCriarContadorProp
         cnpjEscritorio:   form.cnpjEscritorio.trim() || null,
         asaasConfigurado: false,
         coraConfigurado:  false,
-        providerAssinatura: form.providerAssinatura as any,
+        providerAssinatura: form.providerAssinatura as ProviderAssinatura,
         createdAt:        new Date().toISOString(),
         planoId:          form.planoId || null,
         planoNome:        null,
@@ -479,7 +480,7 @@ function ModalEditarContador({ contador, onClose, onSalvo, token }: ModalEditarC
         crc:            form.crc.trim() ? form.crc.trim().toUpperCase() : null,
         nomeEscritorio: form.nomeEscritorio,
         cnpjEscritorio: form.cnpjEscritorio || null,
-        providerAssinatura: form.providerAssinatura as any,
+        providerAssinatura: form.providerAssinatura as ProviderAssinatura,
       });
       onClose();
     } catch {
@@ -556,7 +557,7 @@ function ModalEditarContador({ contador, onClose, onSalvo, token }: ModalEditarC
               id="editar-provider-assinatura"
               name="providerAssinatura"
               value={form.providerAssinatura}
-              onChange={(e) => setForm((f) => ({ ...f, providerAssinatura: e.target.value as any }))}
+              onChange={(e) => setForm((f) => ({ ...f, providerAssinatura: e.target.value as ProviderAssinatura }))}
               className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-violet-500"
             >
               <option value="INTERNO">Interno (FiscoHub)</option>

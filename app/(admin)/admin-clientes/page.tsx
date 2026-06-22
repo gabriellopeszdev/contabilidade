@@ -7,6 +7,7 @@ import {
   Pencil, X,
 } from 'lucide-react';
 import { useAuth } from '../../../src/presentation/hooks/useAuth';
+import type { ProviderAssinatura } from '@prisma/client';
 
 interface Escritorio {
   id:   string;
@@ -77,7 +78,7 @@ function ModalEditarCliente({ cliente, onClose, onSalvo, token }: ModalEditarCli
         email:              form.email,
         cnpj:               form.cnpj.replace(/\D/g, ''),
         isActive:           form.isActive,
-        providerAssinatura: form.providerAssinatura as any,
+        providerAssinatura: form.providerAssinatura as ProviderAssinatura,
       });
       onClose();
     } catch {

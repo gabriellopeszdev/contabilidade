@@ -42,6 +42,14 @@ import { NpsModal } from './components/NpsModal';
 // Navegação da Sidebar
 // =============================================================================
 
+interface CobrancaPendente {
+  id: string;
+  valor: number;
+  vencimento: string;
+  status: string;
+  asaasBoletoUrl?: string | null;
+}
+
 interface NavItem {
   href:      string;
   label:     string;
@@ -127,7 +135,7 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
 
   const [bloqueioSaaS, setBloqueioSaaS] = useState<{
     bloqueado: boolean;
-    cobranca: any | null;
+    cobranca: CobrancaPendente | null;
   } | null>(null);
 
   const checkFaturamentoStatus = useCallback(async () => {
