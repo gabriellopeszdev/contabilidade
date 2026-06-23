@@ -238,8 +238,6 @@ services:
     env_file:
       - path: .env
         required: false
-      - path: .env.saas
-        required: false
     environment:
       NODE_ENV: production
       # Sobrescreve os hosts para os nomes dos serviços internos do Docker
@@ -278,7 +276,9 @@ services:
       # Cora
       CORA_ENV: ${CORA_ENV:-sandbox}
       CORA_WEBHOOK_TOKEN: ${CORA_WEBHOOK_TOKEN:-}
-      # Asaas SaaS Billing — lidos via env_file (valor começa com $, interpolação quebraria)
+      # Asaas SaaS Billing: declarado aqui (não em env_file) pois o valor começa com $
+      # e Docker Compose 2.24+ interpola env_file — ${VAR} aqui é substituição única, segura.
+      ASAAS_SAAS_API_KEY: ${ASAAS_SAAS_API_KEY}
     ports:
       - "127.0.0.1:${APP_PORT:-4500}:4500"
     networks:
