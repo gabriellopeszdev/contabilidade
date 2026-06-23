@@ -257,7 +257,7 @@ export async function GET(request: NextRequest) {
         fileName:      doc.fileName,
         fileType:      doc.fileType,
         fileSizeBytes: doc.fileSizeBytes,
-        sector:        doc.sector.tipo,
+        sector:        doc.sector?.tipo ?? null,
         readStatus:    doc.readStatus,
         readAt:        doc.readAt?.toISOString()  ?? null,
         competencia:   doc.competencia

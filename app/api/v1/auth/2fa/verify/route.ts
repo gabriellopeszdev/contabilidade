@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify, SignJWT } from 'jose';
 import { prisma } from '@/infrastructure/di/Container';
 import { verifyToken } from '@/lib/totp';
+import { getClientIp } from '@/utils/rateLimiter';
 
 export async function POST(req: NextRequest) {
   const { tempToken, totpToken } = await req.json();
@@ -48,6 +49,18 @@ export async function POST(req: NextRequest) {
     .setProtectedHeader({ alg: 'HS256' })
     .setExpirationTime('30d')
     .sign(key);
+
+  // Registrar login via 2FA (fire-and-forget)
+  prisma.auditLog.create({
+    data: {
+      userId:       payload.sub,
+      actionType:   'LOGIN',
+      resourceType: 'SESSION',
+      detailsJson:  { role: payload.role, via: '2FA' },
+      ipAddress:    getClientIp(req),
+      userAgent:    req.headers.get('user-agent'),
+    },
+  }).catch(() => {});
 
   const response = NextResponse.json({ token });
   response.cookies.set(`fiscohub_2fa_remember_${payload.sub}`, rememberToken, {

@@ -6,6 +6,19 @@ import { logger }               from '../../../../../src/utils/logger';
 import { BcryptPasswordHasher } from '../../../../../src/infrastructure/auth/BcryptPasswordHasher';
 import { checkRateLimit, getClientIp } from '../../../../../src/utils/rateLimiter';
 
+function registrarLogin(userId: string, role: string, ip: string, userAgent: string | null) {
+  prisma.auditLog.create({
+    data: {
+      userId,
+      actionType:   'LOGIN',
+      resourceType: 'SESSION',
+      detailsJson:  { role },
+      ipAddress:    ip,
+      userAgent,
+    },
+  }).catch(() => {});
+}
+
 // =============================================================================
 // Configuração do runtime
 // =============================================================================
@@ -238,6 +251,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
       return NextResponse.json({ requires2FA: true, tempToken }, { status: 200 });
     }
+
+    // 2FA lembrado neste dispositivo — login concluído diretamente
+    registrarLogin(userId, role, ip, request.headers.get('user-agent'));
   }
 
   // --------------------------------------------------------------------------
@@ -294,6 +310,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       data:  { lastLoginAt: now },
     }).catch(() => {});
   }
+
+  // Login direto (sem 2FA ativo)
+  registrarLogin(userId, role, ip, request.headers.get('user-agent'));
 
   // --------------------------------------------------------------------------
   // 6. Resposta
