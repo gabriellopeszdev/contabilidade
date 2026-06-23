@@ -276,11 +276,13 @@ services:
       # Cora
       CORA_ENV: ${CORA_ENV:-sandbox}
       CORA_WEBHOOK_TOKEN: ${CORA_WEBHOOK_TOKEN:-}
-      # Asaas SaaS Billing: declarado aqui (não em env_file) pois o valor começa com $
-      # e Docker Compose 2.24+ interpola env_file — ${VAR} aqui é substituição única, segura.
-      ASAAS_SAAS_API_KEY: ${ASAAS_SAAS_API_KEY}
+      # Asaas SaaS Billing: chave lida pelo entrypoint via arquivo montado em
+      # /run/secrets/asaas_saas_api_key — evita interpolação do Docker Compose v5
+      # que quebra valores iniciados com '$' (formato da chave Asaas).
     ports:
       - "127.0.0.1:${APP_PORT:-4500}:4500"
+    volumes:
+      - ${DATA_DIR:-./.data}/secrets/asaas_saas_api_key:/run/secrets/asaas_saas_api_key:ro
     networks:
       - contabilidade_net
     healthcheck:
