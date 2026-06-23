@@ -1,10 +1,11 @@
 #!/bin/sh
 set -e
 
-# Carrega segredos de arquivos montados — evita interpolação do Docker Compose
-# para valores que começam com '$' (como chaves Asaas que iniciam com $aact_prod_).
-if [ -f "/run/secrets/asaas_saas_api_key" ]; then
-  ASAAS_SAAS_API_KEY=$(cat /run/secrets/asaas_saas_api_key)
+# Reconstrói ASAAS_SAAS_API_KEY a partir do corpo sem '$'.
+# Docker Compose v5 não consegue passar valores que começam com '$' sem corromper
+# via interpolação. Solução: .env guarda a parte após o '$' em ASAAS_SAAS_API_KEY_BODY.
+if [ -n "${ASAAS_SAAS_API_KEY_BODY:-}" ]; then
+  ASAAS_SAAS_API_KEY="\$${ASAAS_SAAS_API_KEY_BODY}"
   export ASAAS_SAAS_API_KEY
 fi
 

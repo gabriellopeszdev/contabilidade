@@ -277,13 +277,12 @@ services:
       # Cora
       CORA_ENV: ${CORA_ENV:-sandbox}
       CORA_WEBHOOK_TOKEN: ${CORA_WEBHOOK_TOKEN:-}
-      # Asaas SaaS Billing: chave lida pelo entrypoint via arquivo montado em
-      # /run/secrets/asaas_saas_api_key — evita interpolação do Docker Compose v5
-      # que quebra valores iniciados com '$' (formato da chave Asaas).
+      # Asaas SaaS Billing: chave Asaas começa com '$', o que quebra a interpolação
+      # do Docker Compose v5. Solução: .env guarda só o corpo (sem '$') em
+      # ASAAS_SAAS_API_KEY_BODY; o entrypoint reconstrói com o '$' na frente.
+      ASAAS_SAAS_API_KEY_BODY: ${ASAAS_SAAS_API_KEY_BODY:-}
     ports:
       - "127.0.0.1:${APP_PORT:-4500}:4500"
-    volumes:
-      - ${DATA_DIR:-./.data}/secrets/asaas_saas_api_key:/run/secrets/asaas_saas_api_key:ro
     networks:
       - contabilidade_net
     healthcheck:
