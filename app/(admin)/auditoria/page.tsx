@@ -184,8 +184,8 @@ export default function AuditoriaPage() {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((r) => r.json())
-      .then((data: { contadores?: Array<{ id: string; name: string; nomeEscritorio: string | null }> }) => {
-        const lista: EscritorioOption[] = (data.contadores ?? []).map((c) => ({
+      .then((data: { items?: Array<{ id: string; name: string; nomeEscritorio: string | null }> }) => {
+        const lista: EscritorioOption[] = (data.items ?? []).map((c) => ({
           id:    c.id,
           label: c.nomeEscritorio ?? c.name,
         }));
@@ -341,14 +341,13 @@ export default function AuditoriaPage() {
                   <th className="text-left px-4 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Recurso</th>
                   <th className="text-left px-4 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wide">IP</th>
                   <th className="text-left px-4 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Data/Hora</th>
-                  <th className="text-left px-4 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Detalhes</th>
                   <th className="px-4 py-3" />
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60">
                 {logs.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="text-center py-12 text-slate-500 text-sm">
+                    <td colSpan={7} className="text-center py-12 text-slate-500 text-sm">
                       Nenhum registro encontrado para os filtros aplicados.
                     </td>
                   </tr>
@@ -389,17 +388,6 @@ export default function AuditoriaPage() {
                       {/* Data/Hora */}
                       <td className="px-4 py-3 text-slate-400 text-xs whitespace-nowrap">
                         {formatarData(log.timestamp)}
-                      </td>
-
-                      {/* Detalhes (resumo) */}
-                      <td className="px-4 py-3 max-w-[200px]">
-                        <span
-                          className="text-[11px] text-slate-500 font-mono truncate block"
-                          title={JSON.stringify(log.detailsJson)}
-                        >
-                          {JSON.stringify(log.detailsJson).slice(0, 60)}
-                          {JSON.stringify(log.detailsJson).length > 60 ? '…' : ''}
-                        </span>
                       </td>
 
                       {/* Botão ver detalhes */}
