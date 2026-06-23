@@ -39,8 +39,9 @@ export default function OnboardingPage() {
   const [verificando, setVerificando] = useState(true);
 
   // Step 2 — dados do escritório
-  const [nomeEscritorio, setNomeEscritorio] = useState('');
-  const [cnpj,           setCnpj]           = useState('');
+  const [nomeEscritorio,        setNomeEscritorio]        = useState('');
+  const [cnpj,                  setCnpj]                  = useState('');
+  const [escritorioJaConfigurado, setEscritorioJaConfigurado] = useState(false);
 
   // Step 3 — integração
   const [integracao,  setIntegracao]  = useState<Integracao | null>(null);
@@ -68,7 +69,10 @@ export default function OnboardingPage() {
           return;
         }
         // Pré-preenche com dados que o admin já configurou
-        if (config.config?.nomeEscritorio) setNomeEscritorio(config.config.nomeEscritorio);
+        if (config.config?.nomeEscritorio) {
+          setNomeEscritorio(config.config.nomeEscritorio);
+          setEscritorioJaConfigurado(true);
+        }
         if (config.config?.cnpjEscritorio) setCnpj(formatarCnpj(config.config.cnpjEscritorio));
         setVerificando(false);
       })
@@ -145,7 +149,7 @@ export default function OnboardingPage() {
   const handleProximo = async () => {
     setErro(null);
     if (passo === 1) {
-      setPasso(2);
+      setPasso(escritorioJaConfigurado ? 3 : 2);
     } else if (passo === 2) {
       if (!nomeEscritorio.trim()) { setErro('Informe o nome do escritório.'); return; }
       const ok = await salvarEscritorio();
@@ -256,6 +260,12 @@ export default function OnboardingPage() {
                   </div>
                 ))}
               </div>
+              {escritorioJaConfigurado && (
+                <div className="flex items-start gap-2 p-3 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 text-sm">
+                  <CheckCircle2 size={16} className="shrink-0 mt-0.5" />
+                  <span>Seus dados de escritório já foram configurados. Você será direto para a etapa de pagamentos.</span>
+                </div>
+              )}
             </div>
           )}
 
@@ -426,7 +436,7 @@ export default function OnboardingPage() {
           <div className={`mt-8 flex gap-3 ${passo > 1 && passo < 4 ? 'justify-between' : 'justify-center'}`}>
             {passo > 1 && passo < 4 && (
               <button
-                onClick={() => { setPasso((passo - 1) as Passo); setErro(null); }}
+                onClick={() => { setPasso((passo === 3 && escritorioJaConfigurado ? 1 : passo - 1) as Passo); setErro(null); }}
                 disabled={salvando}
                 className="flex items-center gap-1.5 px-5 py-3 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-sm font-medium disabled:opacity-50"
               >

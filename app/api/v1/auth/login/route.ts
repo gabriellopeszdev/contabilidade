@@ -120,10 +120,20 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   let superiorId:   string | null   = null;
 
   try {
-    const contador = await prisma.usuarioContador.findFirst({
-      where: { email, deletedAt: null, isActive: true },
-      select: { id: true, name: true, passwordHash: true, avatarUrl: true, isAdmin: true, twoFactorEnabled: true, twoFactorSecret: true, primeiroLoginEm: true },
-    });
+    const [contador, cliente, funcionario] = await Promise.all([
+      prisma.usuarioContador.findFirst({
+        where: { email, deletedAt: null, isActive: true },
+        select: { id: true, name: true, passwordHash: true, avatarUrl: true, isAdmin: true, twoFactorEnabled: true, twoFactorSecret: true, primeiroLoginEm: true },
+      }),
+      prisma.usuarioCliente.findFirst({
+        where: { email, deletedAt: null, isActive: true },
+        select: { id: true, name: true, passwordHash: true, avatarUrl: true, cnpj: true, twoFactorEnabled: true, twoFactorSecret: true },
+      }),
+      prisma.funcionario.findFirst({
+        where: { email, deletedAt: null, isActive: true },
+        select: { id: true, name: true, passwordHash: true, avatarUrl: true, setores: true, vinculo: true, contadorId: true, clienteId: true },
+      }),
+    ]);
 
     if (contador) {
       userId       = contador.id;
@@ -134,54 +144,38 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       twoFactorEnabled = contador.twoFactorEnabled;
       twoFactorSecret = contador.twoFactorSecret;
       primeiroLoginEm = contador.primeiroLoginEm;
-    } else {
-      const cliente = await prisma.usuarioCliente.findFirst({
-        where: { email, deletedAt: null, isActive: true },
-        select: { id: true, name: true, passwordHash: true, avatarUrl: true, cnpj: true, twoFactorEnabled: true, twoFactorSecret: true },
-      });
-
-      if (!cliente) {
-        // Terceira tentativa: Funcionario
-        const funcionario = await prisma.funcionario.findFirst({
-          where: { email, deletedAt: null, isActive: true },
-          select: { id: true, name: true, passwordHash: true, avatarUrl: true, setores: true, vinculo: true, contadorId: true, clienteId: true },
-        });
-
-        if (!funcionario) {
-          return NextResponse.json(
-            { message: 'Credenciais inválidas.' },
-            { status: 401 },
-          );
-        }
-
-        userId       = funcionario.id;
-        userName     = funcionario.name;
-        passwordHash = funcionario.passwordHash;
-        role         = 'EMPLOYEE';
-        avatarUrl    = funcionario.avatarUrl;
-        setores      = funcionario.setores;
-        vinculo      = funcionario.vinculo;
-        superiorId   = funcionario.contadorId ?? funcionario.clienteId ?? null;
-        // Funcionario não tem 2FA por enquanto
-        twoFactorEnabled = false;
-        twoFactorSecret = null;
-      } else {
-        // Conta ainda não ativada (convite pendente)
-        if (!cliente.passwordHash) {
-          return NextResponse.json(
-            { message: 'Conta ainda não ativada. Verifique seu e-mail de convite.' },
-            { status: 403 },
-          );
-        }
-
-        userId       = cliente.id;
-        userName     = cliente.name;
-        passwordHash = cliente.passwordHash;
-        role         = 'CLIENT';
-        avatarUrl    = cliente.avatarUrl;
-        twoFactorEnabled = cliente.twoFactorEnabled;
-        twoFactorSecret = cliente.twoFactorSecret;
+    } else if (cliente) {
+      // Conta ainda não ativada (convite pendente)
+      if (!cliente.passwordHash) {
+        return NextResponse.json(
+          { message: 'Conta ainda não ativada. Verifique seu e-mail de convite.' },
+          { status: 403 },
+        );
       }
+
+      userId       = cliente.id;
+      userName     = cliente.name;
+      passwordHash = cliente.passwordHash;
+      role         = 'CLIENT';
+      avatarUrl    = cliente.avatarUrl;
+      twoFactorEnabled = cliente.twoFactorEnabled;
+      twoFactorSecret = cliente.twoFactorSecret;
+    } else if (funcionario) {
+      userId       = funcionario.id;
+      userName     = funcionario.name;
+      passwordHash = funcionario.passwordHash;
+      role         = 'EMPLOYEE';
+      avatarUrl    = funcionario.avatarUrl;
+      setores      = funcionario.setores;
+      vinculo      = funcionario.vinculo;
+      superiorId   = funcionario.contadorId ?? funcionario.clienteId ?? null;
+      twoFactorEnabled = false;
+      twoFactorSecret = null;
+    } else {
+      return NextResponse.json(
+        { message: 'Credenciais inválidas.' },
+        { status: 401 },
+      );
     }
   } catch (err) {
     logger.error('[POST /auth/login] Erro ao buscar usuário', err instanceof Error ? err : undefined);

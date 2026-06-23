@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import type { CobrancaPendente } from '../../src/types/billing';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -42,16 +43,6 @@ import { NpsModal } from './components/NpsModal';
 // Navegação da Sidebar
 // =============================================================================
 
-interface CobrancaPendente {
-  id: string;
-  valor: number;
-  vencimento: string;
-  status: string;
-  asaasBoletoUrl: string | null;
-  asaasInvoiceUrl: string | null;
-  asaasPixPayload: string | null;
-  asaasBarcode: string | null;
-}
 
 interface NavItem {
   href:      string;
