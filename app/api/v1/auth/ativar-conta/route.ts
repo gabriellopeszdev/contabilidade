@@ -11,6 +11,36 @@ export const dynamic = 'force-dynamic';
 const hasher = new BcryptPasswordHasher();
 
 // =============================================================================
+// GET /api/v1/auth/ativar-conta?token=...
+//
+// Retorna dados básicos do cliente para exibição antes da ativação.
+// =============================================================================
+
+export async function GET(req: NextRequest) {
+  const token = req.nextUrl.searchParams.get('token');
+  if (!token) {
+    return NextResponse.json({ message: 'Token é obrigatório.' }, { status: 400 });
+  }
+
+  const cliente = await prisma.usuarioCliente.findUnique({
+    where: { inviteToken: token },
+    select: { name: true, email: true, cnpj: true, activatedAt: true, inviteExpiresAt: true },
+  }).catch(() => null);
+
+  if (!cliente) {
+    return NextResponse.json({ message: 'Token inválido.' }, { status: 404 });
+  }
+  if (cliente.activatedAt) {
+    return NextResponse.json({ message: 'Conta já ativada.' }, { status: 409 });
+  }
+  if (cliente.inviteExpiresAt && cliente.inviteExpiresAt < new Date()) {
+    return NextResponse.json({ message: 'Token expirado.' }, { status: 410 });
+  }
+
+  return NextResponse.json({ name: cliente.name, email: cliente.email, cnpj: cliente.cnpj });
+}
+
+// =============================================================================
 // POST /api/v1/auth/ativar-conta
 //
 // Ativa uma conta de cliente via invite token + definição de senha.

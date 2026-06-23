@@ -1,8 +1,8 @@
 'use client';
 
-import { Suspense, useState } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { KeyRound, Loader2, CheckCircle2, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { KeyRound, Loader2, CheckCircle2, AlertCircle, Eye, EyeOff, User, Building2 } from 'lucide-react';
 import { useAuth } from '../../../src/presentation/hooks/useAuth';
 
 // =============================================================================
@@ -18,12 +18,26 @@ function AtivarContaContent() {
   const { finalizarLogin } = useAuth();
   const token = searchParams.get('token') ?? '';
 
+  const [clienteInfo, setClienteInfo] = useState<{ name: string; email: string; cnpj: string | null } | null>(null);
+  const [carregandoInfo, setCarregandoInfo] = useState(true);
+
   const [senha, setSenha] = useState('');
   const [confirmar, setConfirmar] = useState('');
   const [mostrarSenha, setMostrarSenha] = useState(false);
   const [carregando, setCarregando] = useState(false);
   const [erro, setErro] = useState('');
   const [sucesso, setSucesso] = useState(false);
+
+  useEffect(() => {
+    if (!token) { setCarregandoInfo(false); return; }
+    fetch(`/api/v1/auth/ativar-conta?token=${encodeURIComponent(token)}`)
+      .then((r) => r.json())
+      .then((d: { name?: string; email?: string; cnpj?: string | null }) => {
+        if (d.name) setClienteInfo({ name: d.name, email: d.email ?? '', cnpj: d.cnpj ?? null });
+      })
+      .catch(() => {})
+      .finally(() => setCarregandoInfo(false));
+  }, [token]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -115,6 +129,33 @@ function AtivarContaContent() {
             Defina sua senha para acessar o Portal do Cliente.
           </p>
         </div>
+
+        {/* Card com dados do cliente pré-cadastrados */}
+        {carregandoInfo ? (
+          <div className="flex justify-center mb-4">
+            <Loader2 size={16} className="animate-spin text-gray-400" />
+          </div>
+        ) : clienteInfo && (
+          <div className="mb-5 rounded-xl border border-blue-100 bg-blue-50 p-4 space-y-2">
+            <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide">Você foi convidado como</p>
+            <div className="flex items-center gap-2">
+              <User size={14} className="text-blue-400 shrink-0" />
+              <span className="text-sm font-semibold text-gray-900">{clienteInfo.name}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-400 shrink-0"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+              <span className="text-xs text-gray-600">{clienteInfo.email}</span>
+            </div>
+            {clienteInfo.cnpj && (
+              <div className="flex items-center gap-2">
+                <Building2 size={14} className="text-blue-400 shrink-0" />
+                <span className="text-xs text-gray-500 font-mono">
+                  {clienteInfo.cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5')}
+                </span>
+              </div>
+            )}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Senha */}

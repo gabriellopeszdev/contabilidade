@@ -86,23 +86,25 @@ interface Erros {
   cnpj?:  string;
 }
 
-function validar(dados: ClienteFormData): Erros {
+function validar(dados: ClienteFormData, modoEdicao: boolean): Erros {
   const erros: Erros = {};
 
   if (!dados.nome.trim() || dados.nome.trim().length < 2) {
     erros.nome = 'Nome deve ter ao menos 2 caracteres.';
   }
 
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!dados.email.trim() || !emailRegex.test(dados.email.trim())) {
-    erros.email = 'E-mail inválido.';
-  }
+  if (!modoEdicao) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!dados.email.trim() || !emailRegex.test(dados.email.trim())) {
+      erros.email = 'E-mail inválido.';
+    }
 
-  const cnpjDigits = dados.cnpj.replace(/\D/g, '');
-  if (cnpjDigits.length !== 14) {
-    erros.cnpj = 'CNPJ deve conter 14 dígitos.';
-  } else if (!cnpjValido(cnpjDigits)) {
-    erros.cnpj = 'CNPJ com dígitos verificadores inválidos.';
+    const cnpjDigits = dados.cnpj.replace(/\D/g, '');
+    if (cnpjDigits.length !== 14) {
+      erros.cnpj = 'CNPJ deve conter 14 dígitos.';
+    } else if (!cnpjValido(cnpjDigits)) {
+      erros.cnpj = 'CNPJ com dígitos verificadores inválidos.';
+    }
   }
 
   return erros;
@@ -183,7 +185,7 @@ export function ClienteModal({
     async (e: FormEvent) => {
       e.preventDefault();
 
-      const errosLocal = validar(form);
+      const errosLocal = validar(form, modoEdicao);
       if (Object.keys(errosLocal).length > 0) {
         setErros(errosLocal);
         return;
@@ -299,43 +301,55 @@ export function ClienteModal({
           {/* E-mail */}
           <div className="space-y-1.5">
             <label htmlFor="cliente-email" className="block text-sm font-medium text-slate-700 dark:text-gray-300">
-              E-mail <span className="text-red-400">*</span>
+              E-mail {!modoEdicao && <span className="text-red-400">*</span>}
             </label>
-            <input
-              id="cliente-email"
-              type="email"
-              value={form.email}
-              onChange={handleChange('email')}
-              placeholder="contato@empresa.com.br"
-              aria-required="true"
-              aria-invalid={!!erros.email}
-              aria-describedby={erros.email ? 'erro-email' : undefined}
-              className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 dark:text-gray-100 placeholder:text-slate-400 dark:placeholder:text-gray-500
-                bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary transition-colors
-                ${erros.email ? 'border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/20' : 'border-slate-300 dark:border-gray-600'}`}
-            />
+            {modoEdicao ? (
+              <div className="w-full rounded-lg border border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-800/50 px-3 py-2 text-sm text-slate-500 dark:text-gray-400 select-all">
+                {form.email}
+              </div>
+            ) : (
+              <input
+                id="cliente-email"
+                type="email"
+                value={form.email}
+                onChange={handleChange('email')}
+                placeholder="contato@empresa.com.br"
+                aria-required="true"
+                aria-invalid={!!erros.email}
+                aria-describedby={erros.email ? 'erro-email' : undefined}
+                className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 dark:text-gray-100 placeholder:text-slate-400 dark:placeholder:text-gray-500
+                  bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary transition-colors
+                  ${erros.email ? 'border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/20' : 'border-slate-300 dark:border-gray-600'}`}
+              />
+            )}
             {erros.email && <p id="erro-email" className="text-xs text-red-600">{erros.email}</p>}
           </div>
 
           {/* CNPJ */}
           <div className="space-y-1.5">
             <label htmlFor="cliente-cnpj" className="block text-sm font-medium text-slate-700 dark:text-gray-300">
-              CNPJ <span className="text-red-400">*</span>
+              CNPJ {!modoEdicao && <span className="text-red-400">*</span>}
             </label>
-            <input
-              id="cliente-cnpj"
-              type="text"
-              value={form.cnpj}
-              onChange={handleChange('cnpj')}
-              placeholder="00.000.000/0000-00"
-              maxLength={18}
-              aria-required="true"
-              aria-invalid={!!erros.cnpj}
-              aria-describedby={erros.cnpj ? 'erro-cnpj' : undefined}
-              className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 dark:text-gray-100 placeholder:text-slate-400 dark:placeholder:text-gray-500
-                bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary transition-colors
-                ${erros.cnpj ? 'border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/20' : 'border-slate-300 dark:border-gray-600'}`}
-            />
+            {modoEdicao ? (
+              <div className="w-full rounded-lg border border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-800/50 px-3 py-2 text-sm text-slate-500 dark:text-gray-400 font-mono select-all">
+                {form.cnpj}
+              </div>
+            ) : (
+              <input
+                id="cliente-cnpj"
+                type="text"
+                value={form.cnpj}
+                onChange={handleChange('cnpj')}
+                placeholder="00.000.000/0000-00"
+                maxLength={18}
+                aria-required="true"
+                aria-invalid={!!erros.cnpj}
+                aria-describedby={erros.cnpj ? 'erro-cnpj' : undefined}
+                className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 dark:text-gray-100 placeholder:text-slate-400 dark:placeholder:text-gray-500
+                  bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary transition-colors
+                  ${erros.cnpj ? 'border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/20' : 'border-slate-300 dark:border-gray-600'}`}
+              />
+            )}
             {erros.cnpj && <p id="erro-cnpj" className="text-xs text-red-600">{erros.cnpj}</p>}
           </div>
 

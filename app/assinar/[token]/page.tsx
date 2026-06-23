@@ -496,11 +496,12 @@ export default function AssinarPage() {
   const [renderedPages,    setRenderedPages]    = useState<RenderedPage[]>([]);
 
   // Signing form
-  const [nomeAssinante, setNome]      = useState('');
-  const [motivoRecusa,  setMotivo]    = useState('');
-  const [recusando,     setRecusando] = useState(false);
-  const [aceito,        setAceito]    = useState(false);
-  const [erroForm,      setErroForm]  = useState('');
+  const [nomeAssinante, setNome]        = useState('');
+  const [nomeEditavel,  setNomeEditavel] = useState(false);
+  const [motivoRecusa,  setMotivo]      = useState('');
+  const [recusando,     setRecusando]   = useState(false);
+  const [aceito,        setAceito]      = useState(false);
+  const [erroForm,      setErroForm]    = useState('');
   const nomeRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -895,19 +896,36 @@ export default function AssinarPage() {
 
                 {/* Legal name */}
                 <div>
-                  <label htmlFor="nome" className="block text-sm font-medium text-gray-700 mb-1.5">
-                    Nome completo <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    id="nome"
-                    ref={nomeRef}
-                    type="text"
-                    value={nomeAssinante}
-                    onChange={(e) => { setNome(e.target.value); setErroForm(''); }}
-                    placeholder="Digite seu nome completo"
-                    disabled={passo === 'loading_sign'}
-                    className="w-full border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition disabled:opacity-50"
-                  />
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label htmlFor="nome" className="block text-sm font-medium text-gray-700">
+                      Nome do signatário
+                    </label>
+                    {!nomeEditavel && (
+                      <button
+                        type="button"
+                        onClick={() => { setNomeEditavel(true); setTimeout(() => nomeRef.current?.focus(), 50); }}
+                        className="text-xs text-primary hover:underline"
+                      >
+                        Alterar
+                      </button>
+                    )}
+                  </div>
+                  {nomeEditavel ? (
+                    <input
+                      id="nome"
+                      ref={nomeRef}
+                      type="text"
+                      value={nomeAssinante}
+                      onChange={(e) => { setNome(e.target.value); setErroForm(''); }}
+                      placeholder="Digite seu nome completo"
+                      disabled={passo === 'loading_sign'}
+                      className="w-full border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition disabled:opacity-50"
+                    />
+                  ) : (
+                    <div className="w-full border border-slate-200 bg-slate-50 rounded-xl px-3.5 py-2.5 text-sm text-gray-800">
+                      {nomeAssinante}
+                    </div>
+                  )}
                 </div>
 
                 <label className="flex items-start gap-3 cursor-pointer">

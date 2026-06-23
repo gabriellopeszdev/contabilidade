@@ -783,6 +783,23 @@ export default function FinanceiroPage() {
                   placeholder="Buscar cliente…"
                 />
                 {erros.clienteId && <p className="mt-1 text-xs text-red-600">{erros.clienteId}</p>}
+                {formClienteObj && (
+                  <div className="mt-2 flex items-center gap-2.5 px-3 py-2 rounded-lg bg-primary-50 dark:bg-primary/10 border border-primary/20">
+                    <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                      <span className="text-[11px] font-bold text-primary">
+                        {formClienteObj.nome.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold text-gray-900 dark:text-gray-100 truncate">{formClienteObj.nome}</p>
+                      {formClienteObj.cnpj && (
+                        <p className="text-[10px] text-gray-400 font-mono">
+                          {formClienteObj.cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5')}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
