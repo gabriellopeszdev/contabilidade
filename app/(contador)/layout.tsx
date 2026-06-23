@@ -57,7 +57,10 @@ interface CobrancaPendente {
   valor: number;
   vencimento: string;
   status: string;
-  asaasBoletoUrl?: string | null;
+  asaasBoletoUrl: string | null;
+  asaasInvoiceUrl: string | null;
+  asaasPixPayload: string | null;
+  asaasBarcode: string | null;
 }
 
 interface NavItem {
