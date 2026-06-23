@@ -238,6 +238,8 @@ services:
     env_file:
       - path: .env
         required: false
+      - path: .env.saas
+        required: false
     environment:
       NODE_ENV: production
       # Sobrescreve os hosts para os nomes dos serviços internos do Docker
