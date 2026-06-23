@@ -319,6 +319,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     (resposta.usuario as Record<string, unknown>).vinculo    = vinculo;
     (resposta.usuario as Record<string, unknown>).superiorId = superiorId;
   }
-  return NextResponse.json(resposta);
+  const response = NextResponse.json(resposta);
+  response.cookies.set('fiscohub_token', token, {
+    httpOnly: true,
+    secure:   process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    path:     '/',
+    maxAge:   60 * 60 * 8, // 8 horas (igual ao JWT_EXPIRES_IN padrão)
+  });
+  return response;
   };
 

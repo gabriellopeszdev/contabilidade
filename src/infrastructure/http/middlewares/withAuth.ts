@@ -105,22 +105,22 @@ export function withAuth(
   return async (req: NextRequest, ctx: RouteContext): Promise<NextResponse> => {
 
     // -----------------------------------------------------------------------
-    // 1. Extração do token
+    // 1. Extração do token — header Authorization ou cookie httpOnly
     // -----------------------------------------------------------------------
     const authHeader = req.headers.get('Authorization');
+    let token: string | null = null;
 
-    if (!authHeader?.startsWith('Bearer ')) {
-      return NextResponse.json(
-        { message: 'Token de autorização ausente. Faça login para continuar.' },
-        { status: 401 },
-      );
+    if (authHeader?.startsWith('Bearer ')) {
+      token = authHeader.slice(7).trim() || null;
     }
 
-    const token = authHeader.slice(7).trim();
+    if (!token) {
+      token = req.cookies.get('fiscohub_token')?.value ?? null;
+    }
 
     if (!token) {
       return NextResponse.json(
-        { message: 'Token de autorização inválido.' },
+        { message: 'Token de autorização ausente. Faça login para continuar.' },
         { status: 401 },
       );
     }

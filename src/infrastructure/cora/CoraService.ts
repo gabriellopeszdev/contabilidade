@@ -14,6 +14,7 @@
 
 import https from 'node:https';
 import { randomUUID } from 'node:crypto';
+import { decrypt, isEncrypted } from '../../utils/encryption';
 
 // =============================================================================
 // Configuração de ambiente
@@ -100,7 +101,14 @@ export class CoraService {
     private readonly clientId:       string,
     private readonly certificatePem: string,
     private readonly privateKeyPem:  string,
-  ) {}
+  ) {
+    // Suporte a migração gradual: decifra se o valor estiver cifrado, mantém em
+    // texto claro se for um PEM legado ainda não migrado.
+    const rawCert = certificatePem;
+    const rawKey  = privateKeyPem;
+    this.certificatePem = isEncrypted(rawCert) ? decrypt(rawCert) : rawCert;
+    this.privateKeyPem  = isEncrypted(rawKey)  ? decrypt(rawKey)  : rawKey;
+  }
 
   // ---------------------------------------------------------------------------
   // Obtém (ou reutiliza) access token via Client Credentials

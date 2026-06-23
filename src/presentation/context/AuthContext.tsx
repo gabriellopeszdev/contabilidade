@@ -274,6 +274,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // logout
   // ---------------------------------------------------------------------------
   const logout = useCallback(() => {
+    // Limpa cookie httpOnly no servidor (fire-and-forget)
+    fetch('/api/v1/auth/logout', { method: 'POST' }).catch(() => {});
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(CLIENT_KEY);
     sincronizarCookie(null);

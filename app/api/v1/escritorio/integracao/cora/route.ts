@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { withAuth } from '@/infrastructure/http/middlewares/withAuth';
 import { prisma } from '@/infrastructure/di/Container';
 import { logger } from '@/utils/logger';
+import { encrypt } from '../../../../../../src/utils/encryption';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -34,16 +35,16 @@ export const PUT = withAuth(async (req, _ctx, auth) => {
       where:  { contadorId: auth.sub },
       update: {
         coraClientId:       clientId || null,
-        coraCertificatePem: certPem  || null,
-        coraPrivateKeyPem:  privKey  || null,
+        coraCertificatePem: certPem  ? encrypt(certPem)  : null,
+        coraPrivateKeyPem:  privKey  ? encrypt(privKey)  : null,
         ...(!removendo ? { asaasApiKey: null } : {}),
       },
       create: {
         contadorId:         auth.sub,
         nomeEscritorio:     'Escritório Contábil',
         coraClientId:       clientId || null,
-        coraCertificatePem: certPem  || null,
-        coraPrivateKeyPem:  privKey  || null,
+        coraCertificatePem: certPem  ? encrypt(certPem)  : null,
+        coraPrivateKeyPem:  privKey  ? encrypt(privKey)  : null,
       },
     });
 
