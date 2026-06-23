@@ -17,6 +17,9 @@ jobs:
       - name: Copiar .env de produção
         run: cp /home/github-runner/.env $GITHUB_WORKSPACE/.env
 
+      - name: Baixar imagens externas (DocuSeal, MinIO etc)
+        run: docker compose pull --ignore-buildable
+
       - name: Reconstruir e reiniciar containers
         run: docker compose up -d --build --remove-orphans
 
