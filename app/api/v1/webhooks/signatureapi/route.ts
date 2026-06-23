@@ -35,8 +35,8 @@ function verificarAssinatura(
   webhookSignature: string,
 ): boolean {
   if (!WEBHOOK_SECRET) {
-    logger.warn('[Webhook SignatureAPI] SIGNATUREAPI_WEBHOOK_SECRET não configurado — pulando verificação');
-    return true; // Em desenvolvimento, permite sem verificação
+    logger.warn('[Webhook SignatureAPI] SIGNATUREAPI_WEBHOOK_SECRET não configurado — rejeitando requisição.');
+    return false;
   }
 
   // Verificar timestamp para prevenir replay attacks

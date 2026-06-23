@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
   response.cookies.set(`fiscohub_2fa_remember_${payload.sub}`, rememberToken, {
     path: '/',
     maxAge: 30 * 24 * 60 * 60, // 30 dias
-    sameSite: 'lax',
+    sameSite: 'strict',
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
   });
