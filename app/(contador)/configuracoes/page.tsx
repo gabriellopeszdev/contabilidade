@@ -62,8 +62,7 @@ interface SenhaForm {
 }
 
 interface EscritorioForm {
-  crc:   string;
-  phone: string;
+  crc: string;
 }
 
 interface UsuarioAPI {
@@ -856,14 +855,13 @@ function EscritorioTab({
   onErro:    (msg: string) => void;
 }) {
   const [form, setForm] = useState<EscritorioForm>({
-    crc:   dados?.crc   ?? '',
-    phone: dados?.phone ?? '',
+    crc: dados?.crc ?? '',
   });
   const [salvando, setSalvando] = useState(false);
 
   useEffect(() => {
     if (dados) {
-      setForm({ crc: dados.crc ?? '', phone: dados.phone ?? '' });
+      setForm({ crc: dados.crc ?? '' });
     }
   }, [dados]);
 
@@ -875,11 +873,6 @@ function EscritorioTab({
       onErro('O CRC é obrigatório.');
       return;
     }
-    if (form.phone.trim() && !validarTelefone(form.phone)) {
-      onErro('Telefone inválido. Ex: (11) 3000-0000');
-      return;
-    }
-
     setSalvando(true);
     try {
       const res = await fetch('/api/v1/auth/update-profile', {
@@ -889,8 +882,7 @@ function EscritorioTab({
           Authorization:   `Bearer ${token}`,
         },
         body: JSON.stringify({
-          crc:   form.crc.trim(),
-          phone: form.phone.trim() || null,
+          crc: form.crc.trim(),
         }),
       });
 
@@ -932,23 +924,6 @@ function EscritorioTab({
             />
           </div>
 
-          {/* Telefone do Escritório */}
-          <div className="space-y-1.5">
-            <label htmlFor="esc-phone" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Telefone do Escritório
-            </label>
-            <input
-              id="esc-phone"
-              type="tel"
-              value={form.phone}
-              onChange={(e) => setForm((f) => ({ ...f, phone: mascararTelefone(e.target.value) }))}
-              maxLength={15}
-              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100
-                         placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary
-                         focus:border-transparent transition-shadow"
-              placeholder="(11) 3000-0000"
-            />
-          </div>
         </div>
       </div>
 
