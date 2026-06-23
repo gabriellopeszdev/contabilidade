@@ -23,8 +23,10 @@ jobs:
       - name: Rodar migrations do banco
         run: docker compose exec -T app npx prisma migrate deploy
 
-      - name: Limpar imagens antigas
-        run: docker image prune -f
+      - name: Limpar imagens e build cache antigos
+        run: |
+          docker image prune -f
+          docker builder prune -f --keep-storage=3GB
 
       - name: Status dos containers
         run: docker compose ps
