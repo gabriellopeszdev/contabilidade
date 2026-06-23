@@ -19,6 +19,7 @@ import {
   ExternalLink,
   Copy,
   QrCode,
+  RotateCcw,
 } from 'lucide-react';
 
 import { useAuth } from '../../src/presentation/hooks/useAuth';
@@ -286,6 +287,29 @@ export default function FinanceiroPage() {
       fetchBoletos(page);
     } catch {
       alert('Erro ao atualizar status.');
+    }
+  };
+
+  // ===========================================================================
+  // Estorno de boleto pago (contador)
+  // ===========================================================================
+  const handleEstorno = async (id: string) => {
+    if (!window.confirm('Confirmar solicitação de estorno? O cliente receberá o valor de volta via Asaas e o status será atualizado automaticamente.')) return;
+    try {
+      const t = await getToken();
+      const res = await fetch(`/api/v1/financeiro/boletos/${id}/estorno`, {
+        method:  'POST',
+        headers: { Authorization: `Bearer ${t}` },
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        alert(data?.message ?? 'Erro ao solicitar estorno.');
+        return;
+      }
+      alert(data?.mensagem ?? 'Estorno solicitado com sucesso.');
+      fetchBoletos(page);
+    } catch {
+      alert('Erro ao solicitar estorno.');
     }
   };
 
@@ -707,6 +731,15 @@ export default function FinanceiroPage() {
                               title="Marcar como Pago"
                             >
                               <CheckCircle2 size={15} />
+                            </button>
+                          )}
+                          {isDono && b.status === 'PAGO' && b.asaasId && (
+                            <button
+                              onClick={() => handleEstorno(b.id)}
+                              className="p-1.5 rounded-lg text-gray-400 dark:text-gray-500 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors"
+                              title="Solicitar Estorno"
+                            >
+                              <RotateCcw size={15} />
                             </button>
                           )}
                         </div>

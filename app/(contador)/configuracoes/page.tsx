@@ -37,6 +37,7 @@ import {
   ExternalLink,
   RefreshCw,
   DollarSign,
+  AlertTriangle,
 } from 'lucide-react';
 
 import { useAuth } from '../../../src/presentation/hooks/useAuth';
@@ -1546,6 +1547,8 @@ function AssinaturaTab({
   const [hasAssinatura, setHasAssinatura] = useState<boolean>(false);
   const [carregando, setCarregando] = useState(true);
   const [atualizando, setAtualizando] = useState(false);
+  const [cancelandoPlano, setCancelandoPlano] = useState(false);
+  const [confirmarCancelar, setConfirmarCancelar] = useState(false);
 
   // Pix/Boleto copy states
   const [copiadoPixId, setCopiadoPixId] = useState<string | null>(null);
@@ -1604,6 +1607,29 @@ function AssinaturaTab({
   useEffect(() => {
     carregarAssinatura();
   }, [carregarAssinatura]);
+
+  const handleCancelarPlano = async () => {
+    setCancelandoPlano(true);
+    try {
+      const res = await fetch('/api/v1/plano/cancelar', {
+        method:  'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        onErro(data?.message ?? 'Erro ao cancelar assinatura.');
+        return;
+      }
+      setConfirmarCancelar(false);
+      onSucesso('Assinatura cancelada. O acesso às funcionalidades será bloqueado imediatamente.');
+      // Recarrega para refletir status CANCELADO
+      await carregarAssinatura();
+    } catch {
+      onErro('Erro ao cancelar assinatura.');
+    } finally {
+      setCancelandoPlano(false);
+    }
+  };
 
   const copyToClipboard = (text: string, cobrancaId: string, type: 'pix' | 'barcode') => {
     navigator.clipboard.writeText(text);
@@ -2167,6 +2193,57 @@ function AssinaturaTab({
               })}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Zona de Perigo — Cancelar assinatura */}
+      {hasAssinatura && assinatura && assinatura.status !== 'CANCELADO' && assinatura.valorMensal > 0 && (
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-red-200 dark:border-red-900/40 p-6 space-y-4">
+          <div className="flex items-center gap-2">
+            <AlertTriangle size={18} className="text-red-500" />
+            <h3 className="text-base font-semibold text-red-600 dark:text-red-400">Cancelar Assinatura</h3>
+          </div>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Ao cancelar sua assinatura, o acesso a todas as funcionalidades da plataforma será bloqueado imediatamente para você, seus clientes e funcionários. Esta ação não pode ser desfeita sem contato com o suporte.
+          </p>
+
+          {!confirmarCancelar ? (
+            <button
+              onClick={() => setConfirmarCancelar(true)}
+              className="inline-flex items-center gap-2 rounded-lg border border-red-300 dark:border-red-700 px-4 py-2 text-sm font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+            >
+              Cancelar Assinatura
+            </button>
+          ) : (
+            <div className="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-lg p-4 space-y-3">
+              <p className="text-sm font-semibold text-red-700 dark:text-red-300">
+                Tem certeza? Esta ação bloqueará o acesso imediatamente.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={handleCancelarPlano}
+                  disabled={cancelandoPlano}
+                  className="inline-flex items-center gap-2 rounded-lg bg-red-600 hover:bg-red-700 disabled:opacity-50 px-4 py-2 text-sm font-semibold text-white transition-colors"
+                >
+                  {cancelandoPlano ? 'Cancelando...' : 'Sim, cancelar assinatura'}
+                </button>
+                <button
+                  onClick={() => setConfirmarCancelar(false)}
+                  disabled={cancelandoPlano}
+                  className="inline-flex items-center gap-2 rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                >
+                  Voltar
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {assinatura?.status === 'CANCELADO' && (
+        <div className="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/40 rounded-xl p-4 text-sm text-red-800 dark:text-red-300">
+          <p className="font-semibold">Assinatura cancelada</p>
+          <p className="text-xs mt-1 text-red-600 dark:text-red-400">O acesso às funcionalidades está bloqueado. Entre em contato com o suporte para reativar.</p>
         </div>
       )}
     </div>
