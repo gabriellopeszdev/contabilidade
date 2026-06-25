@@ -387,7 +387,7 @@ export default function FinanceiroPage() {
   // ===========================================================================
   if (isVisaoCliente) {
     return (
-      <div className="space-y-6 max-w-6xl mx-auto">
+      <div className="space-y-6 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Alertas */}
         {alertas.vencidos.length > 0 && (
           <div className="flex items-start gap-3 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
@@ -459,7 +459,7 @@ export default function FinanceiroPage() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+              <table className="w-full min-w-[560px] text-sm">
                 <thead>
                   <tr className="border-b border-gray-100 dark:border-gray-800 bg-gray-50/60 dark:bg-gray-800/50">
                     <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400">Mês Ref.</th>
@@ -542,14 +542,14 @@ export default function FinanceiroPage() {
                 <button
                   disabled={page <= 1}
                   onClick={() => fetchBoletos(page - 1)}
-                  className="p-1.5 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40"
+                  className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40"
                 >
                   <ChevronLeft size={16} />
                 </button>
                 <button
                   disabled={page >= totalPages}
                   onClick={() => fetchBoletos(page + 1)}
-                  className="p-1.5 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40"
+                  className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40"
                 >
                   <ChevronRight size={16} />
                 </button>
@@ -565,7 +565,7 @@ export default function FinanceiroPage() {
   // Render — Visão CONTADOR
   // ===========================================================================
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <div className="space-y-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <SummaryCard icon={<DollarSign size={18} />} label="A Receber" value={formatMoney(resumo.aReceber)} cor="blue" />
@@ -646,7 +646,7 @@ export default function FinanceiroPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full min-w-[640px] text-sm">
               <thead>
                 <tr className="border-b border-gray-100 dark:border-gray-800 bg-gray-50/60 dark:bg-gray-800/50">
                   <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400">Cliente</th>
@@ -763,14 +763,14 @@ export default function FinanceiroPage() {
               <button
                 disabled={page <= 1}
                 onClick={() => fetchBoletos(page - 1)}
-                className="p-1.5 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40"
+                className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40"
               >
                 <ChevronLeft size={16} />
               </button>
               <button
                 disabled={page >= totalPages}
                 onClick={() => fetchBoletos(page + 1)}
-                className="p-1.5 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40"
+                className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40"
               >
                 <ChevronRight size={16} />
               </button>

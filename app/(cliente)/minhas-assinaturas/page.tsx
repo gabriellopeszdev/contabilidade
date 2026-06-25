@@ -126,7 +126,7 @@ export default function AssinaturasPage() {
       </div>
 
       {/* Cards de resumo */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-2 sm:gap-3">
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-amber-200 dark:border-amber-900/50 px-4 py-4 text-center">
           <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">{pendentes.length}</p>
           <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-1">Pendentes</p>
@@ -193,9 +193,9 @@ export default function AssinaturasPage() {
             pendentes.map((item) => (
               <div
                 key={item.id}
-                className="bg-white dark:bg-gray-900 rounded-2xl border border-amber-200 dark:border-amber-900/50 p-4 flex items-center gap-4"
+                className="bg-white dark:bg-gray-900 rounded-2xl border border-amber-200 dark:border-amber-900/50 p-4 flex items-center gap-3 sm:gap-4"
               >
-                <div className="w-12 h-12 rounded-xl bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center shrink-0">
                   <FileText size={20} className="text-amber-600 dark:text-amber-400" />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -214,13 +214,13 @@ export default function AssinaturasPage() {
                     href={item.linkAssinatura}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary hover:bg-primary-dark text-white text-xs font-semibold transition-colors"
+                    className="shrink-0 flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg bg-primary hover:bg-primary-dark text-white text-xs font-semibold transition-colors"
                   >
                     <PenLine size={13} />
                     Assinar agora
                   </a>
                 ) : (
-                  <span className="shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 text-xs font-semibold cursor-not-allowed">
+                  <span className="shrink-0 flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 text-xs font-semibold cursor-not-allowed">
                     <PenLine size={13} />
                     Assinar
                   </span>
@@ -328,7 +328,7 @@ export default function AssinaturasPage() {
 
       {/* Toast */}
       {toast && (
-        <div className="fixed bottom-6 right-6 z-50 max-w-sm" style={{ animation: 'fadeInUp 0.3s ease both' }}>
+        <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 max-w-[calc(100vw-2rem)] sm:max-w-sm" style={{ animation: 'fadeInUp 0.3s ease both' }}>
           <div
             className={`flex items-start gap-3 rounded-xl shadow-xl border p-4 pr-3 bg-white dark:bg-gray-900
               ${toast.tipo === 'sucesso'

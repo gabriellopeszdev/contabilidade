@@ -143,75 +143,75 @@ export default function PainelPage() {
     <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
 
       {/* ── KPI Cards ──────────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
 
         {/* Enviados este mês */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-5">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center shrink-0">
-              <Send size={18} className="text-emerald-600 dark:text-emerald-400" />
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-4 sm:p-5">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center shrink-0">
+              <Send size={16} className="text-emerald-600 dark:text-emerald-400" />
             </div>
-            <div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+            <div className="min-w-0">
+              <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100 leading-tight">
                 {docsCarregando ? '—' : enviadosMes}
               </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Enviados este mês</p>
+              <p className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400 leading-tight">Enviados este mês</p>
             </div>
           </div>
         </div>
 
         {/* Não lidos do contador */}
-        <div className={`rounded-2xl border p-5 ${
+        <div className={`rounded-2xl border p-4 sm:p-5 ${
           novosDoContador > 0
             ? 'bg-primary/10 dark:bg-primary/20 border-primary/20 dark:border-primary/30'
             : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700'
         }`}>
-          <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+            <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 ${
               novosDoContador > 0 ? 'bg-primary/20' : 'bg-gray-100 dark:bg-gray-800'
             }`}>
-              <Bell size={18} className={novosDoContador > 0 ? 'text-primary' : 'text-gray-400 dark:text-gray-500'} />
+              <Bell size={16} className={novosDoContador > 0 ? 'text-primary' : 'text-gray-400 dark:text-gray-500'} />
             </div>
-            <div>
-              <p className={`text-2xl font-bold ${
+            <div className="min-w-0">
+              <p className={`text-xl sm:text-2xl font-bold leading-tight ${
                 novosDoContador > 0 ? 'text-primary-dark dark:text-primary' : 'text-gray-900 dark:text-gray-100'
               }`}>
                 {docsCarregando ? '—' : novosDoContador}
               </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Não lidos do contador</p>
+              <p className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400 leading-tight">Não lidos</p>
             </div>
           </div>
         </div>
 
         {/* Boletos em aberto */}
-        <div className={`rounded-2xl border p-5 ${
+        <div className={`rounded-2xl border p-4 sm:p-5 ${
           boletosVencidos.length > 0
             ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
             : boletosAbertos.length > 0
               ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800'
               : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700'
         }`}>
-          <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+            <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 ${
               boletosVencidos.length > 0 ? 'bg-red-100 dark:bg-red-900/30' :
               boletosAbertos.length > 0 ? 'bg-amber-100 dark:bg-amber-900/30' :
               'bg-gray-100 dark:bg-gray-800'
             }`}>
-              <DollarSign size={18} className={
+              <DollarSign size={16} className={
                 boletosVencidos.length > 0 ? 'text-red-500' :
                 boletosAbertos.length > 0 ? 'text-amber-500' :
                 'text-gray-400 dark:text-gray-500'
               } />
             </div>
-            <div>
-              <p className={`text-2xl font-bold ${
+            <div className="min-w-0">
+              <p className={`text-base sm:text-xl font-bold truncate leading-tight ${
                 boletosVencidos.length > 0 ? 'text-red-700 dark:text-red-400' :
                 boletosAbertos.length > 0 ? 'text-amber-700 dark:text-amber-400' :
                 'text-gray-900 dark:text-gray-100'
               }`}>
                 {boletosCarregando ? '—' : boletosAbertos.length > 0 ? formatarMoeda(valorAberto) : 'R$ 0'}
               </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
+              <p className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400 leading-tight">
                 {boletosVencidos.length > 0
                   ? `${boletosVencidos.length} vencido${boletosVencidos.length > 1 ? 's' : ''}`
                   : boletosAbertos.length > 0
@@ -223,23 +223,23 @@ export default function PainelPage() {
         </div>
 
         {/* Próximo vencimento */}
-        <div className={`rounded-2xl border p-5 ${
+        <div className={`rounded-2xl border p-4 sm:p-5 ${
           diasAteVencer !== null && diasAteVencer <= 5
             ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800'
             : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700'
         }`}>
-          <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+            <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 ${
               diasAteVencer !== null && diasAteVencer <= 5
                 ? 'bg-amber-100 dark:bg-amber-900/30'
                 : 'bg-gray-100 dark:bg-gray-800'
             }`}>
-              <CalendarClock size={18} className={
+              <CalendarClock size={16} className={
                 diasAteVencer !== null && diasAteVencer <= 5 ? 'text-amber-500' : 'text-primary'
               } />
             </div>
-            <div>
-              <p className={`text-2xl font-bold ${
+            <div className="min-w-0">
+              <p className={`text-xl sm:text-2xl font-bold leading-tight ${
                 diasAteVencer !== null && diasAteVencer <= 5
                   ? 'text-amber-700 dark:text-amber-400'
                   : 'text-gray-900 dark:text-gray-100'
@@ -252,10 +252,10 @@ export default function PainelPage() {
                       ? 'Hoje'
                       : `${diasAteVencer}d`}
               </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
+              <p className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400 leading-tight">
                 {proximoVencimento
                   ? `Venc. ${formatarData(proximoVencimento.toISOString())}`
-                  : 'Próximo vencimento'}
+                  : 'Próx. vencimento'}
               </p>
             </div>
           </div>
