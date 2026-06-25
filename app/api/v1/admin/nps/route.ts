@@ -58,4 +58,4 @@ export const GET = withAuth(async (req: NextRequest, _ctx: RouteContext) => {
     media:      agregado._avg.score ? Math.round(agregado._avg.score * 10) / 10 : null,
     distribuicao,
   });
-}, ['SUPER_ADMIN']);
+}, ['ADMIN']);

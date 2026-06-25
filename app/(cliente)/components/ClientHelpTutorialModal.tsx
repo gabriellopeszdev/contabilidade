@@ -11,12 +11,12 @@ import {
   MessageSquare,
   Users,
   ChevronRight,
+  ChevronLeft,
   Sparkles,
   Info,
   CheckCircle2,
   LayoutDashboard,
   Search,
-  Filter,
 } from 'lucide-react';
 
 interface ClientHelpTutorialModalProps {
@@ -55,6 +55,10 @@ export function ClientHelpTutorialModal({ aberto, onClose }: ClientHelpTutorialM
     { id: 'chat',             label: 'Chat',                  icon: <MessageSquare   size={16} /> },
     { id: 'minha-equipe',     label: 'Minha Equipe',          icon: <Users           size={16} /> },
   ];
+
+  const currentIndex = TABS.findIndex((t) => t.id === tabAtiva);
+  const prevTab = currentIndex > 0 ? TABS[currentIndex - 1] : null;
+  const nextTab = currentIndex < TABS.length - 1 ? TABS[currentIndex + 1] : null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity duration-300">
@@ -95,7 +99,9 @@ export function ClientHelpTutorialModal({ aberto, onClose }: ClientHelpTutorialM
                 <button
                   key={tab.id}
                   onClick={() => setTabAtiva(tab.id)}
-                  className={`md:w-full flex items-center gap-2 md:gap-3 px-3 md:px-3.5 py-2 md:py-2.5 rounded-xl text-xs font-medium transition-all shrink-0 ${
+                  aria-label={tab.label}
+                  title={tab.label}
+                  className={`md:w-full flex items-center justify-center md:justify-start gap-2 md:gap-3 p-2.5 md:px-3.5 md:py-2.5 rounded-xl text-xs font-medium transition-all shrink-0 ${
                     ativa
                       ? 'bg-primary text-white shadow-md shadow-primary/10'
                       : 'text-gray-600 dark:text-gray-400 hover:bg-primary/10 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-200'
@@ -104,7 +110,7 @@ export function ClientHelpTutorialModal({ aberto, onClose }: ClientHelpTutorialM
                   <span className={`shrink-0 ${ativa ? 'text-white' : 'text-gray-400 dark:text-gray-500'}`}>
                     {tab.icon}
                   </span>
-                  <span className="whitespace-nowrap text-left">{tab.label}</span>
+                  <span className="hidden md:inline whitespace-nowrap text-left">{tab.label}</span>
                   {ativa && <ChevronRight size={14} className="ml-auto hidden md:block" />}
                 </button>
               );
@@ -380,6 +386,37 @@ export function ClientHelpTutorialModal({ aberto, onClose }: ClientHelpTutorialM
                 </div>
               </div>
             )}
+
+            {/* Navegação prev / next */}
+            <div className="flex items-center justify-between pt-6 mt-2 border-t border-gray-100 dark:border-gray-800">
+              {prevTab ? (
+                <button
+                  type="button"
+                  onClick={() => setTabAtiva(prevTab.id)}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors"
+                >
+                  <ChevronLeft size={14} />
+                  <span className="hidden sm:inline">{prevTab.label}</span>
+                  <span className="sm:hidden">Anterior</span>
+                </button>
+              ) : <span />}
+
+              <span className="text-[11px] text-gray-400 dark:text-gray-600">
+                {currentIndex + 1} / {TABS.length}
+              </span>
+
+              {nextTab ? (
+                <button
+                  type="button"
+                  onClick={() => setTabAtiva(nextTab.id)}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors"
+                >
+                  <span className="hidden sm:inline">{nextTab.label}</span>
+                  <span className="sm:hidden">Próxima</span>
+                  <ChevronRight size={14} />
+                </button>
+              ) : <span />}
+            </div>
 
           </main>
         </div>
