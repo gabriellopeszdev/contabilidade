@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { toast } from 'sonner';
 import { FileSignature, Loader2, Clock, CheckCircle2, XCircle, AlertCircle, RefreshCw, ExternalLink, Filter, Download, ShieldCheck, X } from 'lucide-react';
 import { useAuth } from '../../../src/presentation/hooks/useAuth';
 
@@ -77,19 +78,27 @@ export default function AssinaturasPage() {
   }
 
   async function baixarComprovante(id: string, nomeDoc: string) {
-    const token = await getToken();
-    const res = await fetch(`/api/v1/assinaturas/${id}/comprovante`, {
-      headers: { Authorization: `Bearer ${token}` },
-      redirect: 'follow',
-    });
-    if (!res.ok) return;
-    const blob = await res.blob();
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href     = url;
-    a.download = `${nomeDoc.replace(/\.pdf$/i, '')}_assinado.pdf`;
-    a.click();
-    URL.revokeObjectURL(url);
+    try {
+      const token = await getToken();
+      const res = await fetch(`/api/v1/assinaturas/${id}/comprovante`, {
+        headers: { Authorization: `Bearer ${token}` },
+        redirect: 'follow',
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({})) as { message?: string };
+        toast.error(data.message ?? 'Não foi possível baixar o comprovante.');
+        return;
+      }
+      const blob = await res.blob();
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href     = url;
+      a.download = `${nomeDoc.replace(/\.pdf$/i, '')}_assinado.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      toast.error('Erro de conexão ao baixar o comprovante.');
+    }
   }
 
   const counts = assinaturas.reduce((acc, a) => {

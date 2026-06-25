@@ -53,7 +53,9 @@ export const PATCH = withAuth(async (req, ctx, auth) => {
       });
       if (config?.asaasApiKey) {
         const svc = new AsaasService(config.asaasApiKey);
-        await svc.cancelarBoleto(boleto.asaasId).catch(() => {});
+        await svc.cancelarBoleto(boleto.asaasId).catch((err: unknown) => {
+          logger.error('[PATCH boletos] Falha ao sincronizar cancelamento no Asaas', err instanceof Error ? err : undefined);
+        });
       }
     }
 

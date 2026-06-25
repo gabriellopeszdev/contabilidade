@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { toast } from 'sonner';
 import {
   Plus,
   Building2,
@@ -125,7 +126,7 @@ function ModalCriarContador({ onClose, onCriado, token }: ModalCriarContadorProp
         setPlanos(lista);
         if (lista.length > 0) setForm((f) => ({ ...f, planoId: lista[0].id }));
       })
-      .catch(() => {});
+      .catch(() => toast.error('Não foi possível carregar os planos disponíveis.'));
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1558,7 +1559,7 @@ export default function ContadoresPage() {
         prev.map((c) => c.id === id ? { ...c, isActive: !isActiveAtual } : c),
       );
     } catch (e) {
-      alert(e instanceof Error ? e.message : 'Erro ao atualizar status.');
+      toast.error(e instanceof Error ? e.message : 'Erro ao atualizar status.');
     } finally {
       setToggling(null);
     }

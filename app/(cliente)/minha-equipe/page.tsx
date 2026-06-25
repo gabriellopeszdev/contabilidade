@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { toast } from 'sonner';
 import {
   Users,
   Plus,
@@ -194,7 +195,7 @@ export default function EquipeClientePage() {
         method:  'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!res.ok) { const d = await res.json().catch(() => ({})) as { message?: string }; alert(d.message ?? 'Erro ao remover.'); return; }
+      if (!res.ok) { const d = await res.json().catch(() => ({})) as { message?: string }; toast.error(d.message ?? 'Erro ao remover.'); return; }
       setSucesso('Membro removido.');
       carregar();
     } finally {

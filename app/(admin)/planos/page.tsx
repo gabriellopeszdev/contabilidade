@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { toast } from 'sonner';
 import {
   Package,
   Plus,
@@ -514,7 +515,7 @@ export default function PlanosPage() {
       await carregarPlanos();
     } catch (e) {
       // Reaproveitamos o erro no modal de confirmação
-      alert(e instanceof Error ? e.message : 'Erro ao excluir plano.');
+      toast.error(e instanceof Error ? e.message : 'Erro ao excluir plano.');
     } finally {
       setExcluindo(false);
     }

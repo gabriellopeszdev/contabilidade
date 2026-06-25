@@ -21,6 +21,7 @@ import {
   Info,
 } from 'lucide-react';
 
+import { toast } from 'sonner';
 import { useAuth } from '../../../src/presentation/hooks/useAuth';
 
 // =============================================================================
@@ -201,6 +202,10 @@ export default function FaturamentoPage() {
   const [salvando,     setSalvando]     = useState(false);
   const [erroModal,    setErroModal]    = useState<string | null>(null);
 
+  // Modal de confirmação de cancelamento de cobrança
+  const [cancelTarget, setCancelTarget] = useState<{ id: string } | null>(null);
+  const [cancelando,   setCancelando]   = useState(false);
+
   // Modal de cobrança manual
   const [showManualBillingModal, setShowManualBillingModal] = useState(false);
   const [manualBillingForm, setManualBillingForm] = useState({
@@ -378,10 +383,15 @@ export default function FaturamentoPage() {
     }
   };
 
-  const handleCancelarCobranca = async (id: string) => {
-    if (!token || !confirm('Deseja realmente cancelar esta cobrança no Asaas?')) return;
+  const handleCancelarCobranca = (id: string) => {
+    setCancelTarget({ id });
+  };
+
+  const executarCancelamento = async () => {
+    if (!cancelTarget || !token) return;
+    setCancelando(true);
     try {
-      const res = await fetch(`/api/v1/admin/faturamento/${id}`, {
+      const res = await fetch(`/api/v1/admin/faturamento/${cancelTarget.id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -389,9 +399,13 @@ export default function FaturamentoPage() {
         const data = await res.json();
         throw new Error(data.message ?? 'Erro ao cancelar fatura.');
       }
+      toast.success('Cobrança cancelada com sucesso.');
+      setCancelTarget(null);
       await carregarCobrancas();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Erro na requisição.');
+      toast.error(err instanceof Error ? err.message : 'Erro na requisição.');
+    } finally {
+      setCancelando(false);
     }
   };
 
@@ -724,6 +738,46 @@ export default function FaturamentoPage() {
           salvando={salvando}
           erro={erroModal}
         />
+      )}
+
+      {/* Modal Confirmar Cancelamento de Cobrança */}
+      {cancelTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/70" onClick={() => !cancelando && setCancelTarget(null)} />
+          <div className="relative bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-sm shadow-2xl p-6 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center">
+                <Trash2 size={18} className="text-red-400" />
+              </div>
+              <div>
+                <h3 className="font-bold text-white text-sm">Cancelar Cobrança</h3>
+                <p className="text-xs text-slate-400 mt-0.5">Esta ação não pode ser desfeita.</p>
+              </div>
+            </div>
+            <p className="text-sm text-slate-300">
+              Deseja realmente cancelar esta cobrança no Asaas?
+            </p>
+            <div className="flex gap-3 justify-end pt-2">
+              <button
+                type="button"
+                disabled={cancelando}
+                onClick={() => setCancelTarget(null)}
+                className="px-4 py-2 rounded-lg text-xs text-slate-400 hover:text-white disabled:opacity-50"
+              >
+                Voltar
+              </button>
+              <button
+                type="button"
+                disabled={cancelando}
+                onClick={executarCancelamento}
+                className="flex items-center gap-1.5 bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white text-xs font-bold px-5 py-2.5 rounded-lg transition-all"
+              >
+                {cancelando && <Loader2 size={12} className="animate-spin" />}
+                Cancelar Cobrança
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Modal Emitir Cobrança Manual */}

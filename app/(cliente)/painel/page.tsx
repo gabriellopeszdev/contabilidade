@@ -9,6 +9,7 @@ import {
   TrendingUp,
 } from 'lucide-react';
 
+import { toast } from 'sonner';
 import { useAuth }               from '../../../src/presentation/hooks/useAuth';
 import { useDocumentosCliente }  from '../../../src/presentation/hooks/useDocumentosCliente';
 import { ClienteDashboardCharts } from '../../../src/presentation/components/dashboard/ClienteDashboardCharts';
@@ -67,7 +68,7 @@ export default function PainelPage() {
     })
       .then(r => r.json())
       .then(d => setBoletos(d.boletos ?? []))
-      .catch(() => {})
+      .catch(() => toast.error('Não foi possível carregar seus boletos. Tente recarregar a página.'))
       .finally(() => setBoletosCarregando(false));
   }, [token]);
 

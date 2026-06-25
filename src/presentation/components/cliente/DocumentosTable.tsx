@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { toast } from 'sonner';
 import {
   FileText,
   FileCode2,
@@ -517,7 +518,7 @@ export function DocumentosTable({
       }
       sairModoSelecao();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Falha ao baixar documentos.');
+      toast.error(err instanceof Error ? err.message : 'Falha ao baixar documentos.');
     } finally {
       setBaixandoLote(false);
     }

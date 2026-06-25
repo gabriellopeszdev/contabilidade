@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef } from 'react';
+import { toast } from 'sonner';
 import { Search, FileText, Users, CalendarCheck, Loader2, X, Download, SlidersHorizontal } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '../../../src/presentation/hooks/useAuth';
@@ -32,10 +33,16 @@ export default function BuscaPage() {
       const res = await fetch(`/api/v1/documentos/${id}/download`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!res.ok) return;
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({})) as { message?: string };
+        toast.error(data.message ?? 'Não foi possível baixar o documento.');
+        return;
+      }
       const { url } = await res.json() as { url: string };
       window.open(url, '_blank', 'noopener,noreferrer');
-    } catch { /* silencioso */ } finally {
+    } catch {
+      toast.error('Erro de conexão ao baixar o documento.');
+    } finally {
       setDownloadingId(null);
     }
   }

@@ -32,8 +32,12 @@ export const DELETE = withAuth(async (_req, ctx, auth) => {
       if (config?.asaasApiKey) {
         const svc = new AsaasService(config.asaasApiKey);
         // Cancela a assinatura (para futuras cobranças) e as pendentes já geradas
-        await svc.cancelarAssinatura(assinatura.asaasId).catch(() => {});
-        await svc.cancelarCobrancasPendentesAssinatura(assinatura.asaasId).catch(() => {});
+        await svc.cancelarAssinatura(assinatura.asaasId).catch((err: unknown) => {
+          logger.error('[DELETE assinaturas] Falha ao cancelar assinatura no Asaas', err instanceof Error ? err : undefined);
+        });
+        await svc.cancelarCobrancasPendentesAssinatura(assinatura.asaasId).catch((err: unknown) => {
+          logger.error('[DELETE assinaturas] Falha ao cancelar cobranças pendentes no Asaas', err instanceof Error ? err : undefined);
+        });
       }
     }
 

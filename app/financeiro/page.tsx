@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { toast } from 'sonner';
 import {
   DollarSign,
   Download,
@@ -231,7 +232,7 @@ export default function FinanceiroPage() {
       a.click();
       URL.revokeObjectURL(url);
     } catch {
-      alert('Erro ao exportar CSV.');
+      toast.error('Erro ao exportar CSV.');
     }
   };
 
@@ -253,7 +254,7 @@ export default function FinanceiroPage() {
       const data = await res.json();
       window.open(data.url, '_blank');
     } catch {
-      alert('Erro ao baixar o arquivo.');
+      toast.error('Erro ao baixar o arquivo.');
     }
   };
 
@@ -281,12 +282,12 @@ export default function FinanceiroPage() {
       });
       if (!res.ok) {
         const data = await res.json().catch(() => null);
-        alert(data?.message ?? 'Erro ao atualizar status.');
+        toast.error(data?.message ?? 'Erro ao atualizar status.');
         return;
       }
       fetchBoletos(page);
     } catch {
-      alert('Erro ao atualizar status.');
+      toast.error('Erro ao atualizar status.');
     }
   };
 
@@ -303,13 +304,13 @@ export default function FinanceiroPage() {
       });
       const data = await res.json().catch(() => null);
       if (!res.ok) {
-        alert(data?.message ?? 'Erro ao solicitar estorno.');
+        toast.error(data?.message ?? 'Erro ao solicitar estorno.');
         return;
       }
-      alert(data?.mensagem ?? 'Estorno solicitado com sucesso.');
+      toast.success(data?.mensagem ?? 'Estorno solicitado com sucesso.');
       fetchBoletos(page);
     } catch {
-      alert('Erro ao solicitar estorno.');
+      toast.error('Erro ao solicitar estorno.');
     }
   };
 

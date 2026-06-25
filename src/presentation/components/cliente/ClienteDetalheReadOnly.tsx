@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { toast } from 'sonner';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import useSWR from 'swr';
@@ -189,14 +190,14 @@ export function ClienteDetalheReadOnly() {
 
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
-        alert(body.message ?? `Erro ao baixar: HTTP ${res.status}`);
+        toast.error(body.message ?? `Erro ao baixar: HTTP ${res.status}`);
         return;
       }
 
       const { url, nomeArquivo } = await res.json();
       const fileRes = await fetch(url);
       if (!fileRes.ok) {
-        alert('Falha ao baixar o arquivo do storage.');
+        toast.error('Falha ao baixar o arquivo do storage.');
         return;
       }
 
@@ -210,7 +211,7 @@ export function ClienteDetalheReadOnly() {
       a.remove();
       window.URL.revokeObjectURL(blobUrl);
     } catch {
-      alert('Erro de conexão ao baixar o arquivo.');
+      toast.error('Erro de conexão ao baixar o arquivo.');
     } finally {
       setBaixandoId(null);
     }

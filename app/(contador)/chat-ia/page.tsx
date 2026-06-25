@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, FormEvent } from 'react';
+import { toast } from 'sonner';
 import { Bot, Send, Loader2, Lock, Sparkles, User, Trash2 } from 'lucide-react';
 import { useAuth } from '../../../src/presentation/hooks/useAuth';
 
@@ -91,12 +92,15 @@ export default function ChatIAPage() {
           return;
         }
 
-        if (!res.ok) return;
+        if (!res.ok) {
+          if (!cancelado) toast.error('Não foi possível carregar o histórico. Você pode começar uma nova conversa.');
+          return;
+        }
 
         const data = await res.json() as { mensagens: Mensagem[] };
         if (!cancelado) setMessages(data.mensagens ?? []);
       } catch {
-        // falha silenciosa — usuário pode começar a conversar do zero
+        if (!cancelado) toast.error('Erro de conexão ao carregar o histórico.');
       } finally {
         if (!cancelado) setCarregandoHist(false);
       }
