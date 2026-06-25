@@ -182,7 +182,7 @@ export default function AdminConfigPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-3xl">
+    <div className="space-y-6">
 
       {/* Cabeçalho */}
       <div className="rounded-xl bg-gradient-to-r from-slate-900 to-slate-900/60 border border-slate-800 px-6 py-5 flex items-center gap-4">
@@ -199,151 +199,146 @@ export default function AdminConfigPage() {
         </div>
       </div>
 
-      {/* Autenticação em 2 Fatores */}
-      <TwoFactorSection onSucesso={(m) => mostrarToast('sucesso', m)} onErro={(m) => mostrarToast('erro', m)} />
+      {/* Layout duas colunas */}
+      <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-6 items-start">
 
-      {/* Integração Asaas */}
-      <SectionCard
-        title="Integração Asaas"
-        icon={Zap}
-        accent="amber"
-        badge={
-          <StatusBadge status={asaasEnv === 'production' ? 'ok' : 'warn'} />
-        }
-      >
-        <div className="flex items-start gap-3 p-3.5 rounded-lg bg-amber-950/30 border border-amber-700/25 mb-1">
-          <Info size={14} className="text-amber-400 shrink-0 mt-0.5" />
-          <p className="text-xs text-amber-300/80 leading-relaxed">
-            Cada escritório configura sua própria chave Asaas em{' '}
-            <span className="font-semibold text-amber-300">Escritórios → Asaas</span>.
-            O webhook é registrado automaticamente ao salvar — ou manualmente no painel Asaas.
-          </p>
-        </div>
+        {/* Coluna principal */}
+        <div className="space-y-6">
 
-        <ConfigRow
-          label="Ambiente"
-          value={asaasEnv === 'production' ? 'Produção' : 'Sandbox'}
-          badge={asaasEnv === 'production'
-            ? { text: 'production', cor: 'green' }
-            : { text: 'sandbox',    cor: 'amber' }}
-          icon={Globe}
-        />
-        <ConfigRow
-          label="URL do Webhook"
-          value={webhookUrl}
-          mono
-          icon={Webhook}
-        />
-        <ConfigRow
-          label="Header de autenticação"
-          value="asaas-access-token"
-          mono
-          icon={KeyRound}
-        />
+          {/* Autenticação em 2 Fatores */}
+          <TwoFactorSection onSucesso={(m) => mostrarToast('sucesso', m)} onErro={(m) => mostrarToast('erro', m)} />
 
-        <div className="mt-1 rounded-lg bg-slate-800/40 border border-slate-700/40 p-4">
-          <p className="text-[11px] font-semibold text-slate-300 mb-3 flex items-center gap-1.5">
-            <Activity size={11} className="text-slate-400" />
-            Eventos monitorados pelo webhook
-          </p>
-          <div className="space-y-2.5">
-            {EVENT_GROUPS.map((group) => (
-              <div key={group.label} className="space-y-1.5">
-                <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">{group.label}</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {group.events.map((ev) => (
-                    <span
-                      key={ev}
-                      className={`text-[10px] font-mono font-medium border px-2 py-0.5 rounded-md ${group.color}`}
-                    >
-                      {ev}
-                    </span>
-                  ))}
-                </div>
+          {/* Integração Asaas */}
+          <SectionCard
+            title="Integração Asaas"
+            icon={Zap}
+            accent="amber"
+            badge={<StatusBadge status={asaasEnv === 'production' ? 'ok' : 'warn'} />}
+          >
+            <div className="flex items-start gap-3 p-3.5 rounded-lg bg-amber-950/30 border border-amber-700/25 mb-1">
+              <Info size={14} className="text-amber-400 shrink-0 mt-0.5" />
+              <p className="text-xs text-amber-300/80 leading-relaxed">
+                Cada escritório configura sua própria chave Asaas em{' '}
+                <span className="font-semibold text-amber-300">Escritórios → Asaas</span>.
+                O webhook é registrado automaticamente ao salvar — ou manualmente no painel Asaas.
+              </p>
+            </div>
+
+            <ConfigRow
+              label="Ambiente"
+              value={asaasEnv === 'production' ? 'Produção' : 'Sandbox'}
+              badge={asaasEnv === 'production'
+                ? { text: 'production', cor: 'green' }
+                : { text: 'sandbox',    cor: 'amber' }}
+              icon={Globe}
+            />
+            <ConfigRow label="URL do Webhook"        value={webhookUrl}           mono icon={Webhook} />
+            <ConfigRow label="Header de autenticação" value="asaas-access-token"  mono icon={KeyRound} />
+
+            <div className="mt-1 rounded-lg bg-slate-800/40 border border-slate-700/40 p-4">
+              <p className="text-[11px] font-semibold text-slate-300 mb-3 flex items-center gap-1.5">
+                <Activity size={11} className="text-slate-400" />
+                Eventos monitorados pelo webhook
+              </p>
+              <div className="space-y-2.5">
+                {EVENT_GROUPS.map((group) => (
+                  <div key={group.label} className="space-y-1.5">
+                    <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">{group.label}</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {group.events.map((ev) => (
+                        <span key={ev} className={`text-[10px] font-mono font-medium border px-2 py-0.5 rounded-md ${group.color}`}>
+                          {ev}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
+          </SectionCard>
+
+          {/* Inteligência Artificial */}
+          <IaAdminSection onSucesso={(m) => mostrarToast('sucesso', m)} onErro={(m) => mostrarToast('erro', m)} />
+
         </div>
-      </SectionCard>
 
-      {/* Segurança */}
-      <SectionCard title="Segurança" icon={ShieldCheck} accent="emerald">
-        <ConfigRow
-          label="JWT Expiration"
-          value={process.env.NEXT_PUBLIC_JWT_EXPIRES ?? '8h'}
-          icon={Lock}
-          badge={{ text: 'HS256', cor: 'slate' }}
-        />
-        <ConfigRow
-          label="Token Webhook"
-          value="≥ 32 chars — ASAAS_WEBHOOK_TOKEN"
-          icon={KeyRound}
-          badge={{ text: 'env', cor: 'slate' }}
-          copyable={false}
-        />
-        <ConfigRow
-          label="Algoritmo JWT"
-          value="HS256"
-          mono
-          icon={ShieldCheck}
-          copyable={false}
-        />
-      </SectionCard>
+        {/* Coluna lateral */}
+        <div className="space-y-5">
 
-      {/* Infraestrutura */}
-      <SectionCard title="Infraestrutura" icon={Server} accent="blue">
-        <ConfigRow label="Banco de dados"          value="PostgreSQL 16"                               icon={Database} badge={{ text: 'prisma',       cor: 'slate' }} />
-        <ConfigRow label="Cache / Pub-Sub"         value="Redis 7"                                    icon={Cpu}      badge={{ text: 'ioredis',       cor: 'slate' }} />
-        <ConfigRow label="Armazenamento"           value="MinIO (S3-compatible)"                      icon={Server}   badge={{ text: 's3',            cor: 'slate' }} />
-        <ConfigRow label="Framework"               value="Next.js 14 App Router — Node.js runtime"   icon={Globe}    copyable={false} />
-      </SectionCard>
+          {/* Segurança */}
+          <SectionCard title="Segurança" icon={ShieldCheck} accent="emerald">
+            <ConfigRow
+              label="JWT Expiration"
+              value={process.env.NEXT_PUBLIC_JWT_EXPIRES ?? '8h'}
+              icon={Lock}
+              badge={{ text: 'HS256', cor: 'slate' }}
+            />
+            <ConfigRow
+              label="Token Webhook"
+              value="≥ 32 chars"
+              icon={KeyRound}
+              badge={{ text: 'env', cor: 'slate' }}
+              copyable={false}
+            />
+            <ConfigRow
+              label="Algoritmo JWT"
+              value="HS256"
+              mono
+              icon={ShieldCheck}
+              copyable={false}
+            />
+          </SectionCard>
 
-      {/* URLs e acessos */}
-      <SectionCard title="URLs e Ambiente" icon={Globe} accent="blue">
-        <ConfigRow label="App URL"     value={appUrl}    mono icon={Globe} />
-        <ConfigRow label="Webhook URL" value={webhookUrl} mono icon={Webhook} />
-        <ConfigRow
-          label="NODE_ENV"
-          value={process.env.NODE_ENV ?? 'development'}
-          mono
-          icon={Server}
-          badge={process.env.NODE_ENV === 'production'
-            ? { text: 'produção', cor: 'green' }
-            : { text: 'dev',      cor: 'amber' }}
-        />
-      </SectionCard>
+          {/* Infraestrutura */}
+          <SectionCard title="Infraestrutura" icon={Server} accent="blue">
+            <ConfigRow label="Banco de dados" value="PostgreSQL 16"                             icon={Database} badge={{ text: 'prisma',  cor: 'slate' }} />
+            <ConfigRow label="Cache / Pub-Sub" value="Redis 7"                                  icon={Cpu}      badge={{ text: 'ioredis', cor: 'slate' }} />
+            <ConfigRow label="Armazenamento"   value="MinIO (S3-compatible)"                    icon={Server}   badge={{ text: 's3',      cor: 'slate' }} />
+            <ConfigRow label="Framework"       value="Next.js 14 — Node.js runtime"             icon={Globe}    copyable={false} />
+          </SectionCard>
 
-      {/* Webhook token */}
-      <SectionCard title="Como configurar o Webhook" icon={KeyRound} accent="violet">
-        <div className="rounded-lg bg-slate-800/40 border border-slate-700/40 px-4 py-3 space-y-2">
-          <p className="text-xs text-slate-300 font-medium">Passo a passo no painel Asaas:</p>
-          <ol className="text-xs text-slate-400 space-y-1.5 list-none">
-            {[
-              <>Acesse o painel Asaas de cada escritório</>,
-              <>Vá em <span className="text-slate-300 font-medium">Configurações → Webhooks</span></>,
-              <>Adicione a URL acima e configure o token em <code className="text-violet-300 bg-violet-950/50 px-1 rounded">ASAAS_WEBHOOK_TOKEN</code></>,
-              <>Ou salve a chave Asaas nesta plataforma — o webhook é registrado automaticamente</>,
-            ].map((step, i) => (
-              <li key={i} className="flex items-start gap-2.5">
-                <span className="w-4 h-4 rounded-full bg-violet-600/20 border border-violet-500/30 text-[9px] font-bold text-violet-400 flex items-center justify-center shrink-0 mt-0.5">
-                  {i + 1}
-                </span>
-                <span>{step}</span>
-              </li>
-            ))}
-          </ol>
+          {/* URLs e Ambiente */}
+          <SectionCard title="URLs e Ambiente" icon={Globe} accent="blue">
+            <ConfigRow label="App URL"     value={appUrl}     mono icon={Globe} />
+            <ConfigRow label="Webhook URL" value={webhookUrl} mono icon={Webhook} />
+            <ConfigRow
+              label="NODE_ENV"
+              value={process.env.NODE_ENV ?? 'development'}
+              mono
+              icon={Server}
+              badge={process.env.NODE_ENV === 'production'
+                ? { text: 'produção', cor: 'green' }
+                : { text: 'dev',      cor: 'amber' }}
+            />
+          </SectionCard>
+
+          {/* Como configurar o Webhook */}
+          <SectionCard title="Configurar Webhook" icon={KeyRound} accent="violet">
+            <ol className="text-xs text-slate-400 space-y-2.5 list-none">
+              {[
+                <>Acesse o painel Asaas do escritório</>,
+                <>Vá em <span className="text-slate-300 font-medium">Configurações → Webhooks</span></>,
+                <>Adicione a URL e o token em <code className="text-violet-300 bg-violet-950/50 px-1 rounded">ASAAS_WEBHOOK_TOKEN</code></>,
+                <>Ou salve a chave Asaas aqui — o webhook é registrado automaticamente</>,
+              ].map((step, i) => (
+                <li key={i} className="flex items-start gap-2.5">
+                  <span className="w-4 h-4 rounded-full bg-violet-600/20 border border-violet-500/30 text-[9px] font-bold text-violet-400 flex items-center justify-center shrink-0 mt-0.5">
+                    {i + 1}
+                  </span>
+                  <span className="leading-relaxed">{step}</span>
+                </li>
+              ))}
+            </ol>
+            <div className="mt-1 p-3 bg-violet-900/10 border border-violet-700/20 rounded-lg">
+              <p className="text-xs text-violet-300 leading-relaxed">
+                <span className="font-semibold">Atenção:</span> Token deve ter{' '}
+                <span className="font-mono">≥ 32 caracteres</span> — tokens menores são rejeitados silenciosamente.
+              </p>
+            </div>
+          </SectionCard>
+
         </div>
-        <div className="p-3 bg-violet-900/10 border border-violet-700/20 rounded-lg">
-          <p className="text-xs text-violet-300">
-            <span className="font-semibold">Atenção:</span> O token deve ter{' '}
-            <span className="font-mono text-violet-200">≥ 32 caracteres</span>. Tokens menores são rejeitados
-            pelo Asaas e o registro do webhook será ignorado silenciosamente.
-          </p>
-        </div>
-      </SectionCard>
-
-      {/* Inteligência Artificial */}
-      <IaAdminSection onSucesso={(m) => mostrarToast('sucesso', m)} onErro={(m) => mostrarToast('erro', m)} />
+      </div>
 
       {/* Toast */}
       {toast && (
