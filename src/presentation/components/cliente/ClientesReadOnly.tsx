@@ -130,7 +130,7 @@ export function ClientesReadOnly() {
 
       {/* Barra de busca */}
       <div className="mb-5">
-        <div className="relative max-w-md">
+        <div className="relative w-full max-w-md">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
@@ -212,7 +212,7 @@ export function ClientesReadOnly() {
 
                   {/* CNPJ */}
                   <div className="flex items-center gap-1.5 mt-2 sm:mt-0">
-                    <Building2 size={12} className="text-slate-400 shrink-0 hidden sm:block" />
+                    <Building2 size={12} className="text-slate-400 shrink-0" />
                     <span className="text-xs text-slate-700 dark:text-gray-300 font-mono">
                       {formatarCNPJ(c.cnpj)}
                     </span>
@@ -220,12 +220,13 @@ export function ClientesReadOnly() {
 
                   {/* E-mail */}
                   <div className="flex items-center gap-1.5 mt-1 sm:mt-0 min-w-0">
-                    <Mail size={12} className="text-slate-400 shrink-0 hidden sm:block" />
+                    <Mail size={12} className="text-slate-400 shrink-0" />
                     <span className="text-sm text-slate-600 dark:text-gray-400 truncate">{c.email}</span>
                   </div>
 
                   {/* Desde */}
-                  <span className="text-xs text-slate-500 dark:text-gray-400 mt-1 sm:mt-0">
+                  <span className="text-xs text-slate-500 dark:text-gray-400 mt-1 sm:mt-0 flex items-center gap-1">
+                    <span className="sm:hidden text-slate-400">desde</span>
                     {formatarData(c.createdAt)}
                   </span>
 

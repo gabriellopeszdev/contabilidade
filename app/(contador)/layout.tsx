@@ -498,7 +498,7 @@ export default function ContadorLayout({ children }: { children: React.ReactNode
               </button>
 
               {notifAberto && (
-                <div className="absolute right-0 top-full mt-1 w-80 bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 z-50 overflow-hidden">
+                <div className="absolute right-0 top-full mt-1 w-[calc(100vw-1rem)] max-w-80 bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 z-50 overflow-hidden">
                   <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-100 dark:border-gray-800">
                     <span className="text-xs font-bold text-gray-900 dark:text-gray-100">Notificações</span>
                     <div className="flex gap-3">

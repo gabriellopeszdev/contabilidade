@@ -139,7 +139,7 @@ export default function AdminBoletosPage() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full min-w-[700px] text-sm">
             <thead>
               <tr className="border-b border-slate-800">
                 <th className="px-5 py-3 text-left text-xs font-medium text-slate-400">Cliente</th>
@@ -196,11 +196,11 @@ export default function AdminBoletosPage() {
           <p className="text-xs text-slate-500">Página {page} de {totalPages}</p>
           <div className="flex items-center gap-2">
             <button onClick={() => carregar(page - 1)} disabled={page <= 1 || loading}
-              className="p-2 rounded-lg border border-slate-700 text-slate-400 hover:text-white hover:border-slate-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+              className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg border border-slate-700 text-slate-400 hover:text-white hover:border-slate-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
               <ChevronLeft size={15} />
             </button>
             <button onClick={() => carregar(page + 1)} disabled={page >= totalPages || loading}
-              className="p-2 rounded-lg border border-slate-700 text-slate-400 hover:text-white hover:border-slate-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+              className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg border border-slate-700 text-slate-400 hover:text-white hover:border-slate-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
               <ChevronRight size={15} />
             </button>
           </div>

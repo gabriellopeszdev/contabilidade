@@ -308,7 +308,7 @@ export function KanbanBoard({ token, clienteId, onErro }: KanbanBoardProps) {
             onChange={(e) => setFiltroCliente(e.target.value)}
             className="text-[11px] font-medium text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded-lg
                        px-2.5 py-1 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary
-                       max-w-[180px] dark:[color-scheme:dark]"
+                       max-w-[140px] sm:max-w-[180px] dark:[color-scheme:dark]"
           >
             <option value="">Todos os clientes</option>
             {clientesUnicos.map((c) => (
@@ -324,7 +324,7 @@ export function KanbanBoard({ token, clienteId, onErro }: KanbanBoardProps) {
             onChange={(e) => setFiltroFuncionario(e.target.value)}
             className="text-[11px] font-medium text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded-lg
                        px-2.5 py-1 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-violet-400
-                       max-w-[180px] dark:[color-scheme:dark]"
+                       max-w-[140px] sm:max-w-[180px] dark:[color-scheme:dark]"
           >
             <option value="">Toda a equipe</option>
             <option value="__sem__">Sem responsável</option>
@@ -376,11 +376,11 @@ export function KanbanBoard({ token, clienteId, onErro }: KanbanBoardProps) {
         },
       }}
     >
-      {/* Grid de colunas */}
+      {/* Grid de colunas — scroll horizontal em mobile */}
+      <div className="overflow-x-auto pb-2 -mx-4 sm:mx-0">
       <div
-        className="grid gap-4"
-        style={{ gridTemplateColumns: 'repeat(4, minmax(0, 1fr))' }}
-        // Em mobile, colapsar para coluna única (via CSS container query se necessário)
+        className="grid gap-4 px-4 sm:px-0"
+        style={{ gridTemplateColumns: 'repeat(4, minmax(240px, 1fr))', minWidth: '1000px' }}
       >
         {COLUNAS.map((col) => (
           <KanbanColumn
@@ -397,6 +397,7 @@ export function KanbanBoard({ token, clienteId, onErro }: KanbanBoardProps) {
             onAtribuirResponsavel={funcionarios.length > 0 ? atribuirResponsavel : undefined}
           />
         ))}
+      </div>
       </div>
 
       {/* ------------------------------------------------------------------ */}

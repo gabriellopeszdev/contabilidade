@@ -213,7 +213,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </header>
 
         {/* Conteúdo */}
-        <main className="flex-1 overflow-y-auto p-6 relative">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 relative">
           {/* Overlay de 2FA obrigatório */}
           {twoFactorEnabled === false && pathname !== '/admin-config' && (
             <div className="absolute inset-0 z-50 bg-slate-950/95 backdrop-blur-sm flex items-center justify-center p-6">
