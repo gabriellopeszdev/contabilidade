@@ -96,14 +96,14 @@ export function HelpTutorialModal({ aberto, onClose }: HelpTutorialModalProps) {
         <div className="flex-1 flex flex-col md:flex-row min-h-0">
           
           {/* Sidebar Menu */}
-          <aside className="w-full md:w-72 border-b md:border-b-0 md:border-r border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50 p-4 space-y-1 overflow-x-auto md:overflow-y-auto shrink-0 flex md:flex-col gap-2 md:gap-0">
+          <aside className="w-full md:w-72 border-b md:border-b-0 md:border-r border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50 px-3 py-3 md:p-4 overflow-x-auto md:overflow-y-auto shrink-0 flex md:flex-col gap-1.5 md:gap-1 md:space-y-0">
             {TABS.map((tab) => {
               const ativa = tabAtiva === tab.id;
               return (
                 <button
                   key={tab.id}
                   onClick={() => setTabAtiva(tab.id)}
-                  className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all shrink-0 md:shrink-1 ${
+                  className={`md:w-full flex items-center gap-2 md:gap-3 px-3 md:px-3.5 py-2 md:py-2.5 rounded-xl text-xs font-medium transition-all shrink-0 ${
                     ativa
                       ? 'bg-primary text-white shadow-md shadow-primary/10'
                       : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-200'
@@ -112,7 +112,7 @@ export function HelpTutorialModal({ aberto, onClose }: HelpTutorialModalProps) {
                   <span className={`shrink-0 ${ativa ? 'text-white' : 'text-gray-400 dark:text-gray-500'}`}>
                     {tab.icon}
                   </span>
-                  <span className="whitespace-nowrap md:whitespace-normal text-left">{tab.label}</span>
+                  <span className="whitespace-nowrap text-left">{tab.label}</span>
                   {ativa && <ChevronRight size={14} className="ml-auto hidden md:block" />}
                 </button>
               );

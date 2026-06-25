@@ -32,7 +32,7 @@ export function generateSecret(): string {
 }
 
 export function generateOtpAuthUrl(email: string, secret: string): string {
-  return generateURI({ secret, label: email, issuer: 'Konto Contábil' });
+  return generateURI({ secret, label: email, issuer: 'FiscoHub' });
 }
 
 export function verifyToken(token: string, encryptedSecret: string): boolean {

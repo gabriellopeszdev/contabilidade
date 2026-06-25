@@ -15,7 +15,7 @@ export interface ExcelOptions {
 
 export async function gerarExcel(opts: ExcelOptions): Promise<ArrayBuffer> {
   const wb = new ExcelJS.Workbook();
-  wb.creator = 'Konto Contábil';
+  wb.creator = 'FiscoHub';
   wb.created = new Date();
 
   const ws = wb.addWorksheet(opts.planilha);

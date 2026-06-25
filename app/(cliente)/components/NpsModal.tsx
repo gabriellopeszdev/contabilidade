@@ -44,7 +44,7 @@ export function NpsModal({ token, onFechar }: NpsModalProps) {
       ) : (
         <>
           <div>
-            <h3 className="font-semibold text-gray-900 dark:text-gray-100">Como você avalia o Konto?</h3>
+            <h3 className="font-semibold text-gray-900 dark:text-gray-100">Como você avalia o FiscoHub?</h3>
             <p className="text-sm text-gray-400 mt-0.5">De 0 a 10, qual a probabilidade de indicar para um colega?</p>
           </div>
 

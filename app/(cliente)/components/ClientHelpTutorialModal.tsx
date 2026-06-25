@@ -5,16 +5,18 @@ import {
   X,
   BookOpen,
   FileText,
-  Upload,
+  Clock,
   PenLine,
   DollarSign,
   MessageSquare,
   Users,
   ChevronRight,
   Sparkles,
-  ArrowRight,
   Info,
-  CheckCircle2
+  CheckCircle2,
+  LayoutDashboard,
+  Search,
+  Filter,
 } from 'lucide-react';
 
 interface ClientHelpTutorialModalProps {
@@ -24,8 +26,9 @@ interface ClientHelpTutorialModalProps {
 
 type TabId =
   | 'visao-geral'
+  | 'painel'
   | 'meus-documentos'
-  | 'enviar-arquivo'
+  | 'historico-envios'
   | 'assinaturas'
   | 'financeiro'
   | 'chat'
@@ -43,13 +46,14 @@ export function ClientHelpTutorialModal({ aberto, onClose }: ClientHelpTutorialM
   if (!aberto) return null;
 
   const TABS: TabItem[] = [
-    { id: 'visao-geral', label: 'Início & Visão Geral', icon: <BookOpen size={16} /> },
-    { id: 'meus-documentos', label: 'Meus Documentos', icon: <FileText size={16} /> },
-    { id: 'enviar-arquivo', label: 'Enviar Arquivo', icon: <Upload size={16} /> },
-    { id: 'assinaturas', label: 'Assinaturas Eletrônicas', icon: <PenLine size={16} /> },
-    { id: 'financeiro', label: 'Financeiro (Faturas)', icon: <DollarSign size={16} /> },
-    { id: 'chat', label: 'Chat de Suporte', icon: <MessageSquare size={16} /> },
-    { id: 'minha-equipe', label: 'Minha Equipe', icon: <Users size={16} /> },
+    { id: 'visao-geral',      label: 'Início',                icon: <BookOpen        size={16} /> },
+    { id: 'painel',           label: 'Painel (Dashboard)',    icon: <LayoutDashboard size={16} /> },
+    { id: 'meus-documentos',  label: 'Meus Documentos',       icon: <FileText        size={16} /> },
+    { id: 'historico-envios', label: 'Histórico de Envios',   icon: <Clock           size={16} /> },
+    { id: 'assinaturas',      label: 'Assinaturas',           icon: <PenLine         size={16} /> },
+    { id: 'financeiro',       label: 'Financeiro',            icon: <DollarSign      size={16} /> },
+    { id: 'chat',             label: 'Chat',                  icon: <MessageSquare   size={16} /> },
+    { id: 'minha-equipe',     label: 'Minha Equipe',          icon: <Users           size={16} /> },
   ];
 
   return (
@@ -84,14 +88,14 @@ export function ClientHelpTutorialModal({ aberto, onClose }: ClientHelpTutorialM
         <div className="flex-1 flex flex-col md:flex-row min-h-0">
           
           {/* Sidebar Menu */}
-          <aside className="w-full md:w-72 border-b md:border-b-0 md:border-r border-gray-100 dark:border-gray-800 bg-primary/5 dark:bg-gray-900/50 p-4 space-y-1 overflow-x-auto md:overflow-y-auto shrink-0 flex md:flex-col gap-2 md:gap-0">
+          <aside className="w-full md:w-72 border-b md:border-b-0 md:border-r border-gray-100 dark:border-gray-800 bg-primary/5 dark:bg-gray-900/50 px-3 py-3 md:p-4 overflow-x-auto md:overflow-y-auto shrink-0 flex md:flex-col gap-1.5 md:gap-1 md:space-y-0">
             {TABS.map((tab) => {
               const ativa = tabAtiva === tab.id;
               return (
                 <button
                   key={tab.id}
                   onClick={() => setTabAtiva(tab.id)}
-                  className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all shrink-0 md:shrink-1 ${
+                  className={`md:w-full flex items-center gap-2 md:gap-3 px-3 md:px-3.5 py-2 md:py-2.5 rounded-xl text-xs font-medium transition-all shrink-0 ${
                     ativa
                       ? 'bg-primary text-white shadow-md shadow-primary/10'
                       : 'text-gray-600 dark:text-gray-400 hover:bg-primary/10 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-200'
@@ -100,7 +104,7 @@ export function ClientHelpTutorialModal({ aberto, onClose }: ClientHelpTutorialM
                   <span className={`shrink-0 ${ativa ? 'text-white' : 'text-gray-400 dark:text-gray-500'}`}>
                     {tab.icon}
                   </span>
-                  <span className="whitespace-nowrap md:whitespace-normal text-left">{tab.label}</span>
+                  <span className="whitespace-nowrap text-left">{tab.label}</span>
                   {ativa && <ChevronRight size={14} className="ml-auto hidden md:block" />}
                 </button>
               );
@@ -110,14 +114,14 @@ export function ClientHelpTutorialModal({ aberto, onClose }: ClientHelpTutorialM
           {/* Main Content Area */}
           <main className="flex-1 p-6 md:p-8 overflow-y-auto bg-white dark:bg-gray-900">
             
-            {/* 1. VISÃO GERAL */}
+            {/* 1. INÍCIO */}
             {tabAtiva === 'visao-geral' && (
               <div className="space-y-6">
                 <div className="space-y-2">
                   <span className="px-2.5 py-1 text-xs font-semibold text-primary dark:text-primary bg-primary/10 dark:bg-primary/10 rounded-full">Boas-vindas</span>
                   <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Seu canal direto com a contabilidade</h3>
                   <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-sm">
-                    Este portal foi criado para dar total transparência e agilidade à relação com o seu escritório contábil. Por meio deste canal, você pode baixar suas guias de impostos, assinar documentos eletronicamente com validade jurídica, enviar comprovantes e XMLs, e conversar com seu contador em tempo real.
+                    Este portal foi criado para dar total transparência e agilidade à relação com o seu escritório contábil. Por aqui você baixa guias de impostos, assina documentos com validade jurídica, acompanha cobranças e conversa com seu contador em tempo real.
                   </p>
                 </div>
 
@@ -125,13 +129,13 @@ export function ClientHelpTutorialModal({ aberto, onClose }: ClientHelpTutorialM
                   <div className="p-4 border border-primary/20 dark:border-gray-800 rounded-xl space-y-2 bg-primary/5 dark:bg-gray-800/30">
                     <h4 className="font-semibold text-gray-900 dark:text-gray-100 text-sm">Central de Avisos</h4>
                     <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
-                      Na página inicial, você acompanha avisos urgentes deixados pela contabilidade e notificações de novas guias prontas para pagamento.
+                      Na página <strong>Início</strong>, você acompanha avisos urgentes do escritório, alertas de documentos novos e notificações de cobranças pendentes.
                     </p>
                   </div>
                   <div className="p-4 border border-primary/20 dark:border-gray-800 rounded-xl space-y-2 bg-primary/5 dark:bg-gray-800/30">
-                    <h4 className="font-semibold text-gray-900 dark:text-gray-100 text-sm">Acesso a Prazos</h4>
+                    <h4 className="font-semibold text-gray-900 dark:text-gray-100 text-sm">Acesso Rápido</h4>
                     <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
-                      Fique de olho na lista de tarefas e documentos pendentes para manter a conformidade da sua empresa em dia.
+                      Os atalhos da página Início levam diretamente às seções mais utilizadas — documentos, assinaturas pendentes e financeiro — sem precisar navegar pelo menu lateral.
                     </p>
                   </div>
                 </div>
@@ -139,13 +143,54 @@ export function ClientHelpTutorialModal({ aberto, onClose }: ClientHelpTutorialM
                 <div className="flex items-center gap-3 p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 rounded-xl">
                   <Info className="text-amber-500 shrink-0" size={18} />
                   <p className="text-xs text-amber-800 dark:text-amber-300 leading-relaxed">
-                    <strong>Informação:</strong> Caso precise tirar dúvidas adicionais sobre legislação, impostos ou taxas, use o menu <strong>Chat</strong> para falar com o seu contador.
+                    <strong>Dica:</strong> Para uma visão completa da situação da sua empresa — gráficos, KPIs e histórico de atividade — acesse o <strong>Painel</strong> no menu lateral.
                   </p>
                 </div>
               </div>
             )}
 
-            {/* 2. MEUS DOCUMENTOS */}
+            {/* 2. PAINEL (DASHBOARD) */}
+            {tabAtiva === 'painel' && (
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <span className="px-2.5 py-1 text-xs font-semibold text-primary dark:text-primary bg-primary/10 dark:bg-primary/10 rounded-full">Visão Geral</span>
+                  <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Painel (Dashboard)</h3>
+                  <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-sm">
+                    O <strong>Painel</strong> consolida em uma única tela os dados mais relevantes da sua empresa junto ao escritório contábil. É o ponto de partida para entender sua situação de forma rápida e visual.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="p-4 border border-gray-100 dark:border-gray-800 rounded-xl space-y-2 bg-gray-50/30 dark:bg-gray-800/20">
+                    <h4 className="font-semibold text-gray-900 dark:text-gray-100 text-sm flex items-center gap-2">
+                      <LayoutDashboard size={15} className="text-primary" />
+                      KPIs & Indicadores
+                    </h4>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                      Cards com os números-chave: total de documentos, assinaturas pendentes, cobranças abertas e outros indicadores que resumem o estado da sua conta.
+                    </p>
+                  </div>
+                  <div className="p-4 border border-gray-100 dark:border-gray-800 rounded-xl space-y-2 bg-gray-50/30 dark:bg-gray-800/20">
+                    <h4 className="font-semibold text-gray-900 dark:text-gray-100 text-sm flex items-center gap-2">
+                      <CheckCircle2 size={15} className="text-emerald-500" />
+                      Gráficos & Histórico
+                    </h4>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                      Gráficos de evolução mensal de documentos e cobranças, além de um feed de atividade recente que mostra tudo que aconteceu na sua conta.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 p-4 bg-primary/5 dark:bg-primary/10 border border-primary/20 dark:border-primary/20 rounded-xl">
+                  <Info className="text-primary shrink-0" size={18} />
+                  <p className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed">
+                    O Painel é atualizado automaticamente. Sempre que houver novos documentos, cobranças ou assinaturas, os números e gráficos se atualizam na próxima visita.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* 3. MEUS DOCUMENTOS */}
             {tabAtiva === 'meus-documentos' && (
               <div className="space-y-6">
                 <div className="space-y-2">
@@ -187,33 +232,48 @@ export function ClientHelpTutorialModal({ aberto, onClose }: ClientHelpTutorialM
               </div>
             )}
 
-            {/* 3. ENVIAR ARQUIVO */}
-            {tabAtiva === 'enviar-arquivo' && (
+            {/* 4. HISTÓRICO DE ENVIOS */}
+            {tabAtiva === 'historico-envios' && (
               <div className="space-y-6">
                 <div className="space-y-2">
-                  <span className="px-2.5 py-1 text-xs font-semibold text-primary dark:text-primary bg-primary/10 dark:bg-primary/10 rounded-full">Envio de Arquivos</span>
-                  <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Como enviar arquivos ao contador</h3>
+                  <span className="px-2.5 py-1 text-xs font-semibold text-primary dark:text-primary bg-primary/10 dark:bg-primary/10 rounded-full">Arquivos Enviados</span>
+                  <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Histórico de Envios</h3>
                   <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-sm">
-                    Sempre que precisar enviar extratos bancários, XMLs de notas que não foram emitidas pelo sistema, contratos assinados ou outros arquivos de suporte, você usará o menu <strong>Enviar Arquivo</strong>.
+                    O menu <strong>Histórico de Envios</strong> exibe todos os arquivos que sua empresa enviou ao escritório — extratos bancários, XMLs de notas, comprovantes e outros documentos de suporte. Aqui você consulta e baixa qualquer arquivo enviado anteriormente.
                   </p>
                 </div>
 
-                <div className="p-4 border border-primary/20 dark:border-primary/30 rounded-xl bg-primary/5 dark:bg-primary/10 space-y-4">
-                  <h4 className="font-semibold text-gray-900 dark:text-gray-100 text-sm">Instruções de Envio</h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
-                    <div className="p-3 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-lg space-y-1">
-                      <span className="font-bold text-primary dark:text-primary">1. Formatos Aceitos</span>
-                      <p className="text-gray-500 dark:text-gray-400 leading-relaxed">O sistema aceita exclusivamente arquivos <strong>PDF</strong> e <strong>XML</strong>.</p>
+                <div className="space-y-4">
+                  <div className="flex gap-4 p-4 border border-gray-100 dark:border-gray-800 rounded-xl bg-gray-50/20 dark:bg-gray-800/10">
+                    <div className="p-2 bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary rounded-lg shrink-0 h-9 flex items-center justify-center">
+                      <Search size={16} />
                     </div>
-                    <div className="p-3 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-lg space-y-1">
-                      <span className="font-bold text-primary dark:text-primary">2. Limites de Tamanho</span>
-                      <p className="text-gray-500 dark:text-gray-400 leading-relaxed">Cada arquivo individual deve ter no máximo <strong>10 Megabytes (MB)</strong>.</p>
-                    </div>
-                    <div className="p-3 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-lg space-y-1">
-                      <span className="font-bold text-primary dark:text-primary">3. Classificação Automática</span>
-                      <p className="text-gray-500 dark:text-gray-400 leading-relaxed">Seus envios caem em uma caixa de entrada do contador, que é notificado e realiza a organização deles.</p>
+                    <div className="space-y-1">
+                      <h4 className="font-semibold text-gray-900 dark:text-gray-100 text-sm">Busca e Filtros</h4>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                        Use a barra de busca para localizar um arquivo pelo nome, e o filtro de setor (<strong>Fiscal</strong>, <strong>Pessoal</strong>, <strong>Contábil</strong>) para ver somente os envios de uma área específica.
+                      </p>
                     </div>
                   </div>
+
+                  <div className="flex gap-4 p-4 border border-gray-100 dark:border-gray-800 rounded-xl bg-gray-50/20 dark:bg-gray-800/10">
+                    <div className="p-2 bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary rounded-lg shrink-0 h-9 flex items-center justify-center">
+                      <Clock size={16} />
+                    </div>
+                    <div className="space-y-1">
+                      <h4 className="font-semibold text-gray-900 dark:text-gray-100 text-sm">Linha do Tempo de Envios</h4>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                        Cada registro mostra o nome do arquivo, tipo, data de envio e setor. Você pode baixar novamente qualquer arquivo clicando no ícone de download na linha correspondente.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 rounded-xl">
+                  <Info className="text-amber-500 shrink-0" size={18} />
+                  <p className="text-xs text-amber-800 dark:text-amber-300 leading-relaxed">
+                    Para <strong>enviar novos arquivos</strong>, acesse <strong>Meus Documentos</strong> e use o botão de upload disponível naquela página.
+                  </p>
                 </div>
               </div>
             )}
