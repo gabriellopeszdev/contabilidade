@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withAuth } from '../../../../../../src/infrastructure/http/middlewares/withAuth';
-import { prisma } from '../../../../../../src/infrastructure/di/Container';
+import { prisma, emailService } from '../../../../../../src/infrastructure/di/Container';
 import { AsaasService } from '../../../../../../src/infrastructure/asaas/AsaasService';
 import { logger } from '../../../../../../src/utils/logger';
+import {
+  emailWrapper, emailHeading, emailSubheading, emailText, emailInfoBox, emailCallout, emailButton,
+} from '../../../../../../src/infrastructure/email/emailTemplate';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -19,6 +22,7 @@ export const DELETE = withAuth(async (req: NextRequest, ctx) => {
 
     const cobranca = await prisma.cobrancaSaaS.findUnique({
       where: { id },
+      include: { escritorio: { select: { name: true, email: true } } },
     });
 
     if (!cobranca) {
@@ -40,6 +44,28 @@ export const DELETE = withAuth(async (req: NextRequest, ctx) => {
     await prisma.cobrancaSaaS.update({
       where: { id },
       data: { status: 'CANCELADO' },
+    });
+
+    // Notifica o escritório por email
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? '';
+    const valorFmt = `R$ ${Number(cobranca.valor).toFixed(2).replace('.', ',')}`;
+    emailService.enviar({
+      destinatario: cobranca.escritorio.email,
+      assunto: `FiscoHub — Cobrança de ${cobranca.mesReferencia} cancelada`,
+      corpoHtml: emailWrapper(
+        emailSubheading('Cobrança Cancelada') +
+        emailHeading('Sua cobrança foi cancelada') +
+        emailText(`Olá, <strong>${cobranca.escritorio.name}</strong>! Informamos que a cobrança abaixo foi cancelada pela nossa equipe.`) +
+        emailInfoBox([
+          { label: 'Referência', value: cobranca.mesReferencia },
+          { label: 'Valor',      value: valorFmt },
+          { label: 'Status',     value: 'Cancelado' },
+        ]) +
+        emailCallout('Em caso de dúvidas entre em contato com o suporte FiscoHub.', 'ℹ️') +
+        emailButton('Acessar Portal', appUrl),
+      ),
+    }).catch((err: unknown) => {
+      logger.error('[DELETE /admin/faturamento/[id]] Falha ao enviar email de cancelamento', err instanceof Error ? err : undefined);
     });
 
     return NextResponse.json({ message: 'Cobrança cancelada com sucesso.' });

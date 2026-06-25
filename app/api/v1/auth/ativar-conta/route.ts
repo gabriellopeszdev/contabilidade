@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { SignJWT } from 'jose';
-import { prisma, eventDispatcher } from '../../../../../src/infrastructure/di/Container';
+import { prisma, eventDispatcher, emailService } from '../../../../../src/infrastructure/di/Container';
 import { logger } from '../../../../../src/utils/logger';
 import { checkRateLimit, getClientIp } from '../../../../../src/utils/rateLimiter';
 import { BcryptPasswordHasher } from '../../../../../src/infrastructure/auth/BcryptPasswordHasher';
@@ -121,10 +121,13 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Notificar contadores vinculados em tempo real
+    // Notificar contadores vinculados em tempo real + buscar nomeEscritório para boas-vindas
     const vinculos = await prisma.contadorCliente.findMany({
       where: { clienteId: cliente.id },
-      select: { contadorId: true },
+      select: {
+        contadorId: true,
+        contador: { select: { configuracao: { select: { nomeEscritorio: true } } } },
+      },
     });
     await Promise.allSettled(
       vinculos.map(({ contadorId }) =>
@@ -139,6 +142,17 @@ export async function POST(req: NextRequest) {
         ),
       ),
     );
+
+    // Email de boas-vindas
+    const nomeEscritorio = vinculos[0]?.contador?.configuracao?.nomeEscritorio ?? 'FiscoHub';
+    emailService.enviarBoasVindas({
+      emailCliente:   cliente.email,
+      nomeCliente:    cliente.name,
+      nomeEscritorio,
+      urlPortal:      process.env.NEXT_PUBLIC_APP_URL ?? '',
+    }).catch((err: unknown) => {
+      logger.error('[POST /auth/ativar-conta] Falha ao enviar email de boas-vindas', err instanceof Error ? err : undefined);
+    });
 
     // Atualiza lastLoginAt
     prisma.usuarioCliente.update({

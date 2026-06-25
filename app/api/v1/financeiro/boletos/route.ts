@@ -1,10 +1,13 @@
 import { NextResponse } from 'next/server';
 import { z }           from 'zod';
 
-import { withAuth }               from '../../../../../src/infrastructure/http/middlewares/withAuth';
-import { prisma, storageService } from '../../../../../src/infrastructure/di/Container';
+import { withAuth }                          from '../../../../../src/infrastructure/http/middlewares/withAuth';
+import { prisma, storageService, emailService } from '../../../../../src/infrastructure/di/Container';
 import { logger }                 from '../../../../../src/utils/logger';
 import { gerarBoletoPdf }         from '../../../../../src/infrastructure/pdf/gerarBoletoPdf';
+import {
+  emailWrapper, emailHeading, emailSubheading, emailText, emailInfoBox, emailButton, emailCallout,
+} from '../../../../../src/infrastructure/email/emailTemplate';
 import { AsaasService }           from '../../../../../src/infrastructure/asaas/AsaasService';
 import { CoraService }            from '../../../../../src/infrastructure/cora/CoraService';
 
@@ -156,7 +159,7 @@ export const POST = withAuth(async (req, _ctx, auth) => {
     // Verifica vínculo contador↔cliente (IDOR protection)
     const vinculo = await prisma.contadorCliente.findFirst({
       where:   { contadorId: auth.sub, clienteId },
-      include: { cliente: { select: { name: true, cnpj: true, email: true } } },
+      include: { cliente: { select: { name: true, cnpj: true, email: true, notifEmailBoleto: true } } },
     });
     if (!vinculo) {
       return NextResponse.json({ message: 'Cliente não pertence à sua carteira.' }, { status: 403 });
@@ -232,6 +235,19 @@ export const POST = withAuth(async (req, _ctx, auth) => {
 
       await _publicarNotificacao(boleto);
 
+      if (vinculo.cliente.notifEmailBoleto && vinculo.cliente.email) {
+        _enviarEmailNovoBoleto({
+          emailCliente:   vinculo.cliente.email,
+          nomeCliente:    vinculo.cliente.name,
+          nomeEscritorio: config?.nomeEscritorio ?? 'Seu Escritório',
+          valor:          valorNum,
+          vencimento:     vencimentoDate,
+          mesReferencia,
+          descricao,
+          urlPortal:      process.env.NEXT_PUBLIC_APP_URL ?? '',
+        });
+      }
+
       return NextResponse.json({
         boleto: {
           id:              boleto.id,
@@ -295,6 +311,19 @@ export const POST = withAuth(async (req, _ctx, auth) => {
 
       await _publicarNotificacao(boleto);
 
+      if (vinculo.cliente.notifEmailBoleto && vinculo.cliente.email) {
+        _enviarEmailNovoBoleto({
+          emailCliente:   vinculo.cliente.email,
+          nomeCliente:    vinculo.cliente.name,
+          nomeEscritorio: config?.nomeEscritorio ?? 'Seu Escritório',
+          valor:          valorNum,
+          vencimento:     vencimentoDate,
+          mesReferencia,
+          descricao,
+          urlPortal:      process.env.NEXT_PUBLIC_APP_URL ?? '',
+        });
+      }
+
       return NextResponse.json({
         boleto: {
           id:            boleto.id,
@@ -350,6 +379,19 @@ export const POST = withAuth(async (req, _ctx, auth) => {
 
     await _publicarNotificacao(boleto);
 
+    if (vinculo.cliente.notifEmailBoleto && vinculo.cliente.email) {
+      _enviarEmailNovoBoleto({
+        emailCliente:   vinculo.cliente.email,
+        nomeCliente:    vinculo.cliente.name,
+        nomeEscritorio: config?.nomeEscritorio ?? 'Seu Escritório',
+        valor:          valorNum,
+        vencimento:     vencimentoDate,
+        mesReferencia,
+        descricao,
+        urlPortal:      process.env.NEXT_PUBLIC_APP_URL ?? '',
+      });
+    }
+
     return NextResponse.json({
       boleto: {
         id:            boleto.id,
@@ -369,6 +411,43 @@ export const POST = withAuth(async (req, _ctx, auth) => {
     return NextResponse.json({ message: 'Erro interno.' }, { status: 500 });
   }
 }, ['ACCOUNTANT', 'ADMIN']);
+
+// =============================================================================
+// Helper interno — envia email de novo boleto ao cliente
+// =============================================================================
+
+function _enviarEmailNovoBoleto(params: {
+  emailCliente:   string;
+  nomeCliente:    string;
+  nomeEscritorio: string;
+  valor:          number;
+  vencimento:     Date;
+  mesReferencia:  string;
+  descricao:      string | null | undefined;
+  urlPortal:      string;
+}) {
+  const valorFmt    = `R$ ${params.valor.toFixed(2).replace('.', ',')}`;
+  const vencFmt     = params.vencimento.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+  const html = emailWrapper(
+    emailSubheading('Novo Boleto Disponível') +
+    emailHeading('Você tem um boleto para pagar') +
+    emailText(`Olá, <strong>${params.nomeCliente}</strong>! ${params.nomeEscritorio} emitiu um novo boleto de honorários para você.`) +
+    emailInfoBox([
+      { label: 'Referência',  value: params.mesReferencia },
+      { label: 'Valor',       value: valorFmt },
+      { label: 'Vencimento',  value: vencFmt },
+      ...(params.descricao ? [{ label: 'Descrição', value: params.descricao }] : []),
+    ]) +
+    emailCallout('Acesse o portal para visualizar o boleto, código de barras e opções de pagamento via Pix.', '💳') +
+    emailButton('Pagar Agora', params.urlPortal),
+  );
+
+  emailService.enviar({
+    destinatario: params.emailCliente,
+    assunto:      `Novo boleto de honorários — ${params.mesReferencia} (${valorFmt})`,
+    corpoHtml:    html,
+  }).catch(() => {});
+}
 
 // =============================================================================
 // Helper interno — publica evento Redis para notificação WebSocket

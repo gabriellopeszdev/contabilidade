@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { withAuth, type ResolvedRouteContext } from '../../../../../../src/infrastructure/http/middlewares/withAuth';
-import { prisma } from '../../../../../../src/infrastructure/di/Container';
+import { prisma, emailService } from '../../../../../../src/infrastructure/di/Container';
 import { logger } from '../../../../../../src/utils/logger';
 import { AsaasService } from '../../../../../../src/infrastructure/asaas/AsaasService';
 
@@ -35,7 +35,10 @@ export const PATCH = withAuth(async (req, ctx, auth) => {
       );
     }
 
-    const boleto = await prisma.boletoHonorario.findUnique({ where: { id } });
+    const boleto = await prisma.boletoHonorario.findUnique({
+      where:   { id },
+      include: { cliente: { select: { name: true, email: true, notifEmailBoleto: true } } },
+    });
     if (!boleto) {
       return NextResponse.json({ message: 'Boleto não encontrado.' }, { status: 404 });
     }
@@ -63,6 +66,29 @@ export const PATCH = withAuth(async (req, ctx, auth) => {
       where: { id },
       data: { status: status as 'PENDENTE' | 'PAGO' | 'VENCIDO' | 'CANCELADO' },
     });
+
+    // Email de confirmação de pagamento
+    if (status === 'PAGO' && boleto.cliente.notifEmailBoleto && boleto.cliente.email) {
+      const valorFmt = `R$ ${Number(boleto.valor).toFixed(2).replace('.', ',')}`;
+      const { emailWrapper, emailHeading, emailSubheading, emailText, emailInfoBox, emailCallout, emailButton } =
+        await import('../../../../../../src/infrastructure/email/emailTemplate');
+      emailService.enviar({
+        destinatario: boleto.cliente.email,
+        assunto:      `Pagamento confirmado — ${boleto.mesReferencia} (${valorFmt})`,
+        corpoHtml: emailWrapper(
+          emailSubheading('Pagamento Confirmado') +
+          emailHeading('Seu pagamento foi recebido!') +
+          emailText(`Olá, <strong>${boleto.cliente.name}</strong>! Confirmamos o recebimento do seu pagamento de honorários.`) +
+          emailInfoBox([
+            { label: 'Referência', value: boleto.mesReferencia },
+            { label: 'Valor',      value: valorFmt },
+            { label: 'Status',     value: 'Pago ✓' },
+          ]) +
+          emailCallout('Guarde este e-mail como comprovante. Obrigado pela pontualidade!', '✅', '#f0fdf4', '#bbf7d0') +
+          emailButton('Acessar Portal', process.env.NEXT_PUBLIC_APP_URL ?? ''),
+        ),
+      }).catch(() => {});
+    }
 
     return NextResponse.json({
       boleto: {
