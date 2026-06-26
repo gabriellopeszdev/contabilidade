@@ -20,7 +20,14 @@ export class MinIOStorageAdapter implements IStorageService {
   constructor(
     private readonly client: MinioClient,
     private readonly bucket: string,
+    /** Cliente configurado com o endpoint público (domínio real) — usado exclusivamente para gerar presigned URLs acessíveis pelo browser. */
+    private readonly publicClient?: MinioClient,
   ) {}
+
+  /** Retorna o cliente correto para operações de presigned URL. */
+  private get presignClient(): MinioClient {
+    return this.publicClient ?? this.client;
+  }
 
   // ---------------------------------------------------------------------------
   // upload — usado internamente (offboarding, geração de ZIPs)
@@ -49,7 +56,7 @@ export class MinIOStorageAdapter implements IStorageService {
     storagePath: string,
     expiresInSeconds = 900, // 15 minutos
   ): Promise<PresignedUrlUpload> {
-    const url = await this.client.presignedPutObject(
+    const url = await this.presignClient.presignedPutObject(
       this.bucket,
       storagePath,
       expiresInSeconds,
@@ -70,7 +77,7 @@ export class MinIOStorageAdapter implements IStorageService {
     storagePath: string,
     expiresInSeconds = 300, // 5 minutos
   ): Promise<PresignedUrlDownload> {
-    const url = await this.client.presignedGetObject(
+    const url = await this.presignClient.presignedGetObject(
       this.bucket,
       storagePath,
       expiresInSeconds,

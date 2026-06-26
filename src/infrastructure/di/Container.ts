@@ -203,6 +203,25 @@ function buildMinioClient(): MinioClient {
   });
 }
 
+/**
+ * Cliente MinIO configurado com o endpoint público (domínio real).
+ * Usado exclusivamente para gerar presigned URLs acessíveis pelo browser.
+ * O Nginx faz o proxy de /{MINIO_BUCKET}/ → http://minio:9000/.
+ * Retorna undefined se MINIO_PUBLIC_ENDPOINT não estiver configurado.
+ */
+function buildPublicMinioClient(): MinioClient | undefined {
+  const publicEndpoint = process.env.MINIO_PUBLIC_ENDPOINT;
+  if (!publicEndpoint) return undefined;
+
+  return new MinioClient({
+    endPoint:  publicEndpoint,
+    port:      parseInt(process.env.MINIO_PUBLIC_PORT ?? '443', 10),
+    useSSL:    process.env.MINIO_PUBLIC_SSL !== 'false',
+    accessKey: process.env.MINIO_ROOT_USER     ?? '',
+    secretKey: process.env.MINIO_ROOT_PASSWORD ?? '',
+  });
+}
+
 function buildEmailService(): IEmailService {
   const apiKey    = process.env.RESEND_API_KEY;
   const fromEmail = process.env.RESEND_FROM_EMAIL ?? process.env.FROM_EMAIL ?? 'noreply@contabilidade.app';
@@ -245,6 +264,7 @@ const auditLogRepository  = new PrismaAuditLogRepository(prisma);
 const storageService = new MinIOStorageAdapter(
   minioClient,
   process.env.MINIO_BUCKET ?? 'documentos-contabeis',
+  buildPublicMinioClient(),
 );
 
 const eventDispatcher = new RedisEventDispatcher(redisPublisher, logger);

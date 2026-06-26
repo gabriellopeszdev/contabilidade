@@ -94,6 +94,15 @@ const envSchema = z.object({
 
   MINIO_BUCKET: z.string().default('documentos-contabeis'),
 
+  /**
+   * Hostname público do MinIO — usado para gerar presigned URLs que o browser consegue acessar.
+   * Quando definido, o Nginx deve fazer proxy de /{MINIO_BUCKET}/ → http://minio:9000/.
+   * Deixe vazio em desenvolvimento local (usa minio:9000 diretamente).
+   */
+  MINIO_PUBLIC_ENDPOINT: z.string().optional(),
+  MINIO_PUBLIC_PORT: z.coerce.number().int().min(1).max(65535).default(443),
+  MINIO_PUBLIC_SSL:  z.string().transform((v) => v !== 'false').default('true'),
+
   // ---------------------------------------------------------------------------
   // Autenticação (JWT)
   // ---------------------------------------------------------------------------
