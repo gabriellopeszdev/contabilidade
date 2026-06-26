@@ -83,14 +83,11 @@ export const PATCH = withAuth(async (req, _ctx, auth) => {
     // -----------------------------------------------------------------------
     // Buscar hash atual do banco
     // -----------------------------------------------------------------------
-    const repo = auth.role === 'ACCOUNTANT' || auth.role === 'ADMIN'
-      ? prisma.usuarioContador
-      : prisma.usuarioCliente;
+    const isContador = auth.role === 'ACCOUNTANT' || auth.role === 'ADMIN';
 
-    const usuario = await repo.findUnique({
-      where: { id: auth.sub },
-      select: { passwordHash: true },
-    });
+    const usuario = isContador
+      ? await prisma.usuarioContador.findUnique({ where: { id: auth.sub }, select: { passwordHash: true } })
+      : await prisma.usuarioCliente.findUnique({ where: { id: auth.sub }, select: { passwordHash: true } });
 
     if (!usuario) {
       return NextResponse.json(
@@ -115,10 +112,11 @@ export const PATCH = withAuth(async (req, _ctx, auth) => {
     // -----------------------------------------------------------------------
     const novoHash = await hasher.hash(novaSenha);
 
-    await repo.update({
-      where: { id: auth.sub },
-      data:  { passwordHash: novoHash },
-    });
+    if (isContador) {
+      await prisma.usuarioContador.update({ where: { id: auth.sub }, data: { passwordHash: novoHash } });
+    } else {
+      await prisma.usuarioCliente.update({ where: { id: auth.sub }, data: { passwordHash: novoHash } });
+    }
 
     return NextResponse.json({
       message: 'Senha alterada com sucesso.',
