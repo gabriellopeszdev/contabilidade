@@ -29,19 +29,6 @@ function classScore(score: number): { label: string; cor: string; bg: string } {
   return              { label: 'Promotor',  cor: 'text-emerald-400', bg: 'bg-emerald-900/30 border-emerald-700/40' };
 }
 
-function ScoreBar({ score, total }: { score: number; total: number }) {
-  const { label, cor, bg } = classScore(score);
-  const pct = total > 0 ? Math.round((score / total) * 100) : 0;
-  return (
-    <div className="flex items-center gap-3 text-xs">
-      <span className="w-6 text-right text-slate-300 font-mono">{score}</span>
-      <div className="flex-1 h-2 bg-slate-800 rounded-full overflow-hidden">
-        <div className={`h-full rounded-full ${cor.replace('text-', 'bg-')}`} style={{ width: `${pct}%` }} />
-      </div>
-      <span className="w-8 text-right text-slate-400">{score}</span>
-    </div>
-  );
-}
 
 export default function FeedbacksPage() {
   const { token } = useAuth();

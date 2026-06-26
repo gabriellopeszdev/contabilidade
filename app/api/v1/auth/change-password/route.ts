@@ -83,12 +83,11 @@ export const PATCH = withAuth(async (req, _ctx, auth) => {
     // -----------------------------------------------------------------------
     // Buscar hash atual do banco
     // -----------------------------------------------------------------------
-    const tabela =
-      auth.role === 'ACCOUNTANT' || auth.role === 'ADMIN'
-        ? 'usuarioContador'
-        : 'usuarioCliente';
+    const repo = auth.role === 'ACCOUNTANT' || auth.role === 'ADMIN'
+      ? prisma.usuarioContador
+      : prisma.usuarioCliente;
 
-    const usuario = await (prisma[tabela as 'usuarioContador'] as any).findUnique({
+    const usuario = await repo.findUnique({
       where: { id: auth.sub },
       select: { passwordHash: true },
     });
@@ -116,7 +115,7 @@ export const PATCH = withAuth(async (req, _ctx, auth) => {
     // -----------------------------------------------------------------------
     const novoHash = await hasher.hash(novaSenha);
 
-    await (prisma[tabela as 'usuarioContador'] as any).update({
+    await repo.update({
       where: { id: auth.sub },
       data:  { passwordHash: novoHash },
     });

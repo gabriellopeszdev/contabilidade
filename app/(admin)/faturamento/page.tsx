@@ -826,7 +826,7 @@ export default function FaturamentoPage() {
                   <select
                     required
                     value={manualBillingForm.action}
-                    onChange={(e) => setManualBillingForm(f => ({ ...f, action: e.target.value as any }))}
+                    onChange={(e) => setManualBillingForm(f => ({ ...f, action: e.target.value as 'criar_cobranca_avulsa' | 'criar_assinatura' }))}
                     className="w-full appearance-none bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-violet-500"
                   >
                     <option value="criar_cobranca_avulsa">Emitir Fatura Avulsa (Boleto/Pix Único)</option>
@@ -843,7 +843,7 @@ export default function FaturamentoPage() {
                   <select
                     required
                     value={manualBillingForm.billingType}
-                    onChange={(e) => setManualBillingForm(f => ({ ...f, billingType: e.target.value as any }))}
+                    onChange={(e) => setManualBillingForm(f => ({ ...f, billingType: e.target.value as 'BOLETO' | 'PIX' | 'CREDIT_CARD' }))}
                     className="w-full appearance-none bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-violet-500"
                   >
                     <option value="BOLETO">Boleto ou Pix</option>

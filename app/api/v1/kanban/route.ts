@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import type { SetorTipo, EstadoTarefa, PrioridadeTarefa } from '@prisma/client';
 
 import { withAuth } from '../../../../src/infrastructure/http/middlewares/withAuth';
 import { prisma }   from '../../../../src/infrastructure/di/Container';
@@ -53,9 +54,9 @@ export const GET = withAuth(async (req, _ctx, auth) => {
       where: {
         clientId: clienteId ? clienteId : { in: meusClienteIds },
         ...funcionarioFilter,
-        ...(setor    ? { sector:       setor    as any } : {}),
-        ...(priority ? { priority:     priority as any } : {}),
-        ...(status   ? { currentState: status   as any } : {}),
+        ...(setor    ? { sector:       setor    as SetorTipo }        : {}),
+        ...(priority ? { priority:     priority as PrioridadeTarefa } : {}),
+        ...(status   ? { currentState: status   as EstadoTarefa }     : {}),
       },
       orderBy: [
         { currentState: 'asc' },

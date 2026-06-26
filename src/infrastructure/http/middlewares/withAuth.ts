@@ -191,6 +191,14 @@ export function withAuth(
     // Resolvemos aqui para que todos os handlers recebam params síncronos.
     const resolvedParams = await Promise.resolve(ctx.params);
 
-    return handler(req, { params: resolvedParams }, auth);
+    try {
+      return await handler(req, { params: resolvedParams }, auth);
+    } catch (err) {
+      console.error('[withAuth] Unhandled error in handler', err);
+      return NextResponse.json(
+        { message: 'Erro interno do servidor.' },
+        { status: 500 },
+      );
+    }
   };
 }

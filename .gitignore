@@ -40,3 +40,6 @@ npm-debug.log*
 # PDF and binary assets used only locally
 arquitetura-sistema-contabil-v2.pdf
 asaas-rotas.docx
+
+# Local screenshots
+Screenshot_*.png
