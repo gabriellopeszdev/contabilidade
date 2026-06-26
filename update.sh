@@ -1,15 +1,9 @@
 #!/bin/bash
 # =============================================================================
-# update.sh — Atualização com downtime mínimo (~15s)
+# update.sh — Atualização manual no VPS (sem git pull)
 #
-# Fluxo:
-#   1. git pull (puxa o código novo)
-#   2. Constrói a nova imagem enquanto o app atual ainda está servindo
-#   3. Reinicia apenas o container app
-#   4. Aguarda o healthcheck confirmar que o app voltou
-#
-# O Nginx externo (Portainer/HestiaCP) deve ter a página de erro 502
-# configurada para fazer auto-refresh — veja nginx-502.conf neste repositório.
+# Use quando precisar reconstruir o app sem fazer novo commit/push.
+# O deploy automático via GitHub Actions já executa isso sozinho.
 #
 # Uso: ./update.sh
 # =============================================================================
@@ -30,20 +24,14 @@ echo "║       FiscoHub — Atualização             ║"
 echo "╚══════════════════════════════════════════╝"
 echo ""
 
-# [1] Puxa o código mais recente
-info "[1/3] Atualizando código..."
-git pull --ff-only
-ok "Código atualizado."
-echo ""
-
-# [2] Constrói nova imagem (app continua servindo)
-info "[2/3] Construindo nova imagem (app no ar durante o build)..."
+# [1] Reconstrói a imagem (app continua servindo durante o build)
+info "[1/2] Construindo nova imagem (app no ar durante o build)..."
 docker compose build app
 ok "Imagem construída."
 echo ""
 
-# [3] Troca o container (janela de ~15s onde Nginx serve erro 502 customizado)
-info "[3/3] Reiniciando app e aguardando healthcheck..."
+# [2] Troca o container (janela de ~15s onde Nginx serve erro 502 customizado)
+info "[2/2] Reiniciando app e aguardando healthcheck..."
 docker compose up -d --no-deps app
 
 elapsed=0
