@@ -5,6 +5,7 @@ import { SetorTipo }       from '@prisma/client';
 import { withAuth }        from '../../../../../src/infrastructure/http/middlewares/withAuth';
 import { prisma, storageService, emailService } from '../../../../../src/infrastructure/di/Container';
 import { logger } from '../../../../../src/utils/logger';
+import { normalizarPdfBuffer } from '../../../../../src/infrastructure/pdf/normalizarPdf';
 
 // =============================================================================
 // Configuração do runtime
@@ -102,9 +103,12 @@ export const POST = withAuth(async (req, _ctx, auth) => {
     }
 
     // ------------------------------------------------------------------
-    // 3. Ler conteúdo e calcular SHA-256
+    // 3. Ler conteúdo, normalizar PDF e calcular SHA-256
     // ------------------------------------------------------------------
-    const buffer   = Buffer.from(await arquivo.arrayBuffer());
+    const bufferOriginal = Buffer.from(await arquivo.arrayBuffer());
+    const buffer = arquivo.type === 'application/pdf'
+      ? await normalizarPdfBuffer(bufferOriginal)
+      : bufferOriginal;
     const fileHash = createHash('sha256').update(buffer).digest('hex');
 
     // Deduplicação: mesmo arquivo para o mesmo cliente
@@ -157,7 +161,7 @@ export const POST = withAuth(async (req, _ctx, auth) => {
           fileName:      arquivo.name,
           storagePath,
           fileType:      fileType as 'PDF' | 'XML' | 'XLSX' | 'XLS' | 'DOCX' | 'DOC' | 'CSV' | 'OFX' | 'ODS',
-          fileSizeBytes: BigInt(arquivo.size),
+          fileSizeBytes: BigInt(buffer.byteLength),
           fileHash,
           ...(sector ? { sector } : {}),
         },

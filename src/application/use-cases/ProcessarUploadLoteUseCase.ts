@@ -4,6 +4,7 @@ import type { IDocumentoRepository } from '../../domain/ports/IDocumentoReposito
 import type { IStorageService } from '../../domain/ports/IStorageService';
 import type { IAuditLogRepository } from '../../domain/ports/IAuditLogRepository';
 import type { IEventDispatcher } from '../../domain/ports/IEventDispatcher';
+import { normalizarPdfBuffer } from '../../infrastructure/pdf/normalizarPdf';
 
 import { DocumentoFiscal } from '../../domain/entities/DocumentoFiscal';
 import type { FileType } from '../../domain/entities/DocumentoFiscal';
@@ -230,8 +231,13 @@ export class ProcessarUploadLoteUseCase {
       );
     }
 
-    // 4. Calcula SHA-256 do conteúdo real (integridade + deduplicação)
-    const fileHash = createHash('sha256').update(arquivo.conteudo).digest('hex');
+    // 3.5. Normaliza PDF para garantir compatibilidade com Firefox PDF.js
+    const conteudoFinal = arquivo.mimeType === 'application/pdf'
+      ? await normalizarPdfBuffer(arquivo.conteudo)
+      : arquivo.conteudo;
+
+    // 4. Calcula SHA-256 do conteúdo normalizado (integridade + deduplicação)
+    const fileHash = createHash('sha256').update(conteudoFinal).digest('hex');
 
     // 5. Verifica duplicidade (mesmo arquivo + mesmo cliente)
     const duplicado = await this.documentoRepository.hashJaExiste(fileHash, clienteId);
@@ -253,7 +259,7 @@ export class ProcessarUploadLoteUseCase {
     );
 
     // 7. Faz upload binário ao MinIO via abstração IStorageService
-    await this.storageService.upload(storagePath, arquivo.conteudo, arquivo.mimeType);
+    await this.storageService.upload(storagePath, conteudoFinal, arquivo.mimeType);
 
     // 8. Instancia a Entidade Rica (nunca anêmica — encapsula invariantes)
     const documentoId = crypto.randomUUID();
@@ -265,7 +271,7 @@ export class ProcessarUploadLoteUseCase {
       fileName: arquivo.fileName,
       storagePath,
       fileType,
-      fileSizeBytes: arquivo.fileSizeBytes,
+      fileSizeBytes: conteudoFinal.byteLength,
       fileHash,
       competencia: arquivo.competencia ?? null,
       metadataJson: arquivo.metadataExtra ?? {},
