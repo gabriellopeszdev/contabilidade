@@ -89,7 +89,7 @@ export const PATCH = withAuth(async (req, _ctx, auth) => {
       ? await prisma.usuarioContador.findUnique({ where: { id: auth.sub }, select: { passwordHash: true } })
       : await prisma.usuarioCliente.findUnique({ where: { id: auth.sub }, select: { passwordHash: true } });
 
-    if (!usuario) {
+    if (!usuario || !usuario.passwordHash) {
       return NextResponse.json(
         { message: 'Usuário não encontrado.' },
         { status: 404 },
