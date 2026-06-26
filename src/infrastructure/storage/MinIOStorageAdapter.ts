@@ -76,11 +76,21 @@ export class MinIOStorageAdapter implements IStorageService {
   async gerarPresignedUrlDownload(
     storagePath: string,
     expiresInSeconds = 300, // 5 minutos
+    fileName?: string,
   ): Promise<PresignedUrlDownload> {
+    const reqParams: Record<string, string> = {};
+    if (fileName) {
+      // Força o browser a salvar o arquivo em vez de abrir inline (ex: PDF no PDF.js).
+      // "filename*=UTF-8''..." cobre nomes com caracteres especiais (RFC 5987).
+      reqParams['response-content-disposition'] =
+        `attachment; filename*=UTF-8''${encodeURIComponent(fileName)}`;
+    }
+
     const url = await this.presignClient.presignedGetObject(
       this.bucket,
       storagePath,
       expiresInSeconds,
+      reqParams,
     );
 
     return {

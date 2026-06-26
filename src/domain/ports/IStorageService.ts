@@ -58,10 +58,12 @@ export interface IStorageService {
    *
    * @param storagePath Caminho completo no bucket.
    * @param expiresInSeconds Validade da URL em segundos. Padrão: 300 (5min).
+   * @param fileName Quando fornecido, adiciona `Content-Disposition: attachment; filename="..."` à URL assinada, forçando o browser a salvar o arquivo em vez de abrir inline.
    */
   gerarPresignedUrlDownload(
     storagePath: string,
     expiresInSeconds?: number,
+    fileName?: string,
   ): Promise<PresignedUrlDownload>;
 
   /**

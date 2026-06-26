@@ -217,6 +217,7 @@ export async function GET(
     const { url, expiresAt } = await storageService.gerarPresignedUrlDownload(
       docRow.storagePath,
       EXPIRY_SECONDS,
+      docRow.fileName,
     );
 
     return NextResponse.json({

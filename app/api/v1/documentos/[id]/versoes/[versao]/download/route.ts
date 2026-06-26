@@ -9,11 +9,16 @@ export const GET = withAuth(async (req, ctx) => {
 
   const registro = await prisma.documentoVersao.findUnique({
     where: { documentoId_versao: { documentoId: id, versao: versaoNum } },
+    include: { documento: { select: { fileName: true } } },
   });
 
   if (!registro) return NextResponse.json({ message: 'Versão não encontrada' }, { status: 404 });
 
-  const { url, expiresAt } = await storageService.gerarPresignedUrlDownload(registro.storagePath, 300);
+  const { url, expiresAt } = await storageService.gerarPresignedUrlDownload(
+    registro.storagePath,
+    300,
+    registro.documento.fileName,
+  );
 
   return NextResponse.json({ url, expiresAt: expiresAt.toISOString() });
 }, ['ACCOUNTANT', 'CLIENT', 'EMPLOYEE', 'ADMIN']);

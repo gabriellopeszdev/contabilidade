@@ -199,11 +199,18 @@ export function useDocumentosCliente(options?: UseDocumentosClienteOptions): Use
         );
       }
 
-      const { url } = (await res.json()) as DownloadResponse;
+      const { url, nomeArquivo } = (await res.json()) as DownloadResponse;
 
-      // Abre a URL em nova aba. O MinIO entrega o arquivo diretamente ao browser
-      // sem passar pelo servidor Next.js (bypassa a banda do servidor).
-      window.open(url, '_blank', 'noopener,noreferrer');
+      // Força download para disco (evita abrir inline no PDF.js do Firefox).
+      // <a download> funciona para URLs same-origin — o MinIO é servido via Nginx
+      // no mesmo domínio (fiscohub.azura.dev.br/documentos-contabeis/...).
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = nomeArquivo || 'documento';
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
 
       // Revalida para sincronizar readAt real do banco (best-effort)
       void mutate();
