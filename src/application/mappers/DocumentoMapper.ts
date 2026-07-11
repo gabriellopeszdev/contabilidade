@@ -25,7 +25,7 @@ import type { SetorTipo } from '../../domain/value-objects/Setor';
 export interface DocumentoDTO {
   id:            string;
   fileName:      string;
-  fileType:      'XML' | 'PDF' | 'XLSX' | 'XLS' | 'DOCX' | 'DOC' | 'CSV' | 'OFX' | 'ODS';
+  fileType:      'XML' | 'PDF' | 'XLSX' | 'XLS' | 'DOCX' | 'DOC' | 'CSV' | 'OFX' | 'ODS' | 'ZIP' | 'RAR';
   /** Tamanho em bytes (number — documentos fiscais << 2^53). */
   fileSizeBytes: number;
   sector:        SetorTipo;

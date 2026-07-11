@@ -111,7 +111,7 @@ function formatarTamanho(bytes: number): string {
 // Sub-componente: Ícone de tipo de arquivo
 // =============================================================================
 
-function FileIcon({ type }: { type: 'XML' | 'PDF' | 'XLSX' | 'XLS' | 'DOCX' | 'DOC' | 'CSV' | 'OFX' | 'ODS' }) {
+function FileIcon({ type }: { type: 'XML' | 'PDF' | 'XLSX' | 'XLS' | 'DOCX' | 'DOC' | 'CSV' | 'OFX' | 'ODS' | 'ZIP' | 'RAR' }) {
   if (type === 'XML') {
     return (
       <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-900/30 ring-1 ring-amber-200 dark:ring-amber-800 shrink-0">
