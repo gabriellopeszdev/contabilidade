@@ -31,6 +31,7 @@ import {
   Lock,
   TrendingUp,
   Users,
+  Trash2,
 } from 'lucide-react';
 
 import { toast } from 'sonner';
@@ -227,6 +228,10 @@ function ClienteDetalhesPageDono() {
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, [responsaveisPopoverId]);
+
+  // Exclusão de documento
+  const [confirmarExclusaoId, setConfirmarExclusaoId] = useState<string | null>(null);
+  const [excluindoId, setExcluindoId] = useState<string | null>(null);
 
   // Assinatura
   const [assinandoId, setAssinandoId] = useState<string | null>(null);
@@ -461,6 +466,32 @@ function ClienteDetalhesPageDono() {
       return false;
     } finally {
       setAtualizandoSetorId(null);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Excluir documento
+  // ---------------------------------------------------------------------------
+  async function handleExcluir(docId: string) {
+    if (!token) return;
+    setExcluindoId(docId);
+    try {
+      const res = await fetch(`/api/v1/documentos/${docId}`, {
+        method:  'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        toast.error((body as { message?: string }).message ?? 'Erro ao excluir documento.');
+        return;
+      }
+      toast.success('Documento excluído com sucesso.');
+      await mutate();
+    } catch {
+      toast.error('Erro de conexão ao excluir documento.');
+    } finally {
+      setExcluindoId(null);
+      setConfirmarExclusaoId(null);
     }
   }
 
@@ -1240,7 +1271,7 @@ function ClienteDetalhesPageDono() {
                       )}
                     </div>
 
-                    {/* Ações: Download + Assinatura + Responsáveis */}
+                    {/* Ações: Download + Assinatura + Responsáveis + Excluir */}
                     <div className="mt-2 lg:mt-0 flex items-center justify-center gap-1">
                       <button
                         onClick={() => handleDownload(doc)}
@@ -1337,6 +1368,39 @@ function ClienteDetalhesPageDono() {
                             </div>
                           )}
                         </div>
+                      )}
+
+                      {/* Botão excluir */}
+                      {confirmarExclusaoId === doc.id ? (
+                        <div className="flex items-center gap-1 bg-red-50 dark:bg-red-900/20 rounded-lg px-2 py-1">
+                          <span className="text-[11px] text-red-600 dark:text-red-400 font-medium whitespace-nowrap">Confirmar?</span>
+                          <button
+                            onClick={() => handleExcluir(doc.id)}
+                            disabled={excluindoId === doc.id}
+                            className="p-1 rounded text-red-600 hover:bg-red-100 dark:hover:bg-red-900/40 disabled:opacity-50 transition-colors"
+                            title="Confirmar exclusão"
+                          >
+                            {excluindoId === doc.id ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />}
+                          </button>
+                          <button
+                            onClick={() => setConfirmarExclusaoId(null)}
+                            className="p-1 rounded text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                            title="Cancelar"
+                          >
+                            <X size={13} />
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => setConfirmarExclusaoId(doc.id)}
+                          disabled={!!excluindoId}
+                          title="Excluir documento"
+                          aria-label={`Excluir ${doc.fileName}`}
+                          className="p-2 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20
+                            disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                          <Trash2 size={16} />
+                        </button>
                       )}
                     </div>
                   </div>
