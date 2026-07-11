@@ -373,7 +373,7 @@ export function UploadLoteDropzone({
             }`}>
               {isDragOver
                 ? 'Solte os arquivos aqui'
-                : 'Arraste arquivos XML ou PDF aqui'}
+                : 'Arraste arquivos XML, PDF, ZIP ou RAR aqui'}
             </p>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
               ou{' '}
@@ -390,7 +390,7 @@ export function UploadLoteDropzone({
             id={inputId}
             type="file"
             multiple
-            accept=".xml,.pdf,application/xml,text/xml,application/pdf"
+            accept=".xml,.pdf,.zip,.rar,application/xml,text/xml,application/pdf,application/zip,application/x-zip-compressed,application/x-rar-compressed,application/vnd.rar"
             onChange={handleFileInput}
             className="sr-only"
             aria-hidden="true"

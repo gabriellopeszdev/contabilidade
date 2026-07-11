@@ -43,6 +43,8 @@ enum FileType {
   CSV
   OFX
   ODS
+  ZIP
+  RAR
 }
 
 enum EstadoTarefa {

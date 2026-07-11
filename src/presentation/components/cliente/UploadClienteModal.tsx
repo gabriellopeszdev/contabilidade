@@ -31,7 +31,7 @@ const SETORES: { value: SetorTipo; label: string; desc: string }[] = [
   { value: 'CONTABIL', label: 'Contábil', desc: 'Balanços, DRE, extratos bancários' },
 ];
 
-const TIPOS_ACEITOS = '.pdf,.xml,application/pdf,application/xml,text/xml';
+const TIPOS_ACEITOS = '.pdf,.xml,.zip,.rar,application/pdf,application/xml,text/xml,application/zip,application/x-zip-compressed,application/x-rar-compressed,application/vnd.rar';
 const MAX_SIZE_MB   = 10;
 const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
 
@@ -71,8 +71,8 @@ export function UploadClienteModal({ aberto, onFechar, onSucesso }: UploadClient
   // ---------------------------------------------------------------------------
   const validarArquivo = useCallback((file: File): string | null => {
     const ext = file.name.split('.').pop()?.toLowerCase();
-    if (ext !== 'pdf' && ext !== 'xml') {
-      return 'Formato não suportado. Envie apenas PDF ou XML.';
+    if (!['pdf', 'xml', 'zip', 'rar'].includes(ext ?? '')) {
+      return 'Formato não suportado. Envie PDF, XML, ZIP ou RAR.';
     }
     if (file.size > MAX_SIZE_BYTES) {
       return `Arquivo muito grande. O tamanho máximo é ${MAX_SIZE_MB} MB.`;
@@ -275,7 +275,7 @@ export function UploadClienteModal({ aberto, onFechar, onSucesso }: UploadClient
                   Arraste um arquivo aqui ou <span className="text-primary underline">clique para selecionar</span>
                 </p>
                 <p className="text-xs text-gray-400 mt-1">
-                  PDF ou XML &middot; Máximo {MAX_SIZE_MB} MB
+                  PDF, XML, ZIP ou RAR &middot; Máximo {MAX_SIZE_MB} MB
                 </p>
               </div>
             </div>

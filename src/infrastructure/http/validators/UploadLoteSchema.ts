@@ -20,6 +20,7 @@ const ALLOWED_EXTENSIONS = new Set([
   '.csv',
   '.ofx',
   '.ods',
+  '.zip', '.rar',
 ]);
 
 // Mapa de MIME types aceitos (espelha MIME_PARA_FILETYPE do use case)
@@ -36,6 +37,12 @@ const ALLOWED_MIME_TYPES = new Set([
   'application/x-ofx',
   'application/ofx',
   'application/vnd.oasis.opendocument.spreadsheet',                    // ods
+  'application/zip',                                                   // zip
+  'application/x-zip-compressed',                                      // zip (Windows)
+  'application/x-zip',                                                 // zip (alternativo)
+  'application/x-rar-compressed',                                      // rar
+  'application/vnd.rar',                                               // rar (moderno)
+  'application/x-rar',                                                 // rar (alternativo)
 ]);
 
 // UUID v4 estrito — garante que clienteId e contadorId são UUIDs reais,
@@ -115,7 +122,7 @@ function validarArquivo(file: File): string[] {
   if (!ALLOWED_EXTENSIONS.has(ext)) {
     erros.push(
       `"${nome}": extensão "${ext || '(nenhuma)'}" não permitida. ` +
-      `Aceitos: .xml, .pdf, .xlsx, .xls, .docx, .doc, .csv, .ofx, .ods`,
+      `Aceitos: .xml, .pdf, .xlsx, .xls, .docx, .doc, .csv, .ofx, .ods, .zip, .rar`,
     );
   }
 
@@ -124,7 +131,7 @@ function validarArquivo(file: File): string[] {
   if (!ALLOWED_MIME_TYPES.has(file.type)) {
     erros.push(
       `"${nome}": MIME type "${file.type || '(ausente)'}" não permitido. ` +
-      `Aceitos: application/xml, text/xml, application/pdf, xlsx, xls, docx, doc, csv, ofx, ods`,
+      `Aceitos: application/xml, text/xml, application/pdf, xlsx, xls, docx, doc, csv, ofx, ods, zip, rar`,
     );
   }
 

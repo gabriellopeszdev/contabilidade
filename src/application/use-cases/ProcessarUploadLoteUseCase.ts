@@ -43,6 +43,12 @@ const MIME_PARA_FILETYPE: Readonly<Record<string, FileType>> = {
   'application/x-ofx':                                                 'OFX',
   'application/ofx':                                                   'OFX',
   'application/vnd.oasis.opendocument.spreadsheet':                    'ODS',
+  'application/zip':                                                   'ZIP',
+  'application/x-zip-compressed':                                      'ZIP',
+  'application/x-zip':                                                 'ZIP',
+  'application/x-rar-compressed':                                      'RAR',
+  'application/vnd.rar':                                               'RAR',
+  'application/x-rar':                                                 'RAR',
 } as const;
 
 // ---------------------------------------------------------------------------

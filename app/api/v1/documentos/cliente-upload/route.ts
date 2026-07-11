@@ -31,6 +31,12 @@ const TIPOS_ACEITOS: Record<string, string> = {
   'application/x-ofx':                                                 'OFX',
   'application/ofx':                                                   'OFX',
   'application/vnd.oasis.opendocument.spreadsheet':                    'ODS',
+  'application/zip':                                                   'ZIP',
+  'application/x-zip-compressed':                                      'ZIP',
+  'application/x-zip':                                                 'ZIP',
+  'application/x-rar-compressed':                                      'RAR',
+  'application/vnd.rar':                                               'RAR',
+  'application/x-rar':                                                 'RAR',
 };
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
@@ -90,7 +96,7 @@ export const POST = withAuth(async (req, _ctx, auth) => {
     const fileType = TIPOS_ACEITOS[arquivo.type];
     if (!fileType) {
       return NextResponse.json(
-        { message: 'Tipo de arquivo não permitido. Formatos aceitos: PDF, XML, XLSX, XLS, DOCX, DOC, CSV, OFX, ODS.' },
+        { message: 'Tipo de arquivo não permitido. Formatos aceitos: PDF, XML, XLSX, XLS, DOCX, DOC, CSV, OFX, ODS, ZIP, RAR.' },
         { status: 400 },
       );
     }
@@ -160,7 +166,7 @@ export const POST = withAuth(async (req, _ctx, auth) => {
           uploadedById:  auth.sub,
           fileName:      arquivo.name,
           storagePath,
-          fileType:      fileType as 'PDF' | 'XML' | 'XLSX' | 'XLS' | 'DOCX' | 'DOC' | 'CSV' | 'OFX' | 'ODS',
+          fileType:      fileType as 'PDF' | 'XML' | 'XLSX' | 'XLS' | 'DOCX' | 'DOC' | 'CSV' | 'OFX' | 'ODS' | 'ZIP' | 'RAR',
           fileSizeBytes: BigInt(buffer.byteLength),
           fileHash,
           ...(sector ? { sector } : {}),
