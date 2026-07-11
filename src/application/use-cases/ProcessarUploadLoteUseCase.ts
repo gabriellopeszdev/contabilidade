@@ -25,7 +25,7 @@ import type {
 // ---------------------------------------------------------------------------
 
 const MAX_ARQUIVOS_POR_LOTE = 50;
-const MAX_TAMANHO_ARQUIVO_BYTES = 10 * 1_048_576; // 10 MB
+const MAX_TAMANHO_ARQUIVO_BYTES = 500 * 1_048_576; // 500 MB
 const CONCORRENCIA_UPLOAD = 5; // máx de uploads simultâneos ao MinIO
 const PRESIGNED_UPLOAD_EXPIRY_SECONDS = 900; // 15 minutos
 
@@ -224,7 +224,7 @@ export class ProcessarUploadLoteUseCase {
     // 2. Valida o tamanho (defesa em profundidade — o controller também valida)
     if (arquivo.fileSizeBytes > MAX_TAMANHO_ARQUIVO_BYTES) {
       throw new DomainException(
-        `Arquivo "${arquivo.fileName}" excede o limite de 10 MB ` +
+        `Arquivo "${arquivo.fileName}" excede o limite de 500 MB ` +
           `(${(arquivo.fileSizeBytes / 1_048_576).toFixed(2)} MB recebido).`,
       );
     }

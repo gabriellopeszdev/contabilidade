@@ -380,7 +380,7 @@ export function UploadLoteDropzone({
               <span className="text-primary font-medium underline underline-offset-2">
                 clique para selecionar
               </span>
-              {' '}— máx. 10 MB por arquivo, até 50 arquivos
+              {' '}— máx. 500 MB por arquivo, até 50 arquivos
             </p>
           </div>
 

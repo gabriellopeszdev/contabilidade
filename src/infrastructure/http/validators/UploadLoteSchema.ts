@@ -11,7 +11,7 @@ import type {
 // I/O (DB, MinIO). O use case também as valida — defense in depth.
 // =============================================================================
 
-const MAX_FILE_SIZE_BYTES = 10 * 1_048_576; // 10 MB
+const MAX_FILE_SIZE_BYTES = 500 * 1_048_576; // 500 MB
 const MAX_FILES_PER_BATCH = 50;
 const ALLOWED_EXTENSIONS = new Set([
   '.xml', '.pdf',
@@ -140,7 +140,7 @@ function validarArquivo(file: File): string[] {
     erros.push(`"${nome}": arquivo está vazio (0 bytes)`);
   } else if (file.size > MAX_FILE_SIZE_BYTES) {
     erros.push(
-      `"${nome}": ${(file.size / 1_048_576).toFixed(2)} MB excede o limite de 10 MB`,
+      `"${nome}": ${(file.size / 1_048_576).toFixed(2)} MB excede o limite de 500 MB`,
     );
   }
 

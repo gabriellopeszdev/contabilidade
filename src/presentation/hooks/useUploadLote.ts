@@ -145,7 +145,7 @@ function reducer(estado: Estado, acao: Acao): Estado {
 // Executada ANTES de qualquer requisição para poupar banda.
 // =============================================================================
 
-const MAX_TAMANHO = 10 * 1_048_576; // 10 MB
+const MAX_TAMANHO = 500 * 1_048_576; // 500 MB
 const EXTENSOES   = new Set(['.xml', '.pdf']);
 const MIMES       = new Set(['application/xml', 'text/xml', 'application/pdf']);
 const MAX_ARQUIVOS = 50;
@@ -153,7 +153,7 @@ const MAX_ARQUIVOS = 50;
 function validarArquivoLocal(file: File): string | null {
   if (file.size === 0) return 'Arquivo vazio (0 bytes)';
   if (file.size > MAX_TAMANHO)
-    return `${(file.size / 1_048_576).toFixed(1)} MB excede o limite de 10 MB`;
+    return `${(file.size / 1_048_576).toFixed(1)} MB excede o limite de 500 MB`;
 
   const ext = '.' + (file.name.split('.').pop()?.toLowerCase() ?? '');
   if (!EXTENSOES.has(ext))

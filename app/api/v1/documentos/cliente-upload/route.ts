@@ -39,7 +39,7 @@ const TIPOS_ACEITOS: Record<string, string> = {
   'application/x-rar':                                                 'RAR',
 };
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+const MAX_FILE_SIZE = 500 * 1024 * 1024; // 500 MB
 
 const CATEGORIA_SETOR_MAP: Record<string, SetorTipo> = {
   xml:      SetorTipo.FISCAL,

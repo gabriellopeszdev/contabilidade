@@ -32,7 +32,7 @@ const SETORES: { value: SetorTipo; label: string; desc: string }[] = [
 ];
 
 const TIPOS_ACEITOS = '.pdf,.xml,.zip,.rar,application/pdf,application/xml,text/xml,application/zip,application/x-zip-compressed,application/x-rar-compressed,application/vnd.rar';
-const MAX_SIZE_MB   = 10;
+const MAX_SIZE_MB   = 500;
 const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
 
 // =============================================================================
