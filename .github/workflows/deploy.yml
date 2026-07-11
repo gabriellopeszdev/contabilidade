@@ -11,98 +11,54 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
-    env:
-      SSH_OPTS: >-
-        -i ~/.ssh/deploy_key
-        -o StrictHostKeyChecking=no
-        -o ServerAliveInterval=60
-        -o ServerAliveCountMax=10
-        -o ConnectTimeout=30
-
     steps:
       - name: Checkout do código
         uses: actions/checkout@v4
 
       # -------------------------------------------------------------------------
-      # Configura a chave SSH privada (secret VPS_SSH_KEY no GitHub)
+      # Empacota o código-fonte como tarball gzip.
+      # Exclui arquivos que NÃO devem sobrescrever o VPS:
+      #   .env              → credenciais de produção (ficam no VPS)
+      #   nginx/nginx.conf  → tem o domínio real substituído no VPS
+      #   node_modules/     → Docker instala dentro do container
+      #   .next/            → Docker gera no build
+      #   .data/            → dados de produção (DB, MinIO, Redis)
       # -------------------------------------------------------------------------
-      - name: Configurar chave SSH
-        env:
-          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      - name: Empacotar código-fonte
         run: |
-          mkdir -p ~/.ssh
-          echo "$VPS_SSH_KEY" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          # ssh-keyscan pode falhar se o VPS bloquear temporariamente — não é crítico
-          ssh-keyscan -H "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null || true
-
-      # -------------------------------------------------------------------------
-      # Copia apenas o código-fonte (sem .env, .data, node_modules, .next)
-      # O Docker constrói node_modules e .next dentro do container.
-      # O .env de produção fica no VPS e NÃO é sobrescrito.
-      # -------------------------------------------------------------------------
-      - name: Sincronizar código para VPS
-        run: |
-          rsync -az --delete \
-            --exclude='.git/' \
-            --exclude='node_modules/' \
-            --exclude='.next/' \
-            --exclude='.data/' \
+          tar czf /tmp/deploy.tar.gz \
+            --exclude='.git' \
+            --exclude='node_modules' \
+            --exclude='.next' \
+            --exclude='.data' \
             --exclude='.env' \
-            --exclude='docs/superpowers/' \
-            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no -o ServerAliveInterval=30" \
-            ./ "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/root/contabilidade/"
+            --exclude='nginx/nginx.conf' \
+            --exclude='docs/superpowers' \
+            .
+          echo "Tarball: $(du -sh /tmp/deploy.tar.gz | cut -f1)"
 
       # -------------------------------------------------------------------------
-      # Reconstrói e reinicia apenas o container app (sem derrubar DB/MinIO/Redis)
-      # --no-deps garante que só o app é reconstruído
+      # Envia tarball via HTTPS POST para o webhook do VPS.
+      # O VPS extrai os arquivos, reconstrói o container app e roda migrations.
+      # Sem SSH — funciona mesmo com firewall restritivo.
+      # Timeout de 10 min (docker build pode demorar).
       # -------------------------------------------------------------------------
-      - name: Reconstruir e reiniciar app
+      - name: Enviar e implantar no VPS
         run: |
-          ssh $SSH_OPTS \
-            "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" \
-            "cd /root/contabilidade && docker compose up -d --build --no-deps app"
+          HTTP_STATUS=$(curl -s -o /tmp/hook_response.txt -w "%{http_code}" \
+            --max-time 600 \
+            -X POST \
+            -H "Authorization: Bearer ${{ secrets.DEPLOY_HOOK_SECRET }}" \
+            -H "Content-Type: application/octet-stream" \
+            --data-binary @/tmp/deploy.tar.gz \
+            "${{ secrets.DEPLOY_URL }}")
 
-      # -------------------------------------------------------------------------
-      # Aguarda o healthcheck confirmar que o app voltou (máx 2 minutos)
-      # -------------------------------------------------------------------------
-      - name: Aguardar healthcheck
-        run: |
-          ssh $SSH_OPTS \
-            "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" << 'ENDSSH'
-          elapsed=0
-          until curl -sf http://localhost:4500/api/health > /dev/null 2>&1; do
-            if [ $elapsed -ge 120 ]; then
-              echo "ERRO: App não iniciou em 120s"
-              docker compose -f /root/contabilidade/docker-compose.yml logs --tail=30 app
-              exit 1
-            fi
-            sleep 5
-            elapsed=$((elapsed + 5))
-          done
-          echo "App online em ${elapsed}s"
-          ENDSSH
+          echo "=== Resposta do VPS ==="
+          cat /tmp/hook_response.txt
+          echo ""
+          echo "HTTP status: $HTTP_STATUS"
 
-      # -------------------------------------------------------------------------
-      # Roda migrations do banco (idempotente — seguro rodar sempre)
-      # -------------------------------------------------------------------------
-      - name: Rodar migrations
-        run: |
-          ssh $SSH_OPTS \
-            "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" \
-            "cd /root/contabilidade && docker compose exec -T app npx prisma migrate deploy"
-
-      # -------------------------------------------------------------------------
-      # Remove imagens Docker antigas para liberar espaço em disco
-      # -------------------------------------------------------------------------
-      - name: Limpar imagens antigas
-        run: |
-          ssh $SSH_OPTS \
-            "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" \
-            "docker image prune -f"
-
-      - name: Status dos containers
-        run: |
-          ssh $SSH_OPTS \
-            "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" \
-            "cd /root/contabilidade && docker compose ps"
+          if [ "$HTTP_STATUS" != "200" ]; then
+            echo "::error::Deploy falhou (HTTP $HTTP_STATUS)"
+            exit 1
+          fi
