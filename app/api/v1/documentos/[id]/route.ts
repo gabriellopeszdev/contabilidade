@@ -63,7 +63,11 @@ export const DELETE = withAuth(async (_req, ctx, auth) => {
       return NextResponse.json({ message: 'Documento não encontrado.' }, { status: 404 });
     }
 
-    if (auth.role !== 'ADMIN') {
+    if (auth.role === 'CLIENT') {
+      if (documento.clientId !== auth.sub) {
+        return NextResponse.json({ message: 'Documento não encontrado.' }, { status: 404 });
+      }
+    } else if (auth.role !== 'ADMIN') {
       const contadorId = auth.role === 'EMPLOYEE' ? auth.superiorId : auth.sub;
       if (!contadorId) {
         return NextResponse.json({ message: 'Acesso negado.' }, { status: 403 });
@@ -110,4 +114,4 @@ export const DELETE = withAuth(async (_req, ctx, auth) => {
     logger.error('[DELETE /documentos/:id] Erro', err instanceof Error ? err : undefined);
     return NextResponse.json({ message: 'Erro interno do servidor.' }, { status: 500 });
   }
-}, ['ACCOUNTANT', 'EMPLOYEE', 'ADMIN']);
+}, ['ACCOUNTANT', 'EMPLOYEE', 'ADMIN', 'CLIENT']);

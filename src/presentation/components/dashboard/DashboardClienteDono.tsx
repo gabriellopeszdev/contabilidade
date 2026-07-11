@@ -14,6 +14,7 @@ import {
   Loader2,
   EyeOff,
   FileCode2,
+  Trash2,
 } from 'lucide-react';
 
 import { useDocumentosCliente, type SetorFiltro } from '../../hooks/useDocumentosCliente';
@@ -89,6 +90,31 @@ export default function DashboardClienteDono() {
     const t = setTimeout(fecharToast, 5000);
     return () => clearTimeout(t);
   }, [toast, fecharToast]);
+
+  // Exclusão com dupla confirmação
+  const [confirmarExclusaoId, setConfirmarExclusaoId] = useState<string | null>(null);
+  const [excluindoId,         setExcluindoId]         = useState<string | null>(null);
+
+  const handleExcluir = useCallback(async (id: string) => {
+    setExcluindoId(id);
+    setConfirmarExclusaoId(null);
+    try {
+      const res = await fetch(`/api/v1/documentos/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.message ?? 'Erro ao excluir documento.');
+      }
+      setToast({ tipo: 'sucesso', msg: 'Documento excluído com sucesso.' });
+      revalidar();
+    } catch (err) {
+      setToast({ tipo: 'erro', msg: err instanceof Error ? err.message : 'Erro ao excluir.' });
+    } finally {
+      setExcluindoId(null);
+    }
+  }, [token, revalidar]);
 
   // Marcar como lido sem abrir download
   const [marcandoIds, setMarcandoIds] = useState<Set<string>>(new Set());
@@ -281,8 +307,10 @@ export default function DashboardClienteDono() {
               const badgeCfg  = SETOR_BADGE[setor_];
               const iconCfg   = SETOR_ICON[setor_] ?? { bg: 'bg-gray-50', cor: 'text-gray-400' };
               const isPDF     = doc.fileType === 'PDF';
-              const isBaixando = baixandoIds.has(doc.id);
-              const isMarcando = marcandoIds.has(doc.id);
+              const isBaixando   = baixandoIds.has(doc.id);
+              const isMarcando   = marcandoIds.has(doc.id);
+              const isExcluindo  = excluindoId === doc.id;
+              const pedindoConf  = confirmarExclusaoId === doc.id;
 
               return (
                 <div
@@ -341,44 +369,81 @@ export default function DashboardClienteDono() {
                   </div>
 
                   {/* Rodapé */}
-                  <div className="px-4 py-3 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between gap-2">
-                    <span className="text-[11px] text-gray-400 dark:text-gray-500">
-                      {isPDF ? 'PDF' : 'XML'} · {formatarTamanho(doc.fileSizeBytes)}
-                    </span>
+                  <div className="px-4 py-3 border-t border-gray-100 dark:border-gray-800 flex flex-col gap-2">
+                    {/* Confirmação de exclusão */}
+                    {pedindoConf && (
+                      <div className="flex items-center justify-between gap-2 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 px-3 py-2">
+                        <span className="text-xs font-medium text-red-700 dark:text-red-400">Excluir este documento?</span>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            onClick={() => handleExcluir(doc.id)}
+                            className="px-2.5 py-1 rounded-md text-xs font-semibold bg-red-500 text-white hover:bg-red-600 transition-colors"
+                          >
+                            Confirmar
+                          </button>
+                          <button
+                            onClick={() => setConfirmarExclusaoId(null)}
+                            className="px-2.5 py-1 rounded-md text-xs font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                          >
+                            Cancelar
+                          </button>
+                        </div>
+                      </div>
+                    )}
 
-                    <div className="flex items-center gap-1">
-                      {/* Marcar como lido — só para não-lidos do escritório */}
-                      {!doc.readStatus && doc.origem === 'UPLOAD_CONTADOR' && (
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[11px] text-gray-400 dark:text-gray-500">
+                        {isPDF ? 'PDF' : 'XML'} · {formatarTamanho(doc.fileSizeBytes)}
+                      </span>
+
+                      <div className="flex items-center gap-1">
+                        {/* Marcar como lido — só para não-lidos do escritório */}
+                        {!doc.readStatus && doc.origem === 'UPLOAD_CONTADOR' && (
+                          <button
+                            onClick={() => marcarComoLido(doc.id)}
+                            disabled={isMarcando || isBaixando || isExcluindo}
+                            title="Marcar como lido"
+                            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium
+                              text-gray-500 dark:text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 border border-gray-200 dark:border-gray-700
+                              hover:border-emerald-200 disabled:opacity-40 transition-colors"
+                          >
+                            {isMarcando
+                              ? <Loader2 size={12} className="animate-spin" />
+                              : <CheckCircle2 size={12} />
+                            }
+                            <span className="hidden sm:inline">Lido</span>
+                          </button>
+                        )}
+
                         <button
-                          onClick={() => marcarComoLido(doc.id)}
-                          disabled={isMarcando || isBaixando}
-                          title="Marcar como lido"
+                          onClick={() => handleBaixar(doc.id)}
+                          disabled={isBaixando || isMarcando || isExcluindo}
+                          title="Baixar arquivo"
                           className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium
-                            text-gray-500 dark:text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 border border-gray-200 dark:border-gray-700
-                            hover:border-emerald-200 disabled:opacity-40 transition-colors"
+                            text-gray-500 dark:text-gray-400 hover:text-primary hover:bg-primary-50 dark:hover:bg-primary/10 border border-gray-200 dark:border-gray-700
+                            hover:border-primary/30 dark:hover:border-primary/20 disabled:opacity-40 transition-colors"
                         >
-                          {isMarcando
+                          {isBaixando
                             ? <Loader2 size={12} className="animate-spin" />
-                            : <CheckCircle2 size={12} />
+                            : <Download size={12} />
                           }
-                          <span className="hidden sm:inline">Lido</span>
+                          Baixar
                         </button>
-                      )}
 
-                      <button
-                        onClick={() => handleBaixar(doc.id)}
-                        disabled={isBaixando || isMarcando}
-                        title="Baixar arquivo"
-                        className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium
-                          text-gray-500 dark:text-gray-400 hover:text-primary hover:bg-primary-50 dark:hover:bg-primary/10 border border-gray-200 dark:border-gray-700
-                          hover:border-primary/30 dark:hover:border-primary/20 disabled:opacity-40 transition-colors"
-                      >
-                        {isBaixando
-                          ? <Loader2 size={12} className="animate-spin" />
-                          : <Download size={12} />
-                        }
-                        Baixar
-                      </button>
+                        <button
+                          onClick={() => setConfirmarExclusaoId(pedindoConf ? null : doc.id)}
+                          disabled={isBaixando || isMarcando || isExcluindo}
+                          title="Excluir documento"
+                          className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium
+                            text-gray-500 dark:text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 border border-gray-200 dark:border-gray-700
+                            hover:border-red-200 dark:hover:border-red-800 disabled:opacity-40 transition-colors"
+                        >
+                          {isExcluindo
+                            ? <Loader2 size={12} className="animate-spin" />
+                            : <Trash2 size={12} />
+                          }
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
