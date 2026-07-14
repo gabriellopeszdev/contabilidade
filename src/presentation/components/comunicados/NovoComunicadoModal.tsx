@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useReducer } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
@@ -34,8 +34,8 @@ function ToolbarButton({
       title={title}
       className={`p-1.5 rounded text-sm transition-colors ${
         ativo
-          ? 'bg-primary/20 text-primary'
-          : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+          ? 'bg-primary/25 dark:bg-primary/35 text-primary ring-1 ring-primary/40'
+          : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100'
       }`}
     >
       {children}
@@ -54,6 +54,8 @@ export function NovoComunicadoModal({ aberto, token, onFechar, onSucesso }: Novo
   const [enviando, setEnviando]           = useState(false);
   const [erro, setErro]                   = useState<string | null>(null);
 
+  const [, forceUpdate] = useReducer((x: number) => x + 1, 0);
+
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -65,6 +67,8 @@ export function NovoComunicadoModal({ aberto, token, onFechar, onSucesso }: Novo
         class: 'min-h-[160px] p-3 text-sm text-gray-900 dark:text-gray-100 focus:outline-none',
       },
     },
+    onSelectionUpdate: forceUpdate,
+    onUpdate:          forceUpdate,
   });
 
   useEffect(() => {
