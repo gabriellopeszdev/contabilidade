@@ -55,10 +55,10 @@ export const GET = withAuth(async (req, ctx: ResolvedRouteContext, auth) => {
       return NextResponse.json({ message: 'Comunicado não encontrado.' }, { status: 404 });
     }
 
-    await prisma.comunicadoDestinatario.upsert({
-      where:  { comunicadoId_clienteId: { comunicadoId: id, clienteId: auth.sub } },
-      create: { comunicadoId: id, clienteId: auth.sub, lido: true, lidoAt: new Date() },
-      update: { lido: true, lidoAt: new Date() },
+    // Marca como lido apenas se o cliente já é destinatário (não cria linhas novas)
+    await prisma.comunicadoDestinatario.updateMany({
+      where: { comunicadoId: id, clienteId: auth.sub, lido: false },
+      data:  { lido: true, lidoAt: new Date() },
     });
 
     const dest = await prisma.comunicadoDestinatario.findUnique({
@@ -81,8 +81,8 @@ export const GET = withAuth(async (req, ctx: ResolvedRouteContext, auth) => {
       publicadoAt:      comunicado.publicadoAt.toISOString(),
       anexoNome:        comunicado.anexoNome,
       anexoUrl,
-      souDestinatario:  true,
-      lido:             dest?.lido ?? true,
+      souDestinatario:  dest !== null,
+      lido:             dest?.lido ?? false,
       confirmado:       dest?.confirmado ?? false,
     });
   } catch (err) {
