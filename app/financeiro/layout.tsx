@@ -8,7 +8,7 @@ import {
   LogOut, Menu, X, Loader2, Bell, ChevronDown, Building2,
   MessageSquare, CalendarDays, UserCog, DollarSign, Home,
   Sun, Moon, FileBarChart, PenLine, Search, ChevronsLeft, ChevronsRight,
-  Bot, Lock, ClipboardList, Clock,
+  Bot, Lock, ClipboardList, Clock, Megaphone,
 } from 'lucide-react';
 import { FiscoHubLogo } from '../components/FiscoHubLogo';
 
@@ -72,8 +72,9 @@ const NAV_GRUPOS_CONTADOR: NavGroup[] = [
   {
     label: 'Comunicação',
     items: [
-      { href: '/chat',    label: 'Chat',    icon: <MessageSquare size={18} />,            feature: 'chat' },
-      { href: '/chat-ia', label: 'Chat IA', icon: <Bot           size={18} />, donoOnly: true, feature: 'ia' },
+      { href: '/chat',        label: 'Chat',        icon: <MessageSquare size={18} />,            feature: 'chat' },
+      { href: '/chat-ia',    label: 'Chat IA',    icon: <Bot           size={18} />, donoOnly: true, feature: 'ia' },
+      { href: '/comunicados', label: 'Comunicados', icon: <Megaphone     size={18} /> },
     ],
   },
   {
@@ -114,7 +115,8 @@ const NAV_GRUPOS_CLIENTE: NavGrupoCliente[] = [
   {
     label: 'Comunicação',
     items: [
-      { href: '/chat', label: 'Chat', icon: <MessageSquare size={18} /> },
+      { href: '/chat',        label: 'Chat',        icon: <MessageSquare size={18} /> },
+      { href: '/informativos', label: 'Informativos', icon: <Megaphone     size={18} /> },
     ],
   },
   {
