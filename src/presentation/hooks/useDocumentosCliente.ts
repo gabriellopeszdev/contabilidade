@@ -17,6 +17,7 @@ export type { DocumentoClienteDTO };
 // =============================================================================
 
 export type SetorFiltro = 'FISCAL' | 'PESSOAL' | 'CONTABIL';
+export type CategoriaFiltro = 'xml' | 'extratos' | 'despesas' | 'impostos' | 'folha' | 'diversos';
 
 export interface PaginaDocumentos {
   items:           DocumentoClienteDTO[];
@@ -46,6 +47,8 @@ export interface UseDocumentosClienteReturn {
   page:            number;
   setor:           SetorFiltro | undefined;
   setSetor:        (s: SetorFiltro | undefined) => void;
+  categoria:       CategoriaFiltro | undefined;
+  setCategoria:    (c: CategoriaFiltro | undefined) => void;
   setPage:         (p: number) => void;
   termo:           string | undefined;
   setTermo:        (t: string | undefined) => void;
@@ -83,9 +86,10 @@ export interface UseDocumentosClienteOptions {
 export function useDocumentosCliente(options?: UseDocumentosClienteOptions): UseDocumentosClienteReturn {
   const { token, getToken } = useAuth();
 
-  const [setor, setSetorState] = useState<SetorFiltro | undefined>(undefined);
-  const [page,  setPageState]  = useState(1);
-  const [termo, setTermoState] = useState<string | undefined>(undefined);
+  const [setor,     setSetorState]    = useState<SetorFiltro | undefined>(undefined);
+  const [categoria, setCategoriaState] = useState<CategoriaFiltro | undefined>(undefined);
+  const [page,      setPageState]      = useState(1);
+  const [termo,     setTermoState]     = useState<string | undefined>(undefined);
   const [baixandoIds, setBaixandoIds] = useState<Set<string>>(new Set());
 
   const setTermo = useCallback((t: string | undefined) => {
@@ -106,11 +110,12 @@ export function useDocumentosCliente(options?: UseDocumentosClienteOptions): Use
       page:    String(page),
       perPage: String(perPageVal),
     });
-    if (setor) params.set('sector', setor);
-    if (termo) params.set('termo', termo);
+    if (setor)     params.set('sector',    setor);
+    if (categoria) params.set('categoria', categoria);
+    if (termo)     params.set('termo',     termo);
     if (options?.origem) params.set('origem', options.origem);
     return `/api/v1/documentos?${params.toString()}`;
-  }, [setor, page, termo, options?.origem, options?.initialPerPage]);
+  }, [setor, categoria, page, termo, options?.origem, options?.initialPerPage]);
 
   const swrKey = token ? [buildUrl(), token] : null;
 
@@ -148,6 +153,11 @@ export function useDocumentosCliente(options?: UseDocumentosClienteOptions): Use
 
   const setSetor = useCallback((s: SetorFiltro | undefined) => {
     setSetorState(s);
+    setPageState(1);
+  }, []);
+
+  const setCategoria = useCallback((c: CategoriaFiltro | undefined) => {
+    setCategoriaState(c);
     setPageState(1);
   }, []);
 
@@ -241,6 +251,8 @@ export function useDocumentosCliente(options?: UseDocumentosClienteOptions): Use
     page,
     setor,
     setSetor,
+    categoria,
+    setCategoria,
     setPage,
     termo,
     setTermo,

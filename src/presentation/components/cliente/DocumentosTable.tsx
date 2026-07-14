@@ -23,6 +23,7 @@ import {
 import type {
   DocumentoClienteDTO,
   SetorFiltro,
+  CategoriaFiltro,
 } from '../../hooks/useDocumentosCliente';
 
 // =============================================================================
@@ -39,8 +40,10 @@ interface DocumentosTableProps {
   hasPreviousPage: boolean;
   hasNextPage:     boolean;
   setor:           SetorFiltro | undefined;
+  categoria:       CategoriaFiltro | undefined;
   baixandoIds:     Set<string>;
   onMudarSetor:    (s: SetorFiltro | undefined) => void;
+  onMudarCategoria:(c: CategoriaFiltro | undefined) => void;
   onMudarPagina:   (p: number) => void;
   onBaixar:        (id: string) => Promise<void>;
   onBaixarLote?:   (ids: string[]) => Promise<void>;
@@ -52,16 +55,37 @@ interface DocumentosTableProps {
 
 interface ConfigAba {
   label: string;
-  valor: SetorFiltro | undefined;
+  valor: CategoriaFiltro | undefined;
   cor:   string;
 }
 
 const ABAS: ConfigAba[] = [
-  { label: 'Todos',    valor: undefined,   cor: 'bg-slate-100 text-slate-700'  },
-  { label: 'Fiscal',   valor: 'FISCAL',    cor: 'bg-primary-light text-primary-dark' },
-  { label: 'Pessoal',  valor: 'PESSOAL',   cor: 'bg-violet-100 text-violet-700'},
-  { label: 'Contábil', valor: 'CONTABIL',  cor: 'bg-emerald-100 text-emerald-700'},
+  { label: 'Todos',              valor: undefined,    cor: 'bg-slate-100 text-slate-700' },
+  { label: 'Arquivos XML',       valor: 'xml',        cor: 'bg-blue-100 text-blue-700'   },
+  { label: 'Extratos Bancários', valor: 'extratos',   cor: 'bg-emerald-100 text-emerald-700' },
+  { label: 'Despesas',           valor: 'despesas',   cor: 'bg-orange-100 text-orange-700' },
+  { label: 'Impostos',           valor: 'impostos',   cor: 'bg-red-100 text-red-700'     },
+  { label: 'Folha de Pagamento', valor: 'folha',      cor: 'bg-violet-100 text-violet-700' },
+  { label: 'Documentos Diversos',valor: 'diversos',   cor: 'bg-gray-100 text-gray-700'   },
 ];
+
+const COR_CATEGORIA: Record<CategoriaFiltro, string> = {
+  xml:      'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 ring-1 ring-blue-200 dark:ring-blue-800',
+  extratos: 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 ring-1 ring-emerald-200 dark:ring-emerald-800',
+  despesas: 'bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 ring-1 ring-orange-200 dark:ring-orange-800',
+  impostos: 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 ring-1 ring-red-200 dark:ring-red-800',
+  folha:    'bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400 ring-1 ring-violet-200 dark:ring-violet-800',
+  diversos: 'bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-400 ring-1 ring-gray-200 dark:ring-gray-700',
+};
+
+const LABEL_CATEGORIA: Record<CategoriaFiltro, string> = {
+  xml:      'XML',
+  extratos: 'Extratos',
+  despesas: 'Despesas',
+  impostos: 'Impostos',
+  folha:    'Folha',
+  diversos: 'Diversos',
+};
 
 const COR_SETOR: Record<SetorFiltro, string> = {
   FISCAL:   'bg-primary-50 dark:bg-primary/10 text-primary-dark dark:text-primary ring-1 ring-primary/30 dark:ring-primary/20',
@@ -244,9 +268,15 @@ function DocumentoLinha({ doc, baixando, onBaixar, modoSelecao, selecionado, onT
               </span>
             )}
 
-            <span className={`inline-flex text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${COR_SETOR[doc.sector as SetorFiltro] ?? 'bg-gray-100 text-gray-600'}`}>
-              {LABEL_SETOR[doc.sector as SetorFiltro] ?? doc.sector}
-            </span>
+            {doc.categoria ? (
+              <span className={`inline-flex text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${COR_CATEGORIA[doc.categoria as CategoriaFiltro] ?? 'bg-gray-100 text-gray-600'}`}>
+                {LABEL_CATEGORIA[doc.categoria as CategoriaFiltro] ?? doc.categoria}
+              </span>
+            ) : doc.sector ? (
+              <span className={`inline-flex text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${COR_SETOR[doc.sector as SetorFiltro] ?? 'bg-gray-100 text-gray-600'}`}>
+                {LABEL_SETOR[doc.sector as SetorFiltro] ?? doc.sector}
+              </span>
+            ) : null}
           </div>
 
           <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5">
@@ -461,8 +491,10 @@ export function DocumentosTable({
   hasPreviousPage,
   hasNextPage,
   setor,
+  categoria,
   baixandoIds,
   onMudarSetor,
+  onMudarCategoria,
   onMudarPagina,
   onBaixar,
   onBaixarLote,
@@ -528,21 +560,21 @@ export function DocumentosTable({
     <div className="bg-white dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-700 shadow-sm overflow-hidden">
 
       {/* ------------------------------------------------------------------ */}
-      {/* Abas de setor + botão de seleção                                    */}
+      {/* Abas de categoria + botão de seleção                                */}
       {/* ------------------------------------------------------------------ */}
       <div
         className="flex overflow-x-auto border-b border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-900 sticky top-0 z-10"
         role="tablist"
-        aria-label="Filtrar por setor"
+        aria-label="Filtrar por categoria"
       >
         {ABAS.map(({ label, valor, cor }) => {
-          const ativo = setor === valor;
+          const ativo = categoria === valor;
           return (
             <button
               key={valor ?? 'todos'}
               role="tab"
               aria-selected={ativo}
-              onClick={() => onMudarSetor(valor)}
+              onClick={() => onMudarCategoria(valor)}
               className={`
                 flex-shrink-0 px-4 py-3 text-sm font-medium border-b-2 transition-colors
                 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset
@@ -612,8 +644,8 @@ export function DocumentosTable({
             <FolderOpen size={24} className="text-slate-400 dark:text-gray-500" />
           </div>
           <p className="text-sm font-semibold text-slate-700 dark:text-gray-300">
-            {setor
-              ? `Nenhum documento no setor ${LABEL_SETOR[setor]}`
+            {categoria
+              ? `Nenhum documento em ${ABAS.find(a => a.valor === categoria)?.label ?? categoria}`
               : 'Nenhum documento disponível'
             }
           </p>

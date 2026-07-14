@@ -301,9 +301,11 @@ model DocumentoFiscal {
   clientId      String    @map("client_id") @db.Uuid
   uploadedById  String    @map("uploaded_by_id") @db.Uuid
   sector        SetorTipo?
+  categoria     String?   @db.VarChar(50)
   fileName      String    @map("file_name") @db.VarChar(500)
   storagePath   String    @map("storage_path") @db.VarChar(1000)
   fileType      FileType  @map("file_type")
+  
   // BigInt comporta arquivos de até ~9 PB; fiscal típico tem < 10 MB
   fileSizeBytes BigInt    @map("file_size_bytes")
   // SHA-256: exatamente 64 caracteres hexadecimais
@@ -336,6 +338,7 @@ model DocumentoFiscal {
   // 6. (deletedAt)            → acelera WHERE deleted_at IS NULL
   // ------------------------------------------------------------------
   @@index([clientId, sector])
+  @@index([clientId, categoria])
   @@index([clientId, fileType])
   @@index([clientId, readStatus])
   @@index([clientId, competencia])

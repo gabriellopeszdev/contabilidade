@@ -227,6 +227,7 @@ export class PrismaDocumentoRepository implements IDocumentoRepository {
       // cast seguro: gravamos apenas objetos (nunca arrays ou primitivos)
       metadataJson:  (row.metadataJson ?? {}) as Record<string, unknown>,
       createdAt:     row.createdAt,
+      categoria:     (row as typeof row & { categoria?: string | null }).categoria ?? null,
     };
 
     // reconstituir() usa o construtor privado sem emitir eventos de domínio.
@@ -355,6 +356,10 @@ export class PrismaDocumentoRepository implements IDocumentoRepository {
     }
     if (filtros.uploadedByNotIds && filtros.uploadedByNotIds.length > 0) {
       where.uploadedById = { notIn: filtros.uploadedByNotIds };
+    }
+
+    if (filtros.categoria) {
+      (where as Record<string, unknown>).categoria = filtros.categoria;
     }
 
     return where;

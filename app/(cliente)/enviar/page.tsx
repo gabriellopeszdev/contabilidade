@@ -30,6 +30,8 @@ export default function EnviarPage() {
     page,
     setor,
     setSetor,
+    categoria,
+    setCategoria,
     setPage,
     setTermo,
     baixarDocumento,
@@ -106,8 +108,10 @@ export default function EnviarPage() {
         hasPreviousPage={hasPreviousPage}
         hasNextPage={hasNextPage}
         setor={setor}
+        categoria={categoria}
         baixandoIds={baixandoIds}
         onMudarSetor={setSetor}
+        onMudarCategoria={setCategoria}
         onMudarPagina={setPage}
         onBaixar={baixarDocumento}
       />

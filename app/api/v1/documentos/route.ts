@@ -44,6 +44,8 @@ export interface DocumentoClienteDTO {
   origem:        'UPLOAD_CLIENTE' | 'UPLOAD_CONTADOR';
   /** Nome de quem fez o upload. */
   uploaderNome:  string;
+  /** Categoria de upload selecionada pelo cliente (xml, extratos, despesas, impostos, folha, diversos). */
+  categoria:     string | null;
 }
 
 // =============================================================================
@@ -201,6 +203,13 @@ export async function GET(request: NextRequest) {
     filtroFinal.termo = termo;
   }
 
+  // Filtro por categoria de upload (xml, extratos, despesas, impostos, folha, diversos)
+  const categoriaParam = searchParams.get('categoria')?.toLowerCase();
+  const CATEGORIAS_VALIDAS = ['xml', 'extratos', 'despesas', 'impostos', 'folha', 'diversos'];
+  if (categoriaParam && CATEGORIAS_VALIDAS.includes(categoriaParam)) {
+    filtroFinal.categoria = categoriaParam;
+  }
+
   // Filtro de origem
   const origemParam = searchParams.get('origem')?.toUpperCase();
   if (origemParam === 'UPLOAD_CLIENTE' || origemParam === 'UPLOAD_CONTADOR') {
@@ -266,6 +275,7 @@ export async function GET(request: NextRequest) {
         createdAt:     doc.createdAt.toISOString(),
         origem:        uploader?.origem ?? 'UPLOAD_CONTADOR',
         uploaderNome:  uploader?.nome ?? 'Desconhecido',
+        categoria:     doc.categoria ?? null,
       };
     });
 

@@ -169,7 +169,8 @@ export const POST = withAuth(async (req, _ctx, auth) => {
           fileType:      fileType as 'PDF' | 'XML' | 'XLSX' | 'XLS' | 'DOCX' | 'DOC' | 'CSV' | 'OFX' | 'ODS' | 'ZIP' | 'RAR',
           fileSizeBytes: BigInt(buffer.byteLength),
           fileHash,
-          ...(sector ? { sector } : {}),
+          ...(sector     ? { sector }             : {}),
+          ...(categoriaId ? { categoria: categoriaId } : {}),
         },
       });
 

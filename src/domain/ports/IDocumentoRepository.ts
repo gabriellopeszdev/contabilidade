@@ -27,6 +27,8 @@ export interface FiltroDocumento {
   uploadedByIds?: string[];
   /** Exclui IDs específicos da listagem. */
   uploadedByNotIds?: string[];
+  /** Filtra pela categoria de upload (xml, extratos, despesas, impostos, folha, diversos). */
+  categoria?: string;
 }
 
 // ---------------------------------------------------------------------------
