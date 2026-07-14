@@ -947,8 +947,8 @@ model ComunicadoDestinatario {
   confirmado   Boolean   @default(false)
   confirmadoAt DateTime? @map("confirmado_at") @db.Timestamptz
 
-  comunicado Comunicado     @relation(fields: [comunicadoId], references: [id])
-  cliente    UsuarioCliente @relation(fields: [clienteId], references: [id])
+  comunicado Comunicado     @relation(fields: [comunicadoId], references: [id], onDelete: Cascade)
+  cliente    UsuarioCliente @relation(fields: [clienteId], references: [id], onDelete: Cascade)
 
   @@id([comunicadoId, clienteId])
   @@index([clienteId])
