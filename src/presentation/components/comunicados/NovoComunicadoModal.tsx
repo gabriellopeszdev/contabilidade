@@ -67,8 +67,7 @@ export function NovoComunicadoModal({ aberto, token, onFechar, onSucesso }: Novo
         class: 'min-h-[160px] p-3 text-sm text-gray-900 dark:text-gray-100 focus:outline-none',
       },
     },
-    onSelectionUpdate: forceUpdate,
-    onUpdate:          forceUpdate,
+    onTransaction:     forceUpdate,
   });
 
   useEffect(() => {
