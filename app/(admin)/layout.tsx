@@ -20,6 +20,7 @@ import {
   ShieldAlert,
   Shield,
   MessageSquare,
+  Workflow,
 } from 'lucide-react';
 
 import { useAuth } from '../../src/presentation/hooks/useAuth';
@@ -43,6 +44,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/webhook-logs',    label: 'Log de Webhooks',  icon: <Activity        size={18} /> },
   { href: '/auditoria',       label: 'Auditoria',        icon: <Shield          size={18} /> },
   { href: '/feedbacks',       label: 'Feedbacks NPS',    icon: <MessageSquare   size={18} /> },
+  { href: '/filas',           label: 'Filas (BullMQ)',   icon: <Workflow        size={18} /> },
   { href: '/admin-config',    label: 'Configurações',    icon: <Settings        size={18} /> },
 ];
 
