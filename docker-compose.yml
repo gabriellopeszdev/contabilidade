@@ -155,32 +155,6 @@ services:
       - contabilidade_net
 
   # ---------------------------------------------------------------------------
-  # DocSeal — Plataforma open-source de assinatura eletrônica
-  # Porta 3001 (host, localhost): painel admin para configuração inicial
-  # A app se comunica internamente via http://docseal:3000
-  #
-  # Setup inicial:
-  #   1. Acesse http://localhost:3001 via túnel SSH ou localmente
-  #   2. Crie a conta admin e obtenha a API Key em /api
-  #   3. Configure o webhook: URL = {NEXT_PUBLIC_APP_URL}/api/v1/webhooks/docseal
-  #   4. Copie o segredo do webhook para DOCSEAL_WEBHOOK_SECRET no .env
-  #   5. Defina DOCSEAL_API_KEY no .env e reinicie o container app
-  # ---------------------------------------------------------------------------
-  docseal:
-    image: docuseal/docuseal:1.8.5
-    container_name: contabilidade_docseal
-    restart: unless-stopped
-    environment:
-      SECRET_KEY_BASE: ${DOCSEAL_SECRET_KEY_BASE}
-      FORCE_SSL: "false"
-    ports:
-      - "127.0.0.1:${DOCSEAL_PORT:-3001}:3000"
-    volumes:
-      - ${DATA_DIR:-./.data}/docseal:/data
-    networks:
-      - contabilidade_net
-
-  # ---------------------------------------------------------------------------
   # pg_backup — Backup automático do PostgreSQL
   #
   # Executa pg_dump comprimido todo dia às 02:00 UTC.
@@ -234,8 +208,6 @@ services:
         condition: service_healthy
       minio:
         condition: service_healthy
-      docseal:
-        condition: service_started
     env_file:
       - path: .env
         required: false
@@ -267,13 +239,9 @@ services:
       ASAAS_WEBHOOK_TOKEN: ${ASAAS_WEBHOOK_TOKEN}
       PORT: ${APP_PORT:-4500}
       MAINTENANCE_MODE: ${MAINTENANCE_MODE:-false}
-      # DocSeal
-      DOCSEAL_API_URL: ${DOCSEAL_API_URL:-http://docseal:3000}
-      DOCSEAL_API_KEY: ${DOCSEAL_API_KEY:-}
-      DOCSEAL_WEBHOOK_SECRET: ${DOCSEAL_WEBHOOK_SECRET:-}
-      # SignatureAPI
-      SIGNATUREAPI_API_KEY: ${SIGNATUREAPI_API_KEY:-}
-      SIGNATUREAPI_WEBHOOK_SECRET: ${SIGNATUREAPI_WEBHOOK_SECRET:-}
+      # ZapSign
+      ZAPSIGN_API_TOKEN: ${ZAPSIGN_API_TOKEN:-}
+      ZAPSIGN_WEBHOOK_SECRET: ${ZAPSIGN_WEBHOOK_SECRET:-}
       # Cora
       CORA_ENV: ${CORA_ENV:-sandbox}
       CORA_WEBHOOK_TOKEN: ${CORA_WEBHOOK_TOKEN:-}

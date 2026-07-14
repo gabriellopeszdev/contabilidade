@@ -13,7 +13,7 @@ const EditarContadorSchema = z.object({
   crc:            z.string().optional().or(z.literal('')),
   nomeEscritorio: z.string().min(2, 'Nome do escritório deve ter ao menos 2 caracteres.').max(255),
   cnpjEscritorio: z.string().optional().or(z.literal('')),
-  providerAssinatura: z.enum(['INTERNO', 'DOCSEAL', 'SIGNATUREAPI']),
+  providerAssinatura: z.enum(['INTERNO', 'ZAPSIGN']),
 }).superRefine((data, ctx) => {
   const hasCrc = data.crc && data.crc.trim();
   const hasCnpj = data.cnpjEscritorio && data.cnpjEscritorio.trim();

@@ -23,7 +23,7 @@ const FEATURES_DISPONIVEIS: { id: string; label: string; descricao: string }[] =
   { id: 'chat',                  label: 'Chat com Clientes',       descricao: 'Mensagens em tempo real entre contador e cliente' },
   { id: 'calendario',            label: 'Calendário de Obrigações', descricao: 'Calendário fiscal com alertas de vencimentos' },
   { id: 'financeiro',            label: 'Módulo Financeiro',        descricao: 'Controle de contas a pagar/receber e fluxo de caixa' },
-  { id: 'assinatura_eletronica', label: 'Assinatura Eletrônica',    descricao: 'Assinar documentos digitalmente via DocSeal' },
+  { id: 'assinatura_eletronica', label: 'Assinatura Eletrônica',    descricao: 'Assinar documentos digitalmente via ZapSign' },
   { id: 'relatorios',            label: 'Relatórios Avançados',     descricao: 'Relatórios exportáveis e dashboards detalhados' },
   { id: 'equipe',                label: 'Gestão de Equipe',         descricao: 'Convidar e gerenciar funcionários do escritório' },
   { id: 'integracao_cora',       label: 'Integração Cora',          descricao: 'Cobranças automáticas via banco digital Cora' },

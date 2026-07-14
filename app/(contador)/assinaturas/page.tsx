@@ -23,9 +23,8 @@ interface Assinatura {
   temComprovante:  boolean;
   ipAssinatura:           string | null;
   hashDocumento:          string;
-  provider:               string;
-  docsealSubmissionId:    number | null;
-  signatureapiEnvelopeId: string | null;
+  provider:        string;
+  zapsignDocToken: string | null;
 }
 
 const STATUS_CONFIG: Record<string, { label: string; cor: string; icon: React.ReactNode }> = {
@@ -352,13 +351,10 @@ export default function AssinaturasPage() {
               <div>
                 <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-2">Provedor de Assinatura</p>
                 <span className="text-xs px-2 py-1 rounded bg-primary-50 dark:bg-primary/10 text-primary-dark dark:text-primary font-medium border border-primary/30 dark:border-primary/30">
-                  {drawerAssinatura.provider === 'INTERNO' ? 'Sistema Interno' : drawerAssinatura.provider === 'DOCSEAL' ? 'DocSeal' : 'SignatureAPI'}
+                  {drawerAssinatura.provider === 'INTERNO' ? 'Sistema Interno' : 'ZapSign'}
                 </span>
-                {drawerAssinatura.docsealSubmissionId && (
-                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">ID DocSeal: #{drawerAssinatura.docsealSubmissionId}</p>
-                )}
-                {drawerAssinatura.signatureapiEnvelopeId && (
-                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Envelope ID: {drawerAssinatura.signatureapiEnvelopeId}</p>
+                {drawerAssinatura.zapsignDocToken && (
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Token ZapSign: {drawerAssinatura.zapsignDocToken}</p>
                 )}
               </div>
 

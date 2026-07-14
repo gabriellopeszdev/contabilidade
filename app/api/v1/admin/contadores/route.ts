@@ -93,7 +93,7 @@ const CriarContadorSchema = z.object({
   nomeEscritorio:  z.string().min(2, 'Nome do escritório deve ter ao menos 2 caracteres.').max(255),
   cnpjEscritorio:  z.string().optional().or(z.literal('')),
   planoId:         z.string().uuid().optional(),
-  providerAssinatura: z.enum(['INTERNO', 'DOCSEAL', 'SIGNATUREAPI']).optional(),
+  providerAssinatura: z.enum(['INTERNO', 'ZAPSIGN']).optional(),
 }).superRefine((data, ctx) => {
   if (data.tipo === 'AUTONOMO') {
     if (!data.crc || !data.crc.trim()) {

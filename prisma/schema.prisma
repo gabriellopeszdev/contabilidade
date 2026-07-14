@@ -748,8 +748,7 @@ model Notificacao {
 
 enum ProviderAssinatura {
   INTERNO
-  DOCSEAL
-  SIGNATUREAPI
+  ZAPSIGN
 }
 
 model AssinaturaDocumento {
@@ -768,8 +767,7 @@ model AssinaturaDocumento {
   comprovanteStoragePath String?              @map("comprovante_storage_path") @db.VarChar(1000)
   motivoRecusa           String?              @map("motivo_recusa") @db.VarChar(500)
   provider               ProviderAssinatura   @default(INTERNO)
-  docsealSubmissionId    Int?                 @map("docseal_submission_id")
-  signatureapiEnvelopeId String?              @map("signatureapi_envelope_id") @db.VarChar(255)
+  zapsignDocToken        String?              @map("zapsign_doc_token") @db.VarChar(255)
   linkExterno            String?              @map("link_externo") @db.VarChar(1000)
   createdAt              DateTime             @default(now()) @map("created_at") @db.Timestamptz
   updatedAt              DateTime             @updatedAt @map("updated_at") @db.Timestamptz

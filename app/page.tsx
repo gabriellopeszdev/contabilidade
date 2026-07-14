@@ -212,7 +212,7 @@ const INTEGRACOES = [
   { nome: 'Asaas',    descricao: 'Boletos, PIX e cobranças recorrentes para qualquer banco',       cor: 'border-blue-500/30   bg-blue-500/5',   icon: CreditCard,  iconColor: 'text-blue-400'    },
   { nome: 'Cora',     descricao: 'Banco digital MEI/PJ com cobrança automática integrada',          cor: 'border-emerald-500/30 bg-emerald-500/5', icon: Building2,   iconColor: 'text-emerald-400' },
   { nome: 'IA (multi-provider)', descricao: 'Claude, GPT-4o, Gemini, DeepSeek — você escolhe', cor: 'border-violet-500/30  bg-violet-500/5',  icon: Brain,       iconColor: 'text-violet-400'  },
-  { nome: 'DocSeal',  descricao: 'Assinatura eletrônica com validade jurídica e rastreamento',     cor: 'border-amber-500/30  bg-amber-500/5',   icon: FileSignature, iconColor: 'text-amber-400' },
+  { nome: 'ZapSign',  descricao: 'Assinatura eletrônica com validade jurídica e rastreamento',     cor: 'border-amber-500/30  bg-amber-500/5',   icon: FileSignature, iconColor: 'text-amber-400' },
   { nome: 'WebSocket',descricao: 'Chat em tempo real com clientes — notificações instantâneas',    cor: 'border-blue-500/30   bg-blue-500/5',   icon: MessageSquare, iconColor: 'text-blue-400'  },
   { nome: 'Relatórios', descricao: 'Exportação PDF/Excel e busca global por documentos',           cor: 'border-slate-500/30  bg-slate-500/5',  icon: BarChart3,   iconColor: 'text-slate-400'  },
 ];

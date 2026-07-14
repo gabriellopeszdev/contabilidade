@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withAuth, type ResolvedRouteContext } from '@/infrastructure/http/middlewares/withAuth';
-import { prisma, emailService, storageService, docSealService, signatureApiService } from '@/infrastructure/di/Container';
+import { prisma, emailService, storageService, zapSignService } from '@/infrastructure/di/Container';
 import { logger } from '@/utils/logger';
 import { randomBytes, randomUUID } from 'crypto';
 import { getPlanInfo, hasFeature, FEATURES } from '@/utils/planLimits';
@@ -13,13 +13,13 @@ export const dynamic = 'force-dynamic';
 // =============================================================================
 // POST /api/v1/documentos/[id]/assinatura — Solicita assinatura de documento
 //
-// Fluxo DocSeal (quando DOCSEAL_API_KEY está configurado):
-//   1. Baixa o PDF do MinIO como Buffer
-//   2. Envia ao DocSeal via /submissions/pdf (base64)
-//   3. Armazena submissionId e o link DocSeal em linkExterno
-//   4. Envia e-mail ao cliente com o link DocSeal
+// Fluxo ZapSign (quando ZAPSIGN_API_TOKEN está configurado):
+//   1. Baixa o PDF do MinIO como Buffer e converte para base64
+//   2. Cria documento na ZapSign via POST /docs/
+//   3. Armazena zapsignDocToken e o sign_url em linkExterno
+//   4. Envia e-mail ao cliente com o link ZapSign
 //
-// Fluxo INTERNO (fallback sem DocSeal):
+// Fluxo INTERNO (fallback):
 //   1. Gera token aleatório de 96 chars hex
 //   2. Link: {APP_URL}/assinar/{token}
 //   3. Envia e-mail ao cliente com o link interno
@@ -78,52 +78,33 @@ export const POST = withAuth(async (req, ctx, auth) => {
   const appUrl     = process.env.NEXT_PUBLIC_APP_URL ?? '';
   const assinaturaId = randomUUID();
 
-  let provider:            'INTERNO' | 'DOCSEAL' | 'SIGNATUREAPI' = 'INTERNO';
-  let docsealSubmissionId:  number | null         = null;
-  let signatureapiEnvelopeId: string | null       = null;
-  let linkAssinatura:      string                = `${appUrl}/assinar/${token}`;
+  let provider:        'INTERNO' | 'ZAPSIGN' = 'INTERNO';
+  let zapsignDocToken: string | null         = null;
+  let linkAssinatura:  string                = `${appUrl}/assinar/${token}`;
 
   // ---------------------------------------------------------------------------
   // Roteia a assinatura com base no provedor configurado para o cliente (ou escritório)
   // ---------------------------------------------------------------------------
   const selectedProvider = cliente?.providerAssinatura ?? configEscritorio?.providerAssinatura ?? 'INTERNO';
 
-  if (selectedProvider === 'SIGNATUREAPI' && signatureApiService.isConfigured()) {
-    try {
-      const pdfBuffer = await storageService.getBuffer(documento.storagePath);
-
-      const result = await signatureApiService.criarAssinatura(
-        documento.fileName,
-        pdfBuffer,
-        cliente.name,
-        cliente.email,
-        signatarioId,
-        assinaturaId,
-      );
-
-      provider                = 'SIGNATUREAPI';
-      signatureapiEnvelopeId  = result.envelopeId;
-      linkAssinatura          = result.linkAssinatura || linkAssinatura;
-    } catch (err) {
-      logger.error('[POST assinatura] Falha na SignatureAPI — usando fluxo INTERNO', err instanceof Error ? err : new Error(String(err)));
-    }
-  } else if (selectedProvider === 'DOCSEAL' && docSealService.isConfigured()) {
+  if (selectedProvider === 'ZAPSIGN' && zapSignService.isConfigured()) {
     try {
       const pdfBuffer = await storageService.getBuffer(documento.storagePath);
       const pdfBase64 = pdfBuffer.toString('base64');
 
-      const result = await docSealService.criarSubmissao(
+      const result = await zapSignService.criarAssinatura(
         documento.fileName,
         pdfBase64,
         cliente.name,
         cliente.email,
+        assinaturaId,
       );
 
-      provider            = 'DOCSEAL';
-      docsealSubmissionId = result.submissionId;
-      linkAssinatura      = result.linkAssinatura;
+      provider        = 'ZAPSIGN';
+      zapsignDocToken = result.docToken;
+      linkAssinatura  = result.linkAssinatura || linkAssinatura;
     } catch (err) {
-      logger.error('[POST assinatura] Falha no DocSeal — usando fluxo INTERNO', err instanceof Error ? err : new Error(String(err)));
+      logger.error('[POST assinatura] Falha na ZapSign — usando fluxo INTERNO', err instanceof Error ? err : new Error(String(err)));
     }
   }
 
@@ -142,9 +123,8 @@ export const POST = withAuth(async (req, ctx, auth) => {
       hashDocumento:       documento.fileHash,
       expiresAt,
       provider,
-      ...(docsealSubmissionId !== null && { docsealSubmissionId }),
-      ...(signatureapiEnvelopeId !== null && { signatureapiEnvelopeId }),
-      ...((provider === 'DOCSEAL' || provider === 'SIGNATUREAPI') && { linkExterno: linkAssinatura }),
+      ...(zapsignDocToken !== null && { zapsignDocToken }),
+      ...(provider === 'ZAPSIGN' && { linkExterno: linkAssinatura }),
     },
   });
 

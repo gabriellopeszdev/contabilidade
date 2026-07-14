@@ -413,7 +413,7 @@ export function HelpTutorialModal({ aberto, onClose }: HelpTutorialModalProps) {
                   <span className="px-2.5 py-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 rounded-full font-mono">Assinatura Digital</span>
                   <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Módulo de Assinaturas Eletrônicas</h3>
                   <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-sm">
-                    A coleta de assinaturas em contratos de honorários, declarações, procurações ou balancetes é totalmente integrada e automatizada com a SignatureAPI.
+                    A coleta de assinaturas em contratos de honorários, declarações, procurações ou balancetes é totalmente integrada e automatizada com a ZapSign.
                   </p>
                 </div>
 

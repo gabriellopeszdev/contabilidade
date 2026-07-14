@@ -36,7 +36,7 @@ const EditarClienteSchema = z.object({
                           .refine((v) => v.length === 14, 'CNPJ deve conter 14 dígitos.')
                           .refine(cnpjValido, 'CNPJ inválido.'),
   isActive:           z.boolean(),
-  providerAssinatura: z.enum(['INTERNO', 'DOCSEAL', 'SIGNATUREAPI']),
+  providerAssinatura: z.enum(['INTERNO', 'ZAPSIGN']),
 });
 
 // =============================================================================

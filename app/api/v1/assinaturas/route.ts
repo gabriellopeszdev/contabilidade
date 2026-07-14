@@ -27,9 +27,8 @@ export const GET = withAuth(async (req: NextRequest, _ctx, auth) => {
       comprovanteStoragePath: true,
       ipAssinatura:           true,
       hashDocumento:          true,
-      provider:               true,
-      docsealSubmissionId:    true,
-      signatureapiEnvelopeId: true,
+      provider:        true,
+      zapsignDocToken: true,
       documento: {
         select: { id: true, fileName: true, fileType: true },
       },
@@ -57,9 +56,8 @@ export const GET = withAuth(async (req: NextRequest, _ctx, auth) => {
       temComprovante:           Boolean(a.comprovanteStoragePath),
       ipAssinatura:             a.ipAssinatura ?? null,
       hashDocumento:            a.hashDocumento,
-      provider:                 a.provider,
-      docsealSubmissionId:      a.docsealSubmissionId ?? null,
-      signatureapiEnvelopeId:   a.signatureapiEnvelopeId ?? null,
+      provider:        a.provider,
+      zapsignDocToken: a.zapsignDocToken ?? null,
     })),
   });
 }, ['ACCOUNTANT', 'ADMIN']);

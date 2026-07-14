@@ -44,7 +44,7 @@ interface ContadorDTO {
   coraConfigurado:  boolean;
   iaPersonalizada:  boolean;
   iaProvider:       string | null;
-  providerAssinatura: 'INTERNO' | 'DOCSEAL' | 'SIGNATUREAPI';
+  providerAssinatura: 'INTERNO' | 'ZAPSIGN';
   createdAt:        string;
   planoId:          string | null;
   planoNome:        string | null;
@@ -397,8 +397,7 @@ function ModalCriarContador({ onClose, onCriado, token }: ModalCriarContadorProp
                 className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-violet-500"
               >
                 <option value="INTERNO">Interno (FiscoHub)</option>
-                <option value="DOCSEAL">DocSeal</option>
-                <option value="SIGNATUREAPI">SignatureAPI</option>
+                <option value="ZAPSIGN">ZapSign</option>
               </select>
             </div>
           </div>
@@ -562,8 +561,7 @@ function ModalEditarContador({ contador, onClose, onSalvo, token }: ModalEditarC
               className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-violet-500"
             >
               <option value="INTERNO">Interno (FiscoHub)</option>
-              <option value="DOCSEAL">DocSeal</option>
-              <option value="SIGNATUREAPI">SignatureAPI</option>
+              <option value="ZAPSIGN">ZapSign</option>
             </select>
           </div>
 
@@ -1848,15 +1846,10 @@ export default function ContadoresPage() {
 
                       {/* Assinatura */}
                       <td className="px-4 py-3.5 text-center hidden lg:table-cell">
-                        {c.providerAssinatura === 'SIGNATUREAPI' ? (
+                        {c.providerAssinatura === 'ZAPSIGN' ? (
                           <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full border text-emerald-400 bg-emerald-900/30 border-emerald-700/40">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                            SignatureAPI
-                          </span>
-                        ) : c.providerAssinatura === 'DOCSEAL' ? (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full border text-primary bg-primary/20 border-primary/30">
-                            <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-                            DocSeal
+                            ZapSign
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full border text-slate-400 bg-slate-800 border-slate-700">
