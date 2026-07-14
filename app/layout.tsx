@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { AuthProvider } from '../src/presentation/context/AuthContext';
 import { LGPDConsentGuard } from './components/LGPDConsentGuard';
@@ -11,6 +11,10 @@ import { ToasterProvider } from './components/ToasterProvider';
 // as páginas que exportam seu próprio `metadata.title` como string.
 // =============================================================================
 
+export const viewport: Viewport = {
+  themeColor: '#0a0f1e',
+};
+
 export const metadata: Metadata = {
   title: {
     template: '%s | FiscoHub',
@@ -19,8 +23,19 @@ export const metadata: Metadata = {
   description:
     'FiscoHub — Gestão fiscal inteligente para escritórios modernos. ' +
     'Automação fiscal, assinatura eletrônica, chat em tempo real e integração bancária.',
-  // Em produção: adicionar metadados Open Graph para compartilhamento
-  // openGraph: { ... }
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'FiscoHub',
+  },
+  icons: {
+    apple: '/apple-touch-icon.png',
+    icon: [
+      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icon-512.png', sizes: '512x512', type: 'image/png' },
+    ],
+  },
 };
 
 // =============================================================================
