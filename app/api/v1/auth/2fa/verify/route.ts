@@ -2,9 +2,19 @@ import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify, SignJWT } from 'jose';
 import { prisma } from '@/infrastructure/di/Container';
 import { verifyToken } from '@/lib/totp';
-import { getClientIp } from '@/utils/rateLimiter';
+import { checkRateLimit, getClientIp } from '@/utils/rateLimiter';
 
 export async function POST(req: NextRequest) {
+  // Rate limit por IP — 10 tentativas a cada 15 min
+  const ip = getClientIp(req);
+  const rlIp = await checkRateLimit(`2fa:ip:${ip}`, 10, 15 * 60);
+  if (!rlIp.allowed) {
+    return NextResponse.json(
+      { message: 'Muitas tentativas. Tente novamente em alguns minutos.' },
+      { status: 429, headers: { 'Retry-After': String(rlIp.resetInSec) } },
+    );
+  }
+
   const { tempToken, totpToken } = await req.json();
 
   if (!tempToken || !totpToken) {
@@ -25,6 +35,15 @@ export async function POST(req: NextRequest) {
 
   if (payload.type !== 'TEMP_2FA') {
     return NextResponse.json({ message: 'Token inválido' }, { status: 401 });
+  }
+
+  // Rate limit por userId — 5 tentativas a cada 15 min (bloqueia rotação de IP)
+  const rlUser = await checkRateLimit(`2fa:user:${payload.sub}`, 5, 15 * 60);
+  if (!rlUser.allowed) {
+    return NextResponse.json(
+      { message: 'Muitas tentativas para esta conta. Tente novamente em alguns minutos.' },
+      { status: 429, headers: { 'Retry-After': String(rlUser.resetInSec) } },
+    );
   }
 
   const isContador = payload.role === 'ACCOUNTANT' || payload.role === 'ADMIN';

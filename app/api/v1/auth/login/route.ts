@@ -65,8 +65,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       {
         status: 429,
         headers: {
-          'Retry-After':          String(rl.resetInSec),
-          'X-RateLimit-Limit':    '5',
+          'Retry-After':           String(rl.resetInSec),
+          'X-RateLimit-Limit':     '20',
           'X-RateLimit-Remaining': '0',
         },
       },
