@@ -240,6 +240,7 @@ export default function DashboardClienteDono() {
           <select
             value={setor ?? ''}
             onChange={(e) => { setSetor((e.target.value || undefined) as SetorFiltro | undefined); setPage(1); }}
+            aria-label="Filtrar por setor"
             className="px-3 py-2 text-xs font-medium rounded-lg border border-slate-300 dark:border-gray-600 bg-white dark:bg-gray-900
               text-slate-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary dark:[color-scheme:dark]"
           >
@@ -252,6 +253,7 @@ export default function DashboardClienteDono() {
           <select
             value={filtroOrigem}
             onChange={(e) => setFiltroOrigem(e.target.value as Origem | '')}
+            aria-label="Filtrar por origem"
             className="px-3 py-2 text-xs font-medium rounded-lg border border-slate-300 dark:border-gray-600 bg-white dark:bg-gray-900
               text-slate-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary dark:[color-scheme:dark]"
           >
@@ -514,7 +516,7 @@ export default function DashboardClienteDono() {
               : <AlertCircle  size={18} className="text-red-500 shrink-0 mt-0.5" />
             }
             <p className="text-sm text-gray-700 dark:text-gray-300 flex-1">{toast.msg}</p>
-            <button type="button" onClick={fecharToast} className="p-1 rounded-lg text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
+            <button type="button" onClick={fecharToast} aria-label="Fechar notificação" className="p-1 rounded-lg text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
               <X size={14} />
             </button>
           </div>

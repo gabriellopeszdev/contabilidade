@@ -320,6 +320,7 @@ export function ClienteDetalheReadOnly() {
           <select
             value={filtroSetor}
             onChange={(e) => setFiltroSetor(e.target.value as SetorTipo | '')}
+            aria-label="Filtrar por setor"
             className="px-3 py-2 text-xs font-medium rounded-lg border border-slate-300 dark:border-gray-600 bg-white dark:bg-gray-800
               text-slate-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary dark:[color-scheme:dark]"
           >
@@ -331,6 +332,7 @@ export function ClienteDetalheReadOnly() {
           <select
             value={filtroLeitura}
             onChange={(e) => setFiltroLeitura(e.target.value as 'lido' | 'nao_lido' | '')}
+            aria-label="Filtrar por leitura"
             className="px-3 py-2 text-xs font-medium rounded-lg border border-slate-300 dark:border-gray-600 bg-white dark:bg-gray-800
               text-slate-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary dark:[color-scheme:dark]"
           >
@@ -341,6 +343,7 @@ export function ClienteDetalheReadOnly() {
           <select
             value={filtroOrigem}
             onChange={(e) => setFiltroOrigem(e.target.value as Origem | '')}
+            aria-label="Filtrar por origem"
             className="px-3 py-2 text-xs font-medium rounded-lg border border-slate-300 dark:border-gray-600 bg-white dark:bg-gray-800
               text-slate-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary dark:[color-scheme:dark]"
           >

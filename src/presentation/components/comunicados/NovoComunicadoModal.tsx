@@ -153,7 +153,7 @@ export function NovoComunicadoModal({ aberto, token, onFechar, onSucesso }: Novo
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800 shrink-0">
           <h3 className="text-base font-bold text-gray-900 dark:text-gray-100">Novo Comunicado</h3>
-          <button type="button" onClick={handleFechar} disabled={enviando}
+          <button type="button" onClick={handleFechar} disabled={enviando} aria-label="Fechar"
             className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors disabled:opacity-50">
             <X size={16} />
           </button>
@@ -236,6 +236,7 @@ export function NovoComunicadoModal({ aberto, token, onFechar, onSucesso }: Novo
             {targeting === 'SETOR' && (
               <div className="mt-2">
                 <select value={setor} onChange={(e) => setSetor(e.target.value as SetorTipo)}
+                  aria-label="Filtrar por setor"
                   className="mt-1 w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary/50">
                   <option value="FISCAL">Fiscal</option>
                   <option value="PESSOAL">Pessoal</option>

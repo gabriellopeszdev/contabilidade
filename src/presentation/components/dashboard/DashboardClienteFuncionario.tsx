@@ -416,7 +416,7 @@ export default function DashboardClienteFuncionario() {
               : <AlertCircle  size={18} className="text-red-500 shrink-0 mt-0.5" />
             }
             <p className="text-sm text-gray-700 dark:text-gray-300 flex-1">{toast.msg}</p>
-            <button type="button" onClick={fecharToast} className="p-1 rounded-lg text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
+            <button type="button" onClick={fecharToast} aria-label="Fechar notificação" className="p-1 rounded-lg text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
               <X size={14} />
             </button>
           </div>

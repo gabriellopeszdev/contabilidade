@@ -306,6 +306,7 @@ export function KanbanBoard({ token, clienteId, onErro }: KanbanBoardProps) {
           <select
             value={filtroCliente}
             onChange={(e) => setFiltroCliente(e.target.value)}
+            aria-label="Filtrar por cliente"
             className="text-[11px] font-medium text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded-lg
                        px-2.5 py-1 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary
                        max-w-[140px] sm:max-w-[180px] dark:[color-scheme:dark]"
@@ -322,6 +323,7 @@ export function KanbanBoard({ token, clienteId, onErro }: KanbanBoardProps) {
           <select
             value={filtroFuncionario}
             onChange={(e) => setFiltroFuncionario(e.target.value)}
+            aria-label="Filtrar por responsável"
             className="text-[11px] font-medium text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded-lg
                        px-2.5 py-1 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-violet-400
                        max-w-[140px] sm:max-w-[180px] dark:[color-scheme:dark]"

@@ -350,6 +350,7 @@ export const ChatWindow = forwardRef<ChatWindowHandle, ChatWindowProps>(function
             <button
               type="button"
               onClick={() => setAnexo(null)}
+              aria-label="Remover anexo"
               className="text-primary/60 hover:text-primary shrink-0"
             >
               <X size={14} />
@@ -370,6 +371,7 @@ export const ChatWindow = forwardRef<ChatWindowHandle, ChatWindowProps>(function
             type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={!roomId || enviando}
+            aria-label="Anexar arquivo"
             className="w-9 h-9 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all shrink-0"
           >
             <Paperclip size={16} />
@@ -387,6 +389,7 @@ export const ChatWindow = forwardRef<ChatWindowHandle, ChatWindowProps>(function
           <button
             type="submit"
             disabled={(!texto.trim() && !anexo) || enviando}
+            aria-label="Enviar mensagem"
             className="w-9 h-9 rounded-xl bg-primary text-white flex items-center justify-center hover:brightness-90 disabled:opacity-40 disabled:cursor-not-allowed transition-all shrink-0"
           >
             {enviando ? (
