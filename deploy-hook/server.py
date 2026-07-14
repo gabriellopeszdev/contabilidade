@@ -7,7 +7,7 @@ o container app via docker compose — sem precisar de SSH do GitHub.
 Roda como systemd service no host do VPS.
 Logs: journalctl -u deploy-hook -f
 """
-import io, os, subprocess, tarfile, logging
+import io, os, subprocess, tarfile, logging, threading
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 SECRET  = os.environ.get('DEPLOY_HOOK_SECRET', '')
@@ -26,10 +26,26 @@ logging.basicConfig(
 )
 log = logging.getLogger('deploy-hook')
 
+# Garante que apenas um build roda por vez. Se dois pushes chegarem em
+# sequência, o segundo aguarda o primeiro terminar e então constrói com
+# os arquivos já atualizados pelo segundo extract.
+_build_lock = threading.Lock()
+
 
 def run(*cmd):
     log.info('$ %s', ' '.join(cmd))
     subprocess.run(list(cmd), check=True, cwd=WORKDIR)
+
+
+def build_in_background():
+    with _build_lock:
+        try:
+            run(*COMPOSE, 'up', '-d', '--build', '--no-deps', 'app')
+            run(*COMPOSE, 'exec', '-T', 'app', 'npx', 'prisma', 'migrate', 'deploy')
+            run('docker', 'image', 'prune', '-f')
+            log.info('Deploy concluído com sucesso')
+        except subprocess.CalledProcessError as exc:
+            log.error('Falha no deploy: %s', exc)
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -61,7 +77,7 @@ class Handler(BaseHTTPRequestHandler):
 
         log.info('Deploy iniciado — %.1f MB recebidos', length / 1024 / 1024)
 
-        # Extrai tarball
+        # Extrai tarball (rápido — segundos)
         try:
             data = self.rfile.read(length)
             with tarfile.open(fileobj=io.BytesIO(data), mode='r:gz') as tar:
@@ -72,22 +88,17 @@ class Handler(BaseHTTPRequestHandler):
                     and m.name not in PRESERVE
                 ]
                 tar.extractall(WORKDIR, members=members)
-            log.info('%d arquivos extraídos', len(members))
+            log.info('%d arquivos extraídos — build iniciado em background', len(members))
         except Exception as exc:
             log.error('Falha ao extrair: %s', exc)
             self.reply(500, f'extract error: {exc}')
             return
 
-        # Rebuild + migrations + cleanup
-        try:
-            run(*COMPOSE, 'up', '-d', '--build', '--no-deps', 'app')
-            run(*COMPOSE, 'exec', '-T', 'app', 'npx', 'prisma', 'migrate', 'deploy')
-            run('docker', 'image', 'prune', '-f')
-            log.info('Deploy concluído')
-            self.reply(200, 'ok')
-        except subprocess.CalledProcessError as exc:
-            log.error('Falha no deploy: %s', exc)
-            self.reply(500, 'deploy error')
+        # Responde 200 IMEDIATAMENTE — antes do build, para não estourar o
+        # timeout do Cloudflare (524). O build continua em thread separada.
+        self.reply(200, 'ok')
+
+        threading.Thread(target=build_in_background, daemon=True).start()
 
 
 if __name__ == '__main__':
