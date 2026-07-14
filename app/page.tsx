@@ -141,7 +141,7 @@ const IA_RECURSOS = [
 const MARQUEE_ITEMS = [
   'Asaas', 'Cora', 'Assinatura Digital', 'PIX QR Code', 'Chat em Tempo Real',
   'Assistente IA', 'LGPD Compliant', '2FA com TOTP', 'Calendário Fiscal',
-  'Análise de NF-e', 'Self-hosted', 'Open Source', 'Sugestão de Regime', 'Gestão de Equipe',
+  'Análise de NF-e', 'Self-hosted', 'Escalável', 'Sugestão de Regime', 'Gestão de Equipe',
 ];
 
 const STEPS = [
@@ -205,7 +205,7 @@ const TRUST = [
   { icon: ShieldCheck, titulo: 'LGPD Compliant',  descricao: 'Dados armazenados em servidor próprio. Sem compartilhamento com terceiros.' },
   { icon: Lock,        titulo: '2FA com TOTP',    descricao: 'Autenticação em dois fatores com app autenticador (Google, Authy, etc.).' },
   { icon: Cloud,       titulo: 'Self-hosted',     descricao: 'Você controla a infraestrutura. Seus dados nunca saem do seu servidor.' },
-  { icon: Zap,         titulo: 'Open Source',     descricao: 'Código aberto, auditável e sem vendor lock-in. Customize como quiser.' },
+  { icon: Zap,         titulo: 'Escalável',       descricao: 'Cresça sem limitações. Adicione clientes, usuários e módulos conforme seu escritório expande.' },
 ];
 
 const INTEGRACOES = [
@@ -852,7 +852,7 @@ export default function LandingPage() {
             {dashLabel ?? 'Entrar na plataforma'}
             <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
           </Link>
-          <p className="text-slate-400 text-sm mt-6">Sistema self-hosted · LGPD Compliant · Open Source</p>
+          <p className="text-slate-400 text-sm mt-6">Sistema self-hosted · LGPD Compliant · 2FA com TOTP</p>
         </div>
       </section>
 
