@@ -205,5 +205,5 @@ export class DocumentoFiscal extends AggregateRoot {
   get competencia(): Date | null { return this._props.competencia; }
   get metadataJson(): Readonly<Record<string, unknown>> { return this._props.metadataJson; }
   get createdAt(): Date { return this._props.createdAt; }
-  get categoria(): string | null { return this._props.categoria; }
+  get categoria(): string | null { return this._props.categoria ?? null; }
 }
