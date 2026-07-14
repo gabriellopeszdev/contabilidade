@@ -235,8 +235,14 @@ export default function InicioPagina() {
   // ── Dados derivados ─────────────────────────────────────────────────────────
   const agora = useMemo(() => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; }, []);
 
+  const [abaContador, setAbaContador] = useState<'todos' | 'novos'>('todos');
+
   const docsDoContador  = useMemo(() => documentos.filter(d => d.origem === 'UPLOAD_CONTADOR').slice(0, 6), [documentos]);
   const novosDoContador = useMemo(() => docsDoContador.filter(d => !d.readStatus).length, [docsDoContador]);
+  const docsVisiveis    = useMemo(
+    () => abaContador === 'novos' ? docsDoContador.filter(d => !d.readStatus) : docsDoContador,
+    [abaContador, docsDoContador],
+  );
 
   const boletosAbertos = useMemo(
     () => boletos.filter(b => b.status === 'PENDENTE' || b.status === 'VENCIDO'),
@@ -458,14 +464,17 @@ export default function InicioPagina() {
 
           {/* Documentos do contador */}
           <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col h-full">
-            <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+            <div className={`px-5 py-4 flex items-center justify-between ${docsCarregando || docsDoContador.length > 0 ? 'border-b border-gray-100 dark:border-gray-700' : ''}`}>
               <div>
-                <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">Do seu Contador</h3>
+                <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                  <FolderOpen size={15} className="text-primary" />
+                  Do seu Contador
+                </h3>
                 <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Documentos enviados pelo escritório</p>
               </div>
               <Link
                 href="/documentos"
-                className="flex items-center gap-1 text-xs text-primary dark:text-primary hover:underline font-medium shrink-0"
+                className="flex items-center gap-1 text-xs text-primary hover:underline font-medium shrink-0"
               >
                 Ver todos <ChevronRight size={13} />
               </Link>
@@ -481,21 +490,59 @@ export default function InicioPagina() {
 
             {/* Nenhum documento ainda */}
             {!docsCarregando && docsDoContador.length === 0 && (
-              <div className="flex-1 flex flex-col items-center justify-center gap-2 py-8 text-center">
-                <div className="w-10 h-10 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                  <FileText size={18} className="text-gray-300 dark:text-gray-600" />
+              <div className="flex-1 flex flex-col items-center justify-center gap-3 py-10 px-6 text-center">
+                <div className="w-14 h-14 rounded-2xl bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
+                  <FolderOpen size={26} className="text-primary/70" />
                 </div>
-                <p className="text-sm font-semibold text-gray-500 dark:text-gray-400">Nenhum documento ainda</p>
-                <p className="text-xs text-gray-400 dark:text-gray-500 max-w-xs">
-                  Quando seu contador enviar documentos, eles aparecerão aqui.
-                </p>
+                <div>
+                  <p className="text-sm font-semibold text-gray-600 dark:text-gray-300">Nenhum documento ainda</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1 leading-relaxed max-w-[190px] mx-auto">
+                    Quando seu contador enviar documentos, eles aparecerão aqui.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Filtro Todos / Novos */}
+            {!docsCarregando && docsDoContador.length > 0 && (
+              <div className="flex items-center gap-1 px-5 py-2 border-b border-gray-100 dark:border-gray-800">
+                {(['todos', 'novos'] as const).map((aba) => (
+                  <button
+                    key={aba}
+                    type="button"
+                    onClick={() => setAbaContador(aba)}
+                    className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold transition-colors ${
+                      abaContador === aba
+                        ? 'bg-primary text-white'
+                        : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+                    }`}
+                  >
+                    {aba === 'todos' ? 'Todos' : 'Novos'}
+                    {aba === 'novos' && novosDoContador > 0 && (
+                      <span className={`inline-flex items-center justify-center w-4 h-4 rounded-full text-[9px] font-bold leading-none ${
+                        abaContador === 'novos' ? 'bg-white/30 text-white' : 'bg-primary text-white'
+                      }`}>
+                        {novosDoContador}
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Todos lidos no filtro "Novos" */}
+            {!docsCarregando && docsDoContador.length > 0 && docsVisiveis.length === 0 && (
+              <div className="flex flex-col items-center justify-center gap-2 py-8 text-center">
+                <CheckCircle2 size={20} className="text-emerald-400" />
+                <p className="text-sm font-semibold text-gray-500 dark:text-gray-400">Tudo em dia!</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500">Nenhum documento pendente de leitura.</p>
               </div>
             )}
 
             {/* Lista de documentos */}
-            {!docsCarregando && docsDoContador.length > 0 && (
+            {!docsCarregando && docsVisiveis.length > 0 && (
               <ul className="divide-y divide-gray-100 dark:divide-gray-700">
-                {docsDoContador.map(doc => {
+                {docsVisiveis.map(doc => {
                   const setor     = SETOR_BADGE[doc.sector];
                   const isPDF     = doc.fileType === 'PDF';
                   const isBaixando = baixandoIds.has(doc.id);
