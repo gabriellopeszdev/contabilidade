@@ -47,7 +47,7 @@ export const POST = withAuth(async (req, _ctx, auth) => {
         where: {
           sector:    setor as 'FISCAL' | 'PESSOAL' | 'CONTABIL',
           deletedAt: null,
-          client: {
+          cliente: {
             contadoresRel: { some: { contadorId: auth.sub } },
             deletedAt: null,
           },
