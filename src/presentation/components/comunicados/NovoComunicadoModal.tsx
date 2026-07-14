@@ -173,7 +173,7 @@ export function NovoComunicadoModal({ aberto, token, onFechar, onSucesso }: Novo
           {/* Editor Tiptap */}
           <div>
             <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Conteúdo</label>
-            <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+            <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-primary/50 focus-within:border-primary/50">
               <div className="flex items-center gap-0.5 px-2 py-1 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800">
                 <ToolbarButton onClick={() => editor?.chain().focus().toggleBold().run()} ativo={editor?.isActive('bold')} title="Negrito">
                   <Bold size={14} />
@@ -231,14 +231,23 @@ export function NovoComunicadoModal({ aberto, token, onFechar, onSucesso }: Novo
               <div className="mt-2 max-h-40 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg divide-y divide-gray-50 dark:divide-gray-800">
                 {clientes.length === 0 ? (
                   <p className="py-4 text-center text-xs text-gray-400">Carregando clientes…</p>
-                ) : clientes.map((c) => (
-                  <label key={c.id} className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800">
-                    <input type="checkbox" checked={clientesSelecionados.includes(c.id)}
-                      onChange={() => toggleCliente(c.id)}
-                      className="rounded border-gray-300 text-primary focus:ring-primary" />
-                    <span className="text-xs text-gray-700 dark:text-gray-300">{c.nome}</span>
-                  </label>
-                ))}
+                ) : clientes.map((c) => {
+                  const selecionado = clientesSelecionados.includes(c.id);
+                  return (
+                    <label key={c.id} className={`flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors ${
+                      selecionado
+                        ? 'bg-primary/10 dark:bg-primary/20'
+                        : 'hover:bg-gray-50 dark:hover:bg-gray-800'
+                    }`}>
+                      <input type="checkbox" checked={selecionado}
+                        onChange={() => toggleCliente(c.id)}
+                        className="rounded border-gray-300 text-primary focus:ring-primary accent-primary" />
+                      <span className={`text-xs font-medium ${selecionado ? 'text-primary' : 'text-gray-700 dark:text-gray-300'}`}>
+                        {c.nome}
+                      </span>
+                    </label>
+                  );
+                })}
               </div>
             )}
           </div>
