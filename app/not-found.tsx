@@ -38,6 +38,7 @@ export default function NotFound() {
           className="select-none mb-8"
           style={{
             perspective: '900px',
+          transform: 'translateX(-9%)',
           }}
         >
           <div
