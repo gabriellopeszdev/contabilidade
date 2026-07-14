@@ -12,6 +12,9 @@ import type { Socket } from 'socket.io-client';
 let socket: Socket | null = null;
 let socketToken: string | null = null;
 
+/** Retorna a instância singleton do socket (null se não conectado). */
+export function getSocket(): typeof socket { return socket; }
+
 // =============================================================================
 // Tipos
 // =============================================================================

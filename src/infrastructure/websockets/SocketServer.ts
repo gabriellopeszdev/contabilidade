@@ -88,6 +88,13 @@ interface ServerToClientEvents {
 
   /** Disparado ao contador quando um cliente ativa a conta. */
   cliente_ativado: (payload: { clienteId: string }) => void;
+
+  /** Disparado ao cliente quando um novo comunicado é publicado. */
+  novo_comunicado: (payload: {
+    comunicadoId: string;
+    titulo:       string;
+    contadorNome: string;
+  }) => void;
 }
 
 /** Eventos que o CLIENT envia ao servidor. */
@@ -631,6 +638,31 @@ export class SocketServer {
         const clienteId  = event.clienteId  as string | undefined;
         if (!contadorId || !clienteId) break;
         this.io.to(`user:${contadorId}`).emit('cliente_ativado', { clienteId });
+        break;
+      }
+
+      case 'NovoComunicadoEvent': {
+        const comunicadoId = event.comunicadoId as string | undefined;
+        const titulo       = event.titulo       as string | undefined;
+        const contadorNome = event.contadorNome as string | undefined;
+        const clienteIds   = (event.clienteIds  as string[] | undefined) ?? [];
+
+        if (!comunicadoId || !titulo) break;
+
+        for (const clienteId of clienteIds) {
+          this.io.to(`user:${clienteId}`).emit('novo_comunicado', {
+            comunicadoId,
+            titulo,
+            contadorNome: contadorNome ?? '',
+          });
+
+          void this.persistirEEmitir(clienteId, 'CLIENTE', {
+            tipo:     'COMUNICADO',
+            titulo:   `Novo informativo: ${titulo}`,
+            mensagem: `Seu contador publicou um novo comunicado.`,
+            metadados: { comunicadoId },
+          });
+        }
         break;
       }
 
