@@ -150,6 +150,7 @@ model UsuarioCliente {
 
   notifEmailNovoDoc Boolean   @default(true) @map("notif_email_novo_doc")
   notifEmailBoleto  Boolean   @default(true) @map("notif_email_boleto")
+  comunicadosDestinatario ComunicadoDestinatario[]
 
   // Índice parcial para ignorar registros soft-deleted em queries comuns.
   // OBS: índices parciais via Prisma requerem a cláusula `where` no schema.
@@ -206,6 +207,7 @@ model UsuarioContador {
   assinaturaSaaS  AssinaturaSaaS?
   cobrancasSaas   CobrancaSaaS[]
   chatIaMensagens ChatIaMensagem[]
+  comunicados Comunicado[]
 
   @@index([email])
   @@index([deletedAt])
@@ -910,4 +912,45 @@ model ChatIaMensagem {
 
   @@index([contadorId, createdAt])
   @@map("chat_ia_mensagem")
+}
+
+// =============================================================================
+// Comunicado — Aviso publicado pelo contador para seus clientes
+// =============================================================================
+
+model Comunicado {
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  contadorId       String    @map("contador_id") @db.Uuid
+  titulo           String    @db.VarChar(255)
+  conteudo         String
+  anexoPath        String?   @map("anexo_path")
+  anexoNome        String?   @map("anexo_nome")
+  exigeConfirmacao Boolean   @default(false) @map("exige_confirmacao")
+  targeting        String    @db.VarChar(20)
+  setor            String?   @db.VarChar(20)
+  publicadoAt      DateTime  @default(now()) @map("publicado_at") @db.Timestamptz
+  deletedAt        DateTime? @map("deleted_at") @db.Timestamptz
+
+  contador      UsuarioContador          @relation(fields: [contadorId], references: [id])
+  destinatarios ComunicadoDestinatario[]
+
+  @@index([contadorId])
+  @@index([publicadoAt(sort: Desc)])
+  @@map("comunicados")
+}
+
+model ComunicadoDestinatario {
+  comunicadoId String    @map("comunicado_id") @db.Uuid
+  clienteId    String    @map("cliente_id") @db.Uuid
+  lido         Boolean   @default(false)
+  lidoAt       DateTime? @map("lido_at") @db.Timestamptz
+  confirmado   Boolean   @default(false)
+  confirmadoAt DateTime? @map("confirmado_at") @db.Timestamptz
+
+  comunicado Comunicado     @relation(fields: [comunicadoId], references: [id])
+  cliente    UsuarioCliente @relation(fields: [clienteId], references: [id])
+
+  @@id([comunicadoId, clienteId])
+  @@index([clienteId])
+  @@map("comunicado_destinatarios")
 }
