@@ -62,7 +62,7 @@ export function NovoComunicadoModal({ aberto, token, onFechar, onSucesso }: Novo
     content: '',
     editorProps: {
       attributes: {
-        class: 'min-h-[160px] p-3 text-sm text-gray-900 focus:outline-none',
+        class: 'min-h-[160px] p-3 text-sm text-gray-900 dark:text-gray-100 focus:outline-none',
       },
     },
   });
