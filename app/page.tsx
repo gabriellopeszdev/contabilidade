@@ -152,7 +152,7 @@ const STEPS = [
 
 const PLANOS_LANDING = [
   {
-    nome: 'Básico', preco: '89', destaque: false, ia: false,
+    nome: 'Básico', destaque: false, ia: false,
     descricao: 'Para escritórios pequenos que estão começando.',
     features: [
       { label: 'Até 20 clientes',           ok: true  },
@@ -168,7 +168,7 @@ const PLANOS_LANDING = [
     ],
   },
   {
-    nome: 'Pro', preco: '189', destaque: true, ia: false,
+    nome: 'Pro', destaque: true, ia: false,
     descricao: 'Para escritórios em crescimento com mais recursos.',
     features: [
       { label: 'Até 100 clientes',           ok: true  },
@@ -184,7 +184,7 @@ const PLANOS_LANDING = [
     ],
   },
   {
-    nome: 'Enterprise', preco: '389', destaque: false, ia: true,
+    nome: 'Enterprise', destaque: false, ia: true,
     descricao: 'Clientes e documentos ilimitados. Todos os recursos, incluindo IA.',
     features: [
       { label: 'Clientes ilimitados',          ok: true },
@@ -318,6 +318,18 @@ export default function LandingPage() {
   useRevealOnScroll();
 
   const typed = useTypewriter(TYPEWRITER_WORDS, 55, 2200);
+
+  const [precosApi, setPrecosApi] = useState<Record<string, number>>({});
+  useEffect(() => {
+    fetch('/api/v1/planos')
+      .then(r => r.json())
+      .then((d: { planos: { nome: string; preco: number }[] }) => {
+        const map: Record<string, number> = {};
+        d.planos.forEach(p => { map[p.nome] = p.preco; });
+        setPrecosApi(map);
+      })
+      .catch(err => console.error('[planos landing]', err));
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#0a0f1e] text-white antialiased overflow-x-hidden">
@@ -735,9 +747,15 @@ export default function LandingPage() {
                   <h3 className="font-bold text-white text-lg mb-1">{plano.nome}</h3>
                   <p className="text-slate-400 text-sm">{plano.descricao}</p>
                 </div>
-                <div>
-                  <span className="text-4xl font-bold text-white">R$ {plano.preco}</span>
-                  <span className="text-slate-400 text-sm">/mês</span>
+                <div className="flex items-baseline gap-1">
+                  {precosApi[plano.nome] !== undefined ? (
+                    <>
+                      <span className="text-4xl font-bold text-white">R$ {precosApi[plano.nome]}</span>
+                      <span className="text-slate-400 text-sm">/mês</span>
+                    </>
+                  ) : (
+                    <div className="h-10 w-28 rounded-lg bg-white/10 animate-pulse" />
+                  )}
                 </div>
                 <ul className="space-y-2.5 flex-1">
                   {plano.features.map((f) => (

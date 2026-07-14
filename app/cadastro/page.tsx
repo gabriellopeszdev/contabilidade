@@ -1,12 +1,18 @@
 'use client';
 
-import { useState, useCallback, Suspense } from 'react';
+import { useState, useCallback, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { ChevronLeft, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 import { FiscoHubLogo } from '../components/FiscoHubLogo';
 
 type FormState = 'idle' | 'submitting' | 'success' | 'error';
+
+const PLANOS_FALLBACK = [
+  { nome: 'Básico',     preco: 119 },
+  { nome: 'Pro',        preco: 249 },
+  { nome: 'Enterprise', preco: 509 },
+];
 
 function formatCNPJ(value: string): string {
   const digits = value.replace(/\D/g, '').slice(0, 14);
@@ -31,6 +37,14 @@ function CadastroForm() {
 
   const [formState,   setFormState]   = useState<FormState>('idle');
   const [errorMsg,    setErrorMsg]    = useState('');
+  const [planosApi,   setPlanosApi]   = useState<{ nome: string; preco: number }[]>([]);
+
+  useEffect(() => {
+    fetch('/api/v1/planos')
+      .then(r => r.json())
+      .then((d: { planos: { nome: string; preco: number }[] }) => setPlanosApi(d.planos))
+      .catch(err => console.error('[planos cadastro]', err));
+  }, []);
 
   const handleCnpjChange = useCallback((v: string) => {
     setCnpj(formatCNPJ(v));
@@ -218,9 +232,11 @@ function CadastroForm() {
                       onChange={(e) => setPlano(e.target.value)}
                       className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-violet-500/50 focus:bg-white/8 transition-all text-sm appearance-none"
                     >
-                      <option value="Básico"     className="bg-[#0a0f1e]">Básico — R$89/mês</option>
-                      <option value="Pro"        className="bg-[#0a0f1e]">Pro — R$189/mês</option>
-                      <option value="Enterprise" className="bg-[#0a0f1e]">Enterprise — R$389/mês</option>
+                      {(planosApi.length > 0 ? planosApi : PLANOS_FALLBACK).map(p => (
+                        <option key={p.nome} value={p.nome} className="bg-[#0a0f1e]">
+                          {p.nome} — R${p.preco}/mês
+                        </option>
+                      ))}
                     </select>
                   </div>
                 </div>

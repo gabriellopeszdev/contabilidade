@@ -184,21 +184,21 @@ async function main() {
   const [planoBasico, planoPro, planoEnterprise] = await Promise.all([
     prisma.planoSaaS.upsert({
       where:  { nome: 'Básico' },
-      update: { preco: 89, limiteClientes: 20, limiteDocumentos: 1000, features: ['chat', 'calendario', 'financeiro'], isActive: true },
-      create: { nome: 'Básico', descricao: 'Ideal para escritórios pequenos que estão começando.', preco: 89, limiteClientes: 20, limiteDocumentos: 1000, features: ['chat', 'calendario', 'financeiro'], isActive: true },
+      update: { preco: 119, limiteClientes: 20, limiteDocumentos: 1000, features: ['chat', 'calendario', 'financeiro'], isActive: true },
+      create: { nome: 'Básico', descricao: 'Ideal para escritórios pequenos que estão começando.', preco: 119, limiteClientes: 20, limiteDocumentos: 1000, features: ['chat', 'calendario', 'financeiro'], isActive: true },
     }),
     prisma.planoSaaS.upsert({
       where:  { nome: 'Pro' },
-      update: { preco: 189, limiteClientes: 100, limiteDocumentos: 5000, features: ['chat', 'calendario', 'financeiro', 'assinatura_eletronica', 'relatorios', 'equipe'], isActive: true },
-      create: { nome: 'Pro', descricao: 'Para escritórios em crescimento que precisam de mais recursos.', preco: 189, limiteClientes: 100, limiteDocumentos: 5000, features: ['chat', 'calendario', 'financeiro', 'assinatura_eletronica', 'relatorios', 'equipe'], isActive: true },
+      update: { preco: 249, limiteClientes: 100, limiteDocumentos: 5000, features: ['chat', 'calendario', 'financeiro', 'assinatura_eletronica', 'relatorios', 'equipe'], isActive: true },
+      create: { nome: 'Pro', descricao: 'Para escritórios em crescimento que precisam de mais recursos.', preco: 249, limiteClientes: 100, limiteDocumentos: 5000, features: ['chat', 'calendario', 'financeiro', 'assinatura_eletronica', 'relatorios', 'equipe'], isActive: true },
     }),
     prisma.planoSaaS.upsert({
       where:  { nome: 'Enterprise' },
-      update: { preco: 389, limiteClientes: -1, limiteDocumentos: -1, features: ['chat', 'calendario', 'financeiro', 'assinatura_eletronica', 'relatorios', 'equipe', 'integracao_cora'], isActive: true },
-      create: { nome: 'Enterprise', descricao: 'Clientes e documentos ilimitados. Todos os recursos.', preco: 389, limiteClientes: -1, limiteDocumentos: -1, features: ['chat', 'calendario', 'financeiro', 'assinatura_eletronica', 'relatorios', 'equipe', 'integracao_cora'], isActive: true },
+      update: { preco: 509, limiteClientes: -1, limiteDocumentos: -1, features: ['chat', 'calendario', 'financeiro', 'assinatura_eletronica', 'relatorios', 'equipe', 'integracao_cora'], isActive: true },
+      create: { nome: 'Enterprise', descricao: 'Clientes e documentos ilimitados. Todos os recursos.', preco: 509, limiteClientes: -1, limiteDocumentos: -1, features: ['chat', 'calendario', 'financeiro', 'assinatura_eletronica', 'relatorios', 'equipe', 'integracao_cora'], isActive: true },
     }),
   ]);
-  console.log(`✅ Planos:            Básico (R$89), Pro (R$189), Enterprise (R$389)`);
+  console.log(`✅ Planos:            Básico (R$119), Pro (R$249), Enterprise (R$509)`);
 
   // -------------------------------------------------------------------------
   // 6. Assinatura SaaS (plano Pro TRIAL para o contador de exemplo)
@@ -252,9 +252,9 @@ async function main() {
   console.log(`    Senha:  ${FUNC_GERENTE.senha}`);
   console.log(`    Setores: TODOS (acesso total)\n`);
   console.log('  Planos SaaS:');
-  console.log('    Básico      → R$89/mês  · 20 clientes  · 1.000 docs');
-  console.log('    Pro (TRIAL) → R$189/mês · 100 clientes · 5.000 docs (atribuído ao contador)');
-  console.log('    Enterprise  → R$389/mês · ilimitado');
+  console.log('    Básico      → R$119/mês · 20 clientes  · 1.000 docs');
+  console.log('    Pro (TRIAL) → R$249/mês · 100 clientes · 5.000 docs (atribuído ao contador)');
+  console.log('    Enterprise  → R$509/mês · ilimitado');
   console.log('─'.repeat(54));
   console.log('\n⚠️  ATENÇÃO: credenciais apenas para desenvolvimento.\n');
 }
