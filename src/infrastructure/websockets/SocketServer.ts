@@ -601,34 +601,29 @@ export class SocketServer {
       }
 
       case 'NovoBoletoHonorarioEvent': {
-        const clienteId = event.payload
-          ? (event.payload as Record<string, unknown>).clienteId as string
-          : event.clienteId as string;
-        const payload = (event.payload ?? event) as Record<string, unknown>;
+        const clienteId     = event.clienteId     as string | undefined;
+        const boletoId      = event.boletoId      as string | undefined;
+        const mesReferencia = event.mesReferencia  as string | undefined;
+        const valor         = event.valor          as number | undefined;
+        const vencimento    = event.vencimento     as string | undefined;
+        const mensagem      = (event.mensagem as string | undefined) ?? 'Novo boleto de honorários disponível.';
 
         if (!clienteId) break;
 
-        const mensagemBoleto = (payload.mensagem as string) ?? 'Novo boleto de honorários disponível.';
-
         this.io.to(`user:${clienteId}`).emit('novoBoletoHonorario', {
-          boletoId:      (payload.boletoId      as string) ?? '',
+          boletoId:      boletoId      ?? '',
           clienteId,
-          mesReferencia: (payload.mesReferencia  as string) ?? '',
-          valor:         (payload.valor          as number) ?? 0,
-          vencimento:    (payload.vencimento     as string) ?? '',
-          mensagem:      mensagemBoleto,
+          mesReferencia: mesReferencia ?? '',
+          valor:         valor         ?? 0,
+          vencimento:    vencimento    ?? '',
+          mensagem,
         });
 
         void this.persistirEEmitir(clienteId, 'CLIENTE', {
           tipo:     'NOVO_BOLETO',
           titulo:   'Novo boleto de honorários',
-          mensagem: mensagemBoleto,
-          metadados: {
-            boletoId:      payload.boletoId,
-            mesReferencia: payload.mesReferencia,
-            valor:         payload.valor,
-            vencimento:    payload.vencimento,
-          },
+          mensagem,
+          metadados: { boletoId, mesReferencia, valor, vencimento },
         });
         break;
       }

@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import { z }           from 'zod';
 
 import { withAuth }                          from '../../../../../src/infrastructure/http/middlewares/withAuth';
-import { prisma, storageService, emailService } from '../../../../../src/infrastructure/di/Container';
+import { prisma, storageService, emailService, eventDispatcher } from '../../../../../src/infrastructure/di/Container';
+import { NovoBoletoHonorarioEvent } from '../../../../../src/domain/events/NovoBoletoHonorarioEvent';
 import { logger }                 from '../../../../../src/utils/logger';
 import { gerarBoletoPdf }         from '../../../../../src/infrastructure/pdf/gerarBoletoPdf';
 import {
@@ -450,7 +451,7 @@ function _enviarEmailNovoBoleto(params: {
 }
 
 // =============================================================================
-// Helper interno — publica evento Redis para notificação WebSocket
+// Helper interno — publica evento de domínio para notificação WebSocket
 // =============================================================================
 
 async function _publicarNotificacao(boleto: {
@@ -461,17 +462,14 @@ async function _publicarNotificacao(boleto: {
   vencimento: Date;
 }) {
   try {
-    const { redisPublisher } = await import('../../../../../src/infrastructure/di/Container');
-    await redisPublisher.publish('domain_events', JSON.stringify({
-      eventName: 'NovoBoletoHonorarioEvent',
-      payload: {
-        boletoId:      boleto.id,
-        clienteId:     boleto.clienteId,
-        mesReferencia: boleto.mesReferencia,
-        valor:         Number(boleto.valor),
-        vencimento:    boleto.vencimento.toISOString(),
-        mensagem: `Seu boleto de honorários de ${boleto.mesReferencia} (R$ ${Number(boleto.valor).toFixed(2)}) já está disponível.`,
-      },
-    }));
+    await eventDispatcher.dispatch(
+      new NovoBoletoHonorarioEvent(
+        boleto.id,
+        boleto.clienteId,
+        boleto.mesReferencia,
+        Number(boleto.valor),
+        boleto.vencimento.toISOString(),
+      ),
+    );
   } catch { /* não bloqueia */ }
 }

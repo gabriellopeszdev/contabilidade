@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { SignJWT } from 'jose';
 import { prisma, eventDispatcher, emailService } from '../../../../../src/infrastructure/di/Container';
+import { ClienteAtivadoEvent } from '../../../../../src/domain/events/ClienteAtivadoEvent';
 import { logger } from '../../../../../src/utils/logger';
 import { checkRateLimit, getClientIp } from '../../../../../src/utils/rateLimiter';
 import { BcryptPasswordHasher } from '../../../../../src/infrastructure/auth/BcryptPasswordHasher';
@@ -131,15 +132,7 @@ export async function POST(req: NextRequest) {
     });
     await Promise.allSettled(
       vinculos.map(({ contadorId }) =>
-        eventDispatcher.dispatch(
-          Object.assign(Object.create(null) as object, {
-            eventId:    crypto.randomUUID(),
-            eventName:  'ClienteAtivadoEvent',
-            occurredAt: new Date(),
-            clienteId:  cliente.id,
-            contadorId,
-          }) as import('../../../../../src/shared/DomainEvent').DomainEvent,
-        ),
+        eventDispatcher.dispatch(new ClienteAtivadoEvent(cliente.id, contadorId)),
       ),
     );
 
