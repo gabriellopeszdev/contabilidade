@@ -27,6 +27,7 @@ import {
   PenLine,
   Settings,
   LayoutDashboard,
+  Megaphone,
 } from 'lucide-react';
 
 import { useAuth }          from '../../src/presentation/hooks/useAuth';
@@ -82,6 +83,7 @@ const NAV_GROUPS: NavGroup[] = [
     label: 'Comunicação',
     items: [
       { href: '/chat', label: 'Chat', icon: <MessageSquare size={18} /> },
+      { href: '/informativos', label: 'Informativos', icon: <Megaphone size={18} /> },
     ],
   },
   {

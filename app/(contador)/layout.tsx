@@ -33,6 +33,7 @@ import {
   Lock,
   Bot,
   HelpCircle,
+  Megaphone,
 } from 'lucide-react';
 import { FiscoHubLogo } from '../components/FiscoHubLogo';
 
@@ -102,6 +103,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: '/chat',    label: 'Chat',    icon: <MessageSquare size={18} />,            feature: 'chat' },
       { href: '/chat-ia', label: 'Chat IA', icon: <Bot           size={18} />, donoOnly: true, feature: 'ia' },
+      { href: '/comunicados', label: 'Comunicados', icon: <Megaphone size={18} /> },
     ],
   },
   {
