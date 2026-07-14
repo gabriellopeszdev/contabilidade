@@ -1,0 +1,6 @@
+# Scripts shell sempre com LF (CRLF quebra o shebang no Linux)
+docker-entrypoint.sh text eol=lf
+*.sh text eol=lf
+
+# Defaults
+* text=auto
