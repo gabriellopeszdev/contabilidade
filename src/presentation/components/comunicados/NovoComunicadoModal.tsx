@@ -179,10 +179,24 @@ export function NovoComunicadoModal({ aberto, token, onFechar, onSucesso }: Novo
             <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Conteúdo</label>
             <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-primary/50 focus-within:border-primary/50">
               <div className="flex items-center gap-0.5 px-2 py-1 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800">
-                <ToolbarButton onClick={() => editor?.chain().focus().toggleBold().run()} ativo={editor?.isActive('bold')} title="Negrito">
+                <ToolbarButton
+                  onClick={() => editor?.chain().focus().toggleBold().run()}
+                  ativo={
+                    editor?.isActive('bold') ||
+                    !!editor?.state.storedMarks?.some(m => m.type.name === 'bold')
+                  }
+                  title="Negrito"
+                >
                   <Bold size={14} />
                 </ToolbarButton>
-                <ToolbarButton onClick={() => editor?.chain().focus().toggleItalic().run()} ativo={editor?.isActive('italic')} title="Itálico">
+                <ToolbarButton
+                  onClick={() => editor?.chain().focus().toggleItalic().run()}
+                  ativo={
+                    editor?.isActive('italic') ||
+                    !!editor?.state.storedMarks?.some(m => m.type.name === 'italic')
+                  }
+                  title="Itálico"
+                >
                   <Italic size={14} />
                 </ToolbarButton>
                 <ToolbarButton onClick={() => editor?.chain().focus().toggleBulletList().run()} ativo={editor?.isActive('bulletList')} title="Lista">
