@@ -34,8 +34,8 @@ function ToolbarButton({
       title={title}
       className={`p-1.5 rounded text-sm transition-colors ${
         ativo
-          ? 'bg-primary/25 dark:bg-primary/35 text-primary ring-1 ring-primary/40'
-          : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100'
+          ? 'bg-blue-600 text-white'
+          : 'text-gray-400 hover:bg-gray-700 hover:text-white'
       }`}
     >
       {children}
