@@ -130,17 +130,17 @@ function PainelDireito({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex-1 flex flex-col bg-[#0a0f1e] min-h-screen">
       {/* Logo mobile */}
-      <div className="lg:hidden flex items-center px-6 py-4 border-b border-white/5">
+      <div className="lg:hidden flex items-center px-5 py-4 border-b border-white/5">
         <FiscoHubLogo size="sm" className="[&_span]:!text-white" />
       </div>
 
-      <div className="flex-1 flex flex-col justify-between px-8 sm:px-12 py-12 max-w-[400px] w-full mx-auto">
+      <div className="flex-1 flex flex-col justify-between px-5 sm:px-10 py-8 sm:py-12 max-w-[420px] w-full mx-auto">
         <div className="flex-1 flex flex-col justify-center">
           {children}
         </div>
 
         {/* Footer */}
-        <div className="mt-10 text-center space-y-1.5">
+        <div className="mt-8 text-center space-y-1.5">
           <div className="flex items-center justify-center gap-3 text-[11px] text-slate-600">
             <Link href="/privacidade" className="hover:text-slate-400 transition-colors">
               Política de Privacidade
@@ -159,13 +159,13 @@ function PainelDireito({ children }: { children: React.ReactNode }) {
 
 /* ─── Classes compartilhadas ─── */
 const inputCls =
-  'w-full py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-slate-600 ' +
-  'focus:outline-none focus:border-violet-500/50 focus:bg-white/8 transition-all text-sm';
+  'w-full py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-slate-600 ' +
+  'focus:outline-none focus:border-violet-500/50 focus:bg-white/8 transition-all text-base sm:text-sm';
 
 const btnPrimary =
-  'w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm text-white ' +
+  'w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-sm text-white ' +
   'bg-violet-600 hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed ' +
-  'transition-all hover:scale-[1.02] active:scale-95 shadow-lg shadow-violet-600/25';
+  'transition-all active:scale-95 shadow-lg shadow-violet-600/25 min-h-[48px]';
 
 /* ─── Componente principal ─── */
 function LoginContent() {
@@ -281,10 +281,10 @@ function LoginContent() {
           <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-violet-600/20 border border-violet-500/30 mb-6">
             <ShieldCheck size={22} className="text-violet-400" />
           </div>
-          <h2 className="text-2xl font-bold text-white mb-1">Verificação em dois fatores</h2>
-          <p className="text-slate-500 text-sm mb-8">Digite o código do seu aplicativo autenticador</p>
+          <h2 className="text-xl sm:text-2xl font-bold text-white mb-1">Verificação em dois fatores</h2>
+          <p className="text-slate-500 text-sm mb-6 sm:mb-8">Digite o código do seu aplicativo autenticador</p>
 
-          <form onSubmit={handleTotpSubmit} className="space-y-4" noValidate>
+          <form onSubmit={handleTotpSubmit} className="space-y-5" noValidate>
             <div>
               <label htmlFor="totp" className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
                 Código de 6 dígitos
@@ -326,10 +326,10 @@ function LoginContent() {
           <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-violet-600/20 border border-violet-500/30 mb-6">
             <KeyRound size={22} className="text-violet-400" />
           </div>
-          <h2 className="text-2xl font-bold text-white mb-1">Código de backup</h2>
-          <p className="text-slate-500 text-sm mb-8">Digite um dos seus códigos de recuperação</p>
+          <h2 className="text-xl sm:text-2xl font-bold text-white mb-1">Código de backup</h2>
+          <p className="text-slate-500 text-sm mb-6 sm:mb-8">Digite um dos seus códigos de recuperação</p>
 
-          <form onSubmit={handleBackupSubmit} className="space-y-4" noValidate>
+          <form onSubmit={handleBackupSubmit} className="space-y-5" noValidate>
             <div>
               <label htmlFor="backup" className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
                 Código de recuperação
@@ -368,17 +368,17 @@ function LoginContent() {
 
       <PainelDireito>
         {/* Cabeçalho do form */}
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <p className="text-violet-400 text-xs font-semibold uppercase tracking-widest mb-2">
             Acesso à plataforma
           </p>
-          <h2 className="text-2xl font-bold text-white">Bem-vindo de volta</h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-white">Bem-vindo de volta</h2>
           <p className="text-slate-500 text-sm mt-1">
             Insira suas credenciais para continuar
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+        <form onSubmit={handleSubmit} className="space-y-5" noValidate>
           {/* E-mail */}
           <div>
             <label htmlFor="email" className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
