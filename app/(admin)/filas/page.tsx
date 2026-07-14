@@ -31,6 +31,7 @@ interface JobInfo {
   finishedOn:   number | null;
   processedOn:  number | null;
   timestamp:    number | null;
+  scheduledFor: number | null;
   attemptsMade: number;
   duration:     number | null;
 }
@@ -69,6 +70,16 @@ function fmtAgo(ts: number | null): string {
   if (diff < 60_000) return `${Math.floor(diff / 1000)}s atrás`;
   if (diff < 3_600_000) return `${Math.floor(diff / 60_000)}m atrás`;
   return `${Math.floor(diff / 3_600_000)}h atrás`;
+}
+
+function fmtIn(ts: number | null): string {
+  if (!ts) return '—';
+  const diff = ts - Date.now();
+  if (diff <= 0) return 'agora';
+  if (diff < 60_000) return `em ${Math.floor(diff / 1000)}s`;
+  if (diff < 3_600_000) return `em ${Math.floor(diff / 60_000)}m`;
+  if (diff < 86_400_000) return `em ${Math.floor(diff / 3_600_000)}h`;
+  return `em ${Math.floor(diff / 86_400_000)}d`;
 }
 
 function labelTipo(tipo: string): string {
@@ -397,19 +408,34 @@ export default function FilasPage() {
               <thead>
                 <tr className="border-b border-slate-800 bg-slate-900/80">
                   <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-400">Job</th>
-                  <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-400">Agendado para</th>
+                  <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-400">Próxima execução</th>
+                  <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-400 hidden sm:table-cell">Em</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60">
-                {delayed.map((job) => (
-                  <tr key={job.id} className="bg-slate-900 hover:bg-slate-800/40">
-                    <td className="px-4 py-3">
-                      <span className="text-amber-300 font-medium">{labelTipo(job.tipo)}</span>
-                      <span className="ml-2 text-[10px] text-slate-600 font-mono">#{job.id}</span>
-                    </td>
-                    <td className="px-4 py-3 text-xs text-slate-400">{fmtData(job.timestamp)}</td>
-                  </tr>
-                ))}
+                {delayed.map((job) => {
+                  const proxima = job.scheduledFor;
+                  const emBreve = proxima !== null && proxima > Date.now();
+                  return (
+                    <tr key={job.id} className="bg-slate-900 hover:bg-slate-800/40">
+                      <td className="px-4 py-3">
+                        <span className="text-amber-300 font-medium">{labelTipo(job.tipo)}</span>
+                        <span className="ml-2 text-[10px] text-slate-600 font-mono">#{job.id}</span>
+                      </td>
+                      <td className="px-4 py-3 text-xs">
+                        <span className={emBreve ? 'text-slate-300' : 'text-slate-500 line-through'}>
+                          {fmtData(proxima)}
+                        </span>
+                        {!emBreve && proxima !== null && (
+                          <span className="ml-2 text-[10px] text-amber-500">(passado)</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 hidden sm:table-cell text-xs text-slate-500">
+                        {emBreve ? fmtIn(proxima) : '—'}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

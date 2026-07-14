@@ -23,21 +23,27 @@ export const GET = withAuth(async (_req: NextRequest, _ctx: RouteContext) => {
   ]);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const mapJob = (job: any) => ({
-    id:           job.id,
-    name:         job.name,
-    tipo:         (job.data as { tipo?: string })?.tipo ?? job.name,
-    failedReason: job.failedReason  ?? null,
-    stacktrace:   Array.isArray(job.stacktrace) ? (job.stacktrace[0] ?? null) : null,
-    finishedOn:   job.finishedOn    ?? null,
-    processedOn:  job.processedOn   ?? null,
-    timestamp:    job.timestamp     ?? null,
-    attemptsMade: job.attemptsMade  ?? 0,
-    duration:
-      typeof job.finishedOn === 'number' && typeof job.processedOn === 'number'
-        ? job.finishedOn - job.processedOn
-        : null,
-  });
+  const mapJob = (job: any) => {
+    const ts: number = job.timestamp ?? 0;
+    const delay: number = typeof job.delay === 'number' ? job.delay : 0;
+    return {
+      id:           job.id,
+      name:         job.name,
+      tipo:         (job.data as { tipo?: string })?.tipo ?? job.name,
+      failedReason: job.failedReason  ?? null,
+      stacktrace:   Array.isArray(job.stacktrace) ? (job.stacktrace[0] ?? null) : null,
+      finishedOn:   job.finishedOn    ?? null,
+      processedOn:  job.processedOn   ?? null,
+      timestamp:    ts || null,
+      // Para jobs agendados (delayed): o tempo real de execução = timestamp + delay
+      scheduledFor: ts ? ts + delay : null,
+      attemptsMade: job.attemptsMade  ?? 0,
+      duration:
+        typeof job.finishedOn === 'number' && typeof job.processedOn === 'number'
+          ? job.finishedOn - job.processedOn
+          : null,
+    };
+  };
 
   return NextResponse.json({
     fila:      queueProducer.name,
