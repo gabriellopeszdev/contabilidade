@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 export default function TestError() {
-  throw new Error('Página de teste — erro 500 intencional');
+  throw new Error('Teste — erro 500 intencional');
 }
