@@ -71,8 +71,8 @@ export function NovoComunicadoModal({ aberto, token, onFechar, onSucesso }: Novo
     if (targeting !== 'SELECIONADOS' || clientes.length > 0) return;
     fetch('/api/v1/clientes', { headers: { Authorization: `Bearer ${token}` } })
       .then((r) => r.json())
-      .then((d: { clientes?: { id: string; name: string }[] }) => {
-        setClientes((d.clientes ?? []).map((c) => ({ id: c.id, nome: c.name })));
+      .then((d: { clientes?: Cliente[] }) => {
+        setClientes(d.clientes ?? []);
       })
       .catch(() => {});
   }, [targeting, token, clientes.length]);
