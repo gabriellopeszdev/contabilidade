@@ -251,6 +251,8 @@ services:
       ASAAS_SAAS_API_KEY_BODY: ${ASAAS_SAAS_API_KEY_BODY:-}
     ports:
       - "127.0.0.1:${APP_PORT:-4500}:4500"
+    volumes:
+      - ${DATA_DIR:-./.data}/backups:/backups:ro
     networks:
       - contabilidade_net
     healthcheck:

@@ -661,6 +661,23 @@ export class SocketServer {
         break;
       }
 
+      case 'AvisoAdminEvent': {
+        const notificacoes = (event.notificacoes as Array<{ contadorId: string; notifId: string }> | undefined) ?? [];
+        const titulo       = event.titulo   as string | undefined;
+        const mensagem     = event.mensagem as string | undefined;
+        if (!titulo || !mensagem) break;
+        for (const { contadorId, notifId } of notificacoes) {
+          this.io.to(`user:${contadorId}`).emit('nova_notificacao', {
+            id:        notifId,
+            tipo:      'AVISO_ADMIN',
+            titulo,
+            mensagem,
+            createdAt: new Date().toISOString(),
+          });
+        }
+        break;
+      }
+
       default:
         // Evento desconhecido: ignora silenciosamente (forward-compatible).
         // Se novos eventos forem adicionados sem atualizar o SocketServer,

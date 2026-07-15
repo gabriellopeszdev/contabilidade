@@ -257,6 +257,9 @@ export default function AdminConfigPage() {
             </div>
           </SectionCard>
 
+          {/* Modo Manutenção */}
+          <ManutencaoSection onSucesso={(m) => mostrarToast('sucesso', m)} onErro={(m) => mostrarToast('erro', m)} />
+
           {/* Inteligência Artificial */}
           <IaAdminSection onSucesso={(m) => mostrarToast('sucesso', m)} onErro={(m) => mostrarToast('erro', m)} />
 
@@ -552,6 +555,122 @@ function TwoFactorSection({
               <CheckCircle2 size={13} />
               Concluir
             </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// =============================================================================
+// Seção interativa: Modo de Manutenção
+// =============================================================================
+
+function ManutencaoSection({
+  onSucesso,
+  onErro,
+}: {
+  onSucesso: (msg: string) => void;
+  onErro:    (msg: string) => void;
+}) {
+  const { token } = useAuth();
+  const [ativa,      setAtiva]      = useState<boolean | null>(null);
+  const [carregando, setCarregando] = useState(true);
+  const [salvando,   setSalvando]   = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch('/api/v1/manutencao-status');
+        if (res.ok) {
+          const data = await res.json() as { ativa: boolean };
+          setAtiva(data.ativa);
+        }
+      } catch { /* ignore */ } finally {
+        setCarregando(false);
+      }
+    })();
+  }, []);
+
+  async function handleToggle() {
+    if (!token || ativa === null) return;
+    const novoValor = !ativa;
+    setSalvando(true);
+    try {
+      const res = await fetch('/api/v1/admin/sistema/manutencao', {
+        method:  'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body:    JSON.stringify({ ativa: novoValor }),
+      });
+      const data = await res.json() as { ativa?: boolean; message?: string };
+      if (!res.ok) { onErro(data.message ?? 'Erro ao atualizar.'); return; }
+      setAtiva(data.ativa ?? novoValor);
+      if (novoValor) {
+        onSucesso('Manutenção ativada. Aviso enviado aos contadores.');
+      } else {
+        onSucesso('Manutenção desativada. Acesso liberado.');
+      }
+    } catch {
+      onErro('Erro de conexão.');
+    } finally {
+      setSalvando(false);
+    }
+  }
+
+  return (
+    <div className="bg-slate-900 border border-slate-800 border-l-2 border-l-amber-500 rounded-xl overflow-hidden shadow-sm">
+      <div className="flex items-center gap-3 px-5 py-3.5 border-b border-slate-800/80 bg-slate-900/80">
+        <div className="p-1.5 rounded-lg bg-amber-600/15">
+          <Server size={15} className="text-amber-400" />
+        </div>
+        <h2 className="text-sm font-semibold text-slate-100">Modo de Manutenção</h2>
+        {ativa !== null && (
+          <div className="ml-auto">
+            <span className={`inline-flex items-center gap-1.5 text-[10px] font-semibold border px-2.5 py-1 rounded-full
+              ${ativa
+                ? 'text-amber-400 bg-amber-900/30 border-amber-700/50'
+                : 'text-emerald-400 bg-emerald-900/30 border-emerald-700/50'}`}>
+              <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${ativa ? 'bg-amber-400' : 'bg-emerald-400'}`} />
+              {ativa ? 'Ativo' : 'Inativo'}
+            </span>
+          </div>
+        )}
+      </div>
+
+      <div className="px-5 py-4 space-y-4">
+        <p className="text-xs text-slate-400 leading-relaxed">
+          Quando ativo, usuários não-admin são redirecionados para a página de manutenção.
+          Admins continuam com acesso normal. Ao ativar, um aviso é enviado automaticamente a todos os contadores.
+        </p>
+
+        {carregando ? (
+          <div className="flex items-center gap-2 py-1 text-slate-500 text-xs">
+            <Loader2 size={14} className="animate-spin" /> Verificando status…
+          </div>
+        ) : (
+          <div className="flex items-center gap-4">
+            <button
+              onClick={handleToggle}
+              disabled={salvando || ativa === null}
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm
+                ${ativa
+                  ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-900/30'
+                  : 'bg-amber-600 hover:bg-amber-500 text-white shadow-amber-900/30'}`}
+            >
+              {salvando
+                ? <Loader2 size={13} className="animate-spin" />
+                : <Server   size={13} />}
+              {salvando
+                ? 'Atualizando…'
+                : ativa
+                  ? 'Desativar Manutenção'
+                  : 'Ativar Manutenção'}
+            </button>
+            {ativa && (
+              <p className="text-[11px] text-amber-400/80">
+                ⚠️ Sistema em manutenção — contadores sem acesso.
+              </p>
+            )}
           </div>
         )}
       </div>

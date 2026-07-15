@@ -21,6 +21,9 @@ import {
   Shield,
   MessageSquare,
   Workflow,
+  TrendingUp,
+  HardDrive,
+  Megaphone,
 } from 'lucide-react';
 
 import { useAuth } from '../../src/presentation/hooks/useAuth';
@@ -41,6 +44,9 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/admin-boletos',   label: 'Boletos',          icon: <Receipt         size={18} /> },
   { href: '/planos',          label: 'Planos',           icon: <Package         size={18} /> },
   { href: '/faturamento',     label: 'Faturamento SaaS', icon: <CreditCard      size={18} /> },
+  { href: '/receita',         label: 'Receita SaaS',     icon: <TrendingUp      size={18} /> },
+  { href: '/backups',         label: 'Backups',          icon: <HardDrive       size={18} /> },
+  { href: '/avisos',          label: 'Avisos',           icon: <Megaphone       size={18} /> },
   { href: '/webhook-logs',    label: 'Log de Webhooks',  icon: <Activity        size={18} /> },
   { href: '/auditoria',       label: 'Auditoria',        icon: <Shield          size={18} /> },
   { href: '/feedbacks',       label: 'Feedbacks NPS',    icon: <MessageSquare   size={18} /> },

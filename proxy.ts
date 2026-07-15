@@ -19,7 +19,33 @@ import { jwtVerify } from 'jose';
 //   A chave JWT é lazy-loaded e cacheada no escopo do módulo.
 // =============================================================================
 
-const ROTAS_ADMIN    = ['/dashboard-admin', '/contadores', '/faturamento', '/admin-config', '/webhook-logs', '/admin-boletos', '/admin-clientes', '/auditoria'];
+// ---------------------------------------------------------------------------
+// Cache em memória para modo manutenção (Edge Runtime — sem Prisma ou Redis)
+// Busca o status via fetch a cada 30s; respeita MAINTENANCE_MODE como override.
+// ---------------------------------------------------------------------------
+let _manutAtiva    = process.env.MAINTENANCE_MODE === 'true';
+let _manutLastCheck = 0;
+const MANUT_TTL_MS  = 30_000;
+
+async function isManutencaoAtiva(origin: string): Promise<boolean> {
+  if (process.env.MAINTENANCE_MODE === 'true') return true;
+  const now = Date.now();
+  if (now - _manutLastCheck < MANUT_TTL_MS) return _manutAtiva;
+  try {
+    const res = await fetch(`${origin}/api/v1/manutencao-status`, {
+      cache:  'no-store',
+      signal: AbortSignal.timeout(2000),
+    });
+    if (res.ok) {
+      const data = await res.json() as { ativa?: boolean };
+      _manutAtiva = data.ativa ?? false;
+    }
+  } catch { /* mantém valor anterior */ }
+  _manutLastCheck = now;
+  return _manutAtiva;
+}
+
+const ROTAS_ADMIN    = ['/dashboard-admin', '/contadores', '/faturamento', '/admin-config', '/webhook-logs', '/admin-boletos', '/admin-clientes', '/auditoria', '/receita', '/backups', '/avisos'];
 const ROTAS_CONTADOR = ['/dashboard', '/lote', '/clientes', '/configuracoes', '/calendario', '/equipe', '/busca', '/assinaturas'];
 const ROTAS_CLIENTE  = ['/documentos', '/enviar', '/ajuda'];
 const ROTAS_COMPARTILHADAS = ['/chat', '/financeiro'];
@@ -48,7 +74,7 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Modo manutenção — bloqueia acesso de não-admins
-  if (process.env.MAINTENANCE_MODE === 'true') {
+  if (await isManutencaoAtiva(request.nextUrl.origin)) {
     const isPublic =
       pathname === '/' ||
       pathname === '/login' ||
@@ -224,6 +250,9 @@ export const config = {
     '/admin-boletos/:path*',
     '/admin-clientes/:path*',
     '/auditoria/:path*',
+    '/receita/:path*',
+    '/backups/:path*',
+    '/avisos/:path*',
     '/dashboard/:path*',
     '/lote/:path*',
     '/clientes/:path*',

@@ -89,6 +89,7 @@ enum ResourceType {
   OFFBOARDING
   BOLETO
   ASSINATURA
+  BACKUP
 }
 
 enum RecorrenciaTipo {
@@ -891,10 +892,11 @@ model CobrancaSaaS {
 // =============================================================================
 
 model ConfiguracaoSistema {
-  id         String   @id @default("system")
-  iaProvider String?  @map("ia_provider") @db.VarChar(20)
-  iaApiKey   String?  @map("ia_api_key")  @db.VarChar(500)
-  updatedAt  DateTime @updatedAt          @map("updated_at") @db.Timestamptz
+  id              String   @id @default("system")
+  iaProvider      String?  @map("ia_provider") @db.VarChar(20)
+  iaApiKey        String?  @map("ia_api_key")  @db.VarChar(500)
+  manutencaoAtiva Boolean  @default(false) @map("manutencao_ativa")
+  updatedAt       DateTime @updatedAt          @map("updated_at") @db.Timestamptz
 
   @@map("configuracao_sistema")
 }
