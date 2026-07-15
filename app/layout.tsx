@@ -3,6 +3,7 @@ import './globals.css';
 import { AuthProvider } from '../src/presentation/context/AuthContext';
 import { LGPDConsentGuard } from './components/LGPDConsentGuard';
 import { ToasterProvider } from './components/ToasterProvider';
+import { ServiceWorkerRegistration } from './components/ServiceWorkerRegistration';
 
 // =============================================================================
 // Metadados globais da aplicação
@@ -66,6 +67,7 @@ export default function RootLayout({
           {children}
           <LGPDConsentGuard />
           <ToasterProvider />
+          <ServiceWorkerRegistration />
         </AuthProvider>
       </body>
     </html>
