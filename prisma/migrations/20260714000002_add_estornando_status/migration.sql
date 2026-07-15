@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "StatusBoleto" ADD VALUE IF NOT EXISTS 'ESTORNANDO';
