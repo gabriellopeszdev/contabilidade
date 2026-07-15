@@ -627,6 +627,7 @@ enum StatusBoleto {
   PAGO
   VENCIDO
   CANCELADO
+  ESTORNANDO
 }
 
 enum StatusAssinaturaDoc {

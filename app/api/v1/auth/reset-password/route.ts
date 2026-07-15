@@ -50,14 +50,20 @@ export async function POST(req: NextRequest) {
 
     const passwordHash = await hasher.hash(novaSenha);
 
-    await prisma.usuarioContador.update({
-      where: { id: contador.id },
+    const redefinicao = await prisma.usuarioContador.updateMany({
+      where: { resetToken: token, deletedAt: null },
       data:  {
         passwordHash,
         resetToken:          null,
         resetTokenExpiresAt: null,
       },
     });
+    if (redefinicao.count === 0) {
+      return NextResponse.json(
+        { message: 'Link de redefinição inválido ou já utilizado.' },
+        { status: 400 },
+      );
+    }
 
     logger.info('[POST /auth/reset-password] Senha redefinida.', { contadorId: contador.id });
     return NextResponse.json({ ok: true });

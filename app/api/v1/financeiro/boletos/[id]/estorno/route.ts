@@ -39,11 +39,28 @@ export const POST = withAuth(async (req, ctx, auth) => {
       return NextResponse.json({ message: 'Integração Asaas não configurada.' }, { status: 400 });
     }
 
-    const svc = new AsaasService(config.asaasApiKey);
-    await svc.estornarPagamento(boleto.asaasId, body.valor);
+    // Reserva atômica: impede que dois estornos paralelos chamem a API do Asaas
+    const reserva = await prisma.boletoHonorario.updateMany({
+      where: { id, status: 'PAGO' },
+      data:  { status: 'ESTORNANDO' },
+    });
+    if (reserva.count === 0) {
+      return NextResponse.json(
+        { message: 'Boleto não está pago ou já está em processo de estorno.' },
+        { status: 409 },
+      );
+    }
 
-    // Não altera o status aqui — o Asaas enviará PAYMENT_REFUNDED via webhook
-    // quando o estorno for concluído, atualizando para CANCELADO automaticamente.
+    const svc = new AsaasService(config.asaasApiKey);
+    try {
+      await svc.estornarPagamento(boleto.asaasId, body.valor);
+    } catch (err) {
+      // Reverte a reserva se a chamada à API externa falhar
+      await prisma.boletoHonorario.update({ where: { id }, data: { status: 'PAGO' } });
+      throw err;
+    }
+
+    // Status final (CANCELADO) será gravado pelo webhook do Asaas (PAYMENT_REFUNDED)
     return NextResponse.json({
       ok: true,
       mensagem: 'Estorno solicitado. O status será atualizado quando o Asaas confirmar o crédito.',

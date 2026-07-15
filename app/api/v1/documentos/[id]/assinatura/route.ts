@@ -146,8 +146,27 @@ export const POST = withAuth(async (req, ctx, auth) => {
 // GET /api/v1/documentos/[id]/assinatura — Lista assinaturas do documento
 // =============================================================================
 
-export const GET = withAuth(async (req, ctx) => {
+export const GET = withAuth(async (req, ctx, auth) => {
   const { id: documentoId } = (ctx as ResolvedRouteContext).params;
+
+  const documento = await prisma.documentoFiscal.findFirst({
+    where: { id: documentoId, deletedAt: null },
+    select: { clientId: true },
+  });
+
+  if (!documento) return NextResponse.json({ message: 'Documento não encontrado.' }, { status: 404 });
+
+  if (auth.role !== 'ADMIN') {
+    if (auth.role === 'EMPLOYEE' && auth.vinculo === 'CLIENTE') {
+      return NextResponse.json({ message: 'Acesso negado.' }, { status: 403 });
+    }
+    const contadorId = auth.role === 'EMPLOYEE' ? auth.superiorId : auth.sub;
+    if (!contadorId) return NextResponse.json({ message: 'Acesso negado.' }, { status: 403 });
+    const vinculo = await prisma.contadorCliente.findUnique({
+      where: { contadorId_clienteId: { contadorId, clienteId: documento.clientId } },
+    });
+    if (!vinculo) return NextResponse.json({ message: 'Acesso negado.' }, { status: 403 });
+  }
 
   const assinaturas = await prisma.assinaturaDocumento.findMany({
     where:   { documentoId },

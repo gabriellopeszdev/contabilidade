@@ -93,7 +93,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     return NextResponse.json({ message: 'Link inválido ou expirado' }, { status: 410 });
   }
 
-  const otpVerificado = await redisPublisher.get(`otp:verified:${assinatura.id}`);
+  const otpVerificado = await redisPublisher.getdel(`otp:verified:${assinatura.id}`);
   if (!otpVerificado) {
     return NextResponse.json({ message: 'Verificação de identidade necessária', code: 'OTP_REQUIRED' }, { status: 403 });
   }
@@ -104,6 +104,15 @@ export async function POST(req: NextRequest, { params }: Params) {
 
   const novoStatus = confirmacao ? 'ASSINADO' : 'RECUSADO';
   const agora      = new Date();
+
+  // Reserva atômica: garante que apenas uma requisição processa esta assinatura
+  const reserva = await prisma.assinaturaDocumento.updateMany({
+    where: { id: assinatura.id, status: 'PENDENTE' },
+    data:  { status: novoStatus },
+  });
+  if (reserva.count === 0) {
+    return NextResponse.json({ message: 'Esta assinatura já foi processada.' }, { status: 409 });
+  }
 
   let comprovanteStoragePath: string | undefined;
 
@@ -236,20 +245,16 @@ export async function POST(req: NextRequest, { params }: Params) {
     }
   }
 
-  await redisPublisher.del(`otp:verified:${assinatura.id}`);
-
+  // Atualiza campos complementares (status já foi reservado atomicamente acima)
   await prisma.assinaturaDocumento.update({
     where: { id: assinatura.id },
-    data: {
-      status: novoStatus,
-      ...(confirmacao
-        ? {
-            assinadoAt:   agora,
-            ipAssinatura: ip,
-            ...(comprovanteStoragePath && { comprovanteStoragePath }),
-          }
-        : { motivoRecusa: motivoRecusa ?? 'Recusado pelo signatário' }),
-    },
+    data: confirmacao
+      ? {
+          assinadoAt:   agora,
+          ipAssinatura: ip,
+          ...(comprovanteStoragePath && { comprovanteStoragePath }),
+        }
+      : { motivoRecusa: motivoRecusa ?? 'Recusado pelo signatário' },
   });
 
   const solicitante = await prisma.usuarioContador.findUnique({

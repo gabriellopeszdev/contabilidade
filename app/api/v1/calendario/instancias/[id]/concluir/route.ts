@@ -9,18 +9,23 @@ export const dynamic = 'force-dynamic';
 // POST /api/v1/calendario/instancias/:id/concluir — Marca instância como concluída
 // =============================================================================
 
-export const POST = withAuth(async (_req, ctx) => {
+export const POST = withAuth(async (_req, ctx, auth) => {
   const id = (ctx.params as { id: string }).id;
 
-  const instancia = await prisma.instanciaObrigacao.findUnique({ where: { id } });
-  if (!instancia) {
-    return NextResponse.json({ message: 'Instância não encontrada' }, { status: 404 });
-  }
+  const contadorId = auth.role === 'EMPLOYEE' ? auth.superiorId : auth.sub;
+  if (!contadorId) return NextResponse.json({ message: 'Acesso negado.' }, { status: 403 });
 
-  await prisma.instanciaObrigacao.update({
-    where: { id },
-    data: { concluida: true, concluidaEm: new Date() },
+  const resultado = await prisma.instanciaObrigacao.updateMany({
+    where: { id, contadorId, concluida: false },
+    data:  { concluida: true, concluidaEm: new Date() },
   });
+
+  if (resultado.count === 0) {
+    return NextResponse.json(
+      { message: 'Instância não encontrada ou já concluída.' },
+      { status: 404 },
+    );
+  }
 
   return NextResponse.json({ message: 'Obrigação marcada como concluída' });
 }, ['ACCOUNTANT', 'EMPLOYEE', 'ADMIN']);

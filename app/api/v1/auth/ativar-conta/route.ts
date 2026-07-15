@@ -111,9 +111,9 @@ export async function POST(req: NextRequest) {
     // Hash da nova senha
     const passwordHash = await hasher.hash(senha);
 
-    // Ativar conta
-    await prisma.usuarioCliente.update({
-      where: { id: cliente.id },
+    // Ativar conta (atômica: evita race condition em requisições concorrentes)
+    const ativacao = await prisma.usuarioCliente.updateMany({
+      where: { inviteToken: token, activatedAt: null },
       data: {
         passwordHash,
         activatedAt: new Date(),
@@ -121,6 +121,12 @@ export async function POST(req: NextRequest) {
         inviteExpiresAt: null,
       },
     });
+    if (ativacao.count === 0) {
+      return NextResponse.json(
+        { message: 'Convite inválido ou já utilizado.' },
+        { status: 409 },
+      );
+    }
 
     // Notificar contadores vinculados em tempo real + buscar nomeEscritório para boas-vindas
     const vinculos = await prisma.contadorCliente.findMany({
