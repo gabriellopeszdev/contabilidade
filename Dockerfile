@@ -71,6 +71,7 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
 # Copia o código-fonte (tsx executa server.ts diretamente em runtime)
 COPY --chown=nextjs:nodejs src        ./src
 COPY --chown=nextjs:nodejs app        ./app
+COPY --chown=nextjs:nodejs public     ./public
 
 # Copia arquivos de configuração necessários em runtime
 COPY --chown=nextjs:nodejs server.ts            .
