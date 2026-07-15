@@ -49,6 +49,15 @@ const nextConfig = {
           { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
         ],
       }] : []),
+      // Service worker nunca deve ser cacheado — o browser precisa verificar
+      // atualizações a cada visita para detectar novos deploys.
+      {
+        source: '/sw.js',
+        headers: [
+          { key: 'Cache-Control', value: 'no-cache, no-store, must-revalidate' },
+          { key: 'Service-Worker-Allowed', value: '/' },
+        ],
+      },
       {
         source: '/(.*)',
         headers: [
