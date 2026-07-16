@@ -184,11 +184,10 @@ describe('ProcessarUploadLoteUseCase', () => {
   });
 
   describe('rejeição por tamanho', () => {
-    it('coloca na lista de falhas arquivo maior que 10MB', async () => {
-      const conteudo = Buffer.alloc(1);
+    it('coloca na lista de falhas arquivo maior que 500MB', async () => {
       const arquivo = criarArquivo({
-        fileSizeBytes: 10 * 1_048_576 + 1,
-        conteudo: Buffer.alloc(10 * 1_048_576 + 1),
+        fileSizeBytes: 500 * 1_048_576 + 1,
+        conteudo: Buffer.alloc(1),
       });
       const result = await useCase.executar(inputBase({ arquivos: [arquivo] }));
       expect(result.falhas).toHaveLength(1);
