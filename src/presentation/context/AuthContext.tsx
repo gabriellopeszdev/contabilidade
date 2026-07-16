@@ -29,6 +29,8 @@ export interface UsuarioLogado {
   vinculo?:    string;
   /** ID do superior hierárquico (apenas para Funcionario). */
   superiorId?: string;
+  /** UUID do admin que iniciou a sessão de impersonação (presente apenas em tokens de impersonação). */
+  impersonadoPor?: string;
 }
 
 interface AuthContextValue {
@@ -65,6 +67,16 @@ interface AuthContextValue {
   finalizarLogin:     (jwt: string) => void;
   /** Limpa o JWT e o estado global, efetivamente deslogando o usuário. */
   logout:             () => void;
+  /**
+   * Inicia uma sessão de impersonação.
+   * Salva o token do admin original em backup antes de ativar o token do contador.
+   */
+  iniciarImpersonacao:  (jwt: string) => void;
+  /**
+   * Encerra a sessão de impersonação, restaurando o token original do admin.
+   * Se o backup estiver expirado ou ausente, faz logout normal.
+   */
+  encerrarImpersonacao: () => void;
 }
 
 // =============================================================================
@@ -93,9 +105,10 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 // Chaves do localStorage
 // =============================================================================
 
-const TOKEN_KEY    = 'contabilidade_jwt';
-const TOKEN_COOKIE = 'contabilidade_jwt';
-const CLIENT_KEY   = 'contabilidade_cliente_selecionado';
+const TOKEN_KEY         = 'contabilidade_jwt';
+const TOKEN_COOKIE      = 'contabilidade_jwt';
+const CLIENT_KEY        = 'contabilidade_cliente_selecionado';
+const ADMIN_BACKUP_KEY  = 'contabilidade_jwt_admin_original';
 
 /**
  * Sincroniza o JWT com um cookie acessível pelo middleware Edge.
@@ -150,9 +163,10 @@ function decodificarToken(token: string): UsuarioLogado | null {
       email: (payload.email as string) ?? '',
       nome:  (payload.nome  as string) ?? (payload.email as string) ?? 'Usuário',
       role:  ROLE_MAP[(payload.role as string) ?? ''] ?? 'Cliente',
-      setores:    (payload.setores    as string[]) ?? undefined,
-      vinculo:    (payload.vinculo    as string)   ?? undefined,
-      superiorId: (payload.superiorId as string)   ?? undefined,
+      setores:         (payload.setores         as string[]) ?? undefined,
+      vinculo:         (payload.vinculo         as string)   ?? undefined,
+      superiorId:      (payload.superiorId      as string)   ?? undefined,
+      impersonadoPor:  (payload.impersonadoPor  as string)   ?? undefined,
     };
   } catch {
     return null;
@@ -308,6 +322,52 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // ---------------------------------------------------------------------------
+  // iniciarImpersonacao
+  // ---------------------------------------------------------------------------
+  const iniciarImpersonacao = useCallback((jwt: string): void => {
+    const decoded = decodificarToken(jwt);
+    if (!decoded) {
+      throw new Error('Token de impersonação inválido.');
+    }
+    // Salva o token atual do admin antes de trocar
+    const adminToken = localStorage.getItem(TOKEN_KEY);
+    if (adminToken) {
+      localStorage.setItem(ADMIN_BACKUP_KEY, adminToken);
+    }
+    localStorage.setItem(TOKEN_KEY, jwt);
+    sincronizarCookie(jwt);
+    setToken(jwt);
+    setUsuario(decoded);
+  }, []);
+
+  // ---------------------------------------------------------------------------
+  // encerrarImpersonacao
+  // ---------------------------------------------------------------------------
+  const encerrarImpersonacao = useCallback((): void => {
+    const adminToken = localStorage.getItem(ADMIN_BACKUP_KEY);
+    if (adminToken && !tokenExpirado(adminToken)) {
+      const decoded = decodificarToken(adminToken);
+      if (decoded) {
+        localStorage.setItem(TOKEN_KEY, adminToken);
+        localStorage.removeItem(ADMIN_BACKUP_KEY);
+        sincronizarCookie(adminToken);
+        setToken(adminToken);
+        setUsuario(decoded);
+        return;
+      }
+    }
+    // Backup ausente ou expirado — logout normal
+    localStorage.removeItem(ADMIN_BACKUP_KEY);
+    fetch('/api/v1/auth/logout', { method: 'POST' }).catch(() => {});
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(CLIENT_KEY);
+    sincronizarCookie(null);
+    setToken(null);
+    setUsuario(null);
+    setClienteSelecionado(null);
+  }, []);
+
+  // ---------------------------------------------------------------------------
   // Valor do contexto — memorizado para evitar re-renders desnecessários
   // ---------------------------------------------------------------------------
   const value = useMemo<AuthContextValue>(
@@ -321,8 +381,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       login,
       finalizarLogin,
       logout,
+      iniciarImpersonacao,
+      encerrarImpersonacao,
     }),
-    [usuario, token, carregando, clienteSelecionado, selecionarCliente, getToken, login, finalizarLogin, logout],
+    [usuario, token, carregando, clienteSelecionado, selecionarCliente, getToken, login, finalizarLogin, logout, iniciarImpersonacao, encerrarImpersonacao],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -4,6 +4,7 @@ import { AuthProvider } from '../src/presentation/context/AuthContext';
 import { LGPDConsentGuard } from './components/LGPDConsentGuard';
 import { ToasterProvider } from './components/ToasterProvider';
 import { ServiceWorkerRegistration } from './components/ServiceWorkerRegistration';
+import { ImpersonationBanner } from './components/ImpersonationBanner';
 
 // =============================================================================
 // Metadados globais da aplicação
@@ -60,6 +61,7 @@ export default function RootLayout({
           acesse o estado de autenticação via useAuth().
         */}
         <AuthProvider>
+          <ImpersonationBanner />
           {children}
           <LGPDConsentGuard />
           <ToasterProvider />

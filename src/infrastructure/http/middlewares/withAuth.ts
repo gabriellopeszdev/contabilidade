@@ -55,6 +55,8 @@ export interface AuthPayload {
   vinculo?: string;
   /** ID do superior hierárquico (apenas EMPLOYEE). */
   superiorId?: string;
+  /** UUID do admin que iniciou uma sessão de impersonação (apenas tokens de impersonação). */
+  impersonadoPor?: string;
 }
 
 /** Contexto com params já resolvidos (pós-await no withAuth). */
@@ -181,10 +183,11 @@ export function withAuth(
     const auth: AuthPayload = {
       sub,
       role,
-      nome:       (payload as Record<string, unknown>).nome       as string   | undefined,
-      setores:    (payload as Record<string, unknown>).setores    as string[] | undefined,
-      vinculo:    (payload as Record<string, unknown>).vinculo    as string   | undefined,
-      superiorId: (payload as Record<string, unknown>).superiorId as string   | undefined,
+      nome:            (payload as Record<string, unknown>).nome            as string   | undefined,
+      setores:         (payload as Record<string, unknown>).setores         as string[] | undefined,
+      vinculo:         (payload as Record<string, unknown>).vinculo         as string   | undefined,
+      superiorId:      (payload as Record<string, unknown>).superiorId      as string   | undefined,
+      impersonadoPor:  (payload as Record<string, unknown>).impersonadoPor  as string   | undefined,
     };
 
     // Next.js 14.2.x+ retorna params como Promise (migração para v15).

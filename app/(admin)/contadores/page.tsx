@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import {
   Plus,
@@ -20,6 +21,7 @@ import {
   Eye,
   EyeOff,
   LockKeyhole,
+  LogIn,
 } from 'lucide-react';
 
 import { IA_PROVIDERS, type IaProvider } from '../../../src/utils/aiProviders';
@@ -1497,7 +1499,8 @@ function ModalAlterarSenha({ contador, onClose, token }: ModalAlterarSenhaProps)
 // =============================================================================
 
 export default function ContadoresPage() {
-  const { getToken, token } = useAuth();
+  const { getToken, token, iniciarImpersonacao } = useAuth();
+  const router = useRouter();
 
   const [contadores,    setContadores]    = useState<ContadorDTO[]>([]);
   const [carregando,    setCarregando]    = useState(true);
@@ -1505,6 +1508,7 @@ export default function ContadoresPage() {
   const [modalAberto,   setModalAberto]   = useState(false);
   const [busca,         setBusca]         = useState('');
   const [toggling,      setToggling]      = useState<string | null>(null); // id do row em transição
+  const [impersonando,  setImpersonando]  = useState<string | null>(null);  // id do row em impersonação
   const [modalAsaas,    setModalAsaas]    = useState<ContadorDTO | null>(null);
   const [modalCora,     setModalCora]     = useState<ContadorDTO | null>(null);
   const [modalEditar,   setModalEditar]   = useState<ContadorDTO | null>(null);
@@ -1562,6 +1566,29 @@ export default function ContadoresPage() {
       setToggling(null);
     }
   }, [getToken]);
+
+  // Impersonação
+  const handleImpersonar = useCallback(async (c: ContadorDTO) => {
+    setImpersonando(c.id);
+    try {
+      const tkn = await getToken();
+      const res = await fetch(`/api/v1/admin/contadores/${c.id}/impersonar`, {
+        method:  'POST',
+        headers: { Authorization: `Bearer ${tkn}` },
+      });
+      const data = await res.json() as { token?: string; message?: string };
+      if (!res.ok) {
+        toast.error(data.message ?? `Erro HTTP ${res.status}`);
+        return;
+      }
+      iniciarImpersonacao(data.token!);
+      router.push('/dashboard');
+    } catch {
+      toast.error('Erro de rede ao tentar impersonar.');
+    } finally {
+      setImpersonando(null);
+    }
+  }, [getToken, iniciarImpersonacao, router]);
 
   // Filtragem por busca
   const contadoresFiltrados = contadores.filter((c) => {
@@ -1942,6 +1969,21 @@ export default function ContadoresPage() {
                           >
                             <KeyRound size={12} />
                             Cora
+                          </button>
+
+                          {/* Acessar como */}
+                          <button
+                            onClick={() => handleImpersonar(c)}
+                            disabled={impersonando === c.id || !c.isActive}
+                            title="Acessar como este contador"
+                            aria-label="Acessar como este contador"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border text-amber-400 bg-amber-900/20 hover:bg-amber-900/40 border-amber-800/40 disabled:opacity-40"
+                          >
+                            {impersonando === c.id
+                              ? <Loader2 size={12} className="animate-spin" />
+                              : <LogIn size={12} />
+                            }
+                            Acessar como
                           </button>
 
                           {/* Bloquear/Desbloquear */}

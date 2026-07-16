@@ -87,6 +87,12 @@ export interface UseAuthReturn {
   /** Encerra a sessão local. Limpa JWT e cliente selecionado do localStorage. */
   logout: () => void;
 
+  /** Inicia uma sessão de impersonação com o token gerado pelo backend. */
+  iniciarImpersonacao: (jwt: string) => void;
+
+  /** Encerra a sessão de impersonação, restaurando o token original do admin. */
+  encerrarImpersonacao: () => void;
+
   /** true se o usuário logado tem role 'Contador'. */
   isContador: boolean;
 
@@ -120,6 +126,8 @@ export function useAuth(): UseAuthReturn {
     login,
     finalizarLogin,
     logout,
+    iniciarImpersonacao,
+    encerrarImpersonacao,
   } = useAuthContext();
 
   return {
@@ -134,6 +142,8 @@ export function useAuth(): UseAuthReturn {
     login,
     finalizarLogin,
     logout,
+    iniciarImpersonacao,
+    encerrarImpersonacao,
     isContador:        usuario?.role === 'Contador',
     isCliente:         usuario?.role === 'Cliente',
     isAdmin:           usuario?.role === 'Admin',
