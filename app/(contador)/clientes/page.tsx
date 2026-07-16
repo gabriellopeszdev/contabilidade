@@ -19,9 +19,12 @@ import {
   Eye,
   Send,
   Download,
+  Upload,
   ChevronLeft,
   ChevronRight,
   X,
+  CheckCircle2,
+  FileWarning,
 } from 'lucide-react';
 
 import {
@@ -215,6 +218,9 @@ function ClientesPageDono({ token }: { token: string | null }) {
     [token],
   );
 
+  // Importar CSV
+  const [modalImportAberto, setModalImportAberto] = useState(false);
+
   // Exportar CSV
   const handleExportarCSV = useCallback(async () => {
     try {
@@ -295,6 +301,17 @@ function ClientesPageDono({ token }: { token: string | null }) {
           >
             <Download size={16} />
             <span className="hidden sm:inline">Exportar CSV</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setModalImportAberto(true)}
+            aria-label="Importar CSV"
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300
+              bg-white dark:bg-gray-800 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-gray-700 transition-all shadow-sm
+              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          >
+            <Upload size={16} />
+            <span className="hidden sm:inline">Importar CSV</span>
           </button>
           <button
             type="button"
@@ -530,6 +547,15 @@ function ClientesPageDono({ token }: { token: string | null }) {
         onSucesso={handleSucesso}
       />
 
+      {/* Modal de Importação CSV */}
+      {modalImportAberto && (
+        <ModalImportarCSV
+          token={token ?? ''}
+          onFechar={() => setModalImportAberto(false)}
+          onImportou={() => { void mutate(); }}
+        />
+      )}
+
       {/* Modal de confirmação de exclusão */}
       {clienteParaExcluir && (
         <div
@@ -600,6 +626,306 @@ function ClientesPageDono({ token }: { token: string | null }) {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// =============================================================================
+// ModalImportarCSV — Importação em massa via CSV
+// =============================================================================
+
+interface ImportarCSVResultado {
+  totalLinhas: number;
+  sucesso:     number;
+  falhas:      number;
+  erros:       Array<{ linha: number; motivo: string }>;
+}
+
+interface ModalImportarCSVProps {
+  token:       string;
+  onFechar:    () => void;
+  onImportou:  () => void;
+}
+
+function ModalImportarCSV({ token, onFechar, onImportou }: ModalImportarCSVProps) {
+  const [arquivo,       setArquivo]       = useState<File | null>(null);
+  const [importando,    setImportando]    = useState(false);
+  const [resultado,     setResultado]     = useState<ImportarCSVResultado | null>(null);
+  const [erroGlobal,    setErroGlobal]    = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleArquivo = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0] ?? null;
+    setArquivo(f);
+    setResultado(null);
+    setErroGlobal(null);
+  }, []);
+
+  const handleBaixarTemplate = useCallback(async () => {
+    try {
+      const res = await fetch('/api/v1/clientes/importar/template', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error(`Erro HTTP ${res.status}`);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'template-importacao-clientes.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Erro ao baixar template.');
+    }
+  }, [token]);
+
+  const handleImportar = useCallback(async () => {
+    if (!arquivo) return;
+    setImportando(true);
+    setErroGlobal(null);
+    setResultado(null);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', arquivo);
+
+      const res = await fetch('/api/v1/clientes/importar', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+
+      const body = await res.json() as { message?: string } & Partial<ImportarCSVResultado>;
+
+      if (!res.ok) {
+        setErroGlobal(body.message ?? `Erro HTTP ${res.status}`);
+        return;
+      }
+
+      const r: ImportarCSVResultado = {
+        totalLinhas: body.totalLinhas ?? 0,
+        sucesso:     body.sucesso     ?? 0,
+        falhas:      body.falhas      ?? 0,
+        erros:       body.erros       ?? [],
+      };
+      setResultado(r);
+
+      if (r.sucesso > 0) {
+        onImportou();
+        toast.success(
+          `${r.sucesso} cliente${r.sucesso !== 1 ? 's' : ''} importado${r.sucesso !== 1 ? 's' : ''} com sucesso!`,
+          r.falhas > 0 ? { description: `${r.falhas} linha${r.falhas !== 1 ? 's' : ''} com erro.` } : undefined,
+        );
+      } else {
+        toast.error('Nenhum cliente foi importado.', {
+          description: r.falhas > 0 ? `${r.falhas} linha${r.falhas !== 1 ? 's' : ''} com erro.` : undefined,
+        });
+      }
+    } catch (err) {
+      setErroGlobal(err instanceof Error ? err.message : 'Erro desconhecido.');
+    } finally {
+      setImportando(false);
+    }
+  }, [arquivo, token, onImportou]);
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-import-titulo"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+      onClick={onFechar}
+      onKeyDown={(e) => { if (e.key === 'Escape') onFechar(); }}
+      tabIndex={-1}
+    >
+      <div
+        className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-gray-700 w-full max-w-lg p-6"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Cabeçalho */}
+        <div className="flex items-start justify-between gap-3 mb-5">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-primary/10 dark:bg-primary/20 flex items-center justify-center shrink-0">
+              <Upload size={18} className="text-primary" />
+            </div>
+            <div>
+              <h2 id="modal-import-titulo" className="text-base font-bold text-gray-900 dark:text-gray-100">
+                Importar Clientes via CSV
+              </h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                Importe múltiplos clientes de uma vez
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onFechar}
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-gray-800 transition-colors"
+          >
+            <X size={16} />
+          </button>
+        </div>
+
+        {/* Link para baixar template */}
+        <div className="mb-4 p-3 rounded-xl bg-slate-50 dark:bg-gray-800 border border-slate-200 dark:border-gray-700">
+          <p className="text-xs text-slate-600 dark:text-slate-400 mb-2">
+            Use o modelo oficial para garantir que as colunas estejam no formato correto.
+          </p>
+          <button
+            type="button"
+            onClick={handleBaixarTemplate}
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
+          >
+            <Download size={13} />
+            Baixar modelo CSV
+          </button>
+        </div>
+
+        {/* Área de seleção de arquivo */}
+        {!resultado && (
+          <div className="mb-4">
+            <label
+              htmlFor="csv-file-input"
+              className="flex flex-col items-center justify-center gap-2 w-full cursor-pointer
+                border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-6
+                hover:border-primary hover:bg-primary/5 dark:hover:bg-primary/5 transition-colors"
+            >
+              {arquivo ? (
+                <>
+                  <CheckCircle2 size={24} className="text-emerald-500" />
+                  <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 text-center break-all">
+                    {arquivo.name}
+                  </span>
+                  <span className="text-xs text-slate-500 dark:text-slate-400">
+                    {(arquivo.size / 1024).toFixed(1)} KB — clique para trocar
+                  </span>
+                </>
+              ) : (
+                <>
+                  <FileWarning size={24} className="text-slate-400" />
+                  <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                    Selecione um arquivo CSV
+                  </span>
+                  <span className="text-xs text-slate-500 dark:text-slate-400">
+                    Clique aqui ou arraste o arquivo
+                  </span>
+                </>
+              )}
+            </label>
+            <input
+              ref={inputRef}
+              id="csv-file-input"
+              type="file"
+              accept=".csv,text/csv"
+              className="sr-only"
+              onChange={handleArquivo}
+            />
+          </div>
+        )}
+
+        {/* Erro global */}
+        {erroGlobal && (
+          <div className="mb-4 flex items-start gap-2 p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400">
+            <AlertCircle size={15} className="shrink-0 mt-0.5" />
+            <p className="text-xs">{erroGlobal}</p>
+          </div>
+        )}
+
+        {/* Resultado da importação */}
+        {resultado && (
+          <div className="mb-4 space-y-3">
+            {/* Resumo */}
+            <div className="grid grid-cols-3 gap-2">
+              <div className="flex flex-col items-center p-3 rounded-xl bg-slate-50 dark:bg-gray-800 border border-slate-200 dark:border-gray-700">
+                <span className="text-lg font-bold text-slate-800 dark:text-slate-200">{resultado.totalLinhas}</span>
+                <span className="text-[11px] text-slate-500 dark:text-slate-400 text-center">Total de linhas</span>
+              </div>
+              <div className="flex flex-col items-center p-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
+                <span className="text-lg font-bold text-emerald-700 dark:text-emerald-400">{resultado.sucesso}</span>
+                <span className="text-[11px] text-emerald-600 dark:text-emerald-500 text-center">Importados</span>
+              </div>
+              <div className="flex flex-col items-center p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+                <span className="text-lg font-bold text-red-600 dark:text-red-400">{resultado.falhas}</span>
+                <span className="text-[11px] text-red-500 dark:text-red-400 text-center">Com erro</span>
+              </div>
+            </div>
+
+            {/* Detalhes de erros */}
+            {resultado.erros.length > 0 && (
+              <div className="max-h-40 overflow-y-auto rounded-xl border border-slate-200 dark:border-gray-700 divide-y divide-slate-100 dark:divide-gray-700">
+                {resultado.erros.map((e) => (
+                  <div key={e.linha} className="px-3 py-2 flex items-start gap-2">
+                    <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 shrink-0 mt-0.5">
+                      Linha {e.linha}
+                    </span>
+                    <span className="text-xs text-red-600 dark:text-red-400">{e.motivo}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Importar outro arquivo */}
+            <button
+              type="button"
+              onClick={() => {
+                setResultado(null);
+                setArquivo(null);
+                setErroGlobal(null);
+                if (inputRef.current) inputRef.current.value = '';
+              }}
+              className="w-full text-xs font-semibold text-primary hover:underline py-1"
+            >
+              Importar outro arquivo
+            </button>
+          </div>
+        )}
+
+        {/* Botões de ação */}
+        {!resultado && (
+          <div className="flex gap-3 justify-end">
+            <button
+              type="button"
+              onClick={onFechar}
+              className="px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-gray-800
+                border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-gray-700 transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={handleImportar}
+              disabled={!arquivo || importando}
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-primary
+                rounded-lg hover:brightness-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed
+                focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              {importando ? (
+                <>
+                  <Loader2 size={15} className="animate-spin" />
+                  Importando…
+                </>
+              ) : (
+                <>
+                  <Upload size={15} />
+                  Importar
+                </>
+              )}
+            </button>
+          </div>
+        )}
+
+        {resultado && (
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={onFechar}
+              className="px-4 py-2 text-sm font-semibold text-white bg-primary rounded-lg hover:brightness-90 transition-all"
+            >
+              Fechar
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

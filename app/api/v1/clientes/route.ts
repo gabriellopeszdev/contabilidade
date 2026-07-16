@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { z } from 'zod';
 import { randomBytes } from 'node:crypto';
 
 import { withAuth }     from '../../../../src/infrastructure/http/middlewares/withAuth';
@@ -7,7 +6,7 @@ import { prisma, emailService } from '../../../../src/infrastructure/di/Containe
 import { logger }        from '../../../../src/utils/logger';
 import { checkClienteLimit } from '../../../../src/utils/planLimits';
 import { checkRateLimit } from '../../../../src/utils/rateLimiter';
-import { validarCnpj } from '../../../../src/utils/validators';
+import { criarClienteSchema } from '../../../../src/infrastructure/http/validators/CriarClienteSchema';
 
 // =============================================================================
 // Configuração do runtime
@@ -21,23 +20,6 @@ export const dynamic = 'force-dynamic';
 // =============================================================================
 
 const INVITE_EXPIRY_HOURS = 48;
-
-// =============================================================================
-// Schema de criação de cliente
-// =============================================================================
-
-const criarClienteSchema = z.object({
-  nome:             z.string().min(2, 'Nome deve ter ao menos 2 caracteres.').max(255),
-  email:            z.string().email('E-mail inválido.').max(255),
-  cnpj:             z
-    .string()
-    .transform((v) => v.replace(/\D/g, ''))
-    .refine((v) => v.length === 14, 'CNPJ deve conter 14 dígitos.')
-    .refine(validarCnpj, 'CNPJ com dígitos verificadores inválidos.'),
-  phone:            z.string().max(20).optional(),
-  cnae:             z.string().max(10).optional(),
-  regimeTributario: z.string().max(50).optional(),
-});
 
 // =============================================================================
 // GET /api/v1/clientes

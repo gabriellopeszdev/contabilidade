@@ -8,6 +8,7 @@ import { verificarLembretesJob } from './jobs/verificarLembretesJob';
 import { gerarObrigacoesRecorrentesJob } from './jobs/gerarObrigacoesRecorrentesJob';
 import { parsearXmlNfeJob } from './jobs/parsearXmlNfeJob';
 import { gerarRelatorioMensalJob } from './jobs/gerarRelatorioMensalJob';
+import { enviarConvitesImportacaoJob, type EnviarConvitesImportacaoJobData } from './jobs/enviarConvitesImportacaoJob';
 
 // =============================================================================
 // BullMQAdapter — Processamento Assíncrono em Background
@@ -78,6 +79,10 @@ export type ProcessamentoJobData =
         documentoId: string;
         storagePath: string;
       };
+    }
+  | {
+      tipo: 'ENVIAR_CONVITES_IMPORTACAO';
+      payload: EnviarConvitesImportacaoJobData;
     }
   | Record<string, never>; // Empty object for scheduled jobs (verificar-lembretes, gerar-obrigacoes-recorrentes)
 
@@ -313,6 +318,15 @@ export class BullMQAdapter {
 
       case 'PARSEAR_XML_NFE': {
         await parsearXmlNfeJob(job.data.payload);
+        break;
+      }
+
+      case 'ENVIAR_CONVITES_IMPORTACAO': {
+        if (!this.emailService) {
+          this.logger.warn('[BullMQAdapter] emailService não injetado — ENVIAR_CONVITES_IMPORTACAO ignorado.');
+          return;
+        }
+        await enviarConvitesImportacaoJob(job.data.payload, this.emailService);
         break;
       }
 
