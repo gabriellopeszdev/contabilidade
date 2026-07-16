@@ -1,0 +1,114 @@
+version: "3.8"
+
+# =============================================================================
+# GlitchTip — Monitoramento de Erros Self-Hosted (compatível com SDK Sentry)
+#
+# Uso:
+#   docker compose -f docker-compose.glitchtip.yml up -d
+#
+# Após subir:
+#   1. Acesse http://localhost:8000 e crie o superusuário:
+#        docker compose -f docker-compose.glitchtip.yml exec glitchtip_web \
+#          ./manage.py createsuperuser
+#   2. Crie uma organização e um projeto no painel
+#   3. Copie o DSN do projeto e configure no .env:
+#        SENTRY_DSN=http://...@localhost:8000/1
+#        NEXT_PUBLIC_SENTRY_DSN=http://...@localhost:8000/1
+#
+# IMPORTANTE: Estes serviços são ISOLADOS do docker-compose.yml principal.
+# Usam nomes distintos (glitchtip_*) para evitar conflitos com os containers
+# do sistema de gestão contábil (contabilidade_postgres, contabilidade_redis…).
+# =============================================================================
+
+x-environment: &glitchtip-env
+  DATABASE_URL: postgresql://glitchtip:glitchtip@glitchtip_postgres:5432/glitchtip
+  SECRET_KEY: ${GLITCHTIP_SECRET_KEY:-change-me-in-production}
+  REDIS_URL: redis://glitchtip_redis:6379
+  EMAIL_URL: ${GLITCHTIP_EMAIL_URL:-consolemail://}
+  GLITCHTIP_DOMAIN: ${GLITCHTIP_DOMAIN:-http://localhost:8000}
+  DEFAULT_FROM_EMAIL: ${GLITCHTIP_FROM_EMAIL:-glitchtip@localhost}
+  CELERY_WORKER_CONCURRENCY: ${GLITCHTIP_WORKER_CONCURRENCY:-2}
+
+services:
+
+  # ---------------------------------------------------------------------------
+  # PostgreSQL 16 — Banco exclusivo do GlitchTip
+  # Nome distinto: glitchtip_postgres (≠ contabilidade_postgres)
+  # ---------------------------------------------------------------------------
+  glitchtip_postgres:
+    image: postgres:16-alpine
+    container_name: glitchtip_postgres
+    environment:
+      POSTGRES_USER:     glitchtip
+      POSTGRES_PASSWORD: glitchtip
+      POSTGRES_DB:       glitchtip
+    volumes:
+      - glitchtip_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U glitchtip -d glitchtip"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # Redis 7 — Cache/fila exclusivo do GlitchTip (Celery)
+  # Nome distinto: glitchtip_redis (≠ contabilidade_redis)
+  # ---------------------------------------------------------------------------
+  glitchtip_redis:
+    image: redis:7-alpine
+    container_name: glitchtip_redis
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # Migrations — roda uma vez e sai (restart: on-failure para retry automático)
+  # ---------------------------------------------------------------------------
+  glitchtip_migrate:
+    image: glitchtip/glitchtip:latest
+    container_name: glitchtip_migrate
+    depends_on:
+      glitchtip_postgres:
+        condition: service_healthy
+    command: ./bin/run-migrate.sh
+    environment: *glitchtip-env
+    restart: on-failure
+
+  # ---------------------------------------------------------------------------
+  # Web — Painel de administração e API compatível com Sentry
+  # Acesse em: http://localhost:8000
+  # ---------------------------------------------------------------------------
+  glitchtip_web:
+    image: glitchtip/glitchtip:latest
+    container_name: glitchtip_web
+    depends_on:
+      glitchtip_postgres:
+        condition: service_healthy
+      glitchtip_redis:
+        condition: service_started
+      glitchtip_migrate:
+        condition: service_completed_successfully
+    ports:
+      - "${GLITCHTIP_PORT:-8000}:8000"
+    environment: *glitchtip-env
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # Worker Celery — processa eventos de erro e agendamentos
+  # ---------------------------------------------------------------------------
+  glitchtip_worker:
+    image: glitchtip/glitchtip:latest
+    container_name: glitchtip_worker
+    depends_on:
+      glitchtip_postgres:
+        condition: service_healthy
+      glitchtip_redis:
+        condition: service_started
+      glitchtip_migrate:
+        condition: service_completed_successfully
+    command: ./bin/run-celery-with-beat.sh
+    environment: *glitchtip-env
+    restart: unless-stopped
+
+volumes:
+  glitchtip_postgres_data:

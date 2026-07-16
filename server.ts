@@ -72,6 +72,45 @@ const port     = parseInt(process.env.PORT ?? '3000', 10);
 const fallbackLogger = new PinoLogger();
 
 // =============================================================================
+// PASSO 3.5 — Sentry/GlitchTip (inicializar logo após .env ser carregado)
+//
+// Inicializado ANTES de qualquer import de infraestrutura para capturar erros
+// de inicialização do Container (Redis, Prisma, MinIO).
+// Usa require() síncrono em vez de import() assíncrono para garantir que o SDK
+// está pronto antes do primeiro await.
+// =============================================================================
+
+if (process.env.SENTRY_DSN) {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const Sentry = require('@sentry/nextjs') as typeof import('@sentry/nextjs');
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    environment: process.env.NODE_ENV ?? 'development',
+    tracesSampleRate: 0,
+  });
+}
+
+// =============================================================================
+// PASSO 3.6 — Handlers de processo para erros não capturados
+//
+// Registrados antes do app.prepare() para cobrir falhas na inicialização
+// do Container e do Next.js em si.
+// =============================================================================
+
+process.on('uncaughtException', (err) => {
+  fallbackLogger.fatal('uncaughtException — processo será encerrado', err);
+  // Delay para dar tempo ao Sentry/GlitchTip de receber o evento
+  setTimeout(() => process.exit(1), 1000);
+});
+
+process.on('unhandledRejection', (reason) => {
+  fallbackLogger.error(
+    'unhandledRejection',
+    reason instanceof Error ? reason : new Error(String(reason)),
+  );
+});
+
+// =============================================================================
 // PASSO 4 — Inicialização do Next.js
 // =============================================================================
 

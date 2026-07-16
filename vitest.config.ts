@@ -9,8 +9,20 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html'],
-      include: ['src/domain/**', 'src/shared/**', 'src/utils/**', 'src/application/**'],
+      include: [
+        'src/domain/**',
+        'src/shared/**',
+        'src/utils/**',
+        'src/application/**',
+        'src/infrastructure/http/**',
+      ],
       exclude: ['src/**/*.test.ts'],
+      thresholds: {
+        statements: 34,
+        branches:   31,
+        functions:  38,
+        lines:      34,
+      },
     },
   },
   resolve: {

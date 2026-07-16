@@ -115,6 +115,10 @@ export class PinoLogger implements ILogger {
     if (meta instanceof Error) {
       // Pino serializa `err` com type, message, stack (serializador nativo)
       this.logger.error({ ...getContextFields(), err: meta }, mensagem);
+      // Lazy import para não quebrar build/edge runtime quando SENTRY_DSN não está configurado
+      void import('@sentry/nextjs').then(({ captureException }) => {
+        captureException(meta, { extra: getContextFields() });
+      }).catch(() => {});
     } else {
       this.logger.error(mergeContext(meta), mensagem);
     }
@@ -123,6 +127,10 @@ export class PinoLogger implements ILogger {
   fatal(mensagem: string, meta?: LogMeta | Error): void {
     if (meta instanceof Error) {
       this.logger.fatal({ ...getContextFields(), err: meta }, mensagem);
+      // Lazy import para não quebrar build/edge runtime quando SENTRY_DSN não está configurado
+      void import('@sentry/nextjs').then(({ captureException }) => {
+        captureException(meta, { extra: getContextFields() });
+      }).catch(() => {});
     } else {
       this.logger.fatal(mergeContext(meta), mensagem);
     }
