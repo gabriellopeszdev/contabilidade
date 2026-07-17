@@ -101,6 +101,7 @@ enum ResourceType {
   BOLETO
   ASSINATURA
   BACKUP
+  CERTIFICADO_DIGITAL
 }
 
 enum RecorrenciaTipo {
