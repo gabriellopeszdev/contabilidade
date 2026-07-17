@@ -32,6 +32,9 @@ import {
   TrendingUp,
   Users,
   Trash2,
+  ShieldCheck,
+  ShieldX,
+  ShieldAlert,
 } from 'lucide-react';
 
 import { toast } from 'sonner';
@@ -180,6 +183,250 @@ const ORIGEM_CONFIG: Record<Origem, { label: string; icone: typeof Upload; class
 };
 
 // =============================================================================
+// Seção: Certificado Digital A1
+// =============================================================================
+
+interface CertificadoInfo {
+  cnpjTitular:     string;
+  validade:        string;
+  status:          'ATIVO' | 'EXPIRADO' | 'INVALIDO' | 'REVOGADO';
+  ultimaConsultaEm: string | null;
+}
+
+function CertificadoDigitalSection({ clienteId, getToken }: { clienteId: string; getToken: () => Promise<string | null> }) {
+  const [cert,        setCert]        = useState<CertificadoInfo | null>(null);
+  const [carregando,  setCarregando]  = useState(true);
+  const [salvando,    setSalvando]    = useState(false);
+  const [removendo,   setRemovendo]   = useState(false);
+  const [confirmando, setConfirmando] = useState(false);
+  const [arquivo,     setArquivo]     = useState<File | null>(null);
+  const [senha,       setSenha]       = useState('');
+  const [consentimento, setConsentimento] = useState(false);
+
+  const carregarCert = useCallback(async () => {
+    setCarregando(true);
+    try {
+      const token = await getToken();
+      const res = await fetch(`/api/v1/clientes/${clienteId}/certificado`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json() as { certificado: CertificadoInfo | null };
+        setCert(data.certificado);
+      }
+    } finally {
+      setCarregando(false);
+    }
+  }, [clienteId, getToken]);
+
+  useEffect(() => { void carregarCert(); }, [carregarCert]);
+
+  const handleUpload = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!arquivo || !senha || !consentimento) return;
+
+    setSalvando(true);
+    try {
+      const token = await getToken();
+      const form  = new FormData();
+      form.append('arquivo', arquivo);
+      form.append('senha',   senha);
+
+      const res = await fetch(`/api/v1/clientes/${clienteId}/certificado`, {
+        method:  'PUT',
+        headers: { Authorization: `Bearer ${token}` },
+        body:    form,
+      });
+      const data = await res.json() as { message?: string; cnpjTitular?: string; validade?: string; status?: string };
+      if (!res.ok) {
+        toast.error(data.message ?? 'Erro ao salvar certificado.');
+        return;
+      }
+      toast.success('Certificado cadastrado com sucesso.');
+      setArquivo(null);
+      setSenha('');
+      setConsentimento(false);
+      await carregarCert();
+    } finally {
+      setSalvando(false);
+    }
+  };
+
+  const handleRemover = async () => {
+    setRemovendo(true);
+    try {
+      const token = await getToken();
+      const res   = await fetch(`/api/v1/clientes/${clienteId}/certificado`, {
+        method:  'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) {
+        const data = await res.json() as { message?: string };
+        toast.error(data.message ?? 'Erro ao remover certificado.');
+        return;
+      }
+      toast.success('Certificado revogado.');
+      setConfirmando(false);
+      await carregarCert();
+    } finally {
+      setRemovendo(false);
+    }
+  };
+
+  const validadeFmt = cert?.validade
+    ? new Date(cert.validade).toLocaleDateString('pt-BR')
+    : null;
+
+  const ultimaConsultaFmt = cert?.ultimaConsultaEm
+    ? new Date(cert.ultimaConsultaEm).toLocaleString('pt-BR')
+    : 'Nunca consultado';
+
+  const statusConfig = {
+    ATIVO:    { icon: ShieldCheck,  cor: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800', label: 'Ativo' },
+    EXPIRADO: { icon: ShieldAlert,  cor: 'text-yellow-600 dark:text-yellow-400',   bg: 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800',    label: 'Expirado' },
+    INVALIDO: { icon: ShieldX,      cor: 'text-red-600 dark:text-red-400',          bg: 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800',                label: 'Inválido' },
+    REVOGADO: { icon: ShieldX,      cor: 'text-gray-500 dark:text-gray-400',        bg: 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700',               label: 'Revogado' },
+  };
+
+  return (
+    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 space-y-5">
+      <div className="flex items-center gap-2">
+        <ShieldCheck size={18} className="text-primary" />
+        <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+          Certificado Digital A1
+        </h3>
+      </div>
+
+      {carregando ? (
+        <div className="flex items-center gap-2 text-sm text-gray-400">
+          <Loader2 size={16} className="animate-spin" />
+          Carregando...
+        </div>
+      ) : cert && cert.status !== 'REVOGADO' ? (
+        /* Certificado cadastrado */
+        <div className="space-y-4">
+          {(() => {
+            const cfg = statusConfig[cert.status];
+            const Icon = cfg.icon;
+            return (
+              <div className={`p-4 rounded-xl border ${cfg.bg} flex items-start gap-3`}>
+                <Icon size={20} className={cfg.cor} />
+                <div className="flex-1 min-w-0">
+                  <p className={`text-sm font-semibold ${cfg.cor}`}>{cfg.label}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                    CNPJ do titular: {cert.cnpjTitular}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Válido até: <span className="font-medium">{validadeFmt}</span>
+                  </p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                    Última consulta: {ultimaConsultaFmt}
+                  </p>
+                </div>
+              </div>
+            );
+          })()}
+
+          {confirmando ? (
+            <div className="p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 space-y-3">
+              <p className="text-sm text-red-700 dark:text-red-400 font-medium">
+                Tem certeza? O certificado será revogado e a captura automática será interrompida.
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => void handleRemover()}
+                  disabled={removendo}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 transition-colors"
+                >
+                  {removendo ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
+                  Confirmar remoção
+                </button>
+                <button
+                  onClick={() => setConfirmando(false)}
+                  className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={() => setConfirmando(true)}
+              className="flex items-center gap-1.5 text-xs text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors"
+            >
+              <Trash2 size={13} />
+              Remover certificado
+            </button>
+          )}
+        </div>
+      ) : (
+        /* Formulário de upload */
+        <form onSubmit={(e) => void handleUpload(e)} className="space-y-4">
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            O certificado A1 permite a captura automática de notas fiscais destinadas a este cliente diretamente da SEFAZ.
+          </p>
+
+          <div className="space-y-1">
+            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400">
+              Arquivo do certificado (.pfx / .p12)
+            </label>
+            <div className="relative">
+              <input
+                type="file"
+                accept=".pfx,.p12"
+                onChange={(e) => setArquivo(e.target.files?.[0] ?? null)}
+                className="block w-full text-xs text-gray-500 dark:text-gray-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary/10 file:text-primary-dark dark:file:bg-primary/20 dark:file:text-primary hover:file:bg-primary/20 cursor-pointer"
+              />
+            </div>
+            {arquivo && (
+              <p className="text-[10px] text-gray-400">{arquivo.name} ({(arquivo.size / 1024).toFixed(1)} KB)</p>
+            )}
+          </div>
+
+          <div className="space-y-1">
+            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400">
+              Senha do certificado
+            </label>
+            <input
+              type="password"
+              value={senha}
+              onChange={(e) => setSenha(e.target.value)}
+              placeholder="Senha do arquivo .pfx"
+              autoComplete="new-password"
+              className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+            />
+            <p className="text-[10px] text-gray-400">A senha não será exibida novamente após salvar.</p>
+          </div>
+
+          <label className="flex items-start gap-2 cursor-pointer group">
+            <input
+              type="checkbox"
+              checked={consentimento}
+              onChange={(e) => setConsentimento(e.target.checked)}
+              className="mt-0.5 w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+            />
+            <span className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed group-hover:text-gray-800 dark:group-hover:text-gray-200 transition-colors">
+              Autorizo o uso deste certificado exclusivamente para consulta automática de documentos fiscais junto à SEFAZ em nome deste cliente.
+            </span>
+          </label>
+
+          <button
+            type="submit"
+            disabled={!arquivo || !senha || !consentimento || salvando}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl bg-primary text-white hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            {salvando
+              ? <><Loader2 size={15} className="animate-spin" />Validando...</>
+              : <><Upload size={15} />Salvar certificado</>
+            }
+          </button>
+        </form>
+      )}
+    </div>
+  );
+}
+
+// =============================================================================
 // Página: /(contador)/clientes/[id] — Prontuário Digital do Cliente
 // =============================================================================
 
@@ -196,7 +443,7 @@ export default function ClienteDetalhesPage() {
 function ClienteDetalhesPageDono() {
   const params = useParams();
   const router = useRouter();
-  const { token } = useAuth();
+  const { token, getToken } = useAuth();
   const clienteId = params.id as string;
 
   const { plan: planoAtual } = usePlanoAtual(token);
@@ -1085,6 +1332,11 @@ function ClienteDetalhesPageDono() {
         )}
       </div>
       )}
+
+      {/* ------------------------------------------------------------------ */}
+      {/* Seção: Certificado Digital A1                                        */}
+      {/* ------------------------------------------------------------------ */}
+      <CertificadoDigitalSection clienteId={clienteId} getToken={getToken} />
 
       {/* ------------------------------------------------------------------ */}
       {/* Filtros                                                              */}
