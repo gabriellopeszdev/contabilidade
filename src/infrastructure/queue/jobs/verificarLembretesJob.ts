@@ -86,4 +86,47 @@ export async function verificarLembretesJob(emailService: IEmailService): Promis
       data: { lembreteEnviado: true },
     });
   }
+
+  // Avisos de vencimento de certificado digital (30 dias e 7 dias)
+  for (const diasAntecedencia of [30, 7]) {
+    const dataAlvo = new Date(hoje);
+    dataAlvo.setDate(dataAlvo.getDate() + diasAntecedencia);
+    const dataAlvoInicio = new Date(dataAlvo); dataAlvoInicio.setHours(0, 0, 0, 0);
+    const dataAlvoFim    = new Date(dataAlvo); dataAlvoFim.setHours(23, 59, 59, 999);
+
+    const certs = await prisma.certificadoDigital.findMany({
+      where: {
+        status:   'ATIVO',
+        validade: { gte: dataAlvoInicio, lte: dataAlvoFim },
+      },
+      select: {
+        id:          true,
+        cnpjTitular: true,
+        validade:    true,
+        criadoPorId: true,
+        cliente:     { select: { name: true } },
+      },
+    });
+
+    for (const cert of certs) {
+      // Busca e-mail do contador que cadastrou o certificado
+      const contador = await prisma.usuarioContador.findUnique({
+        where:  { id: cert.criadoPorId },
+        select: { email: true, name: true },
+      });
+      if (!contador?.email) continue;
+
+      const validadeFmt = new Date(cert.validade).toLocaleDateString('pt-BR');
+      try {
+        await emailService.enviar({
+          destinatario: contador.email,
+          assunto:      `[FiscoHub] Certificado digital de ${cert.cliente.name} vence em ${diasAntecedencia} dias`,
+          corpoHtml:    `<p>O certificado digital do cliente <strong>${cert.cliente.name}</strong> (CNPJ ${cert.cnpjTitular}) vence em <strong>${validadeFmt}</strong> (${diasAntecedencia} dias).</p><p>Acesse o portal para renovar o certificado antes do vencimento.</p>`,
+          corpoTexto:   `O certificado digital do cliente ${cert.cliente.name} (CNPJ ${cert.cnpjTitular}) vence em ${validadeFmt} (${diasAntecedencia} dias). Acesse o portal para renovar.`,
+        });
+      } catch {
+        // Falha no e-mail não interrompe os demais
+      }
+    }
+  }
 }

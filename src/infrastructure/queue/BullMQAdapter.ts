@@ -9,6 +9,7 @@ import { gerarObrigacoesRecorrentesJob } from './jobs/gerarObrigacoesRecorrentes
 import { parsearXmlNfeJob } from './jobs/parsearXmlNfeJob';
 import { gerarRelatorioMensalJob } from './jobs/gerarRelatorioMensalJob';
 import { enviarConvitesImportacaoJob, type EnviarConvitesImportacaoJobData } from './jobs/enviarConvitesImportacaoJob';
+import { capturarNotasSefazJob, type CapturarNotasSefazJobData } from './jobs/capturarNotasSefazJob';
 
 // =============================================================================
 // BullMQAdapter — Processamento Assíncrono em Background
@@ -83,6 +84,10 @@ export type ProcessamentoJobData =
   | {
       tipo: 'ENVIAR_CONVITES_IMPORTACAO';
       payload: EnviarConvitesImportacaoJobData;
+    }
+  | {
+      tipo: 'CAPTURAR_NOTAS_SEFAZ';
+      payload: CapturarNotasSefazJobData;
     }
   | Record<string, never>; // Empty object for scheduled jobs (verificar-lembretes, gerar-obrigacoes-recorrentes)
 
@@ -199,6 +204,33 @@ export class BullMQAdapter {
     this.logger.info('[BullMQAdapter] Jobs de obrigações agendados (lembretes 08:00 diário, recorrências dia 25 09:00).');
   }
 
+  /**
+   * Agenda a captura de NF-e via SEFAZ para todos os clientes com certificado ativo.
+   * Cron: todo dia às 06:00. Cada certificado vira um job individual com delay
+   * crescente de 5s entre eles — a SEFAZ tem rate limit rígido por CNPJ.
+   * Idempotente via jobId fixo.
+   */
+  async agendarCapturaNotasSefaz(): Promise<void> {
+    if (!this.prisma) {
+      this.logger.warn('[BullMQAdapter] prisma não injetado — agendarCapturaNotasSefaz ignorado.');
+      return;
+    }
+
+    // Job orquestrador: roda às 06:00, enfileira os jobs individuais
+    await this.queue.add(
+      'captura-notas-sefaz',
+      {},
+      {
+        jobId:  'captura-notas-sefaz-diario',
+        repeat: { pattern: '0 6 * * *' },
+        removeOnComplete: { count: 7 },
+        removeOnFail:     { count: 30 },
+      },
+    );
+
+    this.logger.info('[BullMQAdapter] Captura de notas SEFAZ agendada (06:00 diário).');
+  }
+
   // ---------------------------------------------------------------------------
   // Consumidor — inicia o Worker que processa jobs em background
   // ---------------------------------------------------------------------------
@@ -277,6 +309,14 @@ export class BullMQAdapter {
       await gerarObrigacoesRecorrentesJob();
       return;
     }
+    if (job.name === 'captura-notas-sefaz') {
+      if (!this.prisma) {
+        this.logger.warn('[BullMQAdapter] prisma não injetado — captura-notas-sefaz ignorado.');
+        return;
+      }
+      await this.despacharCapturasSefaz();
+      return;
+    }
 
     switch (job.data.tipo) {
 
@@ -330,11 +370,42 @@ export class BullMQAdapter {
         break;
       }
 
+      case 'CAPTURAR_NOTAS_SEFAZ': {
+        await capturarNotasSefazJob(job.data.payload);
+        break;
+      }
+
       default: {
         // Lança erro para que o BullMQ registre como falha e possa fazer retry/diagnóstico
         const tipo = (job.data as { tipo: string }).tipo;
         throw new Error(`[BullMQAdapter] Tipo de job desconhecido: "${tipo}".`);
       }
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Handler: despachar capturas individuais via SEFAZ
+  // ---------------------------------------------------------------------------
+
+  private async despacharCapturasSefaz(): Promise<void> {
+    if (!this.prisma) return;
+
+    const certificados = await this.prisma.certificadoDigital.findMany({
+      where: { status: 'ATIVO', validade: { gt: new Date() } },
+      select: { id: true },
+    });
+
+    this.logger.info('[BullMQAdapter] Despachando capturas SEFAZ.', { total: certificados.length });
+
+    for (let i = 0; i < certificados.length; i++) {
+      await this.queue.add(
+        'CAPTURAR_NOTAS_SEFAZ',
+        { tipo: 'CAPTURAR_NOTAS_SEFAZ', payload: { certificadoId: certificados[i].id } },
+        {
+          delay: i * 5_000, // 5s entre cada certificado — rate limit SEFAZ
+          jobId: `capturar-${certificados[i].id}-${new Date().toISOString().slice(0, 10)}`,
+        },
+      );
     }
   }
 

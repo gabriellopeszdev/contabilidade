@@ -167,6 +167,7 @@ app.prepare().then(async () => {
   bullMQ.iniciarWorker(2);
   await bullMQ.agendarLembreteBoleto();
   await bullMQ.agendarJobsObrigacoes();
+  await bullMQ.agendarCapturaNotasSefaz();
 
   // ---------------------------------------------------------------------------
   // Listen
