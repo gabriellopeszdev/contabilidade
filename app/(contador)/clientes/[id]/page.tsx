@@ -427,6 +427,179 @@ function CertificadoDigitalSection({ clienteId, getToken }: { clienteId: string;
 }
 
 // =============================================================================
+// Seção: Notas Fiscais Pendentes de Revisão (SEFAZ)
+// =============================================================================
+
+interface NotaPendente {
+  id:           string;
+  chaveAcesso:  string;
+  nsu:          string;
+  status:       string;
+  emitenteCnpj: string;
+  emitenteNome: string;
+  numero:       string;
+  serie:        string;
+  dataEmissao:  string;
+  valorTotal:   string;
+  revisadoEm:   string | null;
+  documentoId:  string | null;
+  createdAt:    string;
+}
+
+function NotasPendentesSefaz({ clienteId, getToken }: { clienteId: string; getToken: () => Promise<string | null> }) {
+  const [notas,      setNotas]      = useState<NotaPendente[]>([]);
+  const [carregando, setCarregando] = useState(true);
+  const [acaoId,     setAcaoId]     = useState<string | null>(null);
+
+  const carregar = useCallback(async () => {
+    setCarregando(true);
+    try {
+      const token = await getToken();
+      const res   = await fetch(`/api/v1/clientes/${clienteId}/notas-pendentes?status=PENDENTE`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json() as { notas: NotaPendente[] };
+        setNotas(data.notas);
+      }
+    } finally {
+      setCarregando(false);
+    }
+  }, [clienteId, getToken]);
+
+  useEffect(() => { void carregar(); }, [carregar]);
+
+  const executarAcao = async (notaId: string, acao: 'confirmar' | 'rejeitar' | 'desconhecer') => {
+    setAcaoId(notaId);
+    try {
+      const token = await getToken();
+      const res   = await fetch(`/api/v1/clientes/${clienteId}/notas-pendentes/${notaId}`, {
+        method:  'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ acao }),
+      });
+      const data = await res.json() as { ok?: boolean; error?: string };
+      if (!res.ok) {
+        toast.error(data.error ?? 'Erro ao processar nota.');
+        return;
+      }
+      const labels = { confirmar: 'Nota confirmada.', rejeitar: 'Nota rejeitada.', desconhecer: 'Nota desconhecida.' };
+      toast.success(labels[acao]);
+      await carregar();
+    } finally {
+      setAcaoId(null);
+    }
+  };
+
+  if (carregando) {
+    return (
+      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
+        <div className="flex items-center gap-2 text-sm text-gray-400">
+          <Loader2 size={16} className="animate-spin" />
+          Carregando notas pendentes...
+        </div>
+      </div>
+    );
+  }
+
+  if (notas.length === 0) return null;
+
+  return (
+    <div className="bg-white dark:bg-gray-900 rounded-xl border border-amber-200 dark:border-amber-800 p-6 space-y-4">
+      <div className="flex items-center gap-2">
+        <AlertCircle size={18} className="text-amber-500" />
+        <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+          Notas Fiscais Pendentes de Revisão
+        </h3>
+        <span className="ml-auto px-2 py-0.5 text-xs font-bold rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-700">
+          {notas.length}
+        </span>
+      </div>
+
+      <p className="text-xs text-gray-500 dark:text-gray-400">
+        As notas abaixo foram capturadas automaticamente da SEFAZ e aguardam sua revisão antes de entrar na base de documentos.
+      </p>
+
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-left text-xs font-semibold text-gray-500 dark:text-gray-400 border-b border-gray-100 dark:border-gray-800">
+              <th className="pb-2 pr-4">Emitente</th>
+              <th className="pb-2 pr-4">CNPJ</th>
+              <th className="pb-2 pr-4">NF-e</th>
+              <th className="pb-2 pr-4">Data Emissão</th>
+              <th className="pb-2 pr-4 text-right">Valor Total</th>
+              <th className="pb-2 text-right">Ações</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-50 dark:divide-gray-800/50">
+            {notas.map((nota) => {
+              const emProcesso = acaoId === nota.id;
+              const cnpjFmt = nota.emitenteCnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
+              const dataFmt = new Date(nota.dataEmissao).toLocaleDateString('pt-BR');
+              const valorFmt = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(nota.valorTotal));
+
+              return (
+                <tr key={nota.id} className="py-3">
+                  <td className="py-3 pr-4">
+                    <span className="font-medium text-gray-800 dark:text-gray-200 line-clamp-1 max-w-[180px]" title={nota.emitenteNome}>
+                      {nota.emitenteNome}
+                    </span>
+                  </td>
+                  <td className="py-3 pr-4 text-xs text-gray-500 dark:text-gray-400 font-mono whitespace-nowrap">
+                    {cnpjFmt}
+                  </td>
+                  <td className="py-3 pr-4 text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                    {nota.numero}/{nota.serie}
+                  </td>
+                  <td className="py-3 pr-4 text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                    {dataFmt}
+                  </td>
+                  <td className="py-3 pr-4 text-xs font-medium text-gray-700 dark:text-gray-300 text-right whitespace-nowrap">
+                    {valorFmt}
+                  </td>
+                  <td className="py-3 text-right">
+                    <div className="flex items-center gap-1.5 justify-end">
+                      <button
+                        onClick={() => void executarAcao(nota.id, 'confirmar')}
+                        disabled={emProcesso}
+                        title="Confirmar nota — importa para documentos"
+                        className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50 transition-colors"
+                      >
+                        {emProcesso ? <Loader2 size={11} className="animate-spin" /> : <CheckCircle2 size={11} />}
+                        Confirmar
+                      </button>
+                      <button
+                        onClick={() => void executarAcao(nota.id, 'rejeitar')}
+                        disabled={emProcesso}
+                        title="Rejeitar nota"
+                        className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold rounded-lg border border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 transition-colors"
+                      >
+                        <X size={11} />
+                        Rejeitar
+                      </button>
+                      <button
+                        onClick={() => void executarAcao(nota.id, 'desconhecer')}
+                        disabled={emProcesso}
+                        title="Desconhecer nota"
+                        className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold rounded-lg border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 transition-colors"
+                      >
+                        <AlertCircle size={11} />
+                        Desconhecer
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+// =============================================================================
 // Página: /(contador)/clientes/[id] — Prontuário Digital do Cliente
 // =============================================================================
 
@@ -1337,6 +1510,11 @@ function ClienteDetalhesPageDono() {
       {/* Seção: Certificado Digital A1                                        */}
       {/* ------------------------------------------------------------------ */}
       <CertificadoDigitalSection clienteId={clienteId} getToken={getToken} />
+
+      {/* ------------------------------------------------------------------ */}
+      {/* Seção: Notas Fiscais Pendentes de Revisão                           */}
+      {/* ------------------------------------------------------------------ */}
+      <NotasPendentesSefaz clienteId={clienteId} getToken={getToken} />
 
       {/* ------------------------------------------------------------------ */}
       {/* Filtros                                                              */}

@@ -1,10 +1,9 @@
 import { createHash }               from 'node:crypto';
-import { prisma, storageService, documentoRepository, queueProducer } from '@/infrastructure/di/Container';
-import { decrypt }                 from '@/utils/encryption';
+import { prisma, storageService }   from '@/infrastructure/di/Container';
+import { decrypt }                  from '@/utils/encryption';
 import { NFeDistribuicaoDFeClient } from '@/infrastructure/sefaz/NFeDistribuicaoDFeClient';
-import { DocumentoFiscal }         from '@/domain/entities/DocumentoFiscal';
-import { Setor }                   from '@/domain/value-objects/Setor';
-import { logger }                  from '@/utils/logger';
+import { parseNFe }                 from '@/utils/nfeParser';
+import { logger }                   from '@/utils/logger';
 
 export interface CapturarNotasSefazJobData {
   certificadoId: string;
@@ -13,7 +12,6 @@ export interface CapturarNotasSefazJobData {
 export async function capturarNotasSefazJob(data: CapturarNotasSefazJobData): Promise<void> {
   const { certificadoId } = data;
 
-  // 1. Busca o certificado ativo
   const cert = await prisma.certificadoDigital.findUnique({
     where:  { id: certificadoId },
     select: {
@@ -25,27 +23,20 @@ export async function capturarNotasSefazJob(data: CapturarNotasSefazJobData): Pr
       validade:       true,
       ultimoNsu:      true,
       status:         true,
-      criadoPorId:    true,
     },
   });
 
   if (!cert || cert.status !== 'ATIVO') return;
 
-  // Verifica validade
   if (cert.validade < new Date()) {
     await prisma.certificadoDigital.update({
       where: { id: cert.id },
       data:  { status: 'EXPIRADO' },
     });
-    logger.warn('[capturarNotasSefazJob] Certificado expirado.', {
-      certificadoId,
-      clienteId: cert.clienteId,
-      validade:  cert.validade.toISOString(),
-    });
+    logger.warn('[capturarNotasSefazJob] Certificado expirado.', { certificadoId, clienteId: cert.clienteId });
     return;
   }
 
-  // 2. Decifra credenciais — só no momento da chamada, nunca em cache de módulo
   let pfxBuffer: Buffer;
   let pfxSenha: string;
   try {
@@ -56,102 +47,110 @@ export async function capturarNotasSefazJob(data: CapturarNotasSefazJobData): Pr
     return;
   }
 
-  // 3. Consulta SEFAZ
   const ambiente = (process.env.SEFAZ_AMBIENTE ?? 'producao') as 'producao' | 'homologacao';
   const client   = new NFeDistribuicaoDFeClient(ambiente);
 
   let resultado;
   try {
-    resultado = await client.consultarDistribuicao(
-      cert.cnpjTitular,
-      cert.ultimoNsu,
-      pfxBuffer,
-      pfxSenha,
-    );
+    resultado = await client.consultarDistribuicao(cert.cnpjTitular, cert.ultimoNsu, pfxBuffer, pfxSenha);
   } catch (err) {
     logger.error('[capturarNotasSefazJob] Erro na consulta à SEFAZ.', {
       certificadoId,
-      clienteId: cert.clienteId,
-      error:     err instanceof Error ? err.message : String(err),
+      error: err instanceof Error ? err.message : String(err),
     });
-    // Atualiza ultimaConsultaEm mesmo em erro parcial pra não travar o loop
-    await prisma.certificadoDigital.update({
-      where: { id: cert.id },
-      data:  { ultimaConsultaEm: new Date() },
-    });
+    await prisma.certificadoDigital.update({ where: { id: cert.id }, data: { ultimaConsultaEm: new Date() } });
     return;
   }
 
-  const bucket = process.env.MINIO_BUCKET ?? 'documentos-contabeis';
   const agora  = new Date();
   const anoMes = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, '0')}`;
 
-  let salvos = 0;
+  let novos = 0;
   for (const doc of resultado.documentos) {
     try {
       const xmlBuffer = Buffer.from(doc.xml, 'utf8');
       const hash      = createHash('sha256').update(xmlBuffer).digest('hex');
 
-      // 4. Idempotência: pula se já existe
-      const jaExiste = await documentoRepository.hashJaExiste(hash, cert.clienteId);
+      // Idempotência: pula se já existe como nota pendente
+      const jaExiste = await prisma.notaPendenteSefaz.findUnique({
+        where: { clienteId_fileHash: { clienteId: cert.clienteId, fileHash: hash } },
+        select: { id: true },
+      });
       if (jaExiste) continue;
 
-      // 5. Upload para MinIO
+      // Upload para MinIO
       const uuid        = crypto.randomUUID();
       const storagePath = `${cert.clienteId}/FISCAL/${anoMes}/${uuid}.xml`;
       await storageService.upload(storagePath, xmlBuffer, 'text/xml');
 
-      // 6. Persiste DocumentoFiscal
-      const nomeArquivo = `${doc.chave}.xml`;
-      const documentoFiscal = DocumentoFiscal.criar({
-        id:           crypto.randomUUID(),
-        clientId:     cert.clienteId,
-        uploadedById: cert.criadoPorId,
-        fileName:     nomeArquivo,
-        fileType:     'XML',
-        fileSizeBytes: xmlBuffer.length,
-        storagePath,
-        fileHash:     hash,
-        sector:       Setor.FISCAL,
-        competencia:  null,
-        metadataJson: {},
-      });
-      await documentoRepository.salvar(documentoFiscal);
-
-      // 7. Enfileira parsing de metadata
-      const jobPayload = {
-        tipo:    'PARSEAR_XML_NFE' as const,
-        payload: { documentoId: documentoFiscal.id, storagePath },
+      // Parseia metadados para exibição na fila
+      let meta: {
+        emitenteCnpj: string;
+        emitenteNome: string;
+        numero:       string;
+        serie:        string;
+        dataEmissao:  Date;
+        valorTotal:   number;
+      } = {
+        emitenteCnpj: '',
+        emitenteNome: 'Emitente desconhecido',
+        numero:       '0',
+        serie:        '0',
+        dataEmissao:  agora,
+        valorTotal:   0,
       };
-      await queueProducer.add(jobPayload.tipo, jobPayload, {
-        jobId: `PARSEAR_XML_NFE-${documentoFiscal.id}`,
+      try {
+        const parsed = parseNFe(doc.xml);
+        meta = {
+          emitenteCnpj: parsed.emitente.cnpj,
+          emitenteNome: parsed.emitente.nome,
+          numero:       parsed.numero,
+          serie:        parsed.serie,
+          dataEmissao:  parsed.dataEmissao ? new Date(parsed.dataEmissao) : agora,
+          valorTotal:   parsed.valorTotal,
+        };
+      } catch {
+        // Mantém defaults — não bloqueia a inserção por falha de parsing
+      }
+
+      await prisma.notaPendenteSefaz.create({
+        data: {
+          clienteId:     cert.clienteId,
+          certificadoId,
+          chaveAcesso:   doc.chave,
+          nsu:           doc.nsu,
+          storagePath,
+          fileHash:      hash,
+          fileSizeBytes: BigInt(xmlBuffer.length),
+          emitenteCnpj:  meta.emitenteCnpj,
+          emitenteNome:  meta.emitenteNome,
+          numero:        meta.numero,
+          serie:         meta.serie,
+          dataEmissao:   meta.dataEmissao,
+          valorTotal:    meta.valorTotal,
+        },
       });
 
-      salvos++;
+      novos++;
     } catch (err) {
-      logger.error('[capturarNotasSefazJob] Falha ao salvar documento do lote.', {
+      logger.error('[capturarNotasSefazJob] Falha ao salvar nota pendente.', {
         certificadoId,
         nsu:   doc.nsu,
         error: err instanceof Error ? err.message : String(err),
       });
-      // Não quebra — continua processando os demais documentos do lote
     }
   }
 
-  // 8. Avança cursor mesmo se houve falhas parciais
   await prisma.certificadoDigital.update({
     where: { id: cert.id },
-    data:  {
-      ultimoNsu:        resultado.maxNSU,
-      ultimaConsultaEm: new Date(),
-    },
+    data:  { ultimoNsu: resultado.maxNSU, ultimaConsultaEm: new Date() },
   });
 
   logger.info('[capturarNotasSefazJob] Captura concluída.', {
     certificadoId,
-    clienteId:  cert.clienteId,
-    total:      resultado.documentos.length,
-    salvos,
-    novoNsu:    resultado.maxNSU,
+    clienteId: cert.clienteId,
+    total:     resultado.documentos.length,
+    novos,
+    novoNsu:   resultado.maxNSU,
   });
 }

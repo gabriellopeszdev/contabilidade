@@ -83,6 +83,9 @@ enum ActionType {
   IMPERSONATION_FINALIZADA
   CERTIFICADO_CADASTRADO
   CERTIFICADO_REMOVIDO
+  NOTA_PENDENTE_CONFIRMADA
+  NOTA_PENDENTE_REJEITADA
+  NOTA_PENDENTE_DESCONHECIDA
 }
 
 enum StatusCertificado {
@@ -90,6 +93,13 @@ enum StatusCertificado {
   EXPIRADO
   INVALIDO
   REVOGADO
+}
+
+enum StatusNotaPendente {
+  PENDENTE
+  CONFIRMADA
+  REJEITADA
+  DESCONHECIDA
 }
 
 enum ResourceType {
@@ -102,6 +112,7 @@ enum ResourceType {
   ASSINATURA
   BACKUP
   CERTIFICADO_DIGITAL
+  NOTA_PENDENTE_SEFAZ
 }
 
 enum RecorrenciaTipo {
@@ -153,6 +164,7 @@ model UsuarioCliente {
   funcionarios Funcionario[]  @relation("FuncionarioCliente")
   boletos      BoletoHonorario[]
   assinaturas  AssinaturaHonorario[]
+  notasPendentes NotaPendenteSefaz[]
 
   // Onboarding / Convite
   inviteToken     String?   @unique @map("invite_token") @db.VarChar(255)
@@ -273,6 +285,42 @@ model CertificadoDigital {
   cliente UsuarioCliente @relation(fields: [clienteId], references: [id])
 
   @@map("certificado_digital")
+}
+
+// =============================================================================
+// NotaPendenteSefaz — XMLs de NF-e capturados da SEFAZ aguardando revisão
+//
+// O contador precisa confirmar, rejeitar ou desconhecer cada nota antes que
+// ela entre na base de DocumentoFiscal. Isso garante o manifesto do destinatário.
+// =============================================================================
+
+model NotaPendenteSefaz {
+  id            String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  clienteId     String             @map("cliente_id") @db.Uuid
+  certificadoId String             @map("certificado_id") @db.Uuid
+  chaveAcesso   String             @map("chave_acesso") @db.Char(44)
+  nsu           String             @db.VarChar(15)
+  storagePath   String             @map("storage_path") @db.VarChar(1000)
+  fileHash      String             @map("file_hash") @db.Char(64)
+  fileSizeBytes BigInt             @map("file_size_bytes")
+  status        StatusNotaPendente @default(PENDENTE)
+  emitenteCnpj  String             @map("emitente_cnpj") @db.VarChar(14)
+  emitenteNome  String             @map("emitente_nome") @db.VarChar(255)
+  numero        String             @db.VarChar(9)
+  serie         String             @db.VarChar(3)
+  dataEmissao   DateTime           @map("data_emissao") @db.Timestamptz
+  valorTotal    Decimal            @map("valor_total") @db.Decimal(15, 2)
+  revisadoPorId String?            @map("revisado_por_id") @db.Uuid
+  revisadoEm    DateTime?          @map("revisado_em") @db.Timestamptz
+  documentoId   String?            @map("documento_id") @db.Uuid
+  createdAt     DateTime           @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime           @updatedAt @map("updated_at") @db.Timestamptz
+
+  cliente UsuarioCliente @relation(fields: [clienteId], references: [id])
+
+  @@unique([clienteId, fileHash])
+  @@index([clienteId, status])
+  @@map("nota_pendente_sefaz")
 }
 
 // =============================================================================
