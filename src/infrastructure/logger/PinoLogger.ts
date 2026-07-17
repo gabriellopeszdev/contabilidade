@@ -32,8 +32,10 @@ import { RequestContext } from './RequestContext';
 const REDACT_PATHS: string[] = [
   // Raiz
   'senha', 'password', 'token', 'secret', 'authorization',
+  'arquivoCifrado', 'senhaCifrada',
   // Um nível de aninhamento (ex: req.body.password, payload.token)
   '*.senha', '*.password', '*.token', '*.secret', '*.authorization',
+  '*.arquivoCifrado', '*.senhaCifrada',
 ];
 
 /** Extrai os campos relevantes do RequestContext para mesclar nos logs. */

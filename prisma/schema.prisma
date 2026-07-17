@@ -81,6 +81,15 @@ enum ActionType {
   ASSINATURA_RECUSADA
   IMPERSONATION_INICIADA
   IMPERSONATION_FINALIZADA
+  CERTIFICADO_CADASTRADO
+  CERTIFICADO_REMOVIDO
+}
+
+enum StatusCertificado {
+  ATIVO
+  EXPIRADO
+  INVALIDO
+  REVOGADO
 }
 
 enum ResourceType {
@@ -138,6 +147,7 @@ model UsuarioCliente {
   // Relações
   documentos   DocumentoFiscal[]
   contadoresRel ContadorCliente[]
+  certificadoDigital CertificadoDigital?
   chatRooms    ChatRoom[]
   funcionarios Funcionario[]  @relation("FuncionarioCliente")
   boletos      BoletoHonorario[]
@@ -236,6 +246,32 @@ model ContadorCliente {
   // Índice no lado inverso para carregar "todos os contadores de um cliente"
   @@index([clienteId])
   @@map("contador_cliente")
+}
+
+// =============================================================================
+// CertificadoDigital — Certificado A1 do cliente (PFX cifrado em AES-256-GCM)
+//
+// O binário .pfx é cifrado antes de persistir (nunca armazenado em texto claro).
+// Relação 1:1 com UsuarioCliente — um cliente possui no máximo um certificado ativo.
+// =============================================================================
+
+model CertificadoDigital {
+  id               String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  clienteId        String            @unique @map("client_id") @db.Uuid
+  arquivoCifrado   String            @map("arquivo_cifrado") @db.Text
+  senhaCifrada     String            @map("senha_cifrada") @db.Text
+  cnpjTitular      String            @map("cnpj_titular") @db.Char(14)
+  validade         DateTime          @db.Timestamptz
+  ultimoNsu        String            @default("000000000000000") @map("ultimo_nsu") @db.VarChar(15)
+  status           StatusCertificado @default(ATIVO)
+  ultimaConsultaEm DateTime?         @map("ultima_consulta_em") @db.Timestamptz
+  criadoPorId      String            @map("criado_por_id") @db.Uuid
+  createdAt        DateTime          @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt        DateTime          @updatedAt @map("updated_at") @db.Timestamptz
+
+  cliente UsuarioCliente @relation(fields: [clienteId], references: [id])
+
+  @@map("certificado_digital")
 }
 
 // =============================================================================
