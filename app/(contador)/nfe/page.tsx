@@ -13,6 +13,10 @@ import {
   RefreshCw,
   Search,
   ChevronRight,
+  CreditCard,
+  ShieldCheck,
+  MapPin,
+  QrCode,
 } from 'lucide-react';
 
 import { useAuth }         from '../../../src/presentation/hooks/useAuth';
@@ -91,6 +95,13 @@ function TipoBadge({ tipo }: { tipo: 'entrada' | 'saida' }) {
 // Modal de detalhes da NF-e
 // =============================================================================
 
+const CRT_LABEL: Record<number, string> = {
+  1: 'Simples Nacional',
+  2: 'Simples Nacional – Excesso',
+  3: 'Regime Normal',
+  4: 'MEI',
+};
+
 function ModalDetalheNFe({ resultado, onFechar }: { resultado: ResultadoArquivo; onFechar: () => void }) {
   const d = resultado.dados!;
 
@@ -100,7 +111,9 @@ function ModalDetalheNFe({ resultado, onFechar }: { resultado: ResultadoArquivo;
     return () => window.removeEventListener('keydown', handler);
   }, [onFechar]);
 
-  const valorTotal = d.valorTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  const brl = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  const modeloLabel = d.modelo === 65 ? 'NFC-e' : d.modelo === 55 ? 'NF-e' : `Mod. ${d.modelo}`;
+  const ambienteLabel = d.ambiente === 2 ? 'Homologação' : 'Produção';
 
   return (
     <div
@@ -116,11 +129,16 @@ function ModalDetalheNFe({ resultado, onFechar }: { resultado: ResultadoArquivo;
               <FileText size={18} className="text-primary dark:text-primary" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <h2 className="text-base font-bold text-gray-900 dark:text-gray-100">
-                  NF-e {d.numero}{d.serie ? ` / ${d.serie}` : ''}
+                  {modeloLabel} {d.numero}{d.serie ? ` / Série ${d.serie}` : ''}
                 </h2>
                 <TipoBadge tipo={d.tipo} />
+                {d.ambiente === 2 && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
+                    {ambienteLabel}
+                  </span>
+                )}
               </div>
               <p className="text-xs text-gray-400 dark:text-gray-500">{resultado.nomeArquivo}</p>
             </div>
@@ -133,7 +151,7 @@ function ModalDetalheNFe({ resultado, onFechar }: { resultado: ResultadoArquivo;
         {/* Corpo com scroll */}
         <div className="overflow-y-auto p-5 space-y-5 flex-1">
 
-          {/* Chave de acesso + natureza */}
+          {/* Chave de acesso + emissão + natureza */}
           <div className="space-y-2">
             {d.chaveAcesso && (
               <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
@@ -153,30 +171,75 @@ function ModalDetalheNFe({ resultado, onFechar }: { resultado: ResultadoArquivo;
             </div>
           </div>
 
+          {/* Protocolo de autorização */}
+          {d.protocolo && (
+            <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
+              <div className="flex items-center gap-2 mb-2">
+                <ShieldCheck size={14} className="text-emerald-600 dark:text-emerald-400" />
+                <p className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wide">
+                  Autorização ({d.protocolo.status})
+                </p>
+              </div>
+              <p className="text-xs text-emerald-800 dark:text-emerald-300 font-medium">{d.protocolo.motivo}</p>
+              <div className="flex gap-4 mt-1.5">
+                <div>
+                  <p className="text-[10px] text-emerald-600 dark:text-emerald-500">Protocolo</p>
+                  <p className="text-xs font-mono text-emerald-800 dark:text-emerald-300">{d.protocolo.numero}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-emerald-600 dark:text-emerald-500">Recebimento</p>
+                  <p className="text-xs text-emerald-800 dark:text-emerald-300">{formatarData(d.protocolo.dataHora)}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Emitente / Destinatário */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="p-4 rounded-xl border border-gray-200 dark:border-gray-700">
-              <div className="flex items-center gap-2 mb-3">
+            <div className="p-4 rounded-xl border border-gray-200 dark:border-gray-700 space-y-1">
+              <div className="flex items-center gap-2 mb-2">
                 <Building2 size={14} className="text-primary" />
                 <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Emitente</p>
               </div>
               <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{d.emitente.nome || '—'}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{d.emitente.cnpj ? formatarCNPJ(d.emitente.cnpj) : ''}</p>
-              {(d.emitente.municipio || d.emitente.uf) && (
-                <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-                  {[d.emitente.municipio, d.emitente.uf].filter(Boolean).join(' · ')}
-                </p>
+              {d.emitente.nomeFant && d.emitente.nomeFant !== d.emitente.nome && (
+                <p className="text-xs text-gray-500 dark:text-gray-400 italic">{d.emitente.nomeFant}</p>
+              )}
+              <p className="text-xs text-gray-500 dark:text-gray-400">{d.emitente.cnpj ? formatarCNPJ(d.emitente.cnpj) : ''}</p>
+              {d.emitente.ie && (
+                <p className="text-xs text-gray-400 dark:text-gray-500">IE: {d.emitente.ie}</p>
+              )}
+              {d.emitente.crt > 0 && (
+                <p className="text-xs text-gray-400 dark:text-gray-500">{CRT_LABEL[d.emitente.crt] ?? `CRT ${d.emitente.crt}`}</p>
+              )}
+              {(d.emitente.endereco.logradouro || d.emitente.municipio) && (
+                <div className="flex items-start gap-1 pt-1">
+                  <MapPin size={11} className="text-gray-400 mt-0.5 shrink-0" />
+                  <p className="text-xs text-gray-400 dark:text-gray-500 leading-relaxed">
+                    {[
+                      [d.emitente.endereco.logradouro, d.emitente.endereco.numero].filter(Boolean).join(', '),
+                      d.emitente.endereco.bairro,
+                      [d.emitente.municipio, d.emitente.uf].filter(Boolean).join(' · '),
+                      d.emitente.endereco.cep ? `CEP ${d.emitente.endereco.cep}` : '',
+                    ].filter(Boolean).join(' — ')}
+                  </p>
+                </div>
+              )}
+              {d.emitente.telefone && (
+                <p className="text-xs text-gray-400 dark:text-gray-500">Tel: {d.emitente.telefone}</p>
               )}
             </div>
             <div className="p-4 rounded-xl border border-gray-200 dark:border-gray-700">
-              <div className="flex items-center gap-2 mb-3">
+              <div className="flex items-center gap-2 mb-2">
                 <Building2 size={14} className="text-emerald-500" />
                 <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Destinatário</p>
               </div>
-              <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{d.destinatario.nome || '—'}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                {d.destinatario.cnpjOuCpf ? formatarCNPJ(d.destinatario.cnpjOuCpf) : ''}
-              </p>
+              <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{d.destinatario.nome || 'Consumidor Final'}</p>
+              {d.destinatario.cnpjOuCpf && (
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                  {formatarCNPJ(d.destinatario.cnpjOuCpf)}
+                </p>
+              )}
             </div>
           </div>
 
@@ -185,13 +248,15 @@ function ModalDetalheNFe({ resultado, onFechar }: { resultado: ResultadoArquivo;
             <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Valores e Impostos</p>
             <div className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
               {[
-                { label: 'Total NF',  value: d.valorTotal,        highlight: true },
+                { label: 'Total NF',  value: d.valorTotal,         highlight: true },
                 { label: 'ICMS',      value: d.impostos.icms },
                 { label: 'PIS',       value: d.impostos.pis },
                 { label: 'COFINS',    value: d.impostos.cofins },
                 { label: 'IPI',       value: d.impostos.ipi },
-                { label: 'Desconto',  value: d.impostos.desconto, red: true },
-              ].map(({ label, value, highlight, red }, i, arr) => (
+                { label: 'ST',        value: d.impostos.st },
+                { label: 'Frete',     value: d.impostos.frete },
+                { label: 'Desconto',  value: d.impostos.desconto,  red: true },
+              ].filter(({ value }) => value !== 0 || ['Total NF'].includes('' as string)).map(({ label, value, highlight, red }, i, arr) => (
                 <div key={label} className={`flex items-center justify-between px-4 py-2.5 ${i < arr.length - 1 ? 'border-b border-gray-100 dark:border-gray-800' : ''} ${highlight ? 'bg-primary/10 dark:bg-primary/10' : ''}`}>
                   <span className="text-xs font-medium text-gray-500 dark:text-gray-400">{label}</span>
                   <span className={`text-sm font-bold ${
@@ -199,12 +264,32 @@ function ModalDetalheNFe({ resultado, onFechar }: { resultado: ResultadoArquivo;
                     : red && value > 0 ? 'text-red-600 dark:text-red-400'
                     : 'text-gray-800 dark:text-gray-200'
                   }`}>
-                    {value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                    {brl(value)}
                   </span>
                 </div>
               ))}
             </div>
           </div>
+
+          {/* Forma de pagamento */}
+          {d.pagamentos.length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <CreditCard size={14} className="text-blue-500" />
+                <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                  Pagamento
+                </p>
+              </div>
+              <div className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                {d.pagamentos.map((pag, i) => (
+                  <div key={i} className={`flex items-center justify-between px-4 py-2.5 ${i < d.pagamentos.length - 1 ? 'border-b border-gray-100 dark:border-gray-800' : ''}`}>
+                    <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{pag.descricao}</span>
+                    <span className="text-sm font-bold text-gray-900 dark:text-gray-100">{brl(pag.valor)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Itens */}
           {d.itens.length > 0 && (
@@ -220,21 +305,24 @@ function ModalDetalheNFe({ resultado, onFechar }: { resultado: ResultadoArquivo;
                   <thead>
                     <tr className="bg-gray-50 dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
                       <th className="text-left px-4 py-2.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Descrição</th>
-                      <th className="text-right px-4 py-2.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Qtd</th>
-                      <th className="text-right px-4 py-2.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Vl. Unit.</th>
+                      <th className="text-center px-2 py-2.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wide">CFOP</th>
+                      <th className="text-center px-2 py-2.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wide">NCM</th>
+                      <th className="text-right px-2 py-2.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Qtd</th>
                       <th className="text-right px-4 py-2.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Total</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
                     {d.itens.map((item, i) => (
                       <tr key={i} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                        <td className="px-4 py-2.5 text-gray-800 dark:text-gray-200">{item.descricao || '—'}</td>
-                        <td className="px-4 py-2.5 text-right text-gray-600 dark:text-gray-400">{item.quantidade}</td>
-                        <td className="px-4 py-2.5 text-right text-gray-600 dark:text-gray-400">
-                          {item.valorUnitario.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                        <td className="px-4 py-2.5">
+                          <p className="text-gray-800 dark:text-gray-200">{item.descricao || '—'}</p>
+                          {item.codigo && <p className="text-[10px] text-gray-400">Cód. {item.codigo}</p>}
                         </td>
+                        <td className="px-2 py-2.5 text-center text-xs text-gray-500 dark:text-gray-400">{item.cfop || '—'}</td>
+                        <td className="px-2 py-2.5 text-center text-xs font-mono text-gray-500 dark:text-gray-400">{item.ncm || '—'}</td>
+                        <td className="px-2 py-2.5 text-right text-gray-600 dark:text-gray-400">{item.quantidade}</td>
                         <td className="px-4 py-2.5 text-right font-semibold text-gray-900 dark:text-gray-100">
-                          {(item.quantidade * item.valorUnitario).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                          {brl(item.valorTotal || item.quantidade * item.valorUnitario)}
                         </td>
                       </tr>
                     ))}
@@ -243,12 +331,30 @@ function ModalDetalheNFe({ resultado, onFechar }: { resultado: ResultadoArquivo;
               </div>
             </div>
           )}
+
+          {/* QR Code (NFC-e) */}
+          {d.qrCode && (
+            <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+              <div className="flex items-center gap-2 mb-1">
+                <QrCode size={13} className="text-gray-400" />
+                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">QR Code NFC-e</p>
+              </div>
+              <a
+                href={d.qrCode}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[10px] font-mono text-primary dark:text-primary break-all hover:underline"
+              >
+                {d.qrCode}
+              </a>
+            </div>
+          )}
         </div>
 
         {/* Footer */}
         <div className="flex items-center justify-between px-5 py-3 border-t border-gray-100 dark:border-gray-800 shrink-0">
           <span className="text-xs text-gray-400">Valor total da nota</span>
-          <span className="text-lg font-bold text-gray-900 dark:text-gray-100">{valorTotal}</span>
+          <span className="text-lg font-bold text-gray-900 dark:text-gray-100">{brl(d.valorTotal)}</span>
         </div>
       </div>
     </div>

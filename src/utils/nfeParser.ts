@@ -12,14 +12,26 @@ export interface NFeParseResult {
   chaveAcesso:  string | null;
   numero:       string;
   serie:        string;
-  dataEmissao:  string; // ISO date string
+  dataEmissao:  string;
   naturezaOp:   string;
   tipo:         'entrada' | 'saida';
+  modelo:       55 | 65 | number; // 55 = NF-e, 65 = NFC-e
+  ambiente:     1 | 2 | number;   // 1 = produção, 2 = homologação
   emitente: {
     cnpj:      string;
     nome:      string;
+    nomeFant:  string;
+    ie:        string;
+    crt:       1 | 2 | 3 | 4 | number; // 1=Simples, 2=Simples Excesso, 3=Normal, 4=MEI
     municipio: string;
     uf:        string;
+    telefone:  string;
+    endereco:  {
+      logradouro: string;
+      numero:     string;
+      bairro:     string;
+      cep:        string;
+    };
   };
   destinatario: {
     cnpjOuCpf: string;
@@ -31,10 +43,52 @@ export interface NFeParseResult {
     pis:      number;
     cofins:   number;
     ipi:      number;
+    st:       number;
+    frete:    number;
     desconto: number;
   };
-  itens: Array<{ descricao: string; quantidade: number; valorUnitario: number }>;
+  itens: Array<{
+    descricao:     string;
+    codigo:        string;
+    ncm:           string;
+    cfop:          string;
+    quantidade:    number;
+    valorUnitario: number;
+    valorTotal:    number;
+  }>;
+  pagamentos: Array<{ tipo: string; descricao: string; valor: number }>;
+  protocolo: {
+    numero:    string;
+    dataHora:  string;
+    status:    number;
+    motivo:    string;
+  } | null;
+  qrCode: string | null;
 }
+
+// ---------------------------------------------------------------------------
+// Tabela de tipos de pagamento (tPag)
+// ---------------------------------------------------------------------------
+
+const TIPOS_PAGAMENTO: Record<string, string> = {
+  '01': 'Dinheiro',
+  '02': 'Cheque',
+  '03': 'Cartão de Crédito',
+  '04': 'Cartão de Débito',
+  '05': 'Crédito Loja',
+  '10': 'Vale Alimentação',
+  '11': 'Vale Refeição',
+  '12': 'Vale Presente',
+  '13': 'Vale Combustível',
+  '14': 'Duplicata Mercantil',
+  '15': 'Boleto Bancário',
+  '16': 'Depósito Bancário',
+  '17': 'PIX',
+  '18': 'Transferência Bancária',
+  '19': 'Cashback',
+  '90': 'Sem Pagamento',
+  '99': 'Outros',
+};
 
 // ---------------------------------------------------------------------------
 // Internal helpers
@@ -50,6 +104,11 @@ function toNum(val: unknown): number {
   return isNaN(n) ? 0 : n;
 }
 
+function toInt(val: unknown): number {
+  const n = parseInt(String(val ?? ''), 10);
+  return isNaN(n) ? 0 : n;
+}
+
 // ---------------------------------------------------------------------------
 // Public parser
 // ---------------------------------------------------------------------------
@@ -60,13 +119,12 @@ export function parseNFe(xmlString: string): NFeParseResult {
     attributeNamePrefix: '@_',
     parseTagValue:       true,
     removeNSPrefix:      true,
-    isArray: (name) => ['det'].includes(name),
+    isArray: (name) => ['det', 'detPag'].includes(name),
   });
 
   const obj = parser.parse(xmlString) as Record<string, unknown>;
 
   // Resolve root — handle <nfeProc> wrapper or bare <NFe>
-  // Also handles namespace-prefixed variants (removeNSPrefix strips them)
   const rootKey = Object.keys(obj).find(
     (k) => k === 'nfeProc' || k === 'NFe' || k.endsWith(':nfeProc') || k.endsWith(':NFe'),
   );
@@ -78,7 +136,7 @@ export function parseNFe(xmlString: string): NFeParseResult {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const nfe: any = root.NFe ?? root;
+  const nfe: any    = root.NFe ?? root;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const infNFe: any = nfe?.infNFe;
 
@@ -94,35 +152,55 @@ export function parseNFe(xmlString: string): NFeParseResult {
   const dest: any  = infNFe.dest  ?? {};
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const total: any = infNFe.total?.ICMSTot ?? {};
-
-  // det is forced to array by isArray option
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const det: any[] = Array.isArray(infNFe.det) ? infNFe.det : (infNFe.det ? [infNFe.det] : []);
-
-  // Chave de acesso: from <protNFe> or from @_Id attribute on infNFe
+  const ender: any = emit.enderEmit ?? {};
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const prot: any     = root.protNFe?.infProt ?? null;
+  const supl: any  = nfe?.infNFeSupl ?? {};
+
+  const det: any[] = Array.isArray(infNFe.det) ? infNFe.det : (infNFe.det ? [infNFe.det] : []); // eslint-disable-line @typescript-eslint/no-explicit-any
+
+  // Pagamentos
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const detPag: any[] = (() => {
+    const pag = infNFe.pag;
+    if (!pag) return [];
+    const dp = pag.detPag;
+    if (!dp) return [];
+    return Array.isArray(dp) ? dp : [dp];
+  })();
+
+  // Protocolo de autorização
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const infProt: any = root.protNFe?.infProt ?? null;
+
+  // Chave de acesso
   const chaveAcesso: string | null =
-    toStr(prot?.chNFe) ||
+    toStr(infProt?.chNFe) ||
     toStr((infNFe['@_Id'] as string | undefined)?.replace(/^NFe/, '')) ||
     null;
 
-  // tpNF: 0 = entrada, 1 = saída
-  const tipo: 'entrada' | 'saida' = toStr(ide.tpNF) === '0' ? 'entrada' : 'saida';
-
-  // enderEmit
+  // Itens
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const ender: any = emit.enderEmit ?? {};
-
-  // Items
-  const itens = det.map((d) => ({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    descricao:     toStr((d as any).prod?.xProd),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    quantidade:    toNum((d as any).prod?.qCom),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    valorUnitario: toNum((d as any).prod?.vUnCom),
+  const itens = det.map((d: any) => ({
+    descricao:     toStr(d.prod?.xProd),
+    codigo:        toStr(d.prod?.cProd),
+    ncm:           toStr(d.prod?.NCM),
+    cfop:          toStr(d.prod?.CFOP),
+    quantidade:    toNum(d.prod?.qCom),
+    valorUnitario: toNum(d.prod?.vUnCom),
+    valorTotal:    toNum(d.prod?.vProd),
   }));
+
+  // Pagamentos
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const pagamentos = detPag.map((dp: any) => {
+    const codigo = toStr(dp.tPag).padStart(2, '0');
+    return {
+      tipo:      codigo,
+      descricao: TIPOS_PAGAMENTO[codigo] ?? 'Outros',
+      valor:     toNum(dp.vPag),
+    };
+  });
 
   return {
     chaveAcesso: chaveAcesso || null,
@@ -130,12 +208,24 @@ export function parseNFe(xmlString: string): NFeParseResult {
     serie:       toStr(ide.serie),
     dataEmissao: toStr(ide.dhEmi || ide.dEmi),
     naturezaOp:  toStr(ide.natOp),
-    tipo,
+    tipo:        toStr(ide.tpNF) === '0' ? 'entrada' : 'saida',
+    modelo:      toInt(ide.mod),
+    ambiente:    toInt(ide.tpAmb),
     emitente: {
-      cnpj:      toStr(emit.CNPJ),
-      nome:      toStr(emit.xNome || emit.xFant),
+      cnpj:     toStr(emit.CNPJ),
+      nome:     toStr(emit.xNome),
+      nomeFant: toStr(emit.xFant),
+      ie:       toStr(emit.IE),
+      crt:      toInt(emit.CRT),
       municipio: toStr(ender.xMun),
-      uf:        toStr(ender.UF),
+      uf:       toStr(ender.UF),
+      telefone: toStr(ender.fone),
+      endereco: {
+        logradouro: toStr(ender.xLgr),
+        numero:     toStr(ender.nro),
+        bairro:     toStr(ender.xBairro),
+        cep:        toStr(ender.CEP),
+      },
     },
     destinatario: {
       cnpjOuCpf: toStr(dest.CNPJ || dest.CPF),
@@ -147,8 +237,18 @@ export function parseNFe(xmlString: string): NFeParseResult {
       pis:      toNum(total.vPIS),
       cofins:   toNum(total.vCOFINS),
       ipi:      toNum(total.vIPI),
+      st:       toNum(total.vST),
+      frete:    toNum(total.vFrete),
       desconto: toNum(total.vDesc),
     },
     itens,
+    pagamentos,
+    protocolo: infProt ? {
+      numero:   toStr(infProt.nProt),
+      dataHora: toStr(infProt.dhRecbto),
+      status:   toInt(infProt.cStat),
+      motivo:   toStr(infProt.xMotivo),
+    } : null,
+    qrCode: toStr(supl.qrCode) || null,
   };
 }
