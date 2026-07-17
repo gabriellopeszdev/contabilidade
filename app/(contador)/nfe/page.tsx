@@ -120,7 +120,7 @@ function ModalDetalheNFe({ resultado, onFechar }: { resultado: ResultadoArquivo;
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
       onClick={(e) => { if (e.target === e.currentTarget) onFechar(); }}
     >
-      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
 
         {/* Header */}
         <div className="flex items-start justify-between p-5 border-b border-gray-100 dark:border-gray-800 shrink-0">

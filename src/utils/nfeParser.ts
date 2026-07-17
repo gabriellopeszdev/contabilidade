@@ -117,7 +117,7 @@ export function parseNFe(xmlString: string): NFeParseResult {
   const parser = new XMLParser({
     ignoreAttributes:    false,
     attributeNamePrefix: '@_',
-    parseTagValue:       true,
+    parseTagValue:       false, // mantém string; toNum() converte explicitamente (evita float em chave de 44 dígitos)
     removeNSPrefix:      true,
     isArray: (name) => ['det', 'detPag'].includes(name),
   });
