@@ -63,7 +63,8 @@ interface SenhaForm {
 }
 
 interface EscritorioForm {
-  crc: string;
+  crc:            string;
+  nomeEscritorio: string;
 }
 
 interface UsuarioAPI {
@@ -856,15 +857,31 @@ function EscritorioTab({
   onErro:    (msg: string) => void;
 }) {
   const [form, setForm] = useState<EscritorioForm>({
-    crc: dados?.crc ?? '',
+    crc:            dados?.crc ?? '',
+    nomeEscritorio: '',
   });
   const [salvando, setSalvando] = useState(false);
 
   useEffect(() => {
     if (dados) {
-      setForm({ crc: dados.crc ?? '' });
+      setForm((f) => ({ ...f, crc: dados.crc ?? '' }));
     }
   }, [dados]);
+
+  useEffect(() => {
+    if (!token) return;
+    (async () => {
+      try {
+        const res = await fetch('/api/v1/escritorio/config', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setForm((f) => ({ ...f, nomeEscritorio: data.config.nomeEscritorio ?? '' }));
+        }
+      } catch { /* ignore */ }
+    })();
+  }, [token]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -876,21 +893,26 @@ function EscritorioTab({
     }
     setSalvando(true);
     try {
-      const res = await fetch('/api/v1/auth/update-profile', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type':  'application/json',
-          Authorization:   `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          crc: form.crc.trim(),
+      const [resProfile, resConfig] = await Promise.all([
+        fetch('/api/v1/auth/update-profile', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ crc: form.crc.trim() }),
         }),
-      });
+        fetch('/api/v1/escritorio/config', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ nomeEscritorio: form.nomeEscritorio.trim() }),
+        }),
+      ]);
 
-      const data = await res.json();
-
-      if (!res.ok) {
+      if (!resProfile.ok) {
+        const data = await resProfile.json();
         onErro(data.message ?? 'Erro ao atualizar dados do escritório.');
+        return;
+      }
+      if (!resConfig.ok) {
+        onErro('Erro ao salvar nome do escritório.');
         return;
       }
 
@@ -908,6 +930,23 @@ function EscritorioTab({
         <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Dados do Escritório</h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          {/* Nome do Escritório */}
+          <div className="space-y-1.5">
+            <label htmlFor="esc-nome" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Nome do Escritório
+            </label>
+            <input
+              id="esc-nome"
+              type="text"
+              value={form.nomeEscritorio}
+              onChange={(e) => setForm((f) => ({ ...f, nomeEscritorio: e.target.value }))}
+              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100
+                         placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary
+                         focus:border-transparent transition-shadow"
+              placeholder="Meu Escritório Contábil"
+            />
+          </div>
+
           {/* CRC */}
           <div className="space-y-1.5">
             <label htmlFor="esc-crc" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -950,7 +989,6 @@ function EscritorioTab({
 // =============================================================================
 
 interface WhiteLabelConfig {
-  nomeEscritorio: string;
   cnpjEscritorio: string;
   logoUrl: string | null;
   corPrimaria: string;
@@ -972,7 +1010,6 @@ function WhiteLabelTab({
   onErro:    (msg: string) => void;
 }) {
   const [config, setConfig] = useState<WhiteLabelConfig>({
-    nomeEscritorio: '',
     cnpjEscritorio: '',
     logoUrl: null,
     corPrimaria: '#2563eb',
@@ -1010,7 +1047,6 @@ function WhiteLabelTab({
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
-          nomeEscritorio: config.nomeEscritorio,
           cnpjEscritorio: config.cnpjEscritorio,
           corPrimaria: config.corPrimaria,
           corSecundaria: config.corSecundaria,
@@ -1131,23 +1167,11 @@ function WhiteLabelTab({
         </div>
       </div>
 
-      {/* Dados do escritório */}
+      {/* CNPJ do escritório */}
       <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-6 space-y-5">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Informações do Escritório</h2>
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Dados Fiscais</h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-          <div className="space-y-1.5">
-            <label htmlFor="wl-nome" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Nome do Escritório</label>
-            <input
-              id="wl-nome"
-              type="text"
-              value={config.nomeEscritorio ?? ''}
-              onChange={(e) => setConfig((c) => ({ ...c, nomeEscritorio: e.target.value }))}
-              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow"
-              placeholder="Meu Escritório Contábil"
-            />
-          </div>
-
           <div className="space-y-1.5">
             <label htmlFor="wl-cnpj" className="block text-sm font-medium text-gray-700 dark:text-gray-300">CNPJ do Escritório</label>
             <input
