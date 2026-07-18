@@ -63,8 +63,9 @@ interface SenhaForm {
 }
 
 interface EscritorioForm {
-  crc:            string;
-  nomeEscritorio: string;
+  crc:             string;
+  nomeEscritorio:  string;
+  cnpjEscritorio:  string;
 }
 
 interface UsuarioAPI {
@@ -859,6 +860,7 @@ function EscritorioTab({
   const [form, setForm] = useState<EscritorioForm>({
     crc:            dados?.crc ?? '',
     nomeEscritorio: '',
+    cnpjEscritorio: '',
   });
   const [salvando, setSalvando] = useState(false);
 
@@ -877,7 +879,11 @@ function EscritorioTab({
         });
         if (res.ok) {
           const data = await res.json();
-          setForm((f) => ({ ...f, nomeEscritorio: data.config.nomeEscritorio ?? '' }));
+          setForm((f) => ({
+            ...f,
+            nomeEscritorio: data.config.nomeEscritorio ?? '',
+            cnpjEscritorio: data.config.cnpjEscritorio ?? '',
+          }));
         }
       } catch { /* ignore */ }
     })();
@@ -902,7 +908,7 @@ function EscritorioTab({
         fetch('/api/v1/escritorio/config', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-          body: JSON.stringify({ nomeEscritorio: form.nomeEscritorio.trim() }),
+          body: JSON.stringify({ nomeEscritorio: form.nomeEscritorio.trim(), cnpjEscritorio: form.cnpjEscritorio.trim() }),
         }),
       ]);
 
@@ -944,6 +950,23 @@ function EscritorioTab({
                          placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary
                          focus:border-transparent transition-shadow"
               placeholder="Meu Escritório Contábil"
+            />
+          </div>
+
+          {/* CNPJ */}
+          <div className="space-y-1.5">
+            <label htmlFor="esc-cnpj" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              CNPJ do Escritório
+            </label>
+            <input
+              id="esc-cnpj"
+              type="text"
+              value={form.cnpjEscritorio}
+              onChange={(e) => setForm((f) => ({ ...f, cnpjEscritorio: e.target.value }))}
+              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100
+                         placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary
+                         focus:border-transparent transition-shadow"
+              placeholder="00.000.000/0000-00"
             />
           </div>
 
@@ -989,7 +1012,6 @@ function EscritorioTab({
 // =============================================================================
 
 interface WhiteLabelConfig {
-  cnpjEscritorio: string;
   logoUrl: string | null;
   corPrimaria: string;
   corSecundaria: string;
@@ -1010,7 +1032,6 @@ function WhiteLabelTab({
   onErro:    (msg: string) => void;
 }) {
   const [config, setConfig] = useState<WhiteLabelConfig>({
-    cnpjEscritorio: '',
     logoUrl: null,
     corPrimaria: '#2563eb',
     corSecundaria: '#1e3a8a',
@@ -1047,7 +1068,6 @@ function WhiteLabelTab({
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
-          cnpjEscritorio: config.cnpjEscritorio,
           corPrimaria: config.corPrimaria,
           corSecundaria: config.corSecundaria,
         }),
@@ -1163,25 +1183,6 @@ function WhiteLabelTab({
                 Remover
               </button>
             )}
-          </div>
-        </div>
-      </div>
-
-      {/* CNPJ do escritório */}
-      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-6 space-y-5">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Dados Fiscais</h2>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-          <div className="space-y-1.5">
-            <label htmlFor="wl-cnpj" className="block text-sm font-medium text-gray-700 dark:text-gray-300">CNPJ do Escritório</label>
-            <input
-              id="wl-cnpj"
-              type="text"
-              value={config.cnpjEscritorio ?? ''}
-              onChange={(e) => setConfig((c) => ({ ...c, cnpjEscritorio: e.target.value }))}
-              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow"
-              placeholder="00.000.000/0000-00"
-            />
           </div>
         </div>
       </div>
