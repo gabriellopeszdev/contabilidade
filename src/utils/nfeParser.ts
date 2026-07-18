@@ -36,6 +36,7 @@ export interface NFeParseResult {
   destinatario: {
     cnpjOuCpf: string;
     nome:      string;
+    ie:        string;
   };
   valorTotal: number;
   impostos: {
@@ -63,7 +64,16 @@ export interface NFeParseResult {
     status:    number;
     motivo:    string;
   } | null;
-  qrCode: string | null;
+  qrCode:     string | null;
+  idDest:     number;   // 1=interna 2=interestadual 3=exterior
+  indFinal:   number;   // 0=normal 1=consumidor final
+  indPres:    number;   // 0=não aplica 1=presencial 2=internet ...
+  tpEmis:     number;   // 1=normal 2=FS-IA ...
+  finNFe:     number;   // 1=normal 2=complementar 3=ajuste 4=devolução
+  procEmi:    number;   // 0=contribuinte 1=avulsa fisco ...
+  verProc:    string;   // versão do software emissor
+  infCompl:   string;   // informações adicionais/complementares
+  transporte: { modFrete: number };
 }
 
 // ---------------------------------------------------------------------------
@@ -230,6 +240,7 @@ export function parseNFe(xmlString: string): NFeParseResult {
     destinatario: {
       cnpjOuCpf: toStr(dest.CNPJ || dest.CPF),
       nome:      toStr(dest.xNome),
+      ie:        toStr(dest.IE),
     },
     valorTotal: toNum(total.vNF),
     impostos: {
@@ -250,5 +261,14 @@ export function parseNFe(xmlString: string): NFeParseResult {
       motivo:   toStr(infProt.xMotivo),
     } : null,
     qrCode: toStr(supl.qrCode) || null,
+    idDest:    toInt(ide.idDest),
+    indFinal:  toInt(ide.indFinal),
+    indPres:   toInt(ide.indPres),
+    tpEmis:    toInt(ide.tpEmis),
+    finNFe:    toInt(ide.finNFe),
+    procEmi:   toInt(ide.procEmi),
+    verProc:   toStr(ide.verProc),
+    infCompl:  toStr((infNFe.infAdic as any)?.infCpl ?? ''),
+    transporte: { modFrete: toInt((infNFe.transp as any)?.modFrete) },
   };
 }

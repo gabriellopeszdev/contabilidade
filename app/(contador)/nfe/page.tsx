@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { useState, useCallback, useEffect } from 'react';
 import {
   FileCode2,
@@ -96,14 +97,68 @@ function TipoBadge({ tipo }: { tipo: 'entrada' | 'saida' }) {
 // =============================================================================
 
 const CRT_LABEL: Record<number, string> = {
-  1: 'Simples Nacional',
-  2: 'Simples Nacional – Excesso',
-  3: 'Regime Normal',
-  4: 'MEI',
+  1: 'Simples Nacional', 2: 'Simples Nacional – Excesso', 3: 'Regime Normal', 4: 'MEI',
 };
+const ID_DEST: Record<number, string> = {
+  1: 'Operação interna', 2: 'Operação interestadual', 3: 'Com exterior',
+};
+const IND_PRES: Record<number, string> = {
+  0: 'Não se aplica', 1: 'Presencial', 2: 'Internet', 3: 'Teleatendimento',
+  4: 'Entrega a domicílio', 5: 'Fora do estabelecimento', 9: 'Outros',
+};
+const TP_EMIS: Record<number, string> = {
+  1: 'Normal', 2: 'Contingência FS-IA', 3: 'Contingência SCAN',
+  4: 'Contingência DPEC', 5: 'Contingência FS-DA', 6: 'Contingência SVC-AN',
+  7: 'Contingência SVC-RS', 9: 'Off-line NFC-e',
+};
+const FIN_NFE: Record<number, string> = {
+  1: 'NF-e normal', 2: 'NF-e complementar', 3: 'NF-e de ajuste', 4: 'Devolução',
+};
+const PROC_EMI: Record<number, string> = {
+  0: 'Aplicativo do contribuinte', 1: 'Avulsa pelo Fisco',
+  2: 'Avulsa pelo IBPT', 3: 'Aplicativo do Fisco',
+};
+const MOD_FRETE: Record<number, string> = {
+  0: 'Por conta do emitente (CIF)', 1: 'Por conta do destinatário (FOB)',
+  2: 'Por conta de terceiros', 3: 'Próprio – remetente',
+  4: 'Próprio – destinatário', 9: 'Sem frete',
+};
+
+type TabId = 'nfe' | 'emitente' | 'destinatario' | 'produtos' | 'totais' | 'transporte';
+const TABS: { id: TabId; label: string }[] = [
+  { id: 'nfe',          label: 'NF-e' },
+  { id: 'emitente',     label: 'Emitente' },
+  { id: 'destinatario', label: 'Destinatário' },
+  { id: 'produtos',     label: 'Produtos / Serviços' },
+  { id: 'totais',       label: 'Totais' },
+  { id: 'transporte',   label: 'Transporte' },
+];
+
+function Campo({ label, value, mono, span }: { label: string; value?: string | number | null; mono?: boolean; span?: boolean }) {
+  return (
+    <div className={span ? 'col-span-2 sm:col-span-3' : ''}>
+      <p className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-0.5">{label}</p>
+      <p className={`text-sm text-gray-800 dark:text-gray-200 ${mono ? 'font-mono break-all' : ''}`}>{value || '—'}</p>
+    </div>
+  );
+}
+
+function Secao({ titulo, children, cols }: { titulo: string; children: React.ReactNode; cols?: string }) {
+  return (
+    <div className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <div className="bg-blue-50 dark:bg-blue-900/20 px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+        <p className="text-xs font-bold text-blue-700 dark:text-blue-400">{titulo}</p>
+      </div>
+      <div className={`p-4 grid gap-4 ${cols ?? 'grid-cols-2 sm:grid-cols-3'}`}>
+        {children}
+      </div>
+    </div>
+  );
+}
 
 function ModalDetalheNFe({ resultado, onFechar }: { resultado: ResultadoArquivo; onFechar: () => void }) {
   const d = resultado.dados!;
+  const [tab, setTab] = useState<TabId>('nfe');
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onFechar(); };
@@ -123,10 +178,10 @@ function ModalDetalheNFe({ resultado, onFechar }: { resultado: ResultadoArquivo;
       <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
 
         {/* Header */}
-        <div className="flex items-start justify-between p-5 border-b border-gray-100 dark:border-gray-800 shrink-0">
+        <div className="flex items-start justify-between px-5 pt-5 pb-3 shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-lg bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
-              <FileText size={18} className="text-primary dark:text-primary" />
+              <FileText size={18} className="text-primary" />
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
@@ -148,172 +203,167 @@ function ModalDetalheNFe({ resultado, onFechar }: { resultado: ResultadoArquivo;
           </button>
         </div>
 
-        {/* Corpo com scroll */}
-        <div className="overflow-y-auto p-5 space-y-5 flex-1">
+        {/* Tabs nav */}
+        <div className="flex items-center gap-0.5 px-4 border-b border-gray-100 dark:border-gray-800 overflow-x-auto shrink-0">
+          {TABS.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={`px-3 py-2.5 text-xs font-semibold whitespace-nowrap border-b-2 transition-colors ${
+                tab === t.id
+                  ? 'border-primary text-primary dark:text-primary'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
 
-          {/* Chave de acesso + emissão + natureza */}
-          <div className="space-y-2">
-            {d.chaveAcesso && (
-              <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-                <p className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-0.5">Chave de Acesso</p>
-                <p className="text-xs font-mono text-gray-700 dark:text-gray-300 break-all">{d.chaveAcesso}</p>
-              </div>
-            )}
-            <div className="grid grid-cols-2 gap-2">
-              <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-0.5">Data de Emissão</p>
-                <p className="text-sm text-gray-800 dark:text-gray-200">{formatarData(d.dataEmissao)}</p>
-              </div>
-              <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-0.5">Natureza da Operação</p>
-                <p className="text-sm text-gray-800 dark:text-gray-200">{d.naturezaOp || '—'}</p>
-              </div>
-            </div>
-          </div>
+        {/* Conteúdo das abas */}
+        <div className="overflow-y-auto flex-1 p-5 space-y-4">
 
-          {/* Protocolo de autorização */}
-          {d.protocolo && (
-            <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
-              <div className="flex items-center gap-2 mb-2">
-                <ShieldCheck size={14} className="text-emerald-600 dark:text-emerald-400" />
-                <p className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wide">
-                  Autorização ({d.protocolo.status})
-                </p>
-              </div>
-              <p className="text-xs text-emerald-800 dark:text-emerald-300 font-medium">{d.protocolo.motivo}</p>
-              <div className="flex gap-4 mt-1.5">
-                <div>
-                  <p className="text-[10px] text-emerald-600 dark:text-emerald-500">Protocolo</p>
-                  <p className="text-xs font-mono text-emerald-800 dark:text-emerald-300">{d.protocolo.numero}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] text-emerald-600 dark:text-emerald-500">Recebimento</p>
-                  <p className="text-xs text-emerald-800 dark:text-emerald-300">{formatarData(d.protocolo.dataHora)}</p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Emitente / Destinatário */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="p-4 rounded-xl border border-gray-200 dark:border-gray-700 space-y-1">
-              <div className="flex items-center gap-2 mb-2">
-                <Building2 size={14} className="text-primary" />
-                <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Emitente</p>
-              </div>
-              <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{d.emitente.nome || '—'}</p>
-              {d.emitente.nomeFant && d.emitente.nomeFant !== d.emitente.nome && (
-                <p className="text-xs text-gray-500 dark:text-gray-400 italic">{d.emitente.nomeFant}</p>
-              )}
-              <p className="text-xs text-gray-500 dark:text-gray-400">{d.emitente.cnpj ? formatarCNPJ(d.emitente.cnpj) : ''}</p>
-              {d.emitente.ie && (
-                <p className="text-xs text-gray-400 dark:text-gray-500">IE: {d.emitente.ie}</p>
-              )}
-              {d.emitente.crt > 0 && (
-                <p className="text-xs text-gray-400 dark:text-gray-500">{CRT_LABEL[d.emitente.crt] ?? `CRT ${d.emitente.crt}`}</p>
-              )}
-              {(d.emitente.endereco.logradouro || d.emitente.municipio) && (
-                <div className="flex items-start gap-1 pt-1">
-                  <MapPin size={11} className="text-gray-400 mt-0.5 shrink-0" />
-                  <p className="text-xs text-gray-400 dark:text-gray-500 leading-relaxed">
-                    {[
-                      [d.emitente.endereco.logradouro, d.emitente.endereco.numero].filter(Boolean).join(', '),
-                      d.emitente.endereco.bairro,
-                      [d.emitente.municipio, d.emitente.uf].filter(Boolean).join(' · '),
-                      d.emitente.endereco.cep ? `CEP ${d.emitente.endereco.cep}` : '',
-                    ].filter(Boolean).join(' — ')}
-                  </p>
-                </div>
-              )}
-              {d.emitente.telefone && (
-                <p className="text-xs text-gray-400 dark:text-gray-500">Tel: {d.emitente.telefone}</p>
-              )}
-            </div>
-            <div className="p-4 rounded-xl border border-gray-200 dark:border-gray-700">
-              <div className="flex items-center gap-2 mb-2">
-                <Building2 size={14} className="text-emerald-500" />
-                <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Destinatário</p>
-              </div>
-              <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{d.destinatario.nome || 'Consumidor Final'}</p>
-              {d.destinatario.cnpjOuCpf && (
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                  {formatarCNPJ(d.destinatario.cnpjOuCpf)}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Valores e Impostos */}
-          <div>
-            <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Valores e Impostos</p>
-            <div className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-              {[
-                { label: 'Total NF',  value: d.valorTotal,         highlight: true },
-                { label: 'ICMS',      value: d.impostos.icms },
-                { label: 'PIS',       value: d.impostos.pis },
-                { label: 'COFINS',    value: d.impostos.cofins },
-                { label: 'IPI',       value: d.impostos.ipi },
-                { label: 'ST',        value: d.impostos.st },
-                { label: 'Frete',     value: d.impostos.frete },
-                { label: 'Desconto',  value: d.impostos.desconto,  red: true },
-              ].filter(({ value }) => value !== 0 || ['Total NF'].includes('' as string)).map(({ label, value, highlight, red }, i, arr) => (
-                <div key={label} className={`flex items-center justify-between px-4 py-2.5 ${i < arr.length - 1 ? 'border-b border-gray-100 dark:border-gray-800' : ''} ${highlight ? 'bg-primary/10 dark:bg-primary/10' : ''}`}>
-                  <span className="text-xs font-medium text-gray-500 dark:text-gray-400">{label}</span>
-                  <span className={`text-sm font-bold ${
-                    highlight ? 'text-primary-dark dark:text-primary'
-                    : red && value > 0 ? 'text-red-600 dark:text-red-400'
-                    : 'text-gray-800 dark:text-gray-200'
-                  }`}>
-                    {brl(value)}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Forma de pagamento */}
-          {d.pagamentos.length > 0 && (
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <CreditCard size={14} className="text-blue-500" />
-                <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-                  Pagamento
-                </p>
-              </div>
-              <div className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-                {d.pagamentos.map((pag, i) => (
-                  <div key={i} className={`flex items-center justify-between px-4 py-2.5 ${i < d.pagamentos.length - 1 ? 'border-b border-gray-100 dark:border-gray-800' : ''}`}>
-                    <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{pag.descricao}</span>
-                    <span className="text-sm font-bold text-gray-900 dark:text-gray-100">{brl(pag.valor)}</span>
+          {/* ── ABA: NF-e ── */}
+          {tab === 'nfe' && (
+            <>
+              {/* Chave de acesso */}
+              {d.chaveAcesso && (
+                <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-0.5">Chave de Acesso</p>
+                    <p className="text-xs font-mono text-gray-700 dark:text-gray-300 break-all">{d.chaveAcesso}</p>
                   </div>
-                ))}
-              </div>
-            </div>
+                  <span className="text-[10px] text-gray-400 whitespace-nowrap pt-0.5">Versão 4.00</span>
+                </div>
+              )}
+
+              {/* Dados da NF-e */}
+              <Secao titulo="Dados da NF-e">
+                <Campo label="Modelo"          value={modeloLabel} />
+                <Campo label="Série"           value={d.serie} />
+                <Campo label="Número"          value={d.numero} />
+                <Campo label="Data de Emissão" value={formatarData(d.dataEmissao)} />
+                <Campo label="Tipo da Operação" value={d.tipo === 'saida' ? '1 – Saída' : '0 – Entrada'} />
+                <Campo label="Valor Total"      value={brl(d.valorTotal)} />
+              </Secao>
+
+              {/* Emitente (resumido) */}
+              <Secao titulo="Emitente">
+                <Campo label="CNPJ"            value={formatarCNPJ(d.emitente.cnpj)} />
+                <Campo label="Nome / Razão Social" value={d.emitente.nome} />
+                <Campo label="Inscrição Estadual"  value={d.emitente.ie || '—'} />
+                <Campo label="UF"              value={d.emitente.uf} />
+                <Campo label="Regime Tributário" value={CRT_LABEL[d.emitente.crt] ?? `CRT ${d.emitente.crt}`} />
+              </Secao>
+
+              {/* Destinatário (resumido) */}
+              <Secao titulo="Destinatário">
+                <Campo label="CNPJ / CPF"      value={d.destinatario.cnpjOuCpf ? formatarCNPJ(d.destinatario.cnpjOuCpf) : '—'} />
+                <Campo label="Nome / Razão Social" value={d.destinatario.nome || 'Consumidor Final'} />
+                <Campo label="Inscrição Estadual"  value={d.destinatario.ie || '—'} />
+                <Campo label="Destino da Operação" value={ID_DEST[d.idDest] ?? `${d.idDest}`} />
+                <Campo label="Consumidor Final"    value={d.indFinal === 1 ? 'Sim' : 'Não'} />
+                <Campo label="Presença do Comprador" value={IND_PRES[d.indPres] ?? `${d.indPres}`} />
+              </Secao>
+
+              {/* Emissão */}
+              <Secao titulo="Emissão">
+                <Campo label="Processo de Emissão"  value={PROC_EMI[d.procEmi] ?? `${d.procEmi}`} />
+                <Campo label="Versão do Processo"   value={d.verProc} />
+                <Campo label="Tipo de Emissão"      value={TP_EMIS[d.tpEmis] ?? `${d.tpEmis}`} />
+                <Campo label="Finalidade"           value={FIN_NFE[d.finNFe] ?? `${d.finNFe}`} />
+                <Campo label="Natureza da Operação" value={d.naturezaOp} />
+              </Secao>
+
+              {/* Situação atual + Protocolo */}
+              {d.protocolo && (
+                <div className="rounded-xl border border-emerald-200 dark:border-emerald-800 overflow-hidden">
+                  <div className="bg-emerald-50 dark:bg-emerald-900/20 px-4 py-2 border-b border-emerald-200 dark:border-emerald-800 flex items-center gap-2">
+                    <ShieldCheck size={13} className="text-emerald-600 dark:text-emerald-400" />
+                    <p className="text-xs font-bold text-emerald-700 dark:text-emerald-400">
+                      Situação Atual: {d.protocolo.status === 100 ? 'AUTORIZADA' : `Cód. ${d.protocolo.status}`}
+                      {d.ambiente === 1 ? ' (Produção)' : ' (Homologação)'}
+                    </p>
+                  </div>
+                  <div className="p-4 grid grid-cols-2 sm:grid-cols-3 gap-4">
+                    <div className="col-span-2 sm:col-span-3">
+                      <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-0.5">Evento</p>
+                      <p className="text-sm text-emerald-700 dark:text-emerald-300 font-medium">{d.protocolo.motivo}</p>
+                    </div>
+                    <Campo label="Protocolo"    value={d.protocolo.numero} mono />
+                    <Campo label="Data / Hora"  value={formatarData(d.protocolo.dataHora)} />
+                  </div>
+                </div>
+              )}
+
+              {/* QR Code NFC-e */}
+              {d.qrCode && (
+                <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center gap-2 mb-1">
+                    <QrCode size={13} className="text-gray-400" />
+                    <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">QR Code NFC-e</p>
+                  </div>
+                  <a href={d.qrCode} target="_blank" rel="noopener noreferrer"
+                    className="text-[10px] font-mono text-primary break-all hover:underline">
+                    {d.qrCode}
+                  </a>
+                </div>
+              )}
+            </>
           )}
 
-          {/* Itens */}
-          {d.itens.length > 0 && (
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <Package size={14} className="text-violet-500" />
-                <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-                  Itens ({d.itens.length})
-                </p>
-              </div>
+          {/* ── ABA: Emitente ── */}
+          {tab === 'emitente' && (
+            <Secao titulo="Dados do Emitente" cols="grid-cols-1 sm:grid-cols-2">
+              <Campo label="CNPJ"              value={formatarCNPJ(d.emitente.cnpj)} />
+              <Campo label="Inscrição Estadual" value={d.emitente.ie} />
+              <Campo label="Nome / Razão Social" value={d.emitente.nome} />
+              <Campo label="Nome Fantasia"      value={d.emitente.nomeFant} />
+              <Campo label="Regime Tributário"  value={CRT_LABEL[d.emitente.crt] ?? `CRT ${d.emitente.crt}`} />
+              <Campo label="Telefone"           value={d.emitente.telefone} />
+              <Campo label="Logradouro"         value={[d.emitente.endereco.logradouro, d.emitente.endereco.numero].filter(Boolean).join(', ')} />
+              <Campo label="Bairro"             value={d.emitente.endereco.bairro} />
+              <Campo label="Município"          value={d.emitente.municipio} />
+              <Campo label="UF"                 value={d.emitente.uf} />
+              <Campo label="CEP"                value={d.emitente.endereco.cep} />
+            </Secao>
+          )}
+
+          {/* ── ABA: Destinatário ── */}
+          {tab === 'destinatario' && (
+            <Secao titulo="Dados do Destinatário" cols="grid-cols-1 sm:grid-cols-2">
+              <Campo label="CNPJ / CPF"          value={d.destinatario.cnpjOuCpf ? formatarCNPJ(d.destinatario.cnpjOuCpf) : '—'} />
+              <Campo label="Inscrição Estadual"   value={d.destinatario.ie || '—'} />
+              <Campo label="Nome / Razão Social"  value={d.destinatario.nome || 'Consumidor Final'} />
+              <Campo label="Destino da Operação"  value={ID_DEST[d.idDest] ?? `${d.idDest}`} />
+              <Campo label="Consumidor Final"     value={d.indFinal === 1 ? '1 – Consumidor Final' : '0 – Normal'} />
+              <Campo label="Presença do Comprador" value={`${d.indPres} – ${IND_PRES[d.indPres] ?? d.indPres}`} />
+            </Secao>
+          )}
+
+          {/* ── ABA: Produtos / Serviços ── */}
+          {tab === 'produtos' && (
+            d.itens.length > 0 ? (
               <div className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div className="bg-blue-50 dark:bg-blue-900/20 px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+                  <p className="text-xs font-bold text-blue-700 dark:text-blue-400">Produtos / Serviços ({d.itens.length} {d.itens.length === 1 ? 'item' : 'itens'})</p>
+                </div>
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-gray-50 dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
+                      <th className="text-left px-4 py-2.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wide">#</th>
                       <th className="text-left px-4 py-2.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Descrição</th>
                       <th className="text-center px-2 py-2.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wide">CFOP</th>
                       <th className="text-center px-2 py-2.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wide">NCM</th>
                       <th className="text-right px-2 py-2.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Qtd</th>
+                      <th className="text-right px-2 py-2.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Vl. Unit</th>
                       <th className="text-right px-4 py-2.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Total</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
                     {d.itens.map((item, i) => (
                       <tr key={i} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                        <td className="px-4 py-2.5 text-xs text-gray-400">{i + 1}</td>
                         <td className="px-4 py-2.5">
                           <p className="text-gray-800 dark:text-gray-200">{item.descricao || '—'}</p>
                           {item.codigo && <p className="text-[10px] text-gray-400">Cód. {item.codigo}</p>}
@@ -321,6 +371,7 @@ function ModalDetalheNFe({ resultado, onFechar }: { resultado: ResultadoArquivo;
                         <td className="px-2 py-2.5 text-center text-xs text-gray-500 dark:text-gray-400">{item.cfop || '—'}</td>
                         <td className="px-2 py-2.5 text-center text-xs font-mono text-gray-500 dark:text-gray-400">{item.ncm || '—'}</td>
                         <td className="px-2 py-2.5 text-right text-gray-600 dark:text-gray-400">{item.quantidade}</td>
+                        <td className="px-2 py-2.5 text-right text-xs text-gray-600 dark:text-gray-400">{brl(item.valorUnitario)}</td>
                         <td className="px-4 py-2.5 text-right font-semibold text-gray-900 dark:text-gray-100">
                           {brl(item.valorTotal || item.quantidade * item.valorUnitario)}
                         </td>
@@ -329,26 +380,49 @@ function ModalDetalheNFe({ resultado, onFechar }: { resultado: ResultadoArquivo;
                   </tbody>
                 </table>
               </div>
-            </div>
+            ) : (
+              <p className="text-sm text-gray-400 text-center py-8">Nenhum produto/serviço encontrado no XML.</p>
+            )
           )}
 
-          {/* QR Code (NFC-e) */}
-          {d.qrCode && (
-            <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-              <div className="flex items-center gap-2 mb-1">
-                <QrCode size={13} className="text-gray-400" />
-                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">QR Code NFC-e</p>
-              </div>
-              <a
-                href={d.qrCode}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[10px] font-mono text-primary dark:text-primary break-all hover:underline"
-              >
-                {d.qrCode}
-              </a>
-            </div>
+          {/* ── ABA: Totais ── */}
+          {tab === 'totais' && (
+            <>
+              <Secao titulo="Valores da Nota Fiscal" cols="grid-cols-2 sm:grid-cols-3">
+                <Campo label="Valor Total"  value={brl(d.valorTotal)} />
+                <Campo label="ICMS"         value={brl(d.impostos.icms)} />
+                <Campo label="PIS"          value={brl(d.impostos.pis)} />
+                <Campo label="COFINS"       value={brl(d.impostos.cofins)} />
+                <Campo label="IPI"          value={brl(d.impostos.ipi)} />
+                <Campo label="ST"           value={brl(d.impostos.st)} />
+                <Campo label="Frete"        value={brl(d.impostos.frete)} />
+                <Campo label="Desconto"     value={brl(d.impostos.desconto)} />
+              </Secao>
+
+              {d.pagamentos.length > 0 && (
+                <div className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                  <div className="bg-blue-50 dark:bg-blue-900/20 px-4 py-2 border-b border-gray-200 dark:border-gray-700 flex items-center gap-2">
+                    <CreditCard size={13} className="text-blue-600 dark:text-blue-400" />
+                    <p className="text-xs font-bold text-blue-700 dark:text-blue-400">Cobrança / Forma de Pagamento</p>
+                  </div>
+                  {d.pagamentos.map((pag, i) => (
+                    <div key={i} className={`flex items-center justify-between px-4 py-3 ${i < d.pagamentos.length - 1 ? 'border-b border-gray-50 dark:border-gray-800' : ''}`}>
+                      <span className="text-sm text-gray-700 dark:text-gray-300">{pag.descricao}</span>
+                      <span className="text-sm font-bold text-gray-900 dark:text-gray-100">{brl(pag.valor)}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
           )}
+
+          {/* ── ABA: Transporte ── */}
+          {tab === 'transporte' && (
+            <Secao titulo="Transporte" cols="grid-cols-1 sm:grid-cols-2">
+              <Campo label="Modalidade do Frete" value={`${d.transporte.modFrete} – ${MOD_FRETE[d.transporte.modFrete] ?? d.transporte.modFrete}`} />
+            </Secao>
+          )}
+
         </div>
 
         {/* Footer */}
