@@ -460,9 +460,7 @@ function ModalDetalheNFe({ resultado, onFechar }: { resultado: ResultadoArquivo;
                         <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">QR Code NFC-e</p>
                       </div>
                       <a
-                        href={garantirUrlAbsoluta(d.qrCode) ?? d.qrCode}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                        href={`/abrir?u=${encodeURIComponent(garantirUrlAbsoluta(d.qrCode) ?? d.qrCode)}`}
                         className="text-[10px] font-mono text-primary break-all hover:underline"
                       >
                         {d.qrCode}
@@ -473,9 +471,7 @@ function ModalDetalheNFe({ resultado, onFechar }: { resultado: ResultadoArquivo;
                     <div>
                       <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-0.5">URL da consulta</p>
                       <a
-                        href={garantirUrlAbsoluta(d.urlChave) ?? d.urlChave}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                        href={`/abrir?u=${encodeURIComponent(garantirUrlAbsoluta(d.urlChave) ?? d.urlChave)}`}
                         className="text-[10px] font-mono text-primary break-all hover:underline"
                       >
                         {d.urlChave}

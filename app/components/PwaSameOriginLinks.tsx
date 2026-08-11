@@ -30,7 +30,18 @@ export function PwaSameOriginLinks() {
       } catch {
         return;
       }
-      if (url.origin !== window.location.origin) return;
+      const sameOrigin = url.origin === window.location.origin;
+      const sefaz =
+        (url.hostname.toLowerCase().includes('sefaz') && url.hostname.toLowerCase().endsWith('.gov.br'))
+        || url.hostname.toLowerCase() === 'fazenda.gov.br'
+        || url.hostname.toLowerCase().endsWith('.fazenda.gov.br');
+
+      if (!sameOrigin) {
+        if (!sefaz) return;
+        e.preventDefault();
+        window.location.assign(`/abrir?u=${encodeURIComponent(url.href)}`);
+        return;
+      }
 
       e.preventDefault();
       window.location.assign(url.href);
