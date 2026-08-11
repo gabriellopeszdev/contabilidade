@@ -102,6 +102,13 @@ enum StatusNotaPendente {
   DESCONHECIDA
 }
 
+enum StatusIbsCbs {
+  PENDENTE
+  DENTRO_DAS
+  FORA_DAS
+  NAO_SE_APLICA
+}
+
 enum ResourceType {
   DOCUMENT
   TASK
@@ -146,6 +153,10 @@ model UsuarioCliente {
   avatarUrl        String?   @map("avatar_url") @db.VarChar(500)
   cnae             String?   @db.VarChar(10)
   regimeTributario String?   @map("regime_tributario") @db.VarChar(50)
+  // Decisão IBS/CBS do Simples Nacional (prazo set/2026, vigência jan/2027)
+  ibsCbsStatus      StatusIbsCbs @default(PENDENTE) @map("ibs_cbs_status")
+  ibsCbsDecididoEm  DateTime?    @map("ibs_cbs_decidido_em") @db.Timestamptz
+  ibsCbsObservacao  String?      @map("ibs_cbs_observacao") @db.VarChar(500)
   lastLoginAt  DateTime? @map("last_login_at") @db.Timestamptz
   isActive     Boolean   @default(true) @map("is_active")
   providerAssinatura ProviderAssinatura @default(INTERNO) @map("provider_assinatura")
@@ -182,6 +193,7 @@ model UsuarioCliente {
   // OBS: índices parciais via Prisma requerem a cláusula `where` no schema.
   @@index([email])
   @@index([deletedAt])
+  @@index([ibsCbsStatus])
   @@map("usuario_cliente")
 }
 

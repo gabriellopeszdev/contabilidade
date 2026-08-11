@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { ShieldCheck, Loader2, ExternalLink, LogOut } from 'lucide-react';
 
 import { useAuth } from '../../hooks/useAuth';
+import { useDialogA11y } from '../../hooks/useDialogA11y';
 
 // =============================================================================
 // ConsentModal — Bloqueia o uso até o usuário aceitar o termo LGPD vigente
@@ -18,13 +19,8 @@ export function ConsentModal() {
   const [erro, setErro] = useState<string | null>(null);
   const [sessaoExpirada, setSessaoExpirada] = useState(false);
 
-  const modalRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (modalRef.current) {
-      modalRef.current.focus();
-    }
-  }, []);
+  const dialogAberto = !verificando && necessario && !!usuario;
+  const dialogRef = useDialogA11y(dialogAberto, undefined, true);
 
   // Verifica se o consentimento é necessário
   const verificar = useCallback(async () => {
@@ -84,15 +80,14 @@ export function ConsentModal() {
 
   return (
     <div
+      ref={dialogRef}
+      tabIndex={-1}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-lgpd-titulo"
       className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
-      onKeyDown={(e) => { if (e.key === 'Escape') { /* modal bloqueante — usuário deve aceitar os termos */ } }}
     >
       <div
-        ref={modalRef}
-        tabIndex={-1}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="modal-lgpd-titulo"
         className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 sm:p-8 space-y-5 animate-in fade-in zoom-in-95 duration-300 focus:outline-none"
       >
         {/* Header */}

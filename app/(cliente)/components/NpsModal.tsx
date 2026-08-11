@@ -29,10 +29,16 @@ export function NpsModal({ token, onFechar }: NpsModalProps) {
   const corLabel   = score === null ? '' : score <= 6 ? 'text-red-500' : score <= 8 ? 'text-yellow-500' : 'text-green-600';
 
   return (
-    <div className="fixed bottom-6 left-6 w-96 max-w-[calc(100vw-3rem)] bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 z-50 p-6 space-y-4">
+    <div
+      role="dialog"
+      aria-labelledby="nps-titulo"
+      className="fixed bottom-6 left-6 w-96 max-w-[calc(100vw-3rem)] bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 z-50 p-6 space-y-4"
+    >
       <button
+        type="button"
         onClick={onFechar}
-        className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-lg leading-none"
+        aria-label="Fechar pesquisa"
+        className="absolute top-2 right-2 min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-lg leading-none"
       >
         &times;
       </button>
@@ -44,7 +50,7 @@ export function NpsModal({ token, onFechar }: NpsModalProps) {
       ) : (
         <>
           <div>
-            <h3 className="font-semibold text-gray-900 dark:text-gray-100">Como você avalia o FiscoHub?</h3>
+            <h3 id="nps-titulo" className="font-semibold text-gray-900 dark:text-gray-100">Como você avalia o FiscoHub?</h3>
             <p className="text-sm text-gray-400 mt-0.5">De 0 a 10, qual a probabilidade de indicar para um colega?</p>
           </div>
 
@@ -53,7 +59,7 @@ export function NpsModal({ token, onFechar }: NpsModalProps) {
               <button
                 key={i}
                 onClick={() => setScore(i)}
-                className={`flex-1 py-1.5 rounded text-xs font-medium transition-colors ${
+                className={`flex-1 min-h-[44px] py-1.5 rounded text-xs font-medium transition-colors ${
                   score === i
                     ? 'bg-primary text-white'
                     : 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
@@ -79,7 +85,7 @@ export function NpsModal({ token, onFechar }: NpsModalProps) {
           <button
             onClick={enviar}
             disabled={score === null}
-            className="w-full bg-primary text-white py-2 rounded-lg font-medium disabled:opacity-50 hover:bg-primary-dark transition-colors"
+            className="w-full min-h-[44px] bg-primary text-white py-2 rounded-lg font-medium disabled:opacity-50 hover:bg-primary-dark transition-colors"
           >
             Enviar feedback
           </button>

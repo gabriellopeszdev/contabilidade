@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect, useReducer } from 'react';
+import { useDialogA11y } from '../../hooks/useDialogA11y';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
@@ -143,18 +144,27 @@ export function NovoComunicadoModal({ aberto, token, onFechar, onSucesso }: Novo
     }
   }, [titulo, editor, targeting, setor, clientesSelecionados, exigeConfirmacao, anexo, token, onSucesso, handleFechar]);
 
+  const dialogRef = useDialogA11y(aberto, handleFechar);
+
   if (!aberto) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div
+      ref={dialogRef}
+      tabIndex={-1}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-novo-comunicado-titulo"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+    >
       <div className="absolute inset-0 bg-black/40" onClick={handleFechar} />
 
       <div className="relative w-full max-w-2xl bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 flex flex-col max-h-[90vh]">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800 shrink-0">
-          <h3 className="text-base font-bold text-gray-900 dark:text-gray-100">Novo Comunicado</h3>
+          <h3 id="modal-novo-comunicado-titulo" className="text-base font-bold text-gray-900 dark:text-gray-100">Novo Comunicado</h3>
           <button type="button" onClick={handleFechar} disabled={enviando} aria-label="Fechar"
-            className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors disabled:opacity-50">
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors disabled:opacity-50">
             <X size={16} />
           </button>
         </div>

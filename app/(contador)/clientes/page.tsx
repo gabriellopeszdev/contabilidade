@@ -32,6 +32,7 @@ import {
   type ClienteFormData,
 } from '../../../src/presentation/components/cliente/ClienteModal';
 import { useAuth } from '../../../src/presentation/hooks/useAuth';
+import { useDialogA11y } from '../../../src/presentation/hooks/useDialogA11y';
 import { ClientesReadOnly } from '../../../src/presentation/components/cliente/ClientesReadOnly';
 
 // =============================================================================
@@ -106,6 +107,65 @@ function iniciais(nome: string): string {
     .slice(0, 2)
     .map((p) => p[0].toUpperCase())
     .join('');
+}
+
+function AcoesCliente({
+  c,
+  reenviando,
+  excluindo,
+  onReenviar,
+  onVer,
+  onEditar,
+  onExcluir,
+}: {
+  c: ClienteDTO;
+  reenviando: string | null;
+  excluindo: string | null;
+  onReenviar: (c: ClienteDTO) => void;
+  onVer: (c: ClienteDTO) => void;
+  onEditar: (c: ClienteDTO) => void;
+  onExcluir: (c: ClienteDTO) => void;
+}) {
+  return (
+    <div className="flex items-center gap-1">
+      {c.activatedAt === null && (
+        <button
+          type="button"
+          onClick={() => onReenviar(c)}
+          disabled={reenviando === c.id}
+          aria-label={`Reenviar convite para ${c.nome}`}
+          className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors disabled:opacity-50"
+        >
+          {reenviando === c.id ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
+        </button>
+      )}
+      <button
+        type="button"
+        onClick={() => onVer(c)}
+        aria-label={`Ver prontuário de ${c.nome}`}
+        className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
+      >
+        <Eye size={15} />
+      </button>
+      <button
+        type="button"
+        onClick={() => onEditar(c)}
+        aria-label={`Editar ${c.nome}`}
+        className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-slate-400 hover:text-primary hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors"
+      >
+        <Pencil size={15} />
+      </button>
+      <button
+        type="button"
+        onClick={() => onExcluir(c)}
+        disabled={excluindo === c.id}
+        aria-label={`Remover ${c.nome}`}
+        className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-50"
+      >
+        {excluindo === c.id ? <Loader2 size={15} className="animate-spin" /> : <Trash2 size={15} />}
+      </button>
+    </div>
+  );
 }
 
 // =============================================================================
@@ -267,13 +327,8 @@ function ClientesPageDono({ token }: { token: string | null }) {
     }
   }, [clienteParaExcluir, token, mutate]);
 
-  // Ref e foco acessível do modal de exclusão
-  const modalRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (clienteParaExcluir && modalRef.current) {
-      modalRef.current.focus();
-    }
-  }, [clienteParaExcluir]);
+  const fecharExclusao = useCallback(() => setClienteParaExcluir(null), []);
+  const dialogExcluirRef = useDialogA11y(!!clienteParaExcluir, fecharExclusao);
 
   // ---------------------------------------------------------------------------
   // Render
@@ -389,8 +444,46 @@ function ClientesPageDono({ token }: { token: string | null }) {
             )}
           </div>
         ) : (
-          /* Tabela semântica */
-          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-700 shadow-sm overflow-hidden">
+          <div className="space-y-3 md:space-y-0">
+            {/* Cards no mobile */}
+            <ul className="md:hidden space-y-3">
+              {clientes.map((c) => (
+                <li
+                  key={c.id}
+                  className="bg-white dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-700 p-4 space-y-3"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="shrink-0 w-10 h-10 rounded-full bg-primary-light text-primary-dark flex items-center justify-center text-xs font-bold">
+                      {iniciais(c.nome)}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">{c.nome}</p>
+                        {c.activatedAt === null ? (
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">Pendente</span>
+                        ) : (
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400">Ativo</span>
+                        )}
+                      </div>
+                      <p className="text-xs text-slate-500 font-mono mt-0.5">{formatarCNPJ(c.cnpj)}</p>
+                      <p className="text-xs text-slate-500 truncate">{c.email}</p>
+                    </div>
+                  </div>
+                  <AcoesCliente
+                    c={c}
+                    reenviando={reenviando}
+                    excluindo={excluindo}
+                    onReenviar={handleReenviarConvite}
+                    onVer={(cli) => router.push(`/clientes/${cli.id}`)}
+                    onEditar={abrirEditar}
+                    onExcluir={handleExcluir}
+                  />
+                </li>
+              ))}
+            </ul>
+
+          {/* Tabela semântica */}
+          <div className="hidden md:block bg-white dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-700 shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full min-w-[640px]">
                 <thead className="bg-slate-50 dark:bg-gray-800 border-b border-slate-100 dark:border-gray-700">
@@ -461,43 +554,16 @@ function ClientesPageDono({ token }: { token: string | null }) {
                       </td>
                       {/* Ações */}
                       <td className="px-5 py-4">
-                        <div className="flex items-center justify-end gap-1">
-                          {c.activatedAt === null && (
-                            <button
-                              type="button"
-                              onClick={() => handleReenviarConvite(c)}
-                              disabled={reenviando === c.id}
-                              aria-label={`Reenviar convite para ${c.nome}`}
-                              className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors disabled:opacity-50"
-                            >
-                              {reenviando === c.id ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
-                            </button>
-                          )}
-                          <button
-                            type="button"
-                            onClick={() => router.push(`/clientes/${c.id}`)}
-                            aria-label={`Ver prontuário de ${c.nome}`}
-                            className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
-                          >
-                            <Eye size={15} />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => abrirEditar(c)}
-                            aria-label={`Editar ${c.nome}`}
-                            className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-slate-400 hover:text-primary hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors"
-                          >
-                            <Pencil size={15} />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleExcluir(c)}
-                            disabled={excluindo === c.id}
-                            aria-label={`Remover ${c.nome}`}
-                            className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-50"
-                          >
-                            {excluindo === c.id ? <Loader2 size={15} className="animate-spin" /> : <Trash2 size={15} />}
-                          </button>
+                        <div className="flex justify-end">
+                          <AcoesCliente
+                            c={c}
+                            reenviando={reenviando}
+                            excluindo={excluindo}
+                            onReenviar={handleReenviarConvite}
+                            onVer={(cli) => router.push(`/clientes/${cli.id}`)}
+                            onEditar={abrirEditar}
+                            onExcluir={handleExcluir}
+                          />
                         </div>
                       </td>
                     </tr>
@@ -505,9 +571,10 @@ function ClientesPageDono({ token }: { token: string | null }) {
                 </tbody>
               </table>
             </div>
+          </div>
 
             {/* Rodapé com paginação */}
-            <div className="px-5 py-3 border-t border-slate-100 dark:border-gray-700 bg-slate-50 dark:bg-gray-800 flex items-center justify-between gap-4 flex-wrap">
+            <div className="px-5 py-3 rounded-2xl md:rounded-none border border-slate-200 dark:border-gray-700 md:border-t md:border-x-0 md:border-b-0 bg-white md:bg-slate-50 dark:bg-gray-900 md:dark:bg-gray-800 flex items-center justify-between gap-4 flex-wrap">
               <span className="text-xs text-slate-500 dark:text-slate-400">
                 {clientes.length} de {total} cliente{total !== 1 ? 's' : ''}
                 {buscaDebounced ? ' (filtrado)' : ''}
@@ -518,7 +585,8 @@ function ClientesPageDono({ token }: { token: string | null }) {
                     type="button"
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
                     disabled={page <= 1 || isLoading}
-                    className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-gray-700 disabled:opacity-40 transition-colors"
+                    aria-label="Página anterior"
+                    className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-gray-700 disabled:opacity-40 transition-colors"
                   >
                     <ChevronLeft size={16} />
                   </button>
@@ -529,7 +597,8 @@ function ClientesPageDono({ token }: { token: string | null }) {
                     type="button"
                     onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                     disabled={page >= totalPages || isLoading}
-                    className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-gray-700 disabled:opacity-40 transition-colors"
+                    aria-label="Próxima página"
+                    className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-gray-700 disabled:opacity-40 transition-colors"
                   >
                     <ChevronRight size={16} />
                   </button>
@@ -559,17 +628,15 @@ function ClientesPageDono({ token }: { token: string | null }) {
       {/* Modal de confirmação de exclusão */}
       {clienteParaExcluir && (
         <div
+          ref={dialogExcluirRef}
           role="dialog"
           aria-modal="true"
           aria-labelledby="modal-excluir-titulo"
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
           onClick={() => setClienteParaExcluir(null)}
-          onKeyDown={(e) => { if (e.key === 'Escape') setClienteParaExcluir(null); }}
           tabIndex={-1}
         >
           <div
-            ref={modalRef}
-            tabIndex={-1}
             className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-gray-700 w-full max-w-md p-6"
             onClick={(e) => e.stopPropagation()}
           >
@@ -587,7 +654,8 @@ function ClientesPageDono({ token }: { token: string | null }) {
               <button
                 type="button"
                 onClick={() => setClienteParaExcluir(null)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-gray-800 transition-colors"
+                aria-label="Fechar"
+                className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-gray-800 transition-colors"
               >
                 <X size={16} />
               </button>
@@ -653,6 +721,7 @@ function ModalImportarCSV({ token, onFechar, onImportou }: ModalImportarCSVProps
   const [resultado,     setResultado]     = useState<ImportarCSVResultado | null>(null);
   const [erroGlobal,    setErroGlobal]    = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const dialogRef = useDialogA11y(true, onFechar);
 
   const handleArquivo = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0] ?? null;
@@ -730,12 +799,12 @@ function ModalImportarCSV({ token, onFechar, onImportou }: ModalImportarCSVProps
 
   return (
     <div
+      ref={dialogRef}
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-import-titulo"
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
       onClick={onFechar}
-      onKeyDown={(e) => { if (e.key === 'Escape') onFechar(); }}
       tabIndex={-1}
     >
       <div
@@ -760,7 +829,8 @@ function ModalImportarCSV({ token, onFechar, onImportou }: ModalImportarCSVProps
           <button
             type="button"
             onClick={onFechar}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-gray-800 transition-colors"
+            aria-label="Fechar"
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-gray-800 transition-colors"
           >
             <X size={16} />
           </button>

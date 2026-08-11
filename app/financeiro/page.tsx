@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useDialogA11y } from '../../src/presentation/hooks/useDialogA11y';
 import { toast } from 'sonner';
 import {
   DollarSign,
@@ -105,6 +106,104 @@ function isVenceBreve(iso: string, dias = 3) {
   const v = new Date(iso); v.setHours(0,0,0,0);
   const diff = (v.getTime() - hoje.getTime()) / 86400000;
   return diff > 0 && diff <= dias;
+}
+
+const BTN_ACAO = 'min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-gray-400 dark:text-gray-500 transition-colors';
+
+function AcoesBoleto({
+  b,
+  isDono,
+  onDownload,
+  onCopiar,
+  onStatus,
+  onEstorno,
+}: {
+  b: Boleto;
+  isDono: boolean;
+  onDownload: (b: Boleto) => void;
+  onCopiar: (texto: string) => void;
+  onStatus: (id: string, status: string) => void;
+  onEstorno: (id: string) => void;
+}) {
+  return (
+    <div className="flex items-center gap-1 flex-wrap">
+      <button
+        type="button"
+        onClick={() => onDownload(b)}
+        className={`${BTN_ACAO} hover:text-primary hover:bg-primary-50 dark:hover:bg-primary/10`}
+        aria-label={b.asaasBoletoUrl ? 'Ver boleto no Asaas' : 'Baixar PDF'}
+        title={b.asaasBoletoUrl ? 'Ver boleto no Asaas' : 'Baixar PDF'}
+      >
+        {b.asaasBoletoUrl ? <ExternalLink size={15} /> : <Download size={15} />}
+      </button>
+      {b.asaasBarcode && (
+        <button
+          type="button"
+          onClick={() => onCopiar(b.asaasBarcode!)}
+          className={`${BTN_ACAO} hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800`}
+          aria-label="Copiar linha digitável"
+          title="Copiar linha digitável"
+        >
+          <Copy size={15} />
+        </button>
+      )}
+      {b.asaasPixCopiaECola && (
+        <button
+          type="button"
+          onClick={() => onCopiar(b.asaasPixCopiaECola!)}
+          className={`${BTN_ACAO} hover:text-primary hover:bg-primary/10`}
+          aria-label="Copiar PIX copia e cola"
+          title="Copiar PIX copia e cola"
+        >
+          <QrCode size={15} />
+        </button>
+      )}
+      {isDono && b.status === 'PENDENTE' && (
+        <>
+          <button
+            type="button"
+            onClick={() => onStatus(b.id, 'PAGO')}
+            className={`${BTN_ACAO} hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20`}
+            aria-label="Marcar como pago"
+            title="Marcar como Pago"
+          >
+            <CheckCircle2 size={15} />
+          </button>
+          <button
+            type="button"
+            onClick={() => onStatus(b.id, 'CANCELADO')}
+            className={`${BTN_ACAO} hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20`}
+            aria-label="Cancelar boleto"
+            title="Cancelar"
+          >
+            <XCircle size={15} />
+          </button>
+        </>
+      )}
+      {isDono && b.status === 'VENCIDO' && (
+        <button
+          type="button"
+          onClick={() => onStatus(b.id, 'PAGO')}
+          className={`${BTN_ACAO} hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20`}
+          aria-label="Marcar como pago"
+          title="Marcar como Pago"
+        >
+          <CheckCircle2 size={15} />
+        </button>
+      )}
+      {isDono && b.status === 'PAGO' && b.asaasId && (
+        <button
+          type="button"
+          onClick={() => onEstorno(b.id)}
+          className={`${BTN_ACAO} hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20`}
+          aria-label="Solicitar estorno"
+          title="Solicitar Estorno"
+        >
+          <RotateCcw size={15} />
+        </button>
+      )}
+    </div>
+  );
 }
 
 // =============================================================================
@@ -317,13 +416,15 @@ export default function FinanceiroPage() {
   // ===========================================================================
   // Submit boleto (modal do contador)
   // ===========================================================================
-  const fecharModal = () => {
+  const fecharModal = useCallback(() => {
     setModalAberto(false);
     setErros({});
     setFormErro('');
     setFormCliente('');
     setFormClienteObj(null);
-  };
+  }, []);
+
+  const dialogRef = useDialogA11y(modalAberto, fecharModal);
 
   const handleSubmit = async () => {
     setFormErro('');
@@ -624,7 +725,7 @@ export default function FinanceiroPage() {
           {isDono && isVisaoContador && (
             <button
               onClick={() => { setErros({}); setFormErro(''); setModalAberto(true); }}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-white text-xs font-semibold hover:bg-primary-dark transition-colors"
+              className="flex items-center justify-center gap-1.5 min-h-[44px] px-4 py-2 rounded-lg bg-primary text-white text-xs font-semibold hover:bg-primary-dark transition-colors"
             >
               <Plus size={14} />
               Novo Honorário
@@ -645,7 +746,40 @@ export default function FinanceiroPage() {
             <p className="text-sm text-gray-500 dark:text-gray-400">Nenhum boleto encontrado.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <>
+          <ul className="md:hidden divide-y divide-gray-100 dark:divide-gray-800">
+            {boletosFiltrados.map((b) => {
+              const badge = STATUS_BADGE[b.status];
+              return (
+                <li key={b.id} className="p-4 space-y-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="font-medium text-gray-900 dark:text-gray-100 truncate">{b.clienteNome}</p>
+                      <p className="text-[11px] text-gray-400 dark:text-gray-500">{b.clienteCnpj}</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {mesLabel(b.mesReferencia)} · vence {formatDate(b.vencimento)}
+                      </p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className="font-semibold text-gray-900 dark:text-gray-100">{formatMoney(b.valor)}</p>
+                      <span className={`inline-block mt-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${badge.classes}`}>
+                        {badge.label}
+                      </span>
+                    </div>
+                  </div>
+                  <AcoesBoleto
+                    b={b}
+                    isDono={isDono}
+                    onDownload={handleDownload}
+                    onCopiar={copiarTexto}
+                    onStatus={handleStatusUpdate}
+                    onEstorno={handleEstorno}
+                  />
+                </li>
+              );
+            })}
+          </ul>
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full min-w-[640px] text-sm">
               <thead>
                 <tr className="border-b border-gray-100 dark:border-gray-800 bg-gray-50/60 dark:bg-gray-800/50">
@@ -675,74 +809,15 @@ export default function FinanceiroPage() {
                         </span>
                       </td>
                       <td className="px-4 py-3">
-                        <div className="flex items-center justify-center gap-1 flex-wrap">
-                          {/* Ver/baixar boleto */}
-                          <button
-                            onClick={() => handleDownload(b)}
-                            className="p-1.5 rounded-lg text-gray-400 dark:text-gray-500 hover:text-primary hover:bg-primary-50 dark:hover:bg-primary/10 transition-colors"
-                            title={b.asaasBoletoUrl ? 'Ver boleto no Asaas' : 'Baixar PDF'}
-                          >
-                            {b.asaasBoletoUrl ? <ExternalLink size={15} /> : <Download size={15} />}
-                          </button>
-
-                          {/* Copiar linha digitável */}
-                          {b.asaasBarcode && (
-                            <button
-                              onClick={() => copiarTexto(b.asaasBarcode!)}
-                              className="p-1.5 rounded-lg text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                              title="Copiar linha digitável"
-                            >
-                              <Copy size={15} />
-                            </button>
-                          )}
-
-                          {/* PIX copia e cola */}
-                          {b.asaasPixCopiaECola && (
-                            <button
-                              onClick={() => copiarTexto(b.asaasPixCopiaECola!)}
-                              className="p-1.5 rounded-lg text-gray-400 dark:text-gray-500 hover:text-primary hover:bg-primary/10 dark:hover:bg-primary/10 transition-colors"
-                              title="Copiar PIX copia e cola"
-                            >
-                              <QrCode size={15} />
-                            </button>
-                          )}
-
-                          {isDono && b.status === 'PENDENTE' && (
-                            <>
-                              <button
-                                onClick={() => handleStatusUpdate(b.id, 'PAGO')}
-                                className="p-1.5 rounded-lg text-gray-400 dark:text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
-                                title="Marcar como Pago"
-                              >
-                                <CheckCircle2 size={15} />
-                              </button>
-                              <button
-                                onClick={() => handleStatusUpdate(b.id, 'CANCELADO')}
-                                className="p-1.5 rounded-lg text-gray-400 dark:text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                                title="Cancelar"
-                              >
-                                <XCircle size={15} />
-                              </button>
-                            </>
-                          )}
-                          {isDono && b.status === 'VENCIDO' && (
-                            <button
-                              onClick={() => handleStatusUpdate(b.id, 'PAGO')}
-                              className="p-1.5 rounded-lg text-gray-400 dark:text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
-                              title="Marcar como Pago"
-                            >
-                              <CheckCircle2 size={15} />
-                            </button>
-                          )}
-                          {isDono && b.status === 'PAGO' && b.asaasId && (
-                            <button
-                              onClick={() => handleEstorno(b.id)}
-                              className="p-1.5 rounded-lg text-gray-400 dark:text-gray-500 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors"
-                              title="Solicitar Estorno"
-                            >
-                              <RotateCcw size={15} />
-                            </button>
-                          )}
+                        <div className="flex justify-center">
+                          <AcoesBoleto
+                            b={b}
+                            isDono={isDono}
+                            onDownload={handleDownload}
+                            onCopiar={copiarTexto}
+                            onStatus={handleStatusUpdate}
+                            onEstorno={handleEstorno}
+                          />
                         </div>
                       </td>
                     </tr>
@@ -751,6 +826,7 @@ export default function FinanceiroPage() {
               </tbody>
             </table>
           </div>
+          </>
         )}
 
         {/* Paginação */}
@@ -781,15 +857,23 @@ export default function FinanceiroPage() {
 
       {/* ===================== Modal: Novo Honorário ====================== */}
       {modalAberto && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50" onClick={fecharModal}>
+        <div
+          ref={dialogRef}
+          tabIndex={-1}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-honorario-titulo"
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4"
+          onClick={fecharModal}
+        >
           <div
-            className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden"
+            className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800">
-              <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">Gerar Novo Honorário</h3>
-              <button onClick={fecharModal} className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+              <h3 id="modal-honorario-titulo" className="text-sm font-bold text-gray-900 dark:text-gray-100">Gerar Novo Honorário</h3>
+              <button type="button" onClick={fecharModal} aria-label="Fechar" className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
                 <X size={18} className="text-gray-400 dark:text-gray-500" />
               </button>
             </div>
@@ -901,14 +985,14 @@ export default function FinanceiroPage() {
             <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30">
               <button
                 onClick={fecharModal}
-                className="px-4 py-2 text-xs font-medium text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                className="min-h-[44px] px-4 py-2 text-xs font-medium text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleSubmit}
                 disabled={submitting}
-                className="flex items-center gap-1.5 px-5 py-2 text-xs font-semibold text-white bg-primary rounded-lg hover:bg-primary-dark transition-colors disabled:opacity-60"
+                className="flex items-center justify-center gap-1.5 min-h-[44px] px-5 py-2 text-xs font-semibold text-white bg-primary rounded-lg hover:bg-primary-dark transition-colors disabled:opacity-60"
               >
                 {submitting ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
                 {submitting ? 'Gerando…' : 'Gerar Boleto'}

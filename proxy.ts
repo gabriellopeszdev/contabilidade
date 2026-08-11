@@ -46,7 +46,7 @@ async function isManutencaoAtiva(origin: string): Promise<boolean> {
 }
 
 const ROTAS_ADMIN    = ['/dashboard-admin', '/contadores', '/faturamento', '/admin-config', '/webhook-logs', '/admin-boletos', '/admin-clientes', '/auditoria', '/receita', '/backups', '/avisos'];
-const ROTAS_CONTADOR = ['/dashboard', '/lote', '/clientes', '/configuracoes', '/calendario', '/equipe', '/busca', '/assinaturas'];
+const ROTAS_CONTADOR = ['/dashboard', '/lote', '/clientes', '/configuracoes', '/calendario', '/equipe', '/busca', '/assinaturas', '/reforma-ibs-cbs'];
 const ROTAS_CLIENTE  = ['/documentos', '/enviar', '/ajuda'];
 const ROTAS_COMPARTILHADAS = ['/chat', '/financeiro'];
 

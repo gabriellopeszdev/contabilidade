@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useDialogA11y } from '../../../src/presentation/hooks/useDialogA11y';
 import {
   X,
   BookOpen,
@@ -42,6 +43,7 @@ interface TabItem {
 
 export function ClientHelpTutorialModal({ aberto, onClose }: ClientHelpTutorialModalProps) {
   const [tabAtiva, setTabAtiva] = useState<TabId>('visao-geral');
+  const dialogRef = useDialogA11y(aberto, onClose);
 
   if (!aberto) return null;
 
@@ -61,7 +63,14 @@ export function ClientHelpTutorialModal({ aberto, onClose }: ClientHelpTutorialM
   const nextTab = currentIndex < TABS.length - 1 ? TABS[currentIndex + 1] : null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity duration-300">
+    <div
+      ref={dialogRef}
+      tabIndex={-1}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-ajuda-cliente-titulo"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity duration-300"
+    >
       {/* Backdrop click to close */}
       <div className="absolute inset-0" onClick={onClose} />
 
@@ -75,13 +84,14 @@ export function ClientHelpTutorialModal({ aberto, onClose }: ClientHelpTutorialM
               <Sparkles size={20} className="animate-pulse" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">Portal do Cliente — Manual de Ajuda</h2>
+              <h2 id="modal-ajuda-cliente-titulo" className="text-lg font-bold text-gray-900 dark:text-gray-100">Portal do Cliente — Manual de Ajuda</h2>
               <p className="text-xs text-gray-500 dark:text-gray-400">Entenda de forma rápida como interagir com o seu escritório contábil</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            aria-label="Fechar ajuda"
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             title="Fechar ajuda"
           >
             <X size={20} />

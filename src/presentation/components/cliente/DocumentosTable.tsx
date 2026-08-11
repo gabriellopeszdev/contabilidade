@@ -233,19 +233,20 @@ function DocumentoLinha({ doc, baixando, onBaixar, modoSelecao, selecionado, onT
   return (
     <li className="group relative">
       <div
-        className={`flex items-center gap-3 px-4 py-3.5 transition-colors
+        className={`flex flex-col sm:flex-row sm:items-center gap-3 px-4 py-3.5 transition-colors
           ${modoSelecao && selecionado
             ? 'bg-primary/10 dark:bg-primary/20'
             : 'hover:bg-slate-50 dark:hover:bg-gray-800'
           }`}
       >
+        <div className="flex items-center gap-3 min-w-0 flex-1">
         {/* Checkbox de seleção */}
         {modoSelecao && (
           <button
             type="button"
             onClick={() => onToggle?.(doc.id)}
             aria-label={selecionado ? `Desmarcar ${doc.fileName}` : `Selecionar ${doc.fileName}`}
-            className="shrink-0 text-primary hover:text-primary-dark transition-colors"
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center shrink-0 text-primary hover:text-primary-dark transition-colors"
           >
             {selecionado ? <CheckSquare size={18} /> : <Square size={18} />}
           </button>
@@ -300,14 +301,17 @@ function DocumentoLinha({ doc, baixando, onBaixar, modoSelecao, selecionado, onT
             </p>
           )}
         </div>
+        </div>
 
+        <div className="flex items-center gap-1 sm:shrink-0 self-end sm:self-auto">
         {/* Botão expandir NF-e (apenas XMLs) */}
         {isXml && (
           <button
             type="button"
             onClick={handleExpandir}
             title="Ver dados extraídos da NF-e"
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-700 transition-colors shrink-0"
+            aria-label="Ver dados extraídos da NF-e"
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-700 transition-colors shrink-0"
           >
             {expandido ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
           </button>
@@ -318,7 +322,8 @@ function DocumentoLinha({ doc, baixando, onBaixar, modoSelecao, selecionado, onT
           type="button"
           onClick={handleVerVersoes}
           title="Histórico de versões"
-          className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-700 transition-colors shrink-0"
+          aria-label="Histórico de versões"
+          className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-700 transition-colors shrink-0"
         >
           <History size={15} />
         </button>
@@ -329,7 +334,7 @@ function DocumentoLinha({ doc, baixando, onBaixar, modoSelecao, selecionado, onT
           onClick={handleBaixar}
           disabled={baixando}
           aria-label={`Baixar ${doc.fileName}`}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold
+          className="inline-flex items-center justify-center gap-1.5 min-h-[44px] px-3 rounded-lg text-xs font-semibold
                      bg-primary hover:brightness-90 text-white transition-all shrink-0
                      disabled:opacity-60 disabled:cursor-not-allowed
                      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
@@ -340,6 +345,7 @@ function DocumentoLinha({ doc, baixando, onBaixar, modoSelecao, selecionado, onT
           }
           <span className="hidden sm:inline">{baixando ? 'Aguarde…' : 'Baixar'}</span>
         </button>
+        </div>
 
       </div>
 
@@ -449,7 +455,7 @@ function Paginacao({
           onClick={() => onMudar(page - 1)}
           disabled={!hasPreviousPage}
           aria-label="Página anterior"
-          className="p-1.5 rounded-lg text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 hover:bg-slate-100 dark:hover:bg-gray-700
+          className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 hover:bg-slate-100 dark:hover:bg-gray-700
                      disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
           <ChevronLeft size={16} />
@@ -459,7 +465,7 @@ function Paginacao({
           onClick={() => onMudar(page + 1)}
           disabled={!hasNextPage}
           aria-label="Próxima página"
-          className="p-1.5 rounded-lg text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 hover:bg-slate-100 dark:hover:bg-gray-700
+          className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-100 hover:bg-slate-100 dark:hover:bg-gray-700
                      disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
           <ChevronRight size={16} />

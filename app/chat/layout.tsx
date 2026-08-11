@@ -8,7 +8,7 @@ import {
   LogOut, Menu, X, Loader2, Bell, ChevronDown, Building2,
   MessageSquare, CalendarDays, UserCog, DollarSign, Home,
   Sun, Moon, FileBarChart, PenLine, Search, ChevronsLeft, ChevronsRight,
-  Bot, Lock, ClipboardList, Clock, Megaphone,
+  Bot, Lock, ClipboardList, Clock, Megaphone, Scale,
 } from 'lucide-react';
 import { FiscoHubLogo } from '../components/FiscoHubLogo';
 
@@ -63,6 +63,7 @@ const NAV_GRUPOS_CONTADOR: NavGroup[] = [
     label: 'Gestão',
     items: [
       { href: '/kanban',      label: 'Kanban',      icon: <ClipboardList size={18} /> },
+      { href: '/reforma-ibs-cbs', label: 'IBS / CBS', icon: <Scale size={18} /> },
       { href: '/calendario',  label: 'Calendário',  icon: <CalendarDays size={18} />,              feature: 'calendario' },
       { href: '/financeiro',  label: 'Financeiro',  icon: <DollarSign   size={18} />, donoOnly: true, feature: 'financeiro' },
       { href: '/relatorios',  label: 'Relatórios',  icon: <FileBarChart size={18} />, donoOnly: true, feature: 'relatorios' },
@@ -313,7 +314,7 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
 
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
           <header className="h-14 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between px-4 sm:px-6 shrink-0 z-20">
-            <button className="lg:hidden p-2 -ml-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800" onClick={() => setSidebarAberta(true)} aria-label="Abrir menu"><Menu size={20} /></button>
+            <button type="button" className="lg:hidden min-h-[44px] min-w-[44px] flex items-center justify-center -ml-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800" onClick={() => setSidebarAberta(true)} aria-label="Abrir menu"><Menu size={20} /></button>
             <div className="hidden lg:flex items-center gap-2">
               <button onClick={toggleColapsada} className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">{colapsada ? <ChevronsRight size={18} /> : <ChevronsLeft size={18} />}</button>
               <h1 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
@@ -489,7 +490,7 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
 
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <header className="h-14 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-4 sm:px-6 shrink-0 z-20">
-          <button className="lg:hidden p-2 -ml-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800" onClick={() => setSidebarAberta(true)} aria-label="Abrir menu"><Menu size={20} /></button>
+          <button type="button" className="lg:hidden min-h-[44px] min-w-[44px] flex items-center justify-center -ml-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800" onClick={() => setSidebarAberta(true)} aria-label="Abrir menu"><Menu size={20} /></button>
           <div className="hidden lg:flex items-center gap-2">
             <button onClick={toggleColapsada} className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">{colapsada ? <ChevronsRight size={18} /> : <ChevronsLeft size={18} />}</button>
             <h1 className="text-sm font-semibold text-gray-700 dark:text-gray-300">

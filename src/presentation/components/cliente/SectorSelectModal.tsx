@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { useDialogA11y } from '../../hooks/useDialogA11y';
 import {
   X,
   Upload,
@@ -58,12 +59,24 @@ export function SectorSelectModal({ arquivo, onFechar, onSucesso }: Props) {
     }
   }, [arquivo, token, enviando, onSucesso]);
 
+  const fecharSeLivre = useCallback(() => {
+    if (!enviando) onFechar();
+  }, [enviando, onFechar]);
+  const dialogRef = useDialogA11y(true, fecharSeLivre);
+
   const tamanhoStr = arquivo.size < 1024 * 1024
     ? `${(arquivo.size / 1024).toFixed(0)} KB`
     : `${(arquivo.size / (1024 * 1024)).toFixed(1)} MB`;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div
+      ref={dialogRef}
+      tabIndex={-1}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-confirmar-envio-titulo"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+    >
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/40"
@@ -76,7 +89,7 @@ export function SectorSelectModal({ arquivo, onFechar, onSucesso }: Props) {
         {/* Header */}
         <div className="flex items-start justify-between gap-2">
           <div>
-            <h3 className="text-base font-bold text-gray-900 dark:text-gray-100">Confirmar envio</h3>
+            <h3 id="modal-confirmar-envio-titulo" className="text-base font-bold text-gray-900 dark:text-gray-100">Confirmar envio</h3>
             <div className="flex items-center gap-1.5 mt-1">
               <FileText size={13} className="text-gray-400 shrink-0" />
               <span className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[220px]" title={arquivo.name}>
@@ -86,9 +99,11 @@ export function SectorSelectModal({ arquivo, onFechar, onSucesso }: Props) {
             </div>
           </div>
           <button
+            type="button"
             onClick={onFechar}
             disabled={enviando}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800
+            aria-label="Fechar"
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800
                        transition-colors disabled:opacity-40 shrink-0"
           >
             <X size={16} />
@@ -124,7 +139,7 @@ export function SectorSelectModal({ arquivo, onFechar, onSucesso }: Props) {
           type="button"
           onClick={handleEnviar}
           disabled={enviando || sucesso}
-          className="w-full py-2.5 text-sm font-semibold text-white bg-primary rounded-xl
+          className="w-full min-h-[44px] py-2.5 text-sm font-semibold text-white bg-primary rounded-xl
                      hover:bg-primary-dark active:bg-primary-dark transition-colors
                      disabled:opacity-50 disabled:cursor-not-allowed
                      flex items-center justify-center gap-2

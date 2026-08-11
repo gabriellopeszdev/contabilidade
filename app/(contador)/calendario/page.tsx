@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 
 import { useAuth } from '../../../src/presentation/hooks/useAuth';
+import { useDialogA11y } from '../../../src/presentation/hooks/useDialogA11y';
 
 // =============================================================================
 // Tipos
@@ -127,6 +128,9 @@ export default function CalendarioPage() {
   // Delete inline
   const [confirmandoDeleteId, setConfirmandoDeleteId] = useState<string | null>(null);
   const [deletando,            setDeletando]           = useState(false);
+
+  const fecharModal = useCallback(() => setModalAberto(false), []);
+  const dialogRef = useDialogA11y(modalAberto && isDono, fecharModal);
 
   const mesKey = `${mesAtual.ano}-${String(mesAtual.mes + 1).padStart(2, '0')}`;
 
@@ -329,7 +333,7 @@ export default function CalendarioPage() {
         {isDono && (
           <button
             onClick={() => setModalAberto(true)}
-            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:brightness-90 transition-colors shrink-0"
+            className="inline-flex items-center justify-center gap-2 min-h-[44px] rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:brightness-90 transition-colors shrink-0"
           >
             <Plus size={16} />
             Nova Obrigação
@@ -348,7 +352,7 @@ export default function CalendarioPage() {
             <button
               onClick={mesAnterior}
               aria-label="Mês anterior"
-              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
               <ChevronLeft size={18} className="text-gray-600 dark:text-gray-400" />
             </button>
@@ -358,7 +362,7 @@ export default function CalendarioPage() {
             <button
               onClick={mesSeguinte}
               aria-label="Próximo mês"
-              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
               <ChevronRight size={18} className="text-gray-600 dark:text-gray-400" />
             </button>
@@ -599,7 +603,8 @@ export default function CalendarioPage() {
                         <button
                           onClick={() => setConfirmandoDeleteId(ob.id)}
                           title="Remover obrigação"
-                          className="p-1 rounded text-gray-300 hover:text-red-400 hover:bg-red-50 transition-colors shrink-0"
+                          aria-label={`Remover obrigação ${ob.nome}`}
+                          className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded text-gray-300 hover:text-red-400 hover:bg-red-50 transition-colors shrink-0"
                         >
                           <Trash2 size={13} />
                         </button>
@@ -636,19 +641,26 @@ export default function CalendarioPage() {
       {/* Modal — Nova Obrigação (apenas para donos)                             */}
       {/* -------------------------------------------------------------------- */}
       {modalAberto && isDono && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+        <div
+          ref={dialogRef}
+          tabIndex={-1}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-obrigacao-titulo"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          onClick={fecharModal}
+        >
           <div
-            className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 w-full max-w-md mx-4"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="modal-obrigacao-titulo"
+            className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 w-full max-w-md"
+            onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-700">
               <h3 id="modal-obrigacao-titulo" className="text-base font-bold text-gray-900 dark:text-gray-100">Nova Obrigação Fiscal</h3>
               <button
-                onClick={() => setModalAberto(false)}
+                type="button"
+                onClick={fecharModal}
                 aria-label="Fechar modal"
-                className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+                className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
               >
                 <X size={18} className="text-gray-400 dark:text-gray-500" />
               </button>
@@ -656,8 +668,9 @@ export default function CalendarioPage() {
 
             <form onSubmit={handleCriarObrigacao} className="p-6 space-y-4">
               <div className="space-y-1.5">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Nome *</label>
+                <label htmlFor="obrigacao-nome" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Nome *</label>
                 <input
+                  id="obrigacao-nome"
                   type="text"
                   value={novaObrigacao.nome}
                   onChange={(e) => setNovaObrigacao((o) => ({ ...o, nome: e.target.value }))}
@@ -725,15 +738,15 @@ export default function CalendarioPage() {
               <div className="flex justify-end gap-2 pt-2">
                 <button
                   type="button"
-                  onClick={() => setModalAberto(false)}
-                  className="rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  onClick={fecharModal}
+                  className="min-h-[44px] rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={criando}
-                  className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:brightness-90 disabled:opacity-50 transition-colors"
+                  className="inline-flex items-center justify-center gap-2 min-h-[44px] rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:brightness-90 disabled:opacity-50 transition-colors"
                 >
                   {criando ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
                   {criando ? 'Criando…' : 'Criar'}

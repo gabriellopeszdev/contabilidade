@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, type FormEvent } from 'react';
 import { X, Loader2, AlertCircle } from 'lucide-react';
+import { useDialogA11y } from '../../hooks/useDialogA11y';
 
 // =============================================================================
 // Tipos
@@ -158,15 +159,7 @@ export function ClienteModal({
     }
   }, [aberto, dadosIniciais]);
 
-  // Fecha com ESC
-  useEffect(() => {
-    if (!aberto) return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onFechar();
-    };
-    document.addEventListener('keydown', handler);
-    return () => document.removeEventListener('keydown', handler);
-  }, [aberto, onFechar]);
+  const dialogRef = useDialogA11y(aberto, onFechar);
 
   const handleChange = useCallback(
     (campo: keyof ClienteFormData) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -237,6 +230,8 @@ export function ClienteModal({
 
   return (
     <div
+      ref={dialogRef}
+      tabIndex={-1}
       className="fixed inset-0 z-50 flex items-center justify-center"
       role="dialog"
       aria-modal="true"
@@ -259,7 +254,7 @@ export function ClienteModal({
           <button
             type="button"
             onClick={onFechar}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-gray-200 hover:bg-slate-100 dark:hover:bg-gray-800 transition-colors"
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-gray-200 hover:bg-slate-100 dark:hover:bg-gray-800 transition-colors"
             aria-label="Fechar modal"
           >
             <X size={18} />

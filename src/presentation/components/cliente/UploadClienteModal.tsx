@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef } from 'react';
+import { useDialogA11y } from '../../hooks/useDialogA11y';
 import {
   Upload,
   FileText,
@@ -65,6 +66,8 @@ export function UploadClienteModal({ aberto, onFechar, onSucesso }: UploadClient
     if (fileInputRef.current) fileInputRef.current.value = '';
     onFechar();
   }, [enviando, onFechar]);
+
+  const dialogRef = useDialogA11y(aberto, handleFechar);
 
   // ---------------------------------------------------------------------------
   // Validação de arquivo
@@ -162,7 +165,14 @@ export function UploadClienteModal({ aberto, onFechar, onSucesso }: UploadClient
   if (!aberto) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div
+      ref={dialogRef}
+      tabIndex={-1}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-upload-cliente-titulo"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+    >
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/40" onClick={handleFechar} />
 
@@ -176,7 +186,7 @@ export function UploadClienteModal({ aberto, onFechar, onSucesso }: UploadClient
               <Upload size={20} className="text-primary" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-gray-900">Enviar Documento</h3>
+              <h3 id="modal-upload-cliente-titulo" className="text-base font-bold text-gray-900">Enviar Documento</h3>
               <p className="text-xs text-gray-500">Selecione o arquivo e o setor de destino</p>
             </div>
           </div>
@@ -184,7 +194,8 @@ export function UploadClienteModal({ aberto, onFechar, onSucesso }: UploadClient
             type="button"
             onClick={handleFechar}
             disabled={enviando}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100
+            aria-label="Fechar"
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100
                        transition-colors disabled:opacity-50"
           >
             <X size={16} />
@@ -303,7 +314,7 @@ export function UploadClienteModal({ aberto, onFechar, onSucesso }: UploadClient
           type="button"
           onClick={handleEnviar}
           disabled={!arquivo || enviando}
-          className="w-full py-2.5 px-4 text-sm font-semibold text-white bg-primary
+          className="w-full min-h-[44px] py-2.5 px-4 text-sm font-semibold text-white bg-primary
                      rounded-xl hover:bg-primary-dark transition-colors shadow-sm
                      disabled:opacity-50 disabled:cursor-not-allowed
                      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary

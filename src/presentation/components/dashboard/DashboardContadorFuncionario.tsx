@@ -12,6 +12,7 @@ import {
 
 import { KanbanBoard } from '../kanban/KanbanBoard';
 import { RecentActivityFeed } from './RecentActivityFeed';
+import { BannerIbsCbs } from './BannerIbsCbs';
 
 // =============================================================================
 // Tipos
@@ -104,6 +105,8 @@ export function DashboardContadorFuncionario({ token, setores }: Props) {
           Suas tarefas e documentos — {setoresLabel}
         </p>
       </div>
+
+      <BannerIbsCbs token={token} />
 
       {/* Banner informativo */}
       <div className="bg-primary/10 dark:bg-primary/10 border border-primary/20 rounded-xl p-4 flex items-center gap-3">

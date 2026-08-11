@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback } from 'react';
+import { useDialogA11y } from '../../hooks/useDialogA11y';
 import {
   X,
   Upload,
@@ -45,17 +46,16 @@ function formatarTamanho(bytes: number): string {
 export function EnvioLoteModal({ arquivos, categoriaId, onFechar, onSucesso }: Props) {
   const { token } = useAuth();
 
-  const modalRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (modalRef.current) modalRef.current.focus();
-  }, []);
-
   const [itens,    setItens]    = useState<ArquivoItem[]>(
     () => arquivos.map((file) => ({ file, estado: 'aguardando' })),
   );
   const [enviando, setEnviando] = useState(false);
   const [concluido, setConcluido] = useState(false);
+
+  const fecharSeLivre = useCallback(() => {
+    if (!enviando) onFechar();
+  }, [enviando, onFechar]);
+  const dialogRef = useDialogA11y(true, fecharSeLivre);
 
   const removerArquivo = useCallback((idx: number) => {
     setItens((prev) => prev.filter((_, i) => i !== idx));
@@ -105,21 +105,22 @@ export function EnvioLoteModal({ arquivos, categoriaId, onFechar, onSucesso }: P
   }, [itens, token]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div
+      ref={dialogRef}
+      tabIndex={-1}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-envio-lote-titulo"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
+    >
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/50"
         onClick={!enviando ? onFechar : undefined}
-        onKeyDown={(e) => { if (e.key === 'Escape') onFechar(); }}
       />
 
       {/* Painel */}
       <div
-        ref={modalRef}
-        tabIndex={-1}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="modal-envio-lote-titulo"
         className="relative w-full sm:max-w-lg bg-white dark:bg-gray-900 sm:rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700
         flex flex-col max-h-[92dvh] rounded-t-2xl">
 
@@ -135,7 +136,7 @@ export function EnvioLoteModal({ arquivos, categoriaId, onFechar, onSucesso }: P
             onClick={onFechar}
             disabled={enviando}
             aria-label="Fechar modal"
-            className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800
               disabled:opacity-40 transition-colors"
           >
             <X size={16} />

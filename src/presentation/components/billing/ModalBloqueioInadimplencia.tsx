@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useDialogA11y } from '../../hooks/useDialogA11y';
 import { Lock, QrCode, CreditCard, FileText, Check, Copy, LogOut, RefreshCw, Loader2, CreditCard as CardIcon } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
@@ -46,6 +47,7 @@ export function ModalBloqueioInadimplencia({ cobranca, onCheckStatus }: ModalBlo
   const [phone, setPhone] = useState('');
 
   const isClientOrEmployeeClient = role === 'Cliente';
+  const dialogRef = useDialogA11y(true, undefined, true);
 
   const copyToClipboard = (text: string, type: 'pix' | 'barcode') => {
     navigator.clipboard.writeText(text);
@@ -125,7 +127,14 @@ export function ModalBloqueioInadimplencia({ cobranca, onCheckStatus }: ModalBlo
   };
 
   return (
-    <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-gray-900/80 backdrop-blur-md p-4 overflow-y-auto">
+    <div
+      ref={dialogRef}
+      tabIndex={-1}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-bloqueio-titulo"
+      className="fixed inset-0 z-[99999] flex items-center justify-center bg-gray-900/80 backdrop-blur-md p-4 overflow-y-auto"
+    >
       <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 sm:p-8 space-y-6 max-h-[90vh] overflow-y-auto border border-gray-100 my-8">
         
         {/* Renderização para Clientes do escritório */}
@@ -135,7 +144,7 @@ export function ModalBloqueioInadimplencia({ cobranca, onCheckStatus }: ModalBlo
               <Lock size={32} />
             </div>
             <div className="space-y-2">
-              <h2 className="text-2xl font-bold text-gray-900">Acesso Suspenso Temporariamente</h2>
+              <h2 id="modal-bloqueio-titulo" className="text-2xl font-bold text-gray-900">Acesso Suspenso Temporariamente</h2>
               <p className="text-sm text-gray-500">
                 O acesso à plataforma FiscoHub foi interrompido temporariamente para este escritório.
               </p>
@@ -165,7 +174,7 @@ export function ModalBloqueioInadimplencia({ cobranca, onCheckStatus }: ModalBlo
                 <Lock size={24} />
               </div>
               <div className="space-y-1">
-                <h2 className="text-xl font-bold text-gray-900">Assinatura Vencida — Acesso Bloqueado</h2>
+                <h2 id="modal-bloqueio-titulo" className="text-xl font-bold text-gray-900">Assinatura Vencida — Acesso Bloqueado</h2>
                 <p className="text-sm text-gray-500">
                   Identificamos uma pendência financeira em sua assinatura mensal do FiscoHub. Regularize para reestabelecer o acesso imediatamente.
                 </p>

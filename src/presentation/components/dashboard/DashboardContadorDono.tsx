@@ -17,6 +17,7 @@ import {
 
 import { RecentActivityFeed } from './RecentActivityFeed';
 import { DashboardCharts } from './DashboardCharts';
+import { BannerIbsCbs } from './BannerIbsCbs';
 
 // =============================================================================
 // Tipos
@@ -368,6 +369,8 @@ export function DashboardContadorDono({ token }: { token: string | null }) {
         <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">Dashboard</h1>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Visão geral do escritório em tempo real</p>
       </div>
+
+      <BannerIbsCbs token={token} />
 
       {error ? (
         <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center gap-3">
