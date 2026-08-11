@@ -245,7 +245,7 @@ export function ClienteModal({
       />
 
       {/* Modal */}
-      <div className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-gray-700 w-full max-w-lg mx-4 animate-in zoom-in-95 duration-200">
+      <div className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-gray-700 w-full max-w-lg mx-4 max-h-[100dvh] overflow-y-auto animate-in zoom-in-95 duration-200">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-gray-700">
           <h2 id="modal-cliente-titulo" className="text-lg font-bold text-slate-900 dark:text-gray-100">

@@ -159,7 +159,7 @@ export function NovoComunicadoModal({ aberto, token, onFechar, onSucesso }: Novo
     >
       <div className="absolute inset-0 bg-black/40" onClick={handleFechar} />
 
-      <div className="relative w-full max-w-2xl bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 flex flex-col max-h-[90vh]">
+      <div className="relative w-full max-w-2xl bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 flex flex-col max-h-[100dvh]">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800 shrink-0">
           <h3 id="modal-novo-comunicado-titulo" className="text-base font-bold text-gray-900 dark:text-gray-100">Novo Comunicado</h3>
@@ -225,7 +225,7 @@ export function NovoComunicadoModal({ aberto, token, onFechar, onSucesso }: Novo
           {/* Targeting */}
           <div>
             <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">Destinatários</label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               {([
                 { value: 'TODOS' as Targeting, label: 'Todos os clientes', icon: <Users size={14} /> },
                 { value: 'SETOR' as Targeting, label: 'Por setor',         icon: <Building2 size={14} /> },
@@ -233,7 +233,7 @@ export function NovoComunicadoModal({ aberto, token, onFechar, onSucesso }: Novo
               ] as const).map((opt) => (
                 <button key={opt.value} type="button"
                   onClick={() => setTargeting(opt.value)}
-                  className={`flex items-center gap-2 rounded-lg border px-3 py-2.5 text-xs font-medium transition-all ${
+                  className={`flex items-center justify-center sm:justify-start gap-2 min-h-[44px] rounded-lg border px-3 py-2.5 text-xs font-medium transition-all ${
                     targeting === opt.value
                       ? 'border-primary bg-primary/10 text-primary ring-2 ring-primary/20'
                       : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'

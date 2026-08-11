@@ -52,7 +52,7 @@ export function ChatSidebar({
   }, [rooms, busca]);
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700">
+    <div className="flex flex-col h-full w-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700">
       {/* Header */}
       <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800">
         <h2 className="text-sm font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2 mb-3">
@@ -67,7 +67,7 @@ export function ChatSidebar({
             value={busca}
             onChange={(e) => onBuscaChange(e.target.value)}
             placeholder="Buscar cliente..."
-            className="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+            className="w-full min-h-[44px] pl-8 pr-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
           />
         </div>
       </div>
@@ -101,7 +101,7 @@ export function ChatSidebar({
                   <button
                     onClick={() => onSelectRoom(room.id)}
                     className={`
-                      w-full flex items-start gap-3 px-4 py-3 text-left transition-colors
+                      w-full min-h-[44px] flex items-start gap-3 px-4 py-3 text-left transition-colors
                       ${ativo
                         ? 'bg-primary/10 dark:bg-primary/20 border-l-2 border-primary'
                         : 'hover:bg-gray-50 dark:hover:bg-gray-800 border-l-2 border-transparent'

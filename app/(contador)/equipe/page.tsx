@@ -239,7 +239,7 @@ export default function EquipePage() {
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-5xl mx-auto">
       {/* Toast */}
       {toast && (
-        <div className={`fixed top-4 right-4 z-50 flex items-center gap-2 rounded-lg border px-4 py-3 text-sm shadow-lg animate-in slide-in-from-right ${
+        <div className={`fixed top-4 right-4 left-4 sm:left-auto z-50 flex items-center gap-2 rounded-lg border px-4 py-3 text-sm shadow-lg animate-in slide-in-from-right ${
           toast.tipo === 'sucesso'
             ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300'
             : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-800 dark:text-red-300'
@@ -251,31 +251,32 @@ export default function EquipePage() {
       )}
 
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+        <div className="min-w-0">
           <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-            <UserCog size={22} />
+            <UserCog size={22} className="shrink-0" />
             Gestão de Equipe
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
             Cadastre funcionários e defina seus setores de acesso.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
           <button
             onClick={() => setMostrarDesligados((prev) => !prev)}
-            className={`inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${
+            className={`inline-flex items-center justify-center gap-2 min-h-[44px] rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${
               mostrarDesligados
                 ? 'border-amber-400 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/30'
                 : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
             }`}
           >
             {mostrarDesligados ? <UserX size={16} /> : <UserCheck size={16} />}
-            {mostrarDesligados ? 'Ocultar Desligados' : 'Mostrar Desligados'}
+            <span className="hidden sm:inline">{mostrarDesligados ? 'Ocultar Desligados' : 'Mostrar Desligados'}</span>
+            <span className="sm:hidden">{mostrarDesligados ? 'Ocultar' : 'Desligados'}</span>
           </button>
           <button
             onClick={abrirNovo}
-            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:opacity-90 transition-opacity"
+            className="inline-flex items-center justify-center gap-2 min-h-[44px] rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:opacity-90 transition-opacity"
           >
             <Plus size={16} />
             Novo Funcionário
@@ -294,7 +295,66 @@ export default function EquipePage() {
             Nenhum funcionário cadastrado. Clique em &quot;Novo Funcionário&quot; para começar.
           </div>
         ) : (
-          <table className="w-full text-sm">
+          <>
+          <ul className="md:hidden divide-y divide-gray-100 dark:divide-gray-800">
+            {funcionarios.map((f) => {
+              const desligado = f.deletedAt !== null;
+              return (
+                <li key={f.id} className={`p-4 space-y-3 ${!f.isActive && !desligado ? 'opacity-50' : ''}`}>
+                  <div className="min-w-0">
+                    <p className={`font-medium text-gray-900 dark:text-gray-100 truncate ${desligado ? 'opacity-40 line-through' : ''}`}>{f.name}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">{f.email}</p>
+                  </div>
+                  <div className="flex gap-1.5 flex-wrap">
+                    {f.setores.map((s) => (
+                      <span key={s} className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${SETOR_CORES[s] ?? 'bg-gray-100 text-gray-600'}`}>
+                        {SETORES_OPCOES.find((o) => o.value === s)?.icon}
+                        {SETORES_OPCOES.find((o) => o.value === s)?.label ?? s}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="flex items-center justify-between gap-2">
+                    {desligado ? (
+                      <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400">
+                        Desligado
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => toggleAtivo(f)}
+                        className={`inline-flex items-center min-h-[44px] rounded-full px-3 text-xs font-medium transition-colors ${
+                          f.isActive
+                            ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'
+                            : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
+                        }`}
+                      >
+                        {f.isActive ? 'Ativo' : 'Inativo'}
+                      </button>
+                    )}
+                    {!desligado && (
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => abrirEdicao(f)}
+                          aria-label="Editar"
+                          className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-primary hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                        >
+                          <Pencil size={16} />
+                        </button>
+                        <button
+                          onClick={() => handleExcluir(f.id)}
+                          aria-label="Excluir"
+                          className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+          <div className="hidden md:block overflow-x-auto">
+          <table className="w-full min-w-[640px] text-sm">
             <thead className="bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wide">
               <tr>
                 <th className="px-4 py-3 text-left">Nome</th>
@@ -309,8 +369,8 @@ export default function EquipePage() {
                 const desligado = f.deletedAt !== null;
                 return (
                   <tr key={f.id} className={`hover:bg-gray-50 dark:hover:bg-gray-800 ${!f.isActive && !desligado ? 'opacity-50' : ''}`}>
-                    <td className={`px-4 py-3 font-medium text-gray-900 dark:text-gray-100 ${desligado ? 'opacity-40 line-through' : ''}`}>{f.name}</td>
-                    <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{f.email}</td>
+                    <td className={`px-4 py-3 font-medium text-gray-900 dark:text-gray-100 max-w-[180px] truncate ${desligado ? 'opacity-40 line-through' : ''}`}>{f.name}</td>
+                    <td className="px-4 py-3 text-gray-600 dark:text-gray-400 max-w-[200px] truncate">{f.email}</td>
                     <td className="px-4 py-3">
                       <div className="flex gap-1.5 flex-wrap">
                         {f.setores.map((s) => (
@@ -344,14 +404,14 @@ export default function EquipePage() {
                         <div className="flex items-center justify-center gap-2">
                           <button
                             onClick={() => abrirEdicao(f)}
-                            className="rounded-lg p-1.5 text-gray-400 dark:text-gray-500 hover:text-primary hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                            className="rounded-lg min-h-[44px] min-w-[44px] inline-flex items-center justify-center text-gray-400 dark:text-gray-500 hover:text-primary hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                             title="Editar"
                           >
                             <Pencil size={15} />
                           </button>
                           <button
                             onClick={() => handleExcluir(f.id)}
-                            className="rounded-lg p-1.5 text-gray-400 dark:text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                            className="rounded-lg min-h-[44px] min-w-[44px] inline-flex items-center justify-center text-gray-400 dark:text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                             title="Excluir"
                           >
                             <Trash2 size={15} />
@@ -364,18 +424,20 @@ export default function EquipePage() {
               })}
             </tbody>
           </table>
+          </div>
+          </>
         )}
       </div>
 
       {/* Modal */}
       {modalAberto && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setModalAberto(false)}>
-          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl w-full max-w-md mx-4 p-6 space-y-5" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl w-full max-w-md mx-4 p-4 sm:p-6 space-y-5 max-h-[100dvh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 truncate">
                 {editando ? 'Editar Funcionário' : 'Novo Funcionário'}
               </h2>
-              <button onClick={() => setModalAberto(false)} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
+              <button onClick={() => setModalAberto(false)} aria-label="Fechar" className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 shrink-0">
                 <X size={20} />
               </button>
             </div>
@@ -461,11 +523,11 @@ export default function EquipePage() {
             </div>
 
             {/* Actions */}
-            <div className="flex justify-end gap-3 pt-2">
+            <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 sm:gap-3 pt-2">
               <button
                 type="button"
                 onClick={() => setModalAberto(false)}
-                className="rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                className="min-h-[44px] rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
               >
                 Cancelar
               </button>
@@ -473,7 +535,7 @@ export default function EquipePage() {
                 type="button"
                 onClick={handleSalvar}
                 disabled={salvando}
-                className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:opacity-90 transition-opacity disabled:opacity-50"
+                className="inline-flex items-center justify-center gap-2 min-h-[44px] rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:opacity-90 transition-opacity disabled:opacity-50"
               >
                 {salvando ? <Loader2 size={14} className="animate-spin" /> : null}
                 {editando ? 'Salvar Alterações' : 'Cadastrar'}

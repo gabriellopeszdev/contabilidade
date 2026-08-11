@@ -606,7 +606,7 @@ export function DocumentosTable({
               type="button"
               onClick={sairModoSelecao}
               title="Cancelar seleção"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold
+              className="inline-flex items-center gap-1.5 min-h-[44px] px-3 py-1.5 rounded-lg text-xs font-semibold
                          bg-slate-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300
                          hover:bg-slate-200 dark:hover:bg-gray-600 transition-colors"
             >
@@ -618,7 +618,7 @@ export function DocumentosTable({
               type="button"
               onClick={() => setModoSelecao(true)}
               title="Selecionar documentos para download em lote"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold
+              className="inline-flex items-center gap-1.5 min-h-[44px] px-3 py-1.5 rounded-lg text-xs font-semibold
                          bg-slate-100 dark:bg-gray-700 text-slate-600 dark:text-gray-300
                          hover:bg-slate-200 dark:hover:bg-gray-600 transition-colors"
             >
@@ -730,7 +730,7 @@ export function DocumentosTable({
                     type="button"
                     onClick={handleBaixarLote}
                     disabled={baixandoLote}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold
+                    className="inline-flex items-center gap-1.5 min-h-[44px] px-3 py-1.5 rounded-lg text-xs font-semibold
                                bg-primary hover:brightness-90 transition-colors
                                disabled:opacity-60 disabled:cursor-not-allowed"
                   >

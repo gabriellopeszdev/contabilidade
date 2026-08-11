@@ -181,7 +181,7 @@ export default function ReformaIbsCbsPage() {
             type="button"
             onClick={avisarPendentes}
             disabled={avisando || resumo.pendentes === 0}
-            className={`${BTN_44} inline-flex items-center justify-center gap-2 px-4 text-sm font-semibold text-white bg-primary rounded-xl hover:brightness-90 disabled:opacity-50`}
+            className={`${BTN_44} inline-flex items-center justify-center gap-2 w-full sm:w-auto px-4 text-sm font-semibold text-white bg-primary rounded-xl hover:brightness-90 disabled:opacity-50`}
           >
             {avisando ? <Loader2 size={16} className="animate-spin" /> : <Megaphone size={16} />}
             Avisar pendentes ({resumo.pendentes})

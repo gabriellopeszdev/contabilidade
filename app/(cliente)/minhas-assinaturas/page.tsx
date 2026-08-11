@@ -127,15 +127,15 @@ export default function AssinaturasPage() {
 
       {/* Cards de resumo */}
       <div className="grid grid-cols-3 gap-2 sm:gap-3">
-        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-amber-200 dark:border-amber-900/50 px-4 py-4 text-center">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-amber-200 dark:border-amber-900/50 px-2 sm:px-4 py-4 text-center">
           <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">{pendentes.length}</p>
           <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-1">Pendentes</p>
         </div>
-        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-emerald-200 dark:border-emerald-900/50 px-4 py-4 text-center">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-emerald-200 dark:border-emerald-900/50 px-2 sm:px-4 py-4 text-center">
           <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{totalAssinados}</p>
           <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-1">Assinados</p>
         </div>
-        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 px-4 py-4 text-center">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 px-2 sm:px-4 py-4 text-center">
           <p className="text-2xl font-bold text-gray-700 dark:text-gray-300">{assinaturas.length}</p>
           <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-1">Total</p>
         </div>
@@ -146,7 +146,7 @@ export default function AssinaturasPage() {
         <button
           type="button"
           onClick={() => setTabAtiva('pendentes')}
-          className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-semibold transition-all duration-150
+          className={`flex-1 flex items-center justify-center gap-2 min-h-[44px] py-2 px-3 rounded-lg text-sm font-semibold transition-all duration-150
             ${tabAtiva === 'pendentes'
               ? 'bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-sm'
               : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
@@ -163,7 +163,7 @@ export default function AssinaturasPage() {
         <button
           type="button"
           onClick={() => setTabAtiva('historico')}
-          className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-semibold transition-all duration-150
+          className={`flex-1 flex items-center justify-center gap-2 min-h-[44px] py-2 px-3 rounded-lg text-sm font-semibold transition-all duration-150
             ${tabAtiva === 'historico'
               ? 'bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-sm'
               : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'

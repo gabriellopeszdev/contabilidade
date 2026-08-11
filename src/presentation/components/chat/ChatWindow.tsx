@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback, type FormEvent, useImperativeHandle, forwardRef } from 'react';
-import { Send, Loader2, ArrowUp, MessageSquare, Paperclip, X, FileText, FileCode2 } from 'lucide-react';
+import { Send, Loader2, ArrowUp, ArrowLeft, MessageSquare, Paperclip, X, FileText, FileCode2 } from 'lucide-react';
 import type { ChatMensagem, TypingInfo } from '../../hooks/useChat';
 
 // =============================================================================
@@ -25,6 +25,7 @@ interface ChatWindowProps {
   onTyping:         (isTyping: boolean) => void;
   onUploadAnexo:    (roomId: string, file: File) => Promise<{ documentId: string; nome: string } | null>;
   semSala?:         boolean;
+  onVoltar?:        () => void;
 }
 
 function formatarHoraMensagem(iso: string): string {
@@ -57,6 +58,7 @@ export const ChatWindow = forwardRef<ChatWindowHandle, ChatWindowProps>(function
   onTyping,
   onUploadAnexo,
   semSala = false,
+  onVoltar,
 }, ref) {
   const [texto, setTexto] = useState('');
   const [enviando, setEnviando] = useState(false);
@@ -199,10 +201,20 @@ export const ChatWindow = forwardRef<ChatWindowHandle, ChatWindowProps>(function
   let lastDate = '';
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-gray-50/30 dark:bg-gray-950/50">
+    <div className="flex-1 flex flex-col min-h-0 min-w-0 bg-gray-50/30 dark:bg-gray-950/50">
       {/* Header */}
-      <div className="px-4 py-3 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 flex items-center gap-3 shrink-0">
-        <div className="w-9 h-9 rounded-full bg-primary-light text-primary-dark flex items-center justify-center text-xs font-bold">
+      <div className="px-3 sm:px-4 py-3 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 flex items-center gap-2 sm:gap-3 shrink-0">
+        {onVoltar && (
+          <button
+            type="button"
+            onClick={onVoltar}
+            aria-label="Voltar para a lista de conversas"
+            className="md:hidden min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 shrink-0"
+          >
+            <ArrowLeft size={20} />
+          </button>
+        )}
+        <div className="w-9 h-9 rounded-full bg-primary-light text-primary-dark flex items-center justify-center text-xs font-bold shrink-0">
           {nomeDestinatario
             .split(' ')
             .filter(Boolean)
@@ -210,10 +222,10 @@ export const ChatWindow = forwardRef<ChatWindowHandle, ChatWindowProps>(function
             .map((p) => p[0].toUpperCase())
             .join('')}
         </div>
-        <div>
-          <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{nomeDestinatario}</p>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">{nomeDestinatario}</p>
           {typing && (
-            <p className="text-[10px] text-primary animate-pulse">
+            <p className="text-[10px] text-primary animate-pulse truncate">
               {typing.nome} está digitando…
             </p>
           )}
@@ -351,9 +363,9 @@ export const ChatWindow = forwardRef<ChatWindowHandle, ChatWindowProps>(function
               type="button"
               onClick={() => setAnexo(null)}
               aria-label="Remover anexo"
-              className="text-primary/60 hover:text-primary shrink-0"
+              className="min-h-[44px] min-w-[44px] flex items-center justify-center text-primary/60 hover:text-primary shrink-0 rounded-lg"
             >
-              <X size={14} />
+              <X size={16} />
             </button>
           </div>
         )}
@@ -372,7 +384,7 @@ export const ChatWindow = forwardRef<ChatWindowHandle, ChatWindowProps>(function
             onClick={() => fileInputRef.current?.click()}
             disabled={!roomId || enviando}
             aria-label="Anexar arquivo"
-            className="w-9 h-9 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all shrink-0"
+            className="min-h-[44px] min-w-[44px] rounded-xl border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all shrink-0"
           >
             <Paperclip size={16} />
           </button>
@@ -383,14 +395,14 @@ export const ChatWindow = forwardRef<ChatWindowHandle, ChatWindowProps>(function
             onKeyDown={handleKeyDown}
             placeholder="Digite sua mensagem..."
             rows={1}
-            className="flex-1 resize-none px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary max-h-32 overflow-y-auto"
-            style={{ minHeight: '38px' }}
+            className="flex-1 min-w-0 resize-none px-3 py-2.5 text-sm border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary max-h-32 overflow-y-auto"
+            style={{ minHeight: '44px' }}
           />
           <button
             type="submit"
             disabled={(!texto.trim() && !anexo) || enviando}
             aria-label="Enviar mensagem"
-            className="w-9 h-9 rounded-xl bg-primary text-white flex items-center justify-center hover:brightness-90 disabled:opacity-40 disabled:cursor-not-allowed transition-all shrink-0"
+            className="min-h-[44px] min-w-[44px] rounded-xl bg-primary text-white flex items-center justify-center hover:brightness-90 disabled:opacity-40 disabled:cursor-not-allowed transition-all shrink-0"
           >
             {enviando ? (
               <Loader2 size={16} className="animate-spin" />

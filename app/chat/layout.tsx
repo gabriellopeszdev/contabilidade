@@ -316,7 +316,7 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
           <header className="h-14 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between px-4 sm:px-6 shrink-0 z-20">
             <button type="button" className="lg:hidden min-h-[44px] min-w-[44px] flex items-center justify-center -ml-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800" onClick={() => setSidebarAberta(true)} aria-label="Abrir menu"><Menu size={20} /></button>
             <div className="hidden lg:flex items-center gap-2">
-              <button onClick={toggleColapsada} className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">{colapsada ? <ChevronsRight size={18} /> : <ChevronsLeft size={18} />}</button>
+              <button onClick={toggleColapsada} className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">{colapsada ? <ChevronsRight size={18} /> : <ChevronsLeft size={18} />}</button>
               <h1 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                 {NAV_GRUPOS_CLIENTE.flatMap((g) => g.items).find((n) => pathname === n.href || pathname.startsWith(n.href + '/'))?.label ?? 'Portal'}
               </h1>
@@ -334,18 +334,18 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
               <button
                 onClick={() => setHelpAberto(true)}
                 title="Ajuda & Tutoriais"
-                className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               >
                 <HelpCircle size={18} />
               </button>
-              {darkMounted && <button onClick={toggleDark} className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">{dark ? <Sun size={18} /> : <Moon size={18} />}</button>}
+              {darkMounted && <button onClick={toggleDark} className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">{dark ? <Sun size={18} /> : <Moon size={18} />}</button>}
               <div ref={notifRef} className="relative">
                 <button onClick={() => setNotifAberto((v) => !v)} className="relative p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" aria-label={`Notificações${naoLidas > 0 ? ` — ${naoLidas} não lidas` : ''}`}>
                   <Bell size={18} />
                   {naoLidas > 0 && <span className="absolute top-1 right-1 min-w-[16px] h-[16px] rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center px-0.5">{naoLidas > 99 ? '99+' : naoLidas}</span>}
                 </button>
                 {notifAberto && (
-                  <div className="absolute right-0 top-full mt-1 w-80 bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 z-50 overflow-hidden">
+                  <div className="absolute right-0 top-full mt-1 w-[calc(100vw-1rem)] max-w-80 bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 z-50 overflow-hidden">
                     <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-100 dark:border-gray-800">
                       <span className="text-xs font-bold text-gray-900 dark:text-gray-100">Notificações</span>
                       <div className="flex gap-3">
@@ -492,7 +492,7 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
         <header className="h-14 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-4 sm:px-6 shrink-0 z-20">
           <button type="button" className="lg:hidden min-h-[44px] min-w-[44px] flex items-center justify-center -ml-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800" onClick={() => setSidebarAberta(true)} aria-label="Abrir menu"><Menu size={20} /></button>
           <div className="hidden lg:flex items-center gap-2">
-            <button onClick={toggleColapsada} className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">{colapsada ? <ChevronsRight size={18} /> : <ChevronsLeft size={18} />}</button>
+            <button onClick={toggleColapsada} className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">{colapsada ? <ChevronsRight size={18} /> : <ChevronsLeft size={18} />}</button>
             <h1 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
               {navItems.find((n) => pathname === n.href || pathname.startsWith(n.href + '/'))?.label ?? 'Chat'}
             </h1>
@@ -507,11 +507,11 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
             <button
               onClick={() => setHelpAberto(true)}
               title="Ajuda & Tutoriais"
-              className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
               <HelpCircle size={18} />
             </button>
-            {darkMounted && <button onClick={toggleDark} className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">{dark ? <Sun size={18} /> : <Moon size={18} />}</button>}
+            {darkMounted && <button onClick={toggleDark} className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">{dark ? <Sun size={18} /> : <Moon size={18} />}</button>}
 
             <div ref={notifRef} className="relative">
               <button onClick={() => setNotifAberto((v) => !v)} className="relative p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" aria-label="Notificações">
@@ -519,7 +519,7 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
                 {naoLidas > 0 && <span className="absolute top-1 right-1 min-w-[16px] h-[16px] rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center px-0.5">{naoLidas > 99 ? '99+' : naoLidas}</span>}
               </button>
               {notifAberto && (
-                <div className="absolute right-0 top-full mt-1 w-80 bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 z-50 overflow-hidden">
+                <div className="absolute right-0 top-full mt-1 w-[calc(100vw-1rem)] max-w-80 bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 z-50 overflow-hidden">
                   <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-100 dark:border-gray-800">
                     <span className="text-xs font-bold text-gray-900 dark:text-gray-100">Notificações</span>
                     <div className="flex gap-3">

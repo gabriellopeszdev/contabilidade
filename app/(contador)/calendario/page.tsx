@@ -319,9 +319,9 @@ export default function CalendarioPage() {
     <div className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto space-y-6">
 
       {/* Cabeçalho da página */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Calendário de Obrigações</h1>
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">Calendário de Obrigações</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
             {setoresLabel
               ? <>Seus setores: <span className="font-medium text-gray-700 dark:text-gray-300">{setoresLabel}</span></>
@@ -333,7 +333,7 @@ export default function CalendarioPage() {
         {isDono && (
           <button
             onClick={() => setModalAberto(true)}
-            className="inline-flex items-center justify-center gap-2 min-h-[44px] rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:brightness-90 transition-colors shrink-0"
+            className="inline-flex items-center justify-center gap-2 min-h-[44px] w-full sm:w-auto rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:brightness-90 transition-colors shrink-0"
           >
             <Plus size={16} />
             Nova Obrigação
@@ -346,7 +346,7 @@ export default function CalendarioPage() {
         {/* ------------------------------------------------------------------ */}
         {/* Calendário mensal                                                    */}
         {/* ------------------------------------------------------------------ */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-5">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-3 sm:p-5">
           {/* Navegação do mês */}
           <div className="flex items-center justify-between mb-5">
             <button
@@ -356,7 +356,7 @@ export default function CalendarioPage() {
             >
               <ChevronLeft size={18} className="text-gray-600 dark:text-gray-400" />
             </button>
-            <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">
+            <h2 className="text-base sm:text-lg font-bold text-gray-900 dark:text-gray-100 text-center">
               {MESES[mesAtual.mes]} {mesAtual.ano}
             </h2>
             <button
@@ -381,7 +381,8 @@ export default function CalendarioPage() {
                     key={d}
                     className="text-center text-[11px] font-semibold text-gray-400 dark:text-gray-500 py-2"
                   >
-                    {d}
+                    <span className="sm:hidden">{d[0]}</span>
+                    <span className="hidden sm:inline">{d}</span>
                   </div>
                 ))}
               </div>
@@ -402,7 +403,7 @@ export default function CalendarioPage() {
                       aria-label={cell.mesAtual ? `Dia ${cell.dia}, ${MESES[mesAtual.mes]}` : undefined}
                       onClick={() => cell.mesAtual && setDiaSelecionado(cell.dia)}
                       className={[
-                        'relative h-14 sm:h-20 rounded-lg p-1.5 text-left transition-all border',
+                        'relative h-12 sm:h-20 rounded-lg p-0.5 sm:p-1.5 text-left transition-all border',
                         !cell.mesAtual
                           ? 'text-gray-300 dark:text-gray-600 bg-gray-50/50 dark:bg-gray-800/50 border-transparent cursor-default'
                           : !selecionado
@@ -431,7 +432,7 @@ export default function CalendarioPage() {
                                 className="w-1.5 h-1.5 rounded-full shrink-0"
                                 style={{ backgroundColor: ev.cor }}
                               />
-                              <span className="text-[9px] text-gray-600 dark:text-gray-400 truncate leading-tight">
+                              <span className="hidden sm:inline text-[9px] text-gray-600 dark:text-gray-400 truncate leading-tight">
                                 {ev.titulo}
                               </span>
                             </div>
@@ -651,7 +652,7 @@ export default function CalendarioPage() {
           onClick={fecharModal}
         >
           <div
-            className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 w-full max-w-md"
+            className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 w-full max-w-md max-h-[100dvh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-700">
@@ -761,7 +762,7 @@ export default function CalendarioPage() {
       {/* Toast                                                                  */}
       {/* -------------------------------------------------------------------- */}
       {toast && (
-        <div className="fixed bottom-6 right-6 z-50 animate-in slide-in-from-bottom-4 duration-300">
+        <div className="fixed bottom-6 right-4 left-4 sm:left-auto sm:right-6 z-50 animate-in slide-in-from-bottom-4 duration-300">
           <div
             className={`flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border ${
               toast.tipo === 'sucesso'

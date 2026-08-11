@@ -52,7 +52,7 @@ export function ClienteChatContatos({ rooms, roomAtual, carregando, onSelectRoom
   }, [rooms]);
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 w-64 shrink-0">
+    <div className="flex flex-col h-full w-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700">
       {/* Header */}
       <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800 flex items-center gap-2 shrink-0">
         <Users size={15} className="text-primary" />
@@ -82,7 +82,7 @@ export function ClienteChatContatos({ rooms, roomAtual, carregando, onSelectRoom
                     type="button"
                     onClick={() => onSelectRoom(room.id)}
                     className={`
-                      w-full flex items-start gap-3 px-4 py-3 text-left transition-colors
+                      w-full min-h-[44px] flex items-start gap-3 px-4 py-3 text-left transition-colors
                       ${ativo
                         ? 'bg-gray-100 dark:bg-gray-800 border-l-2 border-primary'
                         : 'hover:bg-gray-50 dark:hover:bg-gray-800/60 border-l-2 border-transparent'

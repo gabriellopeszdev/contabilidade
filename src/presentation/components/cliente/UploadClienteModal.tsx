@@ -177,7 +177,7 @@ export function UploadClienteModal({ aberto, onFechar, onSucesso }: UploadClient
       <div className="absolute inset-0 bg-black/40" onClick={handleFechar} />
 
       {/* Conteúdo */}
-      <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-xl border border-gray-200 p-6 space-y-5">
+      <div className="relative w-full max-w-lg bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-4 sm:p-6 space-y-5 max-h-[100dvh] overflow-y-auto">
 
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -205,14 +205,14 @@ export function UploadClienteModal({ aberto, onFechar, onSucesso }: UploadClient
         {/* Seletor de setor */}
         <div className="space-y-2">
           <label className="block text-sm font-medium text-gray-700">Setor</label>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             {SETORES.map((s) => (
               <button
                 key={s.value}
                 type="button"
                 disabled={enviando}
                 onClick={() => setSetor(s.value)}
-                className={`rounded-lg border px-3 py-2.5 text-center transition-all disabled:opacity-50
+                className={`rounded-lg border min-h-[44px] px-3 py-2.5 text-center transition-all disabled:opacity-50
                   ${setor === s.value
                     ? 'border-primary bg-primary/10 dark:bg-primary/20 ring-2 ring-primary/30'
                     : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
@@ -259,7 +259,7 @@ export function UploadClienteModal({ aberto, onFechar, onSucesso }: UploadClient
             <div className="flex flex-col items-center gap-2">
               <FileText size={32} className="text-emerald-500" />
               <div>
-                <p className="text-sm font-semibold text-gray-900 truncate max-w-[300px]">
+                <p className="text-sm font-semibold text-gray-900 truncate max-w-full">
                   {arquivo.name}
                 </p>
                 <p className="text-xs text-gray-500 mt-0.5">

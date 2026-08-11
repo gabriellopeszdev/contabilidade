@@ -147,7 +147,7 @@ export default function RelatoriosPage() {
   };
 
   return (
-    <div className="p-6 space-y-6 max-w-7xl mx-auto">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto">
 
       {/* Header */}
       <div className="flex items-center gap-3">
@@ -159,13 +159,13 @@ export default function RelatoriosPage() {
       </div>
 
       {/* Abas */}
-      <div className="border-b border-gray-200 dark:border-gray-700">
-        <nav className="flex gap-1">
+      <div className="border-b border-gray-200 dark:border-gray-700 -mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto">
+        <nav className="flex gap-1 min-w-max">
           {ABAS.map((a) => (
             <button
               key={a.id}
               onClick={() => trocarAba(a.id)}
-              className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+              className={`flex items-center gap-2 min-h-[44px] px-4 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap shrink-0 ${
                 abaAtiva === a.id
                   ? 'border-primary text-primary dark:text-primary'
                   : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:border-gray-300 dark:hover:border-gray-600'
@@ -220,23 +220,23 @@ export default function RelatoriosPage() {
           <button
             onClick={previsualizarDados}
             disabled={carregando}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+            className="flex items-center justify-center gap-2 min-h-[44px] w-full sm:w-auto px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
           >
             {carregando ? <Loader2 size={14} className="animate-spin" /> : <Table size={14} />}
             Visualizar dados
           </button>
 
-          <div className="flex items-center gap-2 ml-auto">
+          <div className="flex items-center gap-2 w-full sm:w-auto sm:ml-auto">
             <button
               onClick={() => exportar('pdf')}
-              className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg transition-colors"
+              className="flex items-center justify-center gap-2 min-h-[44px] flex-1 sm:flex-none px-4 py-2 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg transition-colors"
             >
               <Download size={14} />
               PDF
             </button>
             <button
               onClick={() => exportar('excel')}
-              className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white text-sm font-medium rounded-lg transition-colors"
+              className="flex items-center justify-center gap-2 min-h-[44px] flex-1 sm:flex-none px-4 py-2 bg-primary hover:bg-primary-dark text-white text-sm font-medium rounded-lg transition-colors"
             >
               <Download size={14} />
               Excel
@@ -261,14 +261,30 @@ export default function RelatoriosPage() {
 
       {dados.length > 0 && (
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 dark:border-gray-800">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 px-4 sm:px-5 py-3 border-b border-gray-100 dark:border-gray-800">
             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
               {total.toLocaleString('pt-BR')} registro{total !== 1 ? 's' : ''}
             </span>
             <span className="text-xs text-gray-400 dark:text-gray-500">Máximo 5.000 linhas exibidas</span>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+          <ul className="md:hidden divide-y divide-gray-100 dark:divide-gray-800">
+            {dados.map((row, i) => (
+              <li key={i} className="p-4 space-y-1.5">
+                {aba.colunas.map((c) => (
+                  <div key={c.key} className="flex justify-between gap-3">
+                    <span className="text-xs text-gray-400 shrink-0">{c.label}</span>
+                    <span className="text-sm text-gray-800 dark:text-gray-200 truncate text-right min-w-0">
+                      {c.key === 'status' && STATUS_CORES[row[c.key]]
+                        ? <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_CORES[row[c.key]]}`}>{row[c.key]}</span>
+                        : row[c.key] ?? '-'}
+                    </span>
+                  </div>
+                ))}
+              </li>
+            ))}
+          </ul>
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full min-w-[640px] text-sm">
               <thead className="bg-gray-50 dark:bg-gray-800 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
                 <tr>
                   {aba.colunas.map((c) => (
@@ -280,7 +296,7 @@ export default function RelatoriosPage() {
                 {dados.map((row, i) => (
                   <tr key={i} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                     {aba.colunas.map((c) => (
-                      <td key={c.key} className="px-4 py-2.5 text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                      <td key={c.key} className={`px-4 py-2.5 text-gray-700 dark:text-gray-300 max-w-[200px] truncate ${['createdAt', 'vencimento', 'assignedAt', 'status', 'lido', 'ativo'].includes(c.key) ? 'whitespace-nowrap' : ''}`}>
                         {c.key === 'status' && STATUS_CORES[row[c.key]]
                           ? <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_CORES[row[c.key]]}`}>{row[c.key]}</span>
                           : row[c.key] ?? '-'

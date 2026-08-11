@@ -488,7 +488,7 @@ export default function FinanceiroPage() {
   // ===========================================================================
   if (isVisaoCliente) {
     return (
-      <div className="space-y-6 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="space-y-6 max-w-6xl mx-auto">
         {/* Alertas */}
         {alertas.vencidos.length > 0 && (
           <div className="flex items-start gap-3 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
@@ -559,7 +559,59 @@ export default function FinanceiroPage() {
               <p className="text-sm text-gray-500 dark:text-gray-400">Nenhum boleto encontrado.</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <>
+            <ul className="md:hidden divide-y divide-gray-100 dark:divide-gray-800">
+              {boletosFiltrados.map((b) => {
+                const badge = STATUS_BADGE[b.status];
+                return (
+                  <li key={b.id} className="p-4 space-y-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="font-medium text-gray-900 dark:text-gray-100">{mesLabel(b.mesReferencia)}</p>
+                        <p className="text-xs text-gray-500 truncate">{b.descricao || 'Honorário'}</p>
+                        <p className="text-xs text-gray-500 mt-1">vence {formatDate(b.vencimento)}</p>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <p className="font-semibold text-gray-900 dark:text-gray-100">{formatMoney(b.valor)}</p>
+                        <span className={`inline-block mt-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${badge.classes}`}>
+                          {badge.label}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <button
+                        onClick={() => handleDownload(b)}
+                        className="inline-flex items-center justify-center gap-1.5 min-h-[44px] w-full rounded-lg text-xs font-medium text-primary-dark dark:text-primary bg-primary-50 dark:bg-primary/10"
+                      >
+                        {b.asaasBoletoUrl ? <ExternalLink size={14} /> : <Download size={14} />}
+                        {b.asaasBoletoUrl ? 'Ver Boleto' : 'Baixar'}
+                      </button>
+                      <div className="flex gap-2">
+                        {b.asaasBarcode && (
+                          <button
+                            onClick={() => copiarTexto(b.asaasBarcode!)}
+                            className="inline-flex items-center justify-center gap-1.5 min-h-[44px] flex-1 rounded-lg text-xs font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800"
+                          >
+                            <Copy size={14} />
+                            Cód. Barras
+                          </button>
+                        )}
+                        {b.asaasPixCopiaECola && (
+                          <button
+                            onClick={() => copiarTexto(b.asaasPixCopiaECola!)}
+                            className="inline-flex items-center justify-center gap-1.5 min-h-[44px] flex-1 rounded-lg text-xs font-medium text-primary-dark dark:text-primary bg-primary/10"
+                          >
+                            <QrCode size={14} />
+                            PIX
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full min-w-[560px] text-sm">
                 <thead>
                   <tr className="border-b border-gray-100 dark:border-gray-800 bg-gray-50/60 dark:bg-gray-800/50">
@@ -597,7 +649,7 @@ export default function FinanceiroPage() {
                           <div className="flex items-center justify-center gap-1.5 flex-wrap">
                             <button
                               onClick={() => handleDownload(b)}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-primary-dark dark:text-primary bg-primary-50 dark:bg-primary/10 hover:bg-primary-50 dark:hover:bg-primary/20 transition-colors"
+                              className="inline-flex items-center gap-1.5 min-h-[44px] px-3 rounded-lg text-xs font-medium text-primary-dark dark:text-primary bg-primary-50 dark:bg-primary/10 hover:bg-primary-50 dark:hover:bg-primary/20 transition-colors"
                               title={b.asaasBoletoUrl ? 'Ver boleto no Asaas' : 'Baixar PDF'}
                             >
                               {b.asaasBoletoUrl ? <ExternalLink size={14} /> : <Download size={14} />}
@@ -606,7 +658,7 @@ export default function FinanceiroPage() {
                             {b.asaasBarcode && (
                               <button
                                 onClick={() => copiarTexto(b.asaasBarcode!)}
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                                className="inline-flex items-center gap-1.5 min-h-[44px] px-3 rounded-lg text-xs font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                                 title="Copiar linha digitável"
                               >
                                 <Copy size={14} />
@@ -616,7 +668,7 @@ export default function FinanceiroPage() {
                             {b.asaasPixCopiaECola && (
                               <button
                                 onClick={() => copiarTexto(b.asaasPixCopiaECola!)}
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-primary-dark dark:text-primary bg-primary/10 dark:bg-primary/10 hover:bg-primary/10 dark:hover:bg-primary/10 transition-colors"
+                                className="inline-flex items-center gap-1.5 min-h-[44px] px-3 rounded-lg text-xs font-medium text-primary-dark dark:text-primary bg-primary/10 dark:bg-primary/10 hover:bg-primary/10 dark:hover:bg-primary/10 transition-colors"
                                 title="Copiar PIX copia e cola"
                               >
                                 <QrCode size={14} />
@@ -631,6 +683,7 @@ export default function FinanceiroPage() {
                 </tbody>
               </table>
             </div>
+            </>
           )}
 
           {/* Paginação */}
@@ -666,7 +719,7 @@ export default function FinanceiroPage() {
   // Render — Visão CONTADOR
   // ===========================================================================
   return (
-    <div className="space-y-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div className="space-y-6 max-w-7xl mx-auto">
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <SummaryCard icon={<DollarSign size={18} />} label="A Receber" value={formatMoney(resumo.aReceber)} cor="blue" />
@@ -867,7 +920,7 @@ export default function FinanceiroPage() {
           onClick={fecharModal}
         >
           <div
-            className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden"
+            className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg max-h-[100dvh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}

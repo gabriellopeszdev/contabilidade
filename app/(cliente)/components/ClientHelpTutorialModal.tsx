@@ -75,17 +75,17 @@ export function ClientHelpTutorialModal({ aberto, onClose }: ClientHelpTutorialM
       <div className="absolute inset-0" onClick={onClose} />
 
       {/* Modal Container */}
-      <div className="relative w-full max-w-6xl h-[650px] max-h-[92vh] bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl shadow-2xl flex flex-col overflow-hidden z-10 animate-in fade-in zoom-in-95 duration-200">
+      <div className="relative w-full max-w-6xl h-[min(650px,100dvh-1rem)] max-h-[100dvh] bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-none sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden z-10 animate-in fade-in zoom-in-95 duration-200">
         
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800 shrink-0 bg-white dark:bg-gray-900 z-10">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary rounded-xl">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-gray-100 dark:border-gray-800 shrink-0 bg-white dark:bg-gray-900 z-10 gap-3">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="p-2 bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary rounded-xl shrink-0">
               <Sparkles size={20} className="animate-pulse" />
             </div>
-            <div>
-              <h2 id="modal-ajuda-cliente-titulo" className="text-lg font-bold text-gray-900 dark:text-gray-100">Portal do Cliente — Manual de Ajuda</h2>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Entenda de forma rápida como interagir com o seu escritório contábil</p>
+            <div className="min-w-0">
+              <h2 id="modal-ajuda-cliente-titulo" className="text-base sm:text-lg font-bold text-gray-900 dark:text-gray-100 truncate">Portal do Cliente — Manual de Ajuda</h2>
+              <p className="text-xs text-gray-500 dark:text-gray-400 truncate">Entenda de forma rápida como interagir com o seu escritório contábil</p>
             </div>
           </div>
           <button

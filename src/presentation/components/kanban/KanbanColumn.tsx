@@ -69,8 +69,8 @@ export function KanbanColumn({
     <section
       aria-label={`Coluna ${label}`}
       className={`flex flex-col rounded-2xl border transition-all duration-150 overflow-hidden
-                  ${borderColumn}`}
-      style={{ minHeight: '480px' }}
+                  snap-start min-w-[260px] w-[85vw] sm:w-auto sm:min-w-[240px]
+                  min-h-[280px] sm:min-h-[480px] ${borderColumn}`}
     >
       {/* ------------------------------------------------------------------ */}
       {/* Header da coluna                                                    */}

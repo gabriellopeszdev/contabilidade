@@ -706,6 +706,7 @@ function ModalDetalheNFe({ resultado, onFechar }: { resultado: ResultadoArquivo;
                   <div className="bg-blue-50 dark:bg-blue-900/20 px-4 py-2 border-b border-gray-200 dark:border-gray-700">
                     <p className="text-xs font-bold text-blue-700 dark:text-blue-400">Duplicatas</p>
                   </div>
+                  <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="bg-gray-50 dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
@@ -724,6 +725,7 @@ function ModalDetalheNFe({ resultado, onFechar }: { resultado: ResultadoArquivo;
                       ))}
                     </tbody>
                   </table>
+                  </div>
                 </div>
               )}
 
@@ -792,7 +794,8 @@ function ModalDetalheNFe({ resultado, onFechar }: { resultado: ResultadoArquivo;
                   <div className="bg-blue-50 dark:bg-blue-900/20 px-4 py-2 border-b border-gray-200 dark:border-gray-700">
                     <p className="text-xs font-bold text-blue-700 dark:text-blue-400">Volumes</p>
                   </div>
-                  <table className="w-full text-sm">
+                  <div className="overflow-x-auto">
+                  <table className="w-full min-w-[480px] text-sm">
                     <thead>
                       <tr className="bg-gray-50 dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
                         <th className="text-right px-4 py-2 text-[10px] font-semibold text-gray-400 uppercase">Qtd</th>
@@ -816,6 +819,7 @@ function ModalDetalheNFe({ resultado, onFechar }: { resultado: ResultadoArquivo;
                       ))}
                     </tbody>
                   </table>
+                  </div>
                 </div>
               )}
             </>
@@ -1029,12 +1033,12 @@ export default function NfePage() {
   // ---------------------------------------------------------------------------
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
 
       {/* ------------------------------------------------------------------ */}
       {/* Header                                                               */}
       {/* ------------------------------------------------------------------ */}
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-lg bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
             <FileCode2 size={18} className="text-primary dark:text-primary" />

@@ -25,20 +25,20 @@ export default function ComunicadosPage() {
   }
 
   return (
-    <div className="p-6 max-w-3xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-3xl mx-auto">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-10 h-10 rounded-xl bg-primary/10 dark:bg-primary/20 flex items-center justify-center shrink-0">
             <Megaphone size={20} className="text-primary" />
           </div>
-          <div>
+          <div className="min-w-0">
             <h1 className="text-lg font-bold text-gray-900 dark:text-gray-100">Comunicados</h1>
             <p className="text-xs text-gray-500 dark:text-gray-400">Avisos publicados para seus clientes</p>
           </div>
         </div>
         <button
           onClick={() => setModalAberto(true)}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-primary hover:bg-primary-dark rounded-xl transition-colors shadow-sm"
+          className="flex items-center justify-center gap-2 min-h-[44px] w-full sm:w-auto px-4 py-2 text-sm font-semibold text-white bg-primary hover:bg-primary-dark rounded-xl transition-colors shadow-sm shrink-0"
         >
           <Plus size={16} /> Novo Comunicado
         </button>

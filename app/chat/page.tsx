@@ -24,6 +24,7 @@ export default function ChatPage() {
   const isVisaoCliente = isCliente || isFuncionarioCliente;
   const [token, setToken] = useState<string | null>(null);
   const [busca, setBusca] = useState('');
+  const [listaMobile, setListaMobile] = useState(false);
   const chatWindowRef = useRef<ChatWindowHandle>(null);
 
   useEffect(() => {
@@ -65,6 +66,11 @@ export default function ChatPage() {
     }
   }, [isVisaoCliente, rooms, roomAtual, selecionarRoom]);
 
+  const selecionarEFecharLista = useCallback((id: string) => {
+    setListaMobile(false);
+    selecionarRoom(id);
+  }, [selecionarRoom]);
+
   const handleUploadAnexo = useCallback(
     async (rid: string, file: File): Promise<{ documentId: string; nome: string } | null> => {
       if (!token) return null;
@@ -95,41 +101,43 @@ export default function ChatPage() {
   }
 
   const roomSelecionada = rooms.find((r) => r.id === roomAtual);
+  const mostrarLista = !roomAtual || listaMobile;
 
   // -----------------------------------------------------------------------
   // Cliente: contacts sidebar (uma sala por membro) + janela de chat
   // -----------------------------------------------------------------------
   if (isVisaoCliente) {
-    const roomSelecionada = rooms.find((r) => r.id === roomAtual);
     const nomeDestinatario = roomSelecionada?.membroNome ?? 'Meu Escritório';
 
     return (
-      <div className="flex h-full">
-        {/* Sidebar de contatos — oculto em mobile */}
-        <div className="hidden md:block">
+      <div className="flex h-full min-h-0">
+        <div className={`${mostrarLista ? 'flex' : 'hidden'} md:flex w-full md:w-80 shrink-0 min-h-0`}>
           <ClienteChatContatos
             rooms={rooms}
             roomAtual={roomAtual}
             carregando={carregandoRooms}
-            onSelectRoom={selecionarRoom}
+            onSelectRoom={selecionarEFecharLista}
           />
         </div>
 
-        <ChatWindow
-          ref={chatWindowRef}
-          mensagens={mensagens}
-          carregando={carregandoMensagens}
-          hasMore={hasMore}
-          typing={typing}
-          userId={usuario.id}
-          nomeDestinatario={nomeDestinatario}
-          roomId={roomAtual}
-          onEnviar={enviarMensagem}
-          onCarregarMais={carregarMaisAntigas}
-          onTyping={emitirTyping}
-          onUploadAnexo={handleUploadAnexo}
-          semSala={!roomAtual}
-        />
+        <div className={`${mostrarLista ? 'hidden' : 'flex'} md:flex flex-1 min-h-0 min-w-0`}>
+          <ChatWindow
+            ref={chatWindowRef}
+            mensagens={mensagens}
+            carregando={carregandoMensagens}
+            hasMore={hasMore}
+            typing={typing}
+            userId={usuario.id}
+            nomeDestinatario={nomeDestinatario}
+            roomId={roomAtual}
+            onEnviar={enviarMensagem}
+            onCarregarMais={carregarMaisAntigas}
+            onTyping={emitirTyping}
+            onUploadAnexo={handleUploadAnexo}
+            semSala={!roomAtual}
+            onVoltar={() => setListaMobile(true)}
+          />
+        </div>
       </div>
     );
   }
@@ -138,32 +146,35 @@ export default function ChatPage() {
   // Contador: sidebar + chat window
   // -----------------------------------------------------------------------
   return (
-    <div className="flex h-full">
-      <div className="w-80 shrink-0 hidden md:block">
+    <div className="flex h-full min-h-0">
+      <div className={`${mostrarLista ? 'flex' : 'hidden'} md:flex w-full md:w-80 shrink-0 min-h-0`}>
         <ChatSidebar
           rooms={rooms}
           roomAtual={roomAtual}
           carregando={carregandoRooms}
           busca={busca}
           onBuscaChange={setBusca}
-          onSelectRoom={selecionarRoom}
+          onSelectRoom={selecionarEFecharLista}
         />
       </div>
 
-      <ChatWindow
-        mensagens={mensagens}
-        carregando={carregandoMensagens}
-        hasMore={hasMore}
-        typing={typing}
-        userId={usuario.id}
-        nomeDestinatario={roomSelecionada?.clienteNome ?? ''}
-        roomId={roomAtual}
-        onEnviar={enviarMensagem}
-        onCarregarMais={carregarMaisAntigas}
-        onTyping={emitirTyping}
-        onUploadAnexo={handleUploadAnexo}
-        semSala={!roomAtual}
-      />
+      <div className={`${mostrarLista ? 'hidden' : 'flex'} md:flex flex-1 min-h-0 min-w-0`}>
+        <ChatWindow
+          mensagens={mensagens}
+          carregando={carregandoMensagens}
+          hasMore={hasMore}
+          typing={typing}
+          userId={usuario.id}
+          nomeDestinatario={roomSelecionada?.clienteNome ?? ''}
+          roomId={roomAtual}
+          onEnviar={enviarMensagem}
+          onCarregarMais={carregarMaisAntigas}
+          onTyping={emitirTyping}
+          onUploadAnexo={handleUploadAnexo}
+          semSala={!roomAtual}
+          onVoltar={() => setListaMobile(true)}
+        />
+      </div>
     </div>
   );
 }

@@ -505,9 +505,9 @@ function NotasPendentesSefaz({ clienteId, getToken }: { clienteId: string; getTo
   if (notas.length === 0) return null;
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-xl border border-amber-200 dark:border-amber-800 p-6 space-y-4">
-      <div className="flex items-center gap-2">
-        <AlertCircle size={18} className="text-amber-500" />
+    <div className="bg-white dark:bg-gray-900 rounded-xl border border-amber-200 dark:border-amber-800 p-4 sm:p-6 space-y-4">
+      <div className="flex items-center gap-2 flex-wrap">
+        <AlertCircle size={18} className="text-amber-500 shrink-0" />
         <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
           Notas Fiscais Pendentes de Revisão
         </h3>
@@ -520,8 +520,51 @@ function NotasPendentesSefaz({ clienteId, getToken }: { clienteId: string; getTo
         As notas abaixo foram capturadas automaticamente da SEFAZ e aguardam sua revisão antes de entrar na base de documentos.
       </p>
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+      <ul className="md:hidden divide-y divide-gray-100 dark:divide-gray-800 -mx-4 sm:mx-0 border-t border-gray-100 dark:border-gray-800">
+        {notas.map((nota) => {
+          const emProcesso = acaoId === nota.id;
+          const cnpjFmt = nota.emitenteCnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
+          const dataFmt = new Date(nota.dataEmissao).toLocaleDateString('pt-BR');
+          const valorFmt = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(nota.valorTotal));
+          return (
+            <li key={nota.id} className="px-4 py-4 space-y-3">
+              <div className="min-w-0">
+                <p className="font-medium text-gray-800 dark:text-gray-200 truncate">{nota.emitenteNome}</p>
+                <p className="text-xs text-gray-500 font-mono">{cnpjFmt}</p>
+                <p className="text-xs text-gray-500 mt-1">NF-e {nota.numero}/{nota.serie} · {dataFmt} · {valorFmt}</p>
+              </div>
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={() => void executarAcao(nota.id, 'confirmar')}
+                  disabled={emProcesso}
+                  className="flex items-center justify-center gap-1 min-h-[44px] text-xs font-semibold rounded-lg bg-emerald-600 text-white disabled:opacity-50"
+                >
+                  {emProcesso ? <Loader2 size={11} className="animate-spin" /> : <CheckCircle2 size={11} />}
+                  Confirmar
+                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => void executarAcao(nota.id, 'rejeitar')}
+                    disabled={emProcesso}
+                    className="flex-1 flex items-center justify-center gap-1 min-h-[44px] text-xs font-semibold rounded-lg border border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 disabled:opacity-50"
+                  >
+                    <X size={11} /> Rejeitar
+                  </button>
+                  <button
+                    onClick={() => void executarAcao(nota.id, 'desconhecer')}
+                    disabled={emProcesso}
+                    className="flex-1 flex items-center justify-center gap-1 min-h-[44px] text-xs font-semibold rounded-lg border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 disabled:opacity-50"
+                  >
+                    <AlertCircle size={11} /> Desconhecer
+                  </button>
+                </div>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+      <div className="hidden md:block overflow-x-auto">
+        <table className="w-full min-w-[640px] text-sm">
           <thead>
             <tr className="text-left text-xs font-semibold text-gray-500 dark:text-gray-400 border-b border-gray-100 dark:border-gray-800">
               <th className="pb-2 pr-4">Emitente</th>

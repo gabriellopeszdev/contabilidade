@@ -210,10 +210,10 @@ export default function EquipeClientePage() {
     <div className="p-4 sm:p-6 lg:p-8 space-y-6">
 
       {/* Header */}
-      <div className="flex items-center justify-between gap-4">
-        <div>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="min-w-0">
           <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-            <Users size={20} className="text-primary" />
+            <Users size={20} className="text-primary shrink-0" />
             Minha Equipe
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
@@ -222,8 +222,8 @@ export default function EquipeClientePage() {
         </div>
         <button
           onClick={abrirCriar}
-          className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white text-sm font-semibold
-            rounded-xl transition-colors shadow-sm"
+          className="flex items-center justify-center gap-2 min-h-[44px] w-full sm:w-auto px-4 py-2 bg-primary hover:bg-primary-dark text-white text-sm font-semibold
+            rounded-xl transition-colors shadow-sm shrink-0"
         >
           <Plus size={16} />
           Adicionar membro
@@ -372,7 +372,7 @@ export default function EquipeClientePage() {
           onClick={fecharModal}
         >
           <div
-            className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md border border-gray-200 dark:border-gray-700"
+            className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md max-h-[100dvh] overflow-y-auto border border-gray-200 dark:border-gray-700"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
@@ -383,7 +383,7 @@ export default function EquipeClientePage() {
               <button
                 onClick={fecharModal}
                 disabled={salvando}
-                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-gray-200
+                className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-gray-200
                   hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40 transition-colors"
               >
                 <X size={16} />

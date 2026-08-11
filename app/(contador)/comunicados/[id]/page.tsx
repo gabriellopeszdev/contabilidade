@@ -71,10 +71,11 @@ export default function ComunicadoDetalhePage() {
   const html = DOMPurify.sanitize(comunicado.conteudo);
 
   return (
-    <div className="p-6 max-w-3xl mx-auto space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-3xl mx-auto space-y-6">
       <div className="flex items-center gap-3">
         <button onClick={() => router.push('/comunicados')}
-          className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+          aria-label="Voltar"
+          className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors shrink-0">
           <ArrowLeft size={18} />
         </button>
         <h1 className="text-lg font-bold text-gray-900 dark:text-gray-100 flex-1 min-w-0 truncate">
@@ -121,16 +122,18 @@ export default function ComunicadoDetalhePage() {
             <Trash2 size={13} /> Excluir comunicado
           </button>
         ) : (
-          <div className="flex items-center gap-3 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 p-3">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 p-3">
             <AlertTriangle size={16} className="text-red-500 shrink-0" />
             <p className="text-xs text-red-700 dark:text-red-400 flex-1">Confirmar exclusão? Esta ação não pode ser desfeita.</p>
+            <div className="flex items-center gap-2">
             <button onClick={() => setConfirmDelete(false)}
-              className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1">Cancelar</button>
+              className="min-h-[44px] text-xs text-gray-500 hover:text-gray-700 px-3">Cancelar</button>
             <button onClick={handleDelete} disabled={deletando}
-              className="flex items-center gap-1.5 text-xs font-semibold text-white bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50">
+              className="flex items-center gap-1.5 min-h-[44px] text-xs font-semibold text-white bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50">
               {deletando ? <Loader2 size={11} className="animate-spin" /> : <Trash2 size={11} />}
               Excluir
             </button>
+            </div>
           </div>
         )}
       </div>

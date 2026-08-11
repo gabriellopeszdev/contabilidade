@@ -51,7 +51,20 @@ export function DestinatariosTable({ comunicadoId, exigeConfirmacao, token }: De
     iso ? new Date(iso).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : null;
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700">
+    <div className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <ul className="md:hidden divide-y divide-gray-100 dark:divide-gray-800">
+        {items.map((d) => (
+          <li key={d.clienteId} className="p-4 space-y-1">
+            <p className="font-medium text-gray-900 dark:text-gray-100 truncate">{d.nome}</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 truncate">{d.email}</p>
+            <p className="text-xs text-gray-500 mt-1">
+              {d.lido ? `Lido em ${fmt(d.lidoAt)}` : 'Não lido'}
+              {exigeConfirmacao && ` · ${d.confirmado ? `Confirmado em ${fmt(d.confirmadoAt)}` : 'Sem confirmação'}`}
+            </p>
+          </li>
+        ))}
+      </ul>
+      <div className="hidden md:block overflow-x-auto">
       <table className="min-w-full text-xs">
         <thead>
           <tr className="bg-gray-50 dark:bg-gray-800 text-left text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
@@ -64,8 +77,8 @@ export function DestinatariosTable({ comunicadoId, exigeConfirmacao, token }: De
           {items.map((d) => (
             <tr key={d.clienteId} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
               <td className="px-4 py-3">
-                <p className="font-medium text-gray-900 dark:text-gray-100">{d.nome}</p>
-                <p className="text-gray-400 dark:text-gray-500">{d.email}</p>
+                <p className="font-medium text-gray-900 dark:text-gray-100 truncate max-w-[200px]">{d.nome}</p>
+                <p className="text-gray-400 dark:text-gray-500 truncate max-w-[200px]">{d.email}</p>
               </td>
               <td className="px-4 py-3">
                 {d.lido ? (
@@ -91,6 +104,7 @@ export function DestinatariosTable({ comunicadoId, exigeConfirmacao, token }: De
           ))}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }

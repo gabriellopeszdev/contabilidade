@@ -106,13 +106,13 @@ export default function AssinaturasPage() {
   }, {} as Record<string, number>);
 
   return (
-    <div className="p-6 max-w-6xl mx-auto space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto space-y-6">
 
       {/* Header */}
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-3">
-          <FileSignature size={24} className="text-primary" />
-          <div>
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <FileSignature size={24} className="text-primary shrink-0" />
+          <div className="min-w-0">
             <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Assinaturas</h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">Gerencie solicitações de assinatura eletrônica</p>
           </div>
@@ -120,7 +120,7 @@ export default function AssinaturasPage() {
         <button
           onClick={carregar}
           disabled={carregando}
-          className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
+          className="flex items-center justify-center gap-2 min-h-[44px] px-3 py-2 text-sm text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50 shrink-0"
         >
           <RefreshCw size={14} className={carregando ? 'animate-spin' : ''} />
           Atualizar
@@ -155,7 +155,7 @@ export default function AssinaturasPage() {
           <button
             key={f.value}
             onClick={() => setFiltro(f.value)}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+            className={`min-h-[44px] px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
               filtro === f.value
                 ? 'bg-primary text-white'
                 : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
@@ -190,8 +190,51 @@ export default function AssinaturasPage() {
       {/* Tabela */}
       {!carregando && assinaturas.length > 0 && (
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+          <ul className="md:hidden divide-y divide-gray-100 dark:divide-gray-800">
+            {assinaturas.map((a) => {
+              const cfg = STATUS_CONFIG[a.status] ?? STATUS_CONFIG.EXPIRADO;
+              return (
+                <li key={a.id} className="p-4 space-y-3">
+                  <div className="min-w-0">
+                    <p className="font-medium text-gray-800 dark:text-gray-200 truncate">{a.documentoNome}</p>
+                    <p className="text-xs text-gray-400 truncate">{a.signatarioNome} · {a.signatarioEmail}</p>
+                    <span className={`inline-flex items-center gap-1 mt-2 px-2 py-0.5 rounded-full text-xs font-medium border ${cfg.cor}`}>
+                      {cfg.icon}{cfg.label}
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    {(a.status === 'PENDENTE' || a.status === 'EXPIRADO') && (
+                      <button
+                        onClick={() => abrirLinkAssinatura(a.tokenAssinatura)}
+                        className="inline-flex items-center justify-center gap-1 min-h-[44px] text-xs font-medium text-primary border border-primary/30 rounded-lg"
+                      >
+                        <ExternalLink size={12} />
+                        Ver link
+                      </button>
+                    )}
+                    {a.status === 'ASSINADO' && a.temComprovante && (
+                      <button
+                        onClick={() => baixarComprovante(a.id, a.documentoNome)}
+                        className="inline-flex items-center justify-center gap-1 min-h-[44px] text-xs font-medium text-emerald-600 border border-emerald-200 dark:border-emerald-800 rounded-lg"
+                      >
+                        <Download size={12} />
+                        Baixar assinado
+                      </button>
+                    )}
+                    <button
+                      onClick={() => setDrawerAssinatura(a)}
+                      className="inline-flex items-center justify-center gap-1 min-h-[44px] text-xs font-medium text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg"
+                    >
+                      <ShieldCheck size={12} />
+                      Auditoria
+                    </button>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full min-w-[720px] text-sm">
               <thead className="bg-gray-50 dark:bg-gray-800 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
                 <tr>
                   <th className="px-4 py-3 text-left">Documento</th>
@@ -214,8 +257,8 @@ export default function AssinaturasPage() {
                         <p className="text-xs text-gray-400 dark:text-gray-500">{a.documentoTipo}</p>
                       </td>
                       <td className="px-4 py-3">
-                        <p className="text-gray-800 dark:text-gray-200">{a.signatarioNome}</p>
-                        <p className="text-xs text-gray-400 dark:text-gray-500">{a.signatarioEmail}</p>
+                        <p className="text-gray-800 dark:text-gray-200 truncate max-w-[160px]">{a.signatarioNome}</p>
+                        <p className="text-xs text-gray-400 dark:text-gray-500 truncate max-w-[160px]">{a.signatarioEmail}</p>
                       </td>
                       <td className="px-4 py-3">
                         <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${cfg.cor}`}>
@@ -282,7 +325,7 @@ export default function AssinaturasPage() {
         <div className="fixed inset-0 z-50 flex justify-end" onClick={() => setDrawerAssinatura(null)}>
           <div className="fixed inset-0 bg-black/30" />
           <div
-            className="relative z-10 w-full max-w-md bg-white dark:bg-gray-900 h-full overflow-y-auto shadow-xl"
+            className="relative z-10 w-full max-w-md bg-white dark:bg-gray-900 h-full max-h-[100dvh] overflow-y-auto shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
@@ -291,7 +334,7 @@ export default function AssinaturasPage() {
                 <ShieldCheck size={18} className="text-primary" />
                 <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Auditoria de Assinatura</h2>
               </div>
-              <button onClick={() => setDrawerAssinatura(null)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+              <button onClick={() => setDrawerAssinatura(null)} aria-label="Fechar" className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 shrink-0">
                 <X size={20} />
               </button>
             </div>
@@ -316,16 +359,16 @@ export default function AssinaturasPage() {
               <div>
                 <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-2">Linha do Tempo</p>
                 <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
+                  <div className="flex flex-col sm:flex-row sm:justify-between gap-0.5">
                     <span className="text-gray-500 dark:text-gray-400">Solicitado em</span>
                     <span className="text-gray-900 dark:text-gray-100">{new Date(drawerAssinatura.createdAt).toLocaleString('pt-BR')}</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex flex-col sm:flex-row sm:justify-between gap-0.5">
                     <span className="text-gray-500 dark:text-gray-400">Vencimento</span>
                     <span className="text-gray-900 dark:text-gray-100">{new Date(drawerAssinatura.expiresAt).toLocaleString('pt-BR')}</span>
                   </div>
                   {drawerAssinatura.assinadoAt && (
-                    <div className="flex justify-between">
+                    <div className="flex flex-col sm:flex-row sm:justify-between gap-0.5">
                       <span className="text-gray-500 dark:text-gray-400">Assinado em</span>
                       <span className="text-emerald-700 dark:text-emerald-400 font-medium">{new Date(drawerAssinatura.assinadoAt).toLocaleString('pt-BR')}</span>
                     </div>
@@ -370,7 +413,7 @@ export default function AssinaturasPage() {
               {drawerAssinatura.status === 'ASSINADO' && drawerAssinatura.temComprovante && (
                 <button
                   onClick={() => baixarComprovante(drawerAssinatura.id, drawerAssinatura.documentoNome)}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors"
+                  className="w-full flex items-center justify-center gap-2 min-h-[44px] px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors"
                 >
                   <Download size={15} />
                   Baixar Comprovante Assinado
