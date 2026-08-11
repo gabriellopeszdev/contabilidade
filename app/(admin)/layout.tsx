@@ -112,6 +112,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="flex h-screen bg-slate-950 overflow-hidden">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-violet-600 focus:text-white focus:rounded-lg focus:text-sm focus:font-semibold focus:shadow-lg"
+      >
+        Ir para o conteúdo
+      </a>
 
       {/* ================================================================== */}
       {/* Sidebar                                                              */}
@@ -121,6 +127,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div
           className="fixed inset-0 bg-black/60 z-40 lg:hidden"
           onClick={() => setSidebarAberta(false)}
+          aria-hidden="true"
         />
       )}
 
@@ -142,15 +149,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <p className="text-[10px] text-slate-400 leading-none">Painel de Controle</p>
           </div>
           <button
-            className="ml-auto lg:hidden p-1 rounded text-slate-400 hover:text-white"
+            className="ml-auto lg:hidden min-h-[44px] min-w-[44px] flex items-center justify-center rounded text-slate-400 hover:text-white"
             onClick={() => setSidebarAberta(false)}
+            aria-label="Fechar menu de navegação"
           >
             <X size={18} />
           </button>
         </div>
 
         {/* Navegação */}
-        <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
+        <nav aria-label="Painel administrativo" className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
           {NAV_ITEMS.map((item) => {
             const ativo = pathname === item.href || pathname.startsWith(item.href + '/');
             return (
@@ -158,6 +166,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 key={item.href}
                 href={item.href}
                 onClick={() => setSidebarAberta(false)}
+                aria-current={ativo ? 'page' : undefined}
                 className={`
                   flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium
                   transition-colors
@@ -204,8 +213,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {/* Topbar */}
         <header className="h-14 bg-slate-900 border-b border-slate-800 flex items-center px-4 sm:px-6 shrink-0">
           <button
-            className="lg:hidden p-2 -ml-2 rounded text-slate-400 hover:text-white"
+            className="lg:hidden min-h-[44px] min-w-[44px] flex items-center justify-center -ml-2 rounded text-slate-400 hover:text-white"
             onClick={() => setSidebarAberta(true)}
+            aria-label="Abrir menu de navegação"
           >
             <Menu size={20} />
           </button>
@@ -223,7 +233,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </header>
 
         {/* Conteúdo */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 relative">
+        <main id="main-content" className="flex-1 overflow-y-auto p-4 sm:p-6 relative">
           {/* Overlay de 2FA obrigatório */}
           {twoFactorEnabled === false && pathname !== '/admin-config' && (
             <div className="absolute inset-0 z-50 bg-slate-950/95 backdrop-blur-sm flex items-center justify-center p-6">

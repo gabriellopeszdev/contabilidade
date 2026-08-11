@@ -14,7 +14,9 @@ import { ImpersonationBanner } from './components/ImpersonationBanner';
 // =============================================================================
 
 export const viewport: Viewport = {
-  themeColor: '#0a0f1e',
+  themeColor:    '#0a0f1e',
+  width:         'device-width',
+  initialScale:  1,
 };
 
 export const metadata: Metadata = {

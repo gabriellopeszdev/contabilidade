@@ -69,7 +69,8 @@ html.dark {
     overflow-x: hidden;
   }
 
-  /* Remove outline padrão e substitui por ring do Tailwind via focus-visible */
+  /* Clique de mouse: sem outline. O anel de teclado fica fora desta layer
+     para não ser sobrescrito por `focus:outline-none` do Tailwind. */
   :focus {
     outline: none;
   }
@@ -99,6 +100,25 @@ html.dark {
   * {
     scrollbar-width: thin;
     scrollbar-color: #2563eb transparent;
+  }
+}
+
+/* Fora de @layer para vencer `focus:outline-none` do Tailwind (WCAG 2.4.7). */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
 

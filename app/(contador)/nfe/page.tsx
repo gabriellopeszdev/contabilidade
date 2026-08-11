@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import {
   FileCode2,
   FileText,
@@ -188,7 +188,7 @@ function Campo({ label, value, mono, span }: { label: string; value?: string | n
   const vazio = value === undefined || value === null || value === '';
   return (
     <div className={span ? 'col-span-2 sm:col-span-3' : ''}>
-      <p className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-0.5">{label}</p>
+      <p className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-0.5">{label}</p>
       <p className={`text-sm text-gray-800 dark:text-gray-200 ${mono ? 'font-mono break-all' : ''}`}>{vazio ? '—' : value}</p>
     </div>
   );
@@ -211,33 +211,92 @@ function ModalDetalheNFe({ resultado, onFechar }: { resultado: ResultadoArquivo;
   const d = resultado.dados!;
   const [tab, setTab] = useState<TabId>('nfe');
   const [itemAberto, setItemAberto] = useState<number | null>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const closeRef  = useRef<HTMLButtonElement>(null);
+  const tabRefs   = useRef<(HTMLButtonElement | null)[]>([]);
 
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onFechar(); };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
+    const prev = document.activeElement as HTMLElement | null;
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    closeRef.current?.focus();
+
+    const focusaveis = () => {
+      const root = dialogRef.current;
+      if (!root) return [] as HTMLElement[];
+      return Array.from(root.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])',
+      )).filter((el) => el.offsetParent !== null || el === document.activeElement);
+    };
+
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onFechar();
+        return;
+      }
+      if (e.key !== 'Tab') return;
+      const items = focusaveis();
+      if (items.length === 0) return;
+      const first = items[0];
+      const last  = items[items.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+
+    window.addEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      document.body.style.overflow = overflow;
+      prev?.focus();
+    };
   }, [onFechar]);
+
+  const onTabListKeyDown = (e: React.KeyboardEvent) => {
+    const i = TABS.findIndex((t) => t.id === tab);
+    let next = i;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = (i + 1) % TABS.length;
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = (i - 1 + TABS.length) % TABS.length;
+    else if (e.key === 'Home') next = 0;
+    else if (e.key === 'End') next = TABS.length - 1;
+    else return;
+    e.preventDefault();
+    setTab(TABS[next].id);
+    requestAnimationFrame(() => tabRefs.current[next]?.focus());
+  };
 
   const brl = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   const modeloLabel = d.modelo === 65 ? 'NFC-e' : d.modelo === 55 ? 'NF-e' : `Mod. ${d.modelo}`;
   const ambienteLabel = d.ambiente === 2 ? 'Homologação' : 'Produção';
+  const tituloId = 'nfe-modal-titulo';
 
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
       onClick={(e) => { if (e.target === e.currentTarget) onFechar(); }}
     >
-      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-2xl w-full max-w-4xl h-[90vh] flex flex-col">
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={tituloId}
+        className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-2xl w-full max-w-4xl h-[min(90vh,calc(100dvh-2rem))] flex flex-col"
+      >
 
         {/* Header */}
         <div className="flex items-start justify-between px-5 pt-5 pb-3 shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-lg bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
-              <FileText size={18} className="text-primary" />
+              <FileText size={18} className="text-primary" aria-hidden="true" />
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-base font-bold text-gray-900 dark:text-gray-100">
+                <h2 id={tituloId} className="text-base font-bold text-gray-900 dark:text-gray-100">
                   {modeloLabel} {d.numero}{d.serie ? ` / Série ${d.serie}` : ''}
                 </h2>
                 <TipoBadge tipo={d.tipo} />
@@ -247,21 +306,52 @@ function ModalDetalheNFe({ resultado, onFechar }: { resultado: ResultadoArquivo;
                   </span>
                 )}
               </div>
-              <p className="text-xs text-gray-400 dark:text-gray-500">{resultado.nomeArquivo}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{resultado.nomeArquivo}</p>
             </div>
           </div>
-          <button onClick={onFechar} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
-            <X size={18} />
+          <button
+            ref={closeRef}
+            type="button"
+            onClick={onFechar}
+            aria-label="Fechar detalhes da nota fiscal"
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+          >
+            <X size={18} aria-hidden="true" />
           </button>
         </div>
 
-        {/* Tabs nav */}
-        <div className="flex items-center gap-0.5 px-4 border-b border-gray-100 dark:border-gray-800 overflow-x-auto shrink-0">
-          {TABS.map((t) => (
+        {/* Abas — select no mobile, tablist no desktop */}
+        <div className="sm:hidden px-4 pb-3 shrink-0">
+          <label htmlFor="nfe-aba-mobile" className="sr-only">Seção da nota fiscal</label>
+          <select
+            id="nfe-aba-mobile"
+            value={tab}
+            onChange={(e) => setTab(e.target.value as TabId)}
+            className="w-full min-h-[44px] rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm text-gray-900 dark:text-gray-100 px-3"
+          >
+            {TABS.map((t) => (
+              <option key={t.id} value={t.id}>{t.label}</option>
+            ))}
+          </select>
+        </div>
+        <div
+          role="tablist"
+          aria-label="Seções da nota fiscal"
+          onKeyDown={onTabListKeyDown}
+          className="hidden sm:flex items-center gap-0.5 px-4 border-b border-gray-100 dark:border-gray-800 overflow-x-auto shrink-0"
+        >
+          {TABS.map((t, i) => (
             <button
               key={t.id}
+              ref={(el) => { tabRefs.current[i] = el; }}
+              type="button"
+              role="tab"
+              id={`nfe-tab-${t.id}`}
+              aria-selected={tab === t.id}
+              aria-controls={`nfe-painel-${t.id}`}
+              tabIndex={tab === t.id ? 0 : -1}
               onClick={() => setTab(t.id)}
-              className={`px-3 py-2.5 text-xs font-semibold whitespace-nowrap border-b-2 transition-colors ${
+              className={`px-3 py-2.5 text-xs font-semibold whitespace-nowrap border-b-2 transition-colors min-h-[44px] ${
                 tab === t.id
                   ? 'border-primary text-primary dark:text-primary'
                   : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
@@ -273,7 +363,12 @@ function ModalDetalheNFe({ resultado, onFechar }: { resultado: ResultadoArquivo;
         </div>
 
         {/* Conteúdo das abas */}
-        <div className="overflow-y-auto flex-1 min-h-0 p-5 space-y-4">
+        <div
+          role="tabpanel"
+          id={`nfe-painel-${tab}`}
+          aria-labelledby={`nfe-tab-${tab}`}
+          className="overflow-y-auto flex-1 min-h-0 p-5 space-y-4"
+        >
 
           {/* ── ABA: NF-e ── */}
           {tab === 'nfe' && (
@@ -485,12 +580,17 @@ function ModalDetalheNFe({ resultado, onFechar }: { resultado: ResultadoArquivo;
                         const aberto = itemAberto === i;
                         return (
                           <React.Fragment key={i}>
-                            <tr
-                              className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer"
-                              onClick={() => setItemAberto(aberto ? null : i)}
-                            >
+                            <tr className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                               <td className="px-3 py-2.5 text-gray-400">
-                                {aberto ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                                <button
+                                  type="button"
+                                  aria-expanded={aberto}
+                                  aria-label={aberto ? `Recolher item ${item.nItem || i + 1}` : `Expandir item ${item.nItem || i + 1}`}
+                                  onClick={() => setItemAberto(aberto ? null : i)}
+                                  className="min-h-[44px] min-w-[44px] flex items-center justify-center -m-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                                >
+                                  {aberto ? <ChevronDown size={14} aria-hidden="true" /> : <ChevronRight size={14} aria-hidden="true" />}
+                                </button>
                               </td>
                               <td className="px-2 py-2.5 text-xs text-gray-400">{item.nItem || i + 1}</td>
                               <td className="px-2 py-2.5">
@@ -769,6 +869,59 @@ function ModalDetalheNFe({ resultado, onFechar }: { resultado: ResultadoArquivo;
   );
 }
 
+function AcoesNfe({
+  item,
+  visualizandoId,
+  baixandoId,
+  onVisualizar,
+  onBaixar,
+  fullWidth,
+}: {
+  item: ItemRecebido;
+  visualizandoId: string | null;
+  baixandoId: string | null;
+  onVisualizar: (item: ItemRecebido) => void;
+  onBaixar: (item: ItemRecebido) => void;
+  fullWidth?: boolean;
+}) {
+  const ocupado = visualizandoId === item.id || baixandoId === item.id;
+  return (
+    <div className={`flex items-center gap-2 ${fullWidth ? 'w-full' : 'justify-end'}`}>
+      <button
+        type="button"
+        onClick={() => onVisualizar(item)}
+        disabled={ocupado}
+        className={`inline-flex items-center justify-center gap-1.5 min-h-[44px] px-3 text-xs font-medium
+          text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary
+          border border-gray-200 dark:border-gray-700 hover:border-primary dark:hover:border-primary
+          rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed
+          ${fullWidth ? 'flex-1' : ''}`}
+      >
+        {visualizandoId === item.id
+          ? <Loader2 size={12} className="animate-spin" aria-hidden="true" />
+          : <ChevronRight size={12} aria-hidden="true" />
+        }
+        Ver detalhes
+      </button>
+      <button
+        type="button"
+        onClick={() => onBaixar(item)}
+        disabled={ocupado}
+        className={`inline-flex items-center justify-center gap-1.5 min-h-[44px] px-3 text-xs font-medium text-white
+          bg-primary hover:bg-primary-dark rounded-lg transition-colors
+          disabled:opacity-50 disabled:cursor-not-allowed
+          ${fullWidth ? 'flex-1' : ''}`}
+      >
+        {baixandoId === item.id
+          ? <Loader2 size={12} className="animate-spin" aria-hidden="true" />
+          : <Download size={12} aria-hidden="true" />
+        }
+        Baixar
+      </button>
+    </div>
+  );
+}
+
 // =============================================================================
 // Página principal: /nfe — NF-e dos Clientes
 // =============================================================================
@@ -894,13 +1047,15 @@ export default function NfePage() {
           </div>
         </div>
         <button
+          type="button"
           onClick={() => void carregarLista()}
           disabled={carregando}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400
+          aria-label="Atualizar lista de NF-e"
+          className="inline-flex items-center justify-center gap-1.5 min-h-[44px] px-3 text-xs font-medium text-gray-500 dark:text-gray-400
             hover:text-gray-700 dark:hover:text-gray-200 border border-gray-200 dark:border-gray-700
             hover:border-gray-300 dark:hover:border-gray-600 rounded-lg transition-colors disabled:opacity-50"
         >
-          <RefreshCw size={13} className={carregando ? 'animate-spin' : ''} />
+          <RefreshCw size={13} className={carregando ? 'animate-spin' : ''} aria-hidden="true" />
           Atualizar
         </button>
       </div>
@@ -909,13 +1064,15 @@ export default function NfePage() {
       {/* Busca                                                                */}
       {/* ------------------------------------------------------------------ */}
       <div className="relative max-w-sm">
-        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+        <label htmlFor="busca-nfe" className="sr-only">Buscar por cliente ou arquivo</label>
+        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" aria-hidden="true" />
         <input
-          type="text"
+          id="busca-nfe"
+          type="search"
           value={busca}
           onChange={(e) => setBusca(e.target.value)}
           placeholder="Buscar por cliente ou arquivo…"
-          className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700
+          className="w-full min-h-[44px] pl-9 pr-4 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700
             bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100
             placeholder:text-gray-400 dark:placeholder:text-gray-500
             focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
@@ -926,11 +1083,25 @@ export default function NfePage() {
       {/* Erro                                                                 */}
       {/* ------------------------------------------------------------------ */}
       {erro && (
-        <div className="flex items-start gap-3 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
-          <AlertTriangle size={16} className="text-red-500 shrink-0 mt-0.5" />
-          <p className="text-sm text-red-700 dark:text-red-400 flex-1">{erro}</p>
-          <button onClick={() => setErro(null)} className="text-red-400 hover:text-red-600">
-            <X size={15} />
+        <div role="alert" className="flex items-start gap-3 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+          <AlertTriangle size={16} className="text-red-500 shrink-0 mt-0.5" aria-hidden="true" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm text-red-700 dark:text-red-400">{erro}</p>
+            <button
+              type="button"
+              onClick={() => void carregarLista()}
+              className="mt-2 text-sm font-medium text-red-700 dark:text-red-300 hover:underline"
+            >
+              Tentar novamente
+            </button>
+          </div>
+          <button
+            type="button"
+            onClick={() => setErro(null)}
+            aria-label="Dispensar aviso"
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-red-400 hover:text-red-600 hover:bg-red-100/60 dark:hover:bg-red-900/40"
+          >
+            <X size={15} aria-hidden="true" />
           </button>
         </div>
       )}
@@ -972,83 +1143,78 @@ export default function NfePage() {
               {xmlsFiltrados.length} arquivo(s)
             </span>
           </div>
-          <div className="overflow-x-auto">
+
+          {/* Cards no mobile */}
+          <ul className="md:hidden divide-y divide-gray-100 dark:divide-gray-800">
+            {xmlsFiltrados.map((item) => (
+              <li key={item.id} className="p-4 space-y-3">
+                <div className="flex items-start gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-primary/10 dark:bg-primary/20 flex items-center justify-center shrink-0">
+                    <Building2 size={15} className="text-primary" aria-hidden="true" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{item.cliente.name}</p>
+                    <p className="text-xs text-gray-500">{formatarCNPJ(item.cliente.cnpj)}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate" title={item.fileName}>{item.fileName}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{formatarData(item.createdAt)}</p>
+                  </div>
+                </div>
+                <AcoesNfe
+                  item={item}
+                  visualizandoId={visualizandoId}
+                  baixandoId={baixandoId}
+                  onVisualizar={handleVisualizar}
+                  onBaixar={handleBaixar}
+                  fullWidth
+                />
+              </li>
+            ))}
+          </ul>
+
+          {/* Tabela no desktop */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-950">
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Cliente</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Arquivo</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide whitespace-nowrap">Recebido em</th>
-                  <th className="px-4 py-3" />
+                  <th scope="col" className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Cliente</th>
+                  <th scope="col" className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Arquivo</th>
+                  <th scope="col" className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide whitespace-nowrap">Recebido em</th>
+                  <th scope="col" className="px-4 py-3"><span className="sr-only">Ações</span></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
                 {xmlsFiltrados.map((item) => (
                   <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
-                    {/* Cliente */}
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         <div className="w-7 h-7 rounded-lg bg-primary/10 dark:bg-primary/20 flex items-center justify-center shrink-0">
-                          <Building2 size={13} className="text-primary dark:text-primary" />
+                          <Building2 size={13} className="text-primary dark:text-primary" aria-hidden="true" />
                         </div>
                         <div>
                           <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{item.cliente.name}</p>
-                          <p className="text-xs text-gray-400 dark:text-gray-500">{formatarCNPJ(item.cliente.cnpj)}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">{formatarCNPJ(item.cliente.cnpj)}</p>
                         </div>
                       </div>
                     </td>
-
-                    {/* Arquivo */}
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
-                        <FileCode2 size={14} className="text-gray-400 dark:text-gray-500 shrink-0" />
+                        <FileCode2 size={14} className="text-gray-400 dark:text-gray-500 shrink-0" aria-hidden="true" />
                         <span className="text-sm text-gray-700 dark:text-gray-300 max-w-[240px] truncate" title={item.fileName}>
                           {item.fileName}
                         </span>
                       </div>
                     </td>
-
-                    {/* Data */}
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                       {formatarData(item.createdAt)}
                     </td>
-
-                    {/* Ações */}
                     <td className="px-4 py-3">
-                      <div className="flex items-center gap-2 justify-end">
-                        {/* Ver detalhes */}
-                        <button
-                          type="button"
-                          onClick={() => void handleVisualizar(item)}
-                          disabled={visualizandoId === item.id || baixandoId === item.id}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium
-                            text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary
-                            border border-gray-200 dark:border-gray-700 hover:border-primary dark:hover:border-primary
-                            rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          {visualizandoId === item.id
-                            ? <Loader2 size={12} className="animate-spin" />
-                            : <ChevronRight size={12} />
-                          }
-                          Ver detalhes
-                        </button>
-
-                        {/* Baixar */}
-                        <button
-                          type="button"
-                          onClick={() => void handleBaixar(item)}
-                          disabled={baixandoId === item.id || visualizandoId === item.id}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white
-                            bg-primary hover:bg-primary-dark rounded-lg transition-colors
-                            disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          {baixandoId === item.id
-                            ? <Loader2 size={12} className="animate-spin" />
-                            : <Download size={12} />
-                          }
-                          Baixar
-                        </button>
-                      </div>
+                      <AcoesNfe
+                        item={item}
+                        visualizandoId={visualizandoId}
+                        baixandoId={baixandoId}
+                        onVisualizar={handleVisualizar}
+                        onBaixar={handleBaixar}
+                      />
                     </td>
                   </tr>
                 ))}
