@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { withAuth } from '../../../../../../src/infrastructure/http/middlewares/withAuth';
-import { prisma } from '../../../../../../src/infrastructure/di/Container';
-import { logger } from '../../../../../../src/utils/logger';
-import { statusEfetivoIbsCbs, type StatusIbsCbs } from '../../../../../../src/utils/ibsCbs';
+import { withAuth } from '@/infrastructure/http/middlewares/withAuth';
+import { prisma } from '@/infrastructure/di/Container';
+import { logger } from '@/utils/logger';
+import { statusEfetivoIbsCbs, type StatusIbsCbs } from '@/utils/ibsCbs';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
