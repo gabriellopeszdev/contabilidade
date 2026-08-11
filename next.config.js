@@ -35,6 +35,7 @@ const nextConfig = {
     'bullmq',
     'pino',
     'pino-pretty',
+    'web-push',
   ],
 
   // Cabeçalhos de segurança básicos para um SaaS self-hosted
@@ -72,8 +73,8 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob:",
               "font-src 'self'",
-              "connect-src 'self' ws: wss:",
-              "frame-src 'self'",
+              "connect-src 'self' ws: wss: https://fcm.googleapis.com https://fcmregistrations.googleapis.com https://updates.push.services.mozilla.com https://web.push.apple.com",
+              "frame-src 'self' https://*.gov.br https://gov.br",
               "worker-src 'self' blob: https://unpkg.com",
               "manifest-src 'self'",
               "base-uri 'self'",

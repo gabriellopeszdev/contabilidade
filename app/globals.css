@@ -67,6 +67,10 @@ html.dark {
                       "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     /* Evita scroll horizontal em mobile */
     overflow-x: hidden;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
   }
 
   /* Clique de mouse: sem outline. O anel de teclado fica fora desta layer

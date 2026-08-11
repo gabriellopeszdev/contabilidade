@@ -1,5 +1,13 @@
 import type { PrismaClient } from '@prisma/client';
 import type { ILogger } from '../../domain/ports/ILogger';
+import { PushService } from './PushService';
+
+function urlPorTipo(tipo: string): string {
+  if (tipo === 'CHAT') return '/chat';
+  if (tipo === 'BOLETO' || tipo === 'FINANCEIRO') return '/financeiro';
+  if (tipo === 'NFE' || tipo === 'DOCUMENTO') return '/nfe';
+  return '/dashboard';
+}
 
 export interface CriarNotificacaoInput {
   userId:     string;
@@ -11,10 +19,14 @@ export interface CriarNotificacaoInput {
 }
 
 export class NotificacaoService {
+  private readonly push: PushService;
+
   constructor(
     private readonly db: PrismaClient,
     private readonly logger: ILogger,
-  ) {}
+  ) {
+    this.push = new PushService(db, logger);
+  }
 
   async criar(input: CriarNotificacaoInput): Promise<string | null> {
     try {
@@ -27,6 +39,11 @@ export class NotificacaoService {
           mensagem:  input.mensagem,
           metadados: input.metadados ? (input.metadados as object) : undefined,
         },
+      });
+      void this.push.enviarParaUsuario(input.userId, {
+        title: input.titulo,
+        body:  input.mensagem,
+        url:   urlPorTipo(input.tipo),
       });
       return notif.id;
     } catch (err) {

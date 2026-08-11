@@ -228,7 +228,7 @@ export default function FinanceiroLayout({ children }: { children: React.ReactNo
 
   if (carregando) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-50 dark:bg-gray-950">
+      <div className="flex items-center justify-center h-dvh bg-gray-50 dark:bg-gray-950">
         <Loader2 size={32} className="animate-spin text-primary" />
       </div>
     );
@@ -244,7 +244,7 @@ export default function FinanceiroLayout({ children }: { children: React.ReactNo
   // ============================================================
   if (isVisaoCliente) {
     return (
-      <div className="flex h-screen bg-gray-50 dark:bg-gray-950 overflow-hidden">
+      <div className="flex h-dvh bg-gray-50 dark:bg-gray-950 overflow-hidden">
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-primary focus:text-white focus:rounded-lg focus:text-sm focus:font-semibold focus:shadow-lg"
@@ -414,7 +414,7 @@ export default function FinanceiroLayout({ children }: { children: React.ReactNo
   const navItems = navGroups.flatMap((g) => g.items);
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-950 overflow-hidden">
+    <div className="flex h-dvh bg-gray-50 dark:bg-gray-950 overflow-hidden">
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-primary focus:text-white focus:rounded-lg focus:text-sm focus:font-semibold focus:shadow-lg"

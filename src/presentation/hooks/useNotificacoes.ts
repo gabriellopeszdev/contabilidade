@@ -373,10 +373,21 @@ export function useNotificacoes(
 
   const limpar = useCallback(() => despachar({ tipo: 'LIMPAR' }), []);
 
+  const naoLidas = estado.notificacoes.filter((n) => !n.lida).length;
+
+  useEffect(() => {
+    const nav = navigator as Navigator & {
+      setAppBadge?: (n: number) => Promise<void>;
+      clearAppBadge?: () => Promise<void>;
+    };
+    if (naoLidas > 0) void nav.setAppBadge?.(naoLidas);
+    else void nav.clearAppBadge?.();
+  }, [naoLidas]);
+
   return {
     status:           estado.status,
     notificacoes:     estado.notificacoes,
-    naoLidas:         estado.notificacoes.filter((n) => !n.lida).length,
+    naoLidas,
     erroConexao:      estado.erroConexao,
     marcarComoLida:   (id) => void marcarComoLida(id),
     marcarTodasLidas: () => void marcarTodasLidas(),

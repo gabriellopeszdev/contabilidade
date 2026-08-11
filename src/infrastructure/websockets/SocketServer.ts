@@ -9,6 +9,7 @@ import { REDIS_DOMAIN_EVENTS_CHANNEL } from '../events/RedisEventDispatcher';
 import type { DomainEvent } from '../../shared/DomainEvent';
 import type { ILogger } from '../../domain/ports/ILogger';
 import { NotificacaoService } from '../notifications/NotificacaoService';
+import { PushService } from '../notifications/PushService';
 
 // =============================================================================
 // Tipos — garantem que o payload emitido ao cliente seja tipado end-to-end
@@ -172,6 +173,7 @@ export class SocketServer {
   private readonly logger: ILogger;
   private readonly db: PrismaClient;
   private readonly notificacaoSvc: NotificacaoService | null;
+  private readonly pushSvc: PushService | null;
 
   constructor(
     httpServer: NodeHttpServer,
@@ -182,6 +184,7 @@ export class SocketServer {
     this.logger = logger;
     this.db = db as PrismaClient;
     this.notificacaoSvc = db ? new NotificacaoService(db, logger) : null;
+    this.pushSvc = db ? new PushService(db, logger) : null;
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
 
     const isDev = process.env.NODE_ENV !== 'production';
@@ -402,11 +405,19 @@ export class SocketServer {
               );
 
               if (!destinatarioPresente) {
+                const preview = content.trim().slice(0, 80);
                 this.io.to(`user:${recipientId}`).emit('chat_notification', {
                   roomId,
                   senderNome,
-                  preview: content.trim().slice(0, 80),
+                  preview,
                 });
+                if (this.pushSvc) {
+                  void this.pushSvc.enviarParaUsuario(recipientId, {
+                    title: 'Nova mensagem no chat',
+                    body:  `${senderNome}: ${preview}`,
+                    url:   '/chat',
+                  });
+                }
               }
             }
 

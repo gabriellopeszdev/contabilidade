@@ -228,7 +228,7 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
 
   if (carregando) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-50 dark:bg-gray-950">
+      <div className="flex items-center justify-center h-dvh bg-gray-50 dark:bg-gray-950">
         <Loader2 size={32} className="animate-spin text-primary" />
       </div>
     );
@@ -244,7 +244,7 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
   // ============================================================
   if (isVisaoCliente) {
     return (
-      <div className="flex h-screen bg-gray-50 dark:bg-gray-950 overflow-hidden">
+      <div className="flex h-dvh bg-gray-50 dark:bg-gray-950 overflow-hidden">
         {sidebarAberta && (
           <div className="fixed inset-0 bg-black/40 z-40 lg:hidden" onClick={() => setSidebarAberta(false)} />
         )}
@@ -410,7 +410,7 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
   const navItems = navGroups.flatMap((g) => g.items);
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-950 overflow-hidden">
+    <div className="flex h-dvh bg-gray-50 dark:bg-gray-950 overflow-hidden">
       {sidebarAberta && (
         <div className="fixed inset-0 bg-black/40 z-40 lg:hidden" onClick={() => setSidebarAberta(false)} />
       )}

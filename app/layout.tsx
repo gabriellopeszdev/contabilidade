@@ -3,8 +3,8 @@ import './globals.css';
 import { AuthProvider } from '../src/presentation/context/AuthContext';
 import { LGPDConsentGuard } from './components/LGPDConsentGuard';
 import { ToasterProvider } from './components/ToasterProvider';
-import { ServiceWorkerRegistration } from './components/ServiceWorkerRegistration';
 import { PwaSameOriginLinks } from './components/PwaSameOriginLinks';
+import { PwaRuntime } from './components/PwaRuntime';
 import { ImpersonationBanner } from './components/ImpersonationBanner';
 
 // =============================================================================
@@ -18,6 +18,7 @@ export const viewport: Viewport = {
   themeColor:    '#0a0f1e',
   width:         'device-width',
   initialScale:  1,
+  viewportFit:   'cover',
 };
 
 export const metadata: Metadata = {
@@ -68,8 +69,8 @@ export default function RootLayout({
           {children}
           <LGPDConsentGuard />
           <ToasterProvider />
-          <ServiceWorkerRegistration />
           <PwaSameOriginLinks />
+          <PwaRuntime />
         </AuthProvider>
       </body>
     </html>

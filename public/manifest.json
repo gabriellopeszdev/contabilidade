@@ -3,16 +3,70 @@
   "short_name": "FiscoHub",
   "description": "Gestão fiscal inteligente para escritórios modernos",
   "id": "/",
-  "start_url": "/",
+  "start_url": "/dashboard",
   "scope": "/",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "launch_handler": {
     "client_mode": ["navigate-existing", "auto"]
   },
   "background_color": "#0a0f1e",
   "theme_color": "#0a0f1e",
-  "orientation": "portrait-primary",
   "lang": "pt-BR",
+  "dir": "ltr",
+  "categories": ["business", "finance", "productivity"],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Início",
+      "url": "/dashboard",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Chat",
+      "short_name": "Chat",
+      "url": "/chat",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "NF-e",
+      "short_name": "NF-e",
+      "url": "/nfe",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Financeiro",
+      "short_name": "Financeiro",
+      "url": "/financeiro",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "share_target": {
+    "action": "/pwa/share",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "titulo",
+      "text": "texto",
+      "url": "url",
+      "files": [
+        {
+          "name": "arquivos",
+          "accept": ["application/pdf", "application/xml", "text/xml", ".pdf", ".xml"]
+        }
+      ]
+    }
+  },
+  "file_handlers": [
+    {
+      "action": "/pwa/share",
+      "accept": {
+        "application/pdf": [".pdf"],
+        "application/xml": [".xml"],
+        "text/xml": [".xml"]
+      }
+    }
+  ],
   "icons": [
     {
       "src": "/icon-192.png",

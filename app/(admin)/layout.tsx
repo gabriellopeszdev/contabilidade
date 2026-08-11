@@ -97,7 +97,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (carregando || !usuario || !isAdmin || twoFactorEnabled === null) {
     return (
-      <div className="flex items-center justify-center h-screen bg-slate-950">
+      <div className="flex items-center justify-center h-dvh bg-slate-950">
         <Loader2 size={32} className="animate-spin text-violet-400" />
       </div>
     );
@@ -111,7 +111,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     .join('');
 
   return (
-    <div className="flex h-screen bg-slate-950 overflow-hidden">
+    <div className="flex h-dvh bg-slate-950 overflow-hidden">
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-violet-600 focus:text-white focus:rounded-lg focus:text-sm focus:font-semibold focus:shadow-lg"

@@ -9,9 +9,17 @@ function isStandalonePwa(): boolean {
   return media || Boolean(ios);
 }
 
+function isSefazHost(hostname: string): boolean {
+  const h = hostname.toLowerCase();
+  return (h.includes('sefaz') && h.endsWith('.gov.br'))
+    || h === 'fazenda.gov.br'
+    || h.endsWith('.fazenda.gov.br');
+}
+
 /**
- * No PWA, target=_blank em link do próprio FiscoHub abre o Chrome em vez do app.
- * Intercepta esses cliques e navega na janela do PWA.
+ * No PWA, target=_blank em link do FiscoHub abre o Chrome.
+ * Só intercepta _blank (mesmo origin) e portais da SEFAZ.
+ * Links internos do Next.js continuam client-side.
  */
 export function PwaSameOriginLinks() {
   useEffect(() => {
@@ -30,18 +38,16 @@ export function PwaSameOriginLinks() {
       } catch {
         return;
       }
-      const sameOrigin = url.origin === window.location.origin;
-      const sefaz =
-        (url.hostname.toLowerCase().includes('sefaz') && url.hostname.toLowerCase().endsWith('.gov.br'))
-        || url.hostname.toLowerCase() === 'fazenda.gov.br'
-        || url.hostname.toLowerCase().endsWith('.fazenda.gov.br');
 
-      if (!sameOrigin) {
-        if (!sefaz) return;
+      if (url.origin !== window.location.origin) {
+        if (!isSefazHost(url.hostname)) return;
         e.preventDefault();
         window.location.assign(`/abrir?u=${encodeURIComponent(url.href)}`);
         return;
       }
+
+      const blank = a.target === '_blank' || a.target === '_new';
+      if (!blank) return;
 
       e.preventDefault();
       window.location.assign(url.href);
