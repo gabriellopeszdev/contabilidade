@@ -34,7 +34,7 @@ export class PushService {
 
   async enviarParaUsuario(userId: string, payload: PayloadPush): Promise<void> {
     if (!configurarVapid()) return;
-    const subs = await this.db.pushSubscription.findMany({ where: { userId } });
+    const subs = await this.db.inscricaoPush.findMany({ where: { userId } });
     if (subs.length === 0) return;
 
     const body = JSON.stringify({
@@ -52,7 +52,7 @@ export class PushService {
       } catch (err: unknown) {
         const status = (err as { statusCode?: number }).statusCode;
         if (status === 404 || status === 410) {
-          await this.db.pushSubscription.deleteMany({ where: { endpoint: s.endpoint } });
+          await this.db.inscricaoPush.deleteMany({ where: { endpoint: s.endpoint } });
         } else {
           this.logger.warn('[PushService] Falha ao enviar', {
             err: err instanceof Error ? err.message : err,

@@ -19,7 +19,7 @@ export const POST = withAuth(async (req: NextRequest, _ctx: RouteContext, auth) 
     return NextResponse.json({ message: 'Subscription inválida.' }, { status: 400 });
   }
 
-  await prisma.pushSubscription.upsert({
+  await prisma.inscricaoPush.upsert({
     where:  { endpoint },
     create: {
       userId:    auth.sub,
@@ -42,7 +42,7 @@ export const POST = withAuth(async (req: NextRequest, _ctx: RouteContext, auth) 
 export const DELETE = withAuth(async (req: NextRequest, _ctx: RouteContext, auth) => {
   const body = await req.json().catch(() => null) as { endpoint?: string } | null;
   if (body?.endpoint) {
-    await prisma.pushSubscription.deleteMany({
+    await prisma.inscricaoPush.deleteMany({
       where: { userId: auth.sub, endpoint: body.endpoint },
     });
   }

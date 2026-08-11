@@ -847,7 +847,7 @@ model Notificacao {
   @@map("notificacao")
 }
 
-model PushSubscription {
+model InscricaoPush {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   userId    String   @map("user_id") @db.Uuid
   endpoint  String   @unique @db.VarChar(2048)
