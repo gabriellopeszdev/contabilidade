@@ -227,7 +227,7 @@ function ModalDetalheNFe({ resultado, onFechar }: { resultado: ResultadoArquivo;
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
       onClick={(e) => { if (e.target === e.currentTarget) onFechar(); }}
     >
-      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-2xl w-full max-w-4xl h-[90vh] flex flex-col">
 
         {/* Header */}
         <div className="flex items-start justify-between px-5 pt-5 pb-3 shrink-0">
@@ -273,7 +273,7 @@ function ModalDetalheNFe({ resultado, onFechar }: { resultado: ResultadoArquivo;
         </div>
 
         {/* Conteúdo das abas */}
-        <div className="overflow-y-auto flex-1 p-5 space-y-4">
+        <div className="overflow-y-auto flex-1 min-h-0 p-5 space-y-4">
 
           {/* ── ABA: NF-e ── */}
           {tab === 'nfe' && (
