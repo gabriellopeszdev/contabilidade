@@ -256,6 +256,16 @@ function toStr(val: unknown): string {
   return String(val);
 }
 
+/** SEFAZ costuma emitir urlChave/qrCode sem esquema (`www.sefaz...`). Sem https:// o browser trata como rota do FiscoHub. */
+export function garantirUrlAbsoluta(url: string | null | undefined): string | null {
+  if (url == null) return null;
+  const trimmed = url.trim();
+  if (!trimmed) return null;
+  if (/^[a-z][a-z0-9+.-]*:/i.test(trimmed)) return trimmed;
+  if (trimmed.startsWith('//')) return `https:${trimmed}`;
+  return `https://${trimmed.replace(/^\/+/, '')}`;
+}
+
 function toNum(val: unknown): number {
   const n = Number(val);
   return isNaN(n) ? 0 : n;
@@ -581,8 +591,8 @@ export function parseNFe(xmlString: string): NFeParseResult {
       status:   toInt(infProt.cStat),
       motivo:   toStr(infProt.xMotivo),
     } : null,
-    qrCode:    toStr(supl.qrCode) || null,
-    urlChave:  toStr(supl.urlChave) || null,
+    qrCode:    garantirUrlAbsoluta(toStr(supl.qrCode)),
+    urlChave:  garantirUrlAbsoluta(toStr(supl.urlChave)),
     idDest:    toInt(ide.idDest),
     indFinal:  toInt(ide.indFinal),
     indPres:   toInt(ide.indPres),

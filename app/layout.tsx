@@ -4,6 +4,7 @@ import { AuthProvider } from '../src/presentation/context/AuthContext';
 import { LGPDConsentGuard } from './components/LGPDConsentGuard';
 import { ToasterProvider } from './components/ToasterProvider';
 import { ServiceWorkerRegistration } from './components/ServiceWorkerRegistration';
+import { PwaSameOriginLinks } from './components/PwaSameOriginLinks';
 import { ImpersonationBanner } from './components/ImpersonationBanner';
 
 // =============================================================================
@@ -68,6 +69,7 @@ export default function RootLayout({
           <LGPDConsentGuard />
           <ToasterProvider />
           <ServiceWorkerRegistration />
+          <PwaSameOriginLinks />
         </AuthProvider>
       </body>
     </html>

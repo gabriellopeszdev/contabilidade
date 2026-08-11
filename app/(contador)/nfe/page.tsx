@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 
 import { useAuth }         from '../../../src/presentation/hooks/useAuth';
-import type { NFeParseResult } from '../../../src/utils/nfeParser';
+import { garantirUrlAbsoluta, type NFeParseResult } from '../../../src/utils/nfeParser';
 
 // =============================================================================
 // Tipos
@@ -459,8 +459,10 @@ function ModalDetalheNFe({ resultado, onFechar }: { resultado: ResultadoArquivo;
                         <QrCode size={13} className="text-gray-400" />
                         <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">QR Code NFC-e</p>
                       </div>
-                      <a href={d.qrCode} target="_blank" rel="noopener noreferrer"
-                        className="text-[10px] font-mono text-primary break-all hover:underline">
+                      <a
+                        href={`/abrir?u=${encodeURIComponent(garantirUrlAbsoluta(d.qrCode) ?? d.qrCode)}`}
+                        className="text-[10px] font-mono text-primary break-all hover:underline"
+                      >
                         {d.qrCode}
                       </a>
                     </div>
@@ -468,8 +470,10 @@ function ModalDetalheNFe({ resultado, onFechar }: { resultado: ResultadoArquivo;
                   {d.urlChave && (
                     <div>
                       <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-0.5">URL da consulta</p>
-                      <a href={d.urlChave} target="_blank" rel="noopener noreferrer"
-                        className="text-[10px] font-mono text-primary break-all hover:underline">
+                      <a
+                        href={`/abrir?u=${encodeURIComponent(garantirUrlAbsoluta(d.urlChave) ?? d.urlChave)}`}
+                        className="text-[10px] font-mono text-primary break-all hover:underline"
+                      >
                         {d.urlChave}
                       </a>
                     </div>

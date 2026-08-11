@@ -2,8 +2,13 @@
   "name": "FiscoHub",
   "short_name": "FiscoHub",
   "description": "Gestão fiscal inteligente para escritórios modernos",
+  "id": "/",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "launch_handler": {
+    "client_mode": ["navigate-existing", "auto"]
+  },
   "background_color": "#0a0f1e",
   "theme_color": "#0a0f1e",
   "orientation": "portrait-primary",
