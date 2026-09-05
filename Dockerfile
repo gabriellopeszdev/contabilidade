@@ -3,10 +3,11 @@
 #
 # Multi-stage build:
 #   Stage 1 (builder): instala deps, gera Prisma Client, faz next build
-#   Stage 2 (runner):  imagem final com apenas o necessário para produção
+#                       + compila server.ts (esbuild) para dist/server.js
+#   Stage 2 (runner):  imagem final com apenas deps de produção
 #
-# NOTA: tsx está em devDependencies e é necessário em runtime (server.ts).
-#       Por isso instala-se todas as deps na imagem final também.
+# NOTA: server.ts roda como dist/server.js (JS já compilado) — sem tsx em
+#       runtime, evitando o overhead de transpilação TS a cada início/import.
 # =============================================================================
 
 # =============================================================================
@@ -15,6 +16,11 @@
 FROM node:20-alpine AS builder
 
 RUN apk add --no-cache libc6-compat openssl
+
+# npm 10.8.2 (bundled com node:20) tem bug no arborist ("Cannot read
+# properties of null (reading 'edgesOut')") ao resolver este lockfile
+# com overrides. Atualiza o npm antes do install para evitar o bug.
+RUN npm install -g npm@11
 
 WORKDIR /app
 
@@ -49,6 +55,9 @@ FROM node:20-alpine AS runner
 
 RUN apk add --no-cache libc6-compat openssl curl
 
+# Mesmo bug do arborist do npm 10.8.2 mencionado no stage builder.
+RUN npm install -g npm@11
+
 WORKDIR /app
 
 ENV NODE_ENV=production
@@ -57,7 +66,8 @@ ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 nodejs && \
     adduser  --system --uid 1001 nextjs
 
-# Reinstala deps na imagem final (tsx é necessário em runtime)
+# Instala as deps (--omit=dev bate em bug do npm arborist com este lockfile;
+# mantém instalação completa como antes — só o start deixou de usar tsx)
 COPY package.json package-lock.json ./
 COPY prisma ./prisma
 RUN npm install --frozen-lockfile && npm cache clean --force
@@ -68,15 +78,13 @@ RUN npx prisma generate
 # Copia o build do Next.js gerado no stage anterior
 COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
 
-# Copia o código-fonte (tsx executa server.ts diretamente em runtime)
-COPY --chown=nextjs:nodejs src        ./src
+# Copia o server.ts já compilado (dist/server.js) — nada de TS em runtime
+COPY --from=builder --chown=nextjs:nodejs /app/dist ./dist
 COPY --chown=nextjs:nodejs app        ./app
 COPY --chown=nextjs:nodejs public     ./public
 
 # Copia arquivos de configuração necessários em runtime
-COPY --chown=nextjs:nodejs server.ts            .
 COPY --chown=nextjs:nodejs next.config.js       .
-COPY --chown=nextjs:nodejs tsconfig.json        .
 COPY --chown=nextjs:nodejs tailwind.config.ts   .
 COPY --chown=nextjs:nodejs postcss.config.js    .
 COPY --chown=nextjs:nodejs prisma.config.ts     .
