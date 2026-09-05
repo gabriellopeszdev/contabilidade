@@ -256,14 +256,22 @@ function toStr(val: unknown): string {
   return String(val);
 }
 
-/** SEFAZ costuma emitir urlChave/qrCode sem esquema (`www.sefaz...`). Sem https:// o browser trata como rota do FiscoHub. */
+/** SEFAZ costuma emitir urlChave/qrCode sem esquema (`www.sefaz...`). Sem https:// o browser trata como rota do FiscoHub. HTTP vira HTTPS (página HTTPS não carrega iframe/redirect HTTP). */
 export function garantirUrlAbsoluta(url: string | null | undefined): string | null {
   if (url == null) return null;
   const trimmed = url.trim();
   if (!trimmed) return null;
-  if (/^[a-z][a-z0-9+.-]*:/i.test(trimmed)) return trimmed;
-  if (trimmed.startsWith('//')) return `https:${trimmed}`;
-  return `https://${trimmed.replace(/^\/+/, '')}`;
+  let abs: string;
+  if (/^[a-z][a-z0-9+.-]*:/i.test(trimmed)) abs = trimmed;
+  else if (trimmed.startsWith('//')) abs = `https:${trimmed}`;
+  else abs = `https://${trimmed.replace(/^\/+/, '')}`;
+  try {
+    const u = new URL(abs);
+    if (u.protocol === 'http:') u.protocol = 'https:';
+    return u.toString();
+  } catch {
+    return abs;
+  }
 }
 
 function toNum(val: unknown): number {
